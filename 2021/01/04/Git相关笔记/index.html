@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>
+    Git学习笔记 | 何叨叨的小破站
+  </title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="theme-color" content="#4184f3">
+  
+  
+  <link href="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108143023.png" rel="icon" />
+  
+
+  
+<link rel="stylesheet" href="/css/highlight.light.css">
+
+  
+<link rel="stylesheet" href="/css/prism-customize.css">
+
+  
+<link rel="stylesheet" href="/css/nav-icon.css">
+
+  
+<link rel="stylesheet" href="/css/waves.min.css">
+
+  
+<link rel="stylesheet" href="/css/jquery.tocify.css">
+
+  
+<link rel="stylesheet" href="/css/main.css">
+
+  
+<link rel="stylesheet" href="/css/nav-indicator.css">
+
+  
+<link rel="stylesheet" href="/css/twikoo.css">
+
+  
+<link rel="stylesheet" href="/css/search.css">
+
+  
+  
+
+  
+
+  </meta>
+  </meta>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  
+<script src="/js/comment.js"></script>
+
+  
+<script src="/js/copy.js"></script>
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+    <header>
+        <!-- cover image or sth. -->
+    </header>
+    <div id="main" class="m-scene">
+        
+<div class="nav-wrapper" id="header">
+
+    <div class="container">
+        <nav>
+            
+            
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    树寒的博客
+                </a>
+            </div>
+
+            <!-- 春节主题 按钮 -->
+<!-- <a onclick="switchThemes()" id="switchspring">
+    <img class="chunjiepic" src="https://nekodeng.gitee.io/medias/spring-img/caishen.png" title="节日模式">
+</a> -->
+<!-- 春节主题 小挂件 -->
+<div class="caishendeng">
+    <div class="caishenxian">
+        <img class="caishenpic lala" src="https://nekodeng.gitee.io/medias/spring-img/caishen.png">
+    </div>
+</div>
+
+
+<style>
+    /*春节模式 */
+    #switchspring {
+        background: #dc8f03;
+        width: 38px;
+        height: 38px;
+        display: block;
+        position: fixed;
+        border-radius: 50%;
+        right: 15px;
+        bottom: 10px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+        cursor: pointer;
+    }
+
+    .chunjiepic {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0px;
+    }
+
+    /*春节主题 挂件吊线*/
+    .caishenxianleft {
+        left: 16% !important;
+        position: absolute;
+        top: 0px;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .caishenxian {
+        position: absolute;
+        top: 0px;
+        right: 36%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .guguxian {
+        position: absolute;
+        top: 0px;
+        left: 20%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .wenzhangxian {
+        left: 50% !important;
+        z-index: 998;
+    }
+
+    /*春节主题 挂件*/
+    .fudai {
+        top: 14px !important;
+        left: -22px !important;
+    }
+
+    .caishenpic {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        position: absolute;
+        top: 12px;
+        right: -22px;
+        z-index: 9;
+        /* transform-origin: 50% -100px; */
+        animation: swing 3.5s infinite ease-in-out;
+        /* -webkit-transform-origin: 50% -100px; */
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .lala {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -4px !important;
+        top: 14px !important;
+    }
+
+    .chunp {
+        width: 216px !important;
+        height: 96px !important;
+        left: -80px !important;
+        top: 6px !important;
+    }
+
+    .fudao {
+        width: 38px;
+        height: 38px;
+        top: 18px !important;
+        left: -19px !important;
+    }
+
+    /* 点击显示或者隐藏总样式开始 */
+    /* .caishendeng,
+    .xiaomaozitx,
+    .labelmz,
+    .friendmz {
+        display: none;
+    } */
+
+    body.themespring .caishendeng,
+    body.themespring .xiaomaozitx,
+    body.themespring .labelmz,
+    body.themespring .friendmz {
+        display: block;
+    }
+
+    /* 点击显示或者隐藏总样式结束 */
+    .toupic {
+        position: relative;
+    }
+
+    .xiaomaozitx {
+        width: 60px;
+        height: 60px;
+        position: absolute;
+        top: -127px;
+        right: 25%;
+        transform: rotate(40deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-animation: mzanimate 1.2s infinite ease-in-out;
+    }
+
+    .labelmz {
+        width: 34px;
+        height: 34px;
+        position: absolute;
+        top: 7px;
+        right: -84px;
+        transform: rotate(40deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: mzanimate 1.8s infinite ease-in-out;
+    }
+
+    .weilemz {
+        position: relative;
+    }
+
+    .friendmz {
+        width: 50px !important;
+        height: 50px !important;
+        position: absolute;
+        top: 8px;
+        right: -90px;
+        transform: rotate(44deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: mzanimate 1.8s infinite ease-in-out;
+    }
+
+    .lions {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -15px !important;
+        top: 14px !important;
+    }
+
+    .fenleiss {
+        position: absolute;
+        top: -64px;
+        left: 20%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .gugus {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -15px !important;
+        top: 9px !important;
+    }
+
+    .huadengpic {
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 1 !important;
+        left: -18px !important;
+        top: 9px !important;
+    }
+
+    .shanzipic {
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 1 !important;
+        left: -18px !important;
+        top: 18px !important;
+    }
+
+    /* .denglong {
+        display: none;
+    } */
+
+    body.themespring .denglong {
+        display: block;
+    }
+
+    @media only screen and (min-width: 1124px) {
+        .nav-menu {
+            padding-right: 0px;
+        }
+
+        body.themespring .nav-menu {
+            padding-right: 96px;
+        }
+    }
+
+    @media only screen and (max-width: 760px) {
+
+        .deng-box,
+        .deng-box1 {
+            width: 40%;
+        }
+
+        body.themespring .right {
+            float: left !important;
+        }
+    }
+
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+        .right {
+            float: left !important;
+        }
+    }
+
+    .deng-box {
+        position: fixed;
+        top: -40px;
+        right: -20px;
+        z-index: 999;
+    }
+
+    .deng-box1 {
+        position: fixed;
+        top: -30px;
+        right: 10px;
+        z-index: 999;
+    }
+
+    .deng-box1 .deng {
+        position: relative;
+        width: 120px;
+        height: 90px;
+        margin: 50px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.8);
+        border-radius: 50% 50%;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 5s infinite ease-in-out;
+        box-shadow: -5px 5px 30px 4px rgba(252, 144, 61, 1);
+    }
+
+    .deng {
+        position: relative;
+        width: 120px;
+        height: 90px;
+        margin: 50px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.8);
+        border-radius: 50% 50%;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3s infinite ease-in-out;
+        box-shadow: -5px 5px 50px 4px rgba(250, 108, 0, 1);
+    }
+
+    .deng-a {
+        width: 100px;
+        height: 90px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.1);
+        margin: 12px 8px 8px 10px;
+        border-radius: 50% 50%;
+        border: 2px solid #dc8f03;
+    }
+
+    .deng-b {
+        width: 45px;
+        height: 90px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.1);
+        margin: -4px 8px 8px 26px;
+        border-radius: 50% 50%;
+        border: 2px solid #dc8f03;
+    }
+
+    .xian {
+        position: absolute;
+        top: -20px;
+        left: 60px;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+    }
+
+    .shui-a {
+        position: relative;
+        width: 5px;
+        height: 20px;
+        margin: -5px 0 0 59px;
+        -webkit-animation: swing 4s infinite ease-in-out;
+        -webkit-transform-origin: 50% -45px;
+        background: #ffa500;
+        border-radius: 0 0 5px 5px;
+    }
+
+    .shui-b {
+        position: absolute;
+        top: 14px;
+        left: -2px;
+        width: 10px;
+        height: 10px;
+        background: #dc8f03;
+        border-radius: 50%;
+    }
+
+    .shui-c {
+        position: absolute;
+        top: 18px;
+        left: -2px;
+        width: 10px;
+        height: 35px;
+        background: #ffa500;
+        border-radius: 0 0 0 5px;
+    }
+
+    .deng:before {
+        position: absolute;
+        top: -7px;
+        left: 29px;
+        height: 12px;
+        width: 60px;
+        content: " ";
+        display: block;
+        z-index: 999;
+        border-radius: 5px 5px 0 0;
+        border: solid 1px #dc8f03;
+        background: #ffa500;
+        background: linear-gradient(to right, #dc8f03, #ffa500, #dc8f03, #ffa500, #dc8f03);
+    }
+
+    .deng:after {
+        position: absolute;
+        bottom: -7px;
+        left: 10px;
+        height: 12px;
+        width: 60px;
+        content: " ";
+        display: block;
+        margin-left: 20px;
+        border-radius: 0 0 5px 5px;
+        border: solid 1px #dc8f03;
+        background: #ffa500;
+        background: linear-gradient(to right, #dc8f03, #ffa500, #dc8f03, #ffa500, #dc8f03);
+    }
+
+    .deng-t {
+        font-family: 华文行楷;
+        font-size: 26px;
+        color: #dc8f03;
+        font-weight: bold;
+        line-height: 44px;
+        text-align: center;
+    }
+
+    .night .deng-t,
+    .night .deng-box,
+    .night .deng-box1 {
+        background: transparent !important;
+    }
+
+    @-moz-keyframes swing {
+        0% {
+            -moz-transform: rotate(-10deg)
+        }
+
+        50% {
+            -moz-transform: rotate(10deg)
+        }
+
+        100% {
+            -moz-transform: rotate(-10deg)
+        }
+    }
+
+    @-webkit-keyframes swing {
+        0% {
+            -webkit-transform: rotate(-10deg)
+        }
+
+        50% {
+            -webkit-transform: rotate(10deg)
+        }
+
+        100% {
+            -webkit-transform: rotate(-10deg)
+        }
+    }
+</style>
+
+<script>
+    // 网站主题切换模式开始
+    if (localStorage.getItem('themespring') === '1') {
+        document.body.classList.add('themespring');
+    }
+    else if (matchMedia('(prefers-color-scheme: themespring)').matches) {
+        document.body.classList.add('themespring');
+    }
+
+    function switchThemes() {
+        var body = document.body;
+        if (body.classList.contains('themespring')) {
+            document.body.classList.remove('themespring');
+            localStorage.setItem('themespring', '0');
+            return;
+        } else {
+            document.body.classList.add('themespring');
+            localStorage.setItem('themespring', '1');
+            return;
+        }
+    };
+// 网站主题切换模式结束
+
+</script>
+
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/message">
+                                留言
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/search">
+                                搜索
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+
+        </nav>
+    </div>
+</div>
+
+
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+  <div class="main main-article">
+    <article>
+
+      
+        <header class="post-header with-cover" style="background-image:url('https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/gaitubao_0_png.png')">
+          
+            </header>
+
+            <h1 class="post-title">
+              Git学习笔记
+            </h1>
+
+            <section class="post-info post-info-bottom">
+
+              <span class="post-date">发布于
+                <span class="post-date-text">
+                   2021-01-04
+                </span>
+              </span>
+
+
+
+
+              
+                <span class="post-category">分类:
+                  <a class="article-category-link" href="/categories/%E7%89%88%E6%9C%AC%E6%8E%A7%E5%88%B6/">版本控制</a>
+                </span>
+                
+                  
+                    <span class="post-tags">
+                      <ul class="post-tag-list" itemprop="keywords"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
+                    </span>
+                    
+
+                      <!-- 阅读量统计 -->
+                      
+
+
+            </section>
+
+            <section class="post-content">
+
+              <h1 id="彻底系统的学习Git"><a href="#彻底系统的学习Git" class="headerlink" title="彻底系统的学习Git"></a>彻底系统的学习Git</h1><h2 id="1-版本控制方式分类"><a href="#1-版本控制方式分类" class="headerlink" title="1.版本控制方式分类"></a>1.版本控制方式分类</h2><ul>
+<li>集中式 SVN (全称 Apache Subversion)</li>
+<li>分布式 Git</li>
+</ul>
+<p>Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分布式版本控制系统，集中式和分布式版本控制系统有什么区别呢？</p>
+<p>先说集中式版本控制系统，版本库是集中存放在中央服务器的，而干活的时候，用的都是自己的电脑，所以要先从中央服务器取得最新的版本，然后开始干活，干完活了，再把自己的活推送给中央服务器。中央服务器就好比是一个图书馆，你要改一本书，必须先从图书馆借出来，然后回到家自己改，改完了，再放回图书馆。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/l.jpg" alt="l"></p>
+<p>集中式版本控制系统最大的毛病就是必须联网才能工作，如果在局域网内还好，带宽够大，速度够快，可如果在互联网上，遇到网速慢的话，可能提交一个10M的文件就需要5分钟，这还不得把人给憋死啊。</p>
+<p>那分布式版本控制系统与集中式版本控制系统有何不同呢？首先，分布式版本控制系统根本没有“中央服务器”，每个人的电脑上都是一个完整的版本库，这样，你工作的时候，就不需要联网了，因为版本库就在你自己的电脑上。既然每个人电脑上都有一个完整的版本库，那多个人如何协作呢？比方说你在自己电脑上改了文件A，你的同事也在他的电脑上改了文件A，这时，你们俩之间只需把各自的修改推送给对方，就可以互相看到对方的修改了。</p>
+<p>和集中式版本控制系统相比，分布式版本控制系统的安全性要高很多，因为每个人电脑里都有完整的版本库，某一个人的电脑坏掉了不要紧，随便从其他人那里复制一个就可以了。而集中式版本控制系统的中央服务器要是出了问题，所有人都没法干活了。</p>
+<p>在实际使用分布式版本控制系统的时候，其实很少在两人之间的电脑上推送版本库的修改，因为可能你们俩不在一个局域网内，两台电脑互相访问不了，也可能今天你的同事病了，他的电脑压根没有开机。因此，分布式版本控制系统通常也有一台充当“中央服务器”的电脑，但这个服务器的作用仅仅是用来方便“交换”大家的修改，没有它大家也一样干活，只是交换修改不方便而已。(来自廖雪峰的git教程)</p>
+<h2 id="2-SVN"><a href="#2-SVN" class="headerlink" title="2.SVN"></a>2.SVN</h2><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/rLb0I0.png" alt="rLb0I0"></p>
+<h3 id="2-1-下载"><a href="#2-1-下载" class="headerlink" title="2.1 下载"></a>2.1 下载</h3><ul>
+<li><p>提供SVN服务的版本控制服务器。VisualSVN：<a target="_blank" rel="noopener" href="https://www.visualsvn.com/">https://www.visualsvn.com/</a></p>
+</li>
+<li><p>安装VisualSVN，端口如果被占用，就点击右侧向下箭头，换另一个端口</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/rLXI7d.png" alt="rLXI7d"></p>
+</li>
+<li><p>创建项目仓库，可以添加成员权限</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/rOiyrt.md.png" alt="rOiyrt.md"></p>
+</li>
+<li><p>项目成员下载的，用于与服务端VisualSVN交互 。TortoiseSVN ：<a target="_blank" rel="noopener" href="https://tortoisesvn.net/">https://tortoisesvn.net/</a></p>
+</li>
+</ul>
+<h3 id="2-2-操作流程"><a href="#2-2-操作流程" class="headerlink" title="2.2 操作流程"></a>2.2 操作流程</h3><ul>
+<li><p>检出代码：在没有源代码的情况下，在本地建一个新目录，右键SVN Checkout ，输入仓库地址，User中成员的账号密码，可以把仓库中的代码下载下来</p>
+</li>
+<li><p>提交代码：新建了一个文件，在项目目录空白处，右键 SVN  commit ，添加对应备注信息</p>
+<img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/rOP30f.png" alt="rOP30f"  />
+</li>
+<li><p>项目目录空白处，右键 SVN update ,就会获取最新版本的代码。<strong>情况一</strong>：服务器文件1【内容：苹果】，本地文件1，我们改了【内容：香蕉】，update就会冲突。<strong>情况二</strong>：服务器文件1【内容：苹果】，本地我们加一个文件2，update不会冲突，会直接把服务器的文件1下载下来，本地文件2不会。</p>
+</li>
+<li><p>所以协同办公时，自己负责自己的模块/文件，不要改动别人的模块/文件，就不会有冲突</p>
+</li>
+<li><p><strong>情况三</strong>：用户A和用户B，同时都是服务端<strong>文件1</strong>最新版本2【内容是：苹果】。之后，用户A修改【内容：苹果A】并提交服务端最新版本变为3。用户B修改【苹果B】，也提交，这时候报错，提示目前的版本和服务端版本3不一样，用户B，使用SVN update，获取最新版本。这时候发现出现冲突，因为服务端的内容是【苹果A】，而自己的则是【苹果B】，则就需要两个用户商量，解决冲突</p>
+</li>
+<li><p>右键 TortoiseSVN  ，选择Show log ，就可以看到已有的提交记录</p>
+</li>
+</ul>
+<h2 id="3-Git"><a href="#3-Git" class="headerlink" title="3.Git"></a>3.Git</h2><h3 id="3-1-Git的使用"><a href="#3-1-Git的使用" class="headerlink" title="3.1 Git的使用"></a>3.1 Git的使用</h3><p>非常好的文章</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/12/git-cheat-sheet.html">Git常用命令清单</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2012/07/git.html">Git分支管理策略</a>大型团队使用的</li>
+<li><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/12/git-workflow.html?utm_source=tuicool&utm_medium=referral">Git工作流程</a></li>
+</ul>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210109090743961.png" alt="image-20210109090743961"></p>
+<p>以下命令会打开一个网页帮助文档</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git 指令名 --help</span><br><span class="line">//比如</span><br><span class="line">git remote --help</span><br><span class="line">git add --help</span><br></pre></td></tr></table></figure>
+<h4 id="3-1-1-安装"><a href="#3-1-1-安装" class="headerlink" title="3.1.1 安装"></a>3.1.1 安装</h4><ul>
+<li><p>远程仓库，一般托管在GitHub或者是Gitee上，不用下载</p>
+</li>
+<li><p>本地仓库，需要下载Git软件 ，<a target="_blank" rel="noopener" href="https://git-scm.com/downloads">官网</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//进入cmd窗口,验证是否安装成功</span><br><span class="line">git --version</span><br></pre></td></tr></table></figure></li>
+<li><p>git命令输入位置</p>
+<p>注意：Git Bash和Windows PowerShell，都能支持Linux命令，但是cmd不支持</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//1.进入对应目录，在地址栏输入cmd，打回车</span><br><span class="line"></span><br><span class="line">//2.进入对应目录，右键Git Bash Here</span><br><span class="line"></span><br><span class="line">//3.win10左侧搜索栏，搜索Windows PowerShell，点击打开</span><br></pre></td></tr></table></figure>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108095402992.png" alt="image-20210108095402992"></p>
+</li>
+</ul>
+<h4 id="3-1-2-使用Git命令"><a href="#3-1-2-使用Git命令" class="headerlink" title="3.1.2 使用Git命令"></a>3.1.2 使用Git命令</h4><p>查阅更多内容<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/12/git-cheat-sheet.html">Git常用命令清单</a></p>
+<p>先进入要执行命令的位置，打开Git Bash</p>
+<ul>
+<li><p>初始化git ,在当前目录生成<code>.git</code>文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br></pre></td></tr></table></figure>
+<p>也可以使用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git init 文件夹名</span><br><span class="line">//会自动在当前目录，建一个文件夹，以自己输入的文件夹名命名，然后初始化</span><br></pre></td></tr></table></figure></li>
+<li><p>电脑上新安装Git，需要配置仓库信息。如果需要修改用户名和邮箱，也是以下命令</p>
+<p>注意：执行后，x项目文件夹下<code>.git</code>文件夹中生成<code>.gitconfig</code>文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name &#x27;用户名&#x27;   //设置用户名</span><br><span class="line">git config --global user.email &#x27;用户邮箱&#x27;  //用户邮箱</span><br></pre></td></tr></table></figure>
+<p>查看git配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git config --list</span><br></pre></td></tr></table></figure>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108115437140.png" alt="image-20210108115437140"></p>
+</li>
+<li><p>查看暂存区状态</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git status</span><br><span class="line">//nothing to commit (create/copy files and use &quot;git add&quot; to track)  代表暂存区没有文件</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>添加 工作区 到 暂存区</p>
+<p>有时候项目文件a.txt和b.txt都改变了，但是我可以先add  a.txt 之后commit一个版本，然后再add b.txt 后，commit一个版本。分成两个版本提交项目</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git add 文件名 //提交对应文件名文件的修改</span><br><span class="line">git add a.txt b.txt //提交多个文件，用空格隔开</span><br><span class="line">git add . //提交工作区所有文件的修改</span><br></pre></td></tr></table></figure>
+<p>如果提交到暂存区后，不想把修改提交到本地仓库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rm --cached 文件名</span><br></pre></td></tr></table></figure>
+<p>【恢复】</p>
+<p>如果工作区【文件版本1】提交到暂存区后，工作区发生更改，成了【文件版本2】。使用以下命令将工作区<strong>恢复</strong>【版本1】</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout 文件名</span><br></pre></td></tr></table></figure></li>
+<li><p>提交 暂存区 到 本地仓库</p>
+<p>注意：可以提交很多版本到本地仓库，最后一起<code>git push</code>到远程Git仓库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m &quot;提交备注&quot;</span><br></pre></td></tr></table></figure>
+<p>注意：输入命令<code>git commit</code>就会进入vi编辑器模式，使用<code>i</code>进入编辑模式，输入要提交的备注。按<code>ESC</code>退出编辑模式，输入<code>:wq</code>回车，保存并退出</p>
+<p>【恢复】</p>
+<p>将<strong>一个文件</strong>提交到本地仓库的版本，恢复到工作区和暂存区</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git log //复制想要恢复的那次提交的一串编号</span><br><span class="line">git checkout 提交编号 文件名</span><br></pre></td></tr></table></figure>
+<p>将<strong>最近一次</strong>提交到本地仓库的<strong>所有文件</strong>，恢复到工作区和暂存区</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset --hard</span><br></pre></td></tr></table></figure>
+<p>将指定提交编号的那次提交到本地仓库的<strong>所有文件</strong>，恢复到工作区和暂存区</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset 提交编号</span><br></pre></td></tr></table></figure></li>
+<li><p>查看提交到本地仓库的记录</p>
+<p>注意：有时候log内容太多，会进入<code>less</code>命令阅读文件的模式，这种情况下需要按<code>q</code>键退出</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git log</span><br></pre></td></tr></table></figure>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108104424356.png" alt="image-20210108104424356"></p>
+<p>打开图形界面，查看提交记录</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gitk</span><br></pre></td></tr></table></figure>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108115031271.png" alt="image-20210108115031271"></p>
+</li>
+<li><p>提交到远程在线仓库</p>
+<ul>
+<li><p>常用远程在线仓库：GitHub，Gitee 码云，Coding</p>
+</li>
+<li><p>提交远程仓库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push </span><br></pre></td></tr></table></figure>
+<h4 id="3-1-3-GitHub上托管流程"><a href="#3-1-3-GitHub上托管流程" class="headerlink" title="3.1.3 GitHub上托管流程"></a>3.1.3 GitHub上托管流程</h4></li>
+</ul>
+</li>
+</ul>
+<p><strong>情况一：GitHub新建空项目，本地没有项目，克隆到本地开发</strong> </p>
+<p>git会在本地有一个远程仓库列表，git clone 下来的项目，git软件会把克隆的项目地址起一个别名：origin，存到远程仓库列表中，然后git push的时候实际上是直接把本地仓库的内容提交到origin</p>
+<ul>
+<li><p>在github上建一个新的仓库，复制仓库地址</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108161845084.png" alt="image-20210108161845084"></p>
+</li>
+<li><p>进入想要放置项目的目录，在Git Bash下输入<code>git clone 仓库地址</code> 项目空文件夹，就被下载到本地了</p>
+</li>
+<li><p>在本地添加文件后</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git add .</span><br><span class="line">git commit -m &quot;第一次提交&quot;</span><br><span class="line">git push </span><br><span class="line">&#x2F;&#x2F;因为是自己本地仓库clone下来的项目，默认.git文件夹下，就配置好了，推送的仓库origin和推送到master分支</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p>之后会弹出登录GitHub的登录框</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108154740807.png" alt="image-20210108154740807"></p>
+<p>我发现这个登录框，输入正确的也登陆不上，会直接提示登录失败，然会让你输入用户名</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108155038157.png" alt="image-20210108155038157"></p>
+<p>输入用户名后，弹出框按要求输入密码，输入正确的密码就可以登陆，在GitHub上提交文件了</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108155149864.png" alt="image-20210108155149864"></p>
+<p><strong>情况二：本地已有项目，托管到GitHub</strong>【没有初始化Git，即根目录没有<code>.git</code>文件】</p>
+<p>在本地git init的项目</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git init //先初始化本地项目</span><br><span class="line">git add .</span><br><span class="line">git commit -m &quot;提交备注&quot;</span><br></pre></td></tr></table></figure>
+<p>然后再GitHub上新建一个仓库，复制项目地址</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git remote add 仓库别名 仓库地址</span><br><span class="line">git push 仓库别名 分支名</span><br><span class="line"></span><br><span class="line">//master是主分支名，一个新仓库默认只有master分支</span><br><span class="line">//我们在本地仓库创建新的分支后，必须用上面的命令才能，把新分支推送到远程仓库</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//补充:查看本地仓库列表</span><br><span class="line">git remote show </span><br></pre></td></tr></table></figure>
+<p>之后会提示登录框。登陆的GitHub账户是 上面添加的那个仓库地址 所在的GitHub账户</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108154740807.png" alt="image-20210108154740807"></p>
+<p>这个登录框，输入正确的也登陆不上，会直接提示登录失败，然会让你输入用户名</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108155038157.png" alt="image-20210108155038157"></p>
+<p>输入用户名后，弹出框按要求输入密码，输入正确的密码就可以登陆了</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108155149864.png" alt="image-20210108155149864"></p>
+<p>之后提交到GitHub,就不用输入<code>git remote add 别名 仓库地址</code>了</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//直接这样提交就行</span><br><span class="line">git push 仓库别名 分支名</span><br></pre></td></tr></table></figure>
+<p>如果不想每次提交到远程仓库都输入分支名，可以使用命令提交一次，就会记住 仓库和分支：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push --set-upstream 别名 分支名</span><br></pre></td></tr></table></figure>
+<p>之后的每次提交直接输入<code>git push</code>就会提交到记住的 仓库和分支</p>
+<h4 id="3-1-4-分支管理"><a href="#3-1-4-分支管理" class="headerlink" title="3.1.4 分支管理"></a>3.1.4 分支管理</h4><p>默认主分支是master，创建的各个分支之间，互不影响。Git中出现的<code>HEAD</code>指的是当前的分支</p>
+<ul>
+<li><p>查看所有分支</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch</span><br></pre></td></tr></table></figure></li>
+<li><p>在本地仓库创建分支，仍保留在原来分支</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch 新分支名</span><br></pre></td></tr></table></figure>
+<p>在本地仓库创建分支，并切换到该分支</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b 新分支名</span><br></pre></td></tr></table></figure>
+<p>注意：创建新分支，相当于把当前的分支复制了一份。分支仅仅是在本地建立，远程仓库并没有新建的分支需要把分支推送到远程仓库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push 仓库别名 分支名</span><br></pre></td></tr></table></figure>
+<p>一般<code>git clone</code>下来的项目，默认别名是origin.可以通过<code>git remote show</code>查看仓库别名</p>
+</li>
+<li><p>将暂存区，本地仓库切换指定分支</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout 分支名</span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<p>在分支1，工作区文件改动，切换到分支2，工作区文件任然是改动后的。工作区不会跟着分支切换变动</p>
+<p>当处在分支1，修改文件，并提交到本地仓库。切换成分支2后，文件仍然是原来的样子，且没有该次提交记录。</p>
+</li>
+<li><p>合并分支</p>
+<p>切换到master主分支后，将分支1与主分支合并。</p>
+<p>记住，合并前两个分支都要把工作区的变动，提交到本地仓库，否则不能合并</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge 要合并的分支名</span><br></pre></td></tr></table></figure>
+<p>合并后，如果两个分支对同一个内容修改成了不同的，那就会产生冲突，需要在master分支上手动修改解决冲突部分</p>
+<p><strong>这时</strong>，分支1仍然是未解决冲突的版本，需要切换到分支1，<code>git merge master</code>，因为master是解决冲突的版本，即使master和分支1，仍然是冲突的部分，但是不会报错，按照master的覆盖掉</p>
+<p>拉取远程仓库的某个分支，与本地仓库<strong>当前分支</strong>合并</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git pull 远程仓库名 要拉取的远程分支名</span><br><span class="line">//两个分支可以是不一样的分支，比如，拉取远程的dev分支，与本地分支master合并</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<ul>
+<li><p>删除分支</p>
+<p>删除分支1，当前必须处其他分支，才能删除</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git branch -d 分支名</span><br></pre></td></tr></table></figure>
+<h4 id="3-1-5-多人协作GitHub-Collabrators"><a href="#3-1-5-多人协作GitHub-Collabrators" class="headerlink" title="3.1.5 多人协作GitHub Collabrators"></a>3.1.5 多人协作GitHub Collabrators</h4></li>
+</ul>
+<p>原本只有仓库所在的账户才能提交代码，所以要在GitHub上添加协作者，添加进来的协作者就可以在该仓库提交代码。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108230251049.png" alt="image-20210108230251049"></p>
+<h4 id="3-1-6-Git工作流程"><a href="#3-1-6-Git工作流程" class="headerlink" title="3.1.6 Git工作流程"></a>3.1.6 Git工作流程</h4><p>详细内容查阅<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/12/git-workflow.html?utm_source=tuicool&utm_medium=referral">Git工作流程</a></p>
+<p>目前广泛使用的工作流程：</p>
+<ul>
+<li><p>Git flow【大型项目团队使用】</p>
+<ul>
+<li>添加协作者，在各自的分支上开发，合并到develop，最后合并到master（最终发布的版本） 。详细请阅读<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2012/07/git.html">Git分支管理策略</a></li>
+</ul>
+</li>
+<li><p>Github flow【一般用于：给别人的开源项目提交代码】</p>
+<ul>
+<li><p>在别人的仓库点击Fork，就能复制别人的仓库，到自己的仓库</p>
+</li>
+<li><p>自己clone到本地进行开发，开发完成后，git push 到自己的仓库</p>
+</li>
+<li><p>在GitHub上找到Pull requests选项，选择New pull request，向原作者发起提交请求</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210108231937900.png" alt="image-20210108231937900"></p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>Gitlab flow</p>
+<blockquote>
+<p>GitLab是啥？</p>
+<p>目前第三方代码仓库托管服务有很多，其中 Github 最火，但是如果想要托管私有项目收费比较高,而且在国内受限于网络环境影响,鲜少有公司使用。例如京东、淘宝这种级别的公司，也不太常用别的第三方的托管服务。Gitlab是一个开源的类似于Github的一个系统，且开源免费，可以部署自己的公司内容。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="3-2-GitHub搭建静态博客"><a href="#3-2-GitHub搭建静态博客" class="headerlink" title="3.2 GitHub搭建静态博客"></a>3.2 GitHub搭建静态博客</h3><h4 id="3-2-1-必须注意"><a href="#3-2-1-必须注意" class="headerlink" title="3.2.1 必须注意"></a>3.2.1 必须注意</h4><p>本地初始化的是<strong>Hexo的整个项目</strong>，但是发布的是把本地项目变成<strong>静态页面的项目</strong></p>
+<p>GitHub中发布的<strong>静态页面的项目</strong>不能直接修改相关内容，必须通过修改本地的<strong>Hexo的整个项目</strong>然后才能发布</p>
+<p><strong>所以</strong>必须在GitHub项目上建一个分支，存放本地的<strong>Hexo的整个项目</strong></p>
+<p>每次添加新的MarkDown文章后，先推送本地的<strong>Hexo的整个项目</strong>，然后再<strong>发布</strong></p>
+<h4 id="3-2-2-Hexo框架"><a href="#3-2-2-Hexo框架" class="headerlink" title="3.2.2 Hexo框架"></a>3.2.2 Hexo框架</h4><ul>
+<li><p><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/">官网</a></p>
+<p>基于Nodejs的静态博客系统</p>
+</li>
+<li><p>登录GitHub，新建仓库</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210107182255258.png" alt="image-20210107182255258"></p>
+</li>
+<li><p>复制项目地址，然后克隆到本地</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git%E7%9B%B8%E5%85%B3/image-20210107182517458.png" alt="image-20210107182517458"></p>
+<p>本地找一个目录，进入cmd窗口，输入<code>git clone github项目地址</code>即可【过程中需要输入github的用户名和密码】</p>
+</li>
+<li><p>开始本地初始化</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//因为是全局安装，所以在任意目录下进入cmd都可以</span></span><br><span class="line">npm install hexo-cli -g</span><br><span class="line"></span><br><span class="line"><span class="comment">//本地新建一个文件夹，初始化博客，生成博客文件</span></span><br><span class="line">hexo init 博客名</span><br><span class="line"></span><br><span class="line"><span class="comment">//移动到博客文件夹</span></span><br><span class="line">cd 博客名</span><br><span class="line"></span><br><span class="line"><span class="comment">//安装依赖</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment">//启动本地服务器，默认127.0.0.1：4000。可以在本地预览，之后发布才会在github静态页上显示</span></span><br><span class="line"><span class="comment">//本地修改完内容，ctrl+C ,需要从新 输入 hexo server 重启，不能热更新</span></span><br><span class="line">hexo server</span><br><span class="line"></span><br><span class="line"><span class="comment">//新建文章，执行后，在博客根目录的source/-post文件夹下，就会生成新的markdown文件，然后在生成的文件中添加内容</span></span><br><span class="line">hexo <span class="keyword">new</span> 文章标题</span><br></pre></td></tr></table></figure></li>
+<li><p>发布到GitHub</p>
+<p>修改<code>_config.yml文件</code>参数</p>
+<p><code>type</code>,<code>repo</code>的键和值之间有一个空格</p>
+<p><code>repo</code>参数：部署静态页仓库的地址 ，在//后加上  “用户名:github密码@”</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">    type: git</span><br><span class="line">    repo: https:&#x2F;&#x2F;heyingjiee:heyingjie1996@github.com&#x2F;heyingjiee&#x2F;heyingjiee.github.io.git</span><br></pre></td></tr></table></figure>
+<p>用命令发布</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;cmd进入本地博客目录下</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;安装部署插件</span><br><span class="line">npm install hexo-deployer-git --save</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;发布到github静态页</span><br><span class="line">hexo deploy</span><br></pre></td></tr></table></figure></li>
+<li><p>添加或修改 markdown文件</p>
+<p>博客根目录的source/-post文件夹下，把自己写好的markdown复制进去，然后在<strong>markdown文档开头</strong>加上（注意：键值对之间有一个空格）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 文章标题</span><br><span class="line">---</span><br></pre></td></tr></table></figure></li>
+<li><p>添加或修改 markdown文件后，最好使用以下命令发布（不用 hexo deplay 命令）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;cmd进入本地博客目录下</span><br><span class="line">hexo generate --deploy</span><br></pre></td></tr></table></figure></li>
+<li><p>打开网页 <a target="_blank" rel="noopener" href="https://heyingjiee.github.io/">https://heyingjiee.github.io/</a> ，就能显示博客了</p>
+</li>
+</ul>
+<h4 id="3-1-3-主题"><a href="#3-1-3-主题" class="headerlink" title="3.1.3 主题"></a>3.1.3 主题</h4><ul>
+<li>官网主题<a target="_blank" rel="noopener" href="https://hexo.io/themes/">https://hexo.io/themes/</a></li>
+<li>选择需要的主题，进入对应的主题的github页，有对应的使用说明</li>
+<li>我选用的主题 <a target="_blank" rel="noopener" href="https://github.com/shuxhan/hexo-theme-simple99">hexo-theme-simple99</a></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#加在MakeDown文档开头</span><br><span class="line"></span><br><span class="line">title: hello,world</span><br><span class="line">date: 2020-12-17  # 发布时间</span><br><span class="line">tags: 标签  #多个标签写成数组形式[A,B,C]</span><br><span class="line">categories: 分类</span><br><span class="line">top: 9   # 文章是否置顶，默认不写top，不置顶；如果置顶可选择数字，如果有多个置顶，根据数字大小进行排序</span><br><span class="line">toc: true # 是否生成目录(true生成；默认不写toc则不生成)</span><br><span class="line">cover:  # 标题背景图片,直接把图片网址放上去就行</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这个插件可以每次修改完本地项目，直接刷新网页就可以看到变化</span><br><span class="line">npm install --save hexo-browsersync</span><br></pre></td></tr></table></figure>
+
+            </section>
+    </article>
+    
+
+
+        <!-- 版权声明 -->
+        
+<div class="post-copyright">
+    <div>
+        <strong>本文作者：</strong>
+        <span>树寒</span>
+    </div>
+    <div>
+        <strong>本文链接：</strong>
+        <a href="http://example.com/Git相关笔记">
+            http://example.com/Git相关笔记
+        </a>
+    </div>
+    <div>
+        <span>欢迎任何形式的转载，但请务必注明出处。</span>
+    </div>
+    <div>
+        <span>由于笔者水平有限，如果文章或代码有表述不当之处，还请不吝赐教。</span>
+    </div>
+</div>
+
+
+
+
+
+
+<style>
+    .post-copyright {
+        background-color: #fff;
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.05);
+        display: block;
+        margin: 20px auto;
+        margin-bottom: 15px;
+        padding: 10px;
+        font-size: 15px;
+        color: #2e2d2d;
+        word-break: break-all;
+        line-height: 1.8;
+    }
+
+
+    .post-copyright a {
+        color: #2e2d2d;
+        border-bottom: 1px solid #999; 
+    }
+
+    .post-copyright a:hover {
+        color: #2e2d2d;
+        border-bottom: 1px solid #000; 
+    }
+</style>
+
+          <!-- comments -->
+          <div class="comments">
+    <h3 id="commenttitle" style="margin-top: 20px;margin-left: 10px;">评论区</h3>
+    <div id="tcomment"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/twikoo@0.6.0/dist/twikoo.all.min.js"></script>
+<script>twikoo.init({ envId: '', el: '#tcomment' })</script>
+
+            <div class="right-icon">
+              <div id="to-valine" class="right-icon-item">
+                <a href="#commenttitle">评论</a>
+              </div>
+            </div>
+
+  </div>
+
+
+  <aside>
+    <div class="aside-wrap">
+    
+        <section class="widget-wrap">
+    <h3 class="widget-title">简介</h3>
+    <div class="widget">
+        <div class="notice">
+            <img class="notice-img" src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108164434.jpg">
+            <p>路漫漫其修远兮，<br>吾将上下而求索!<br></p>
+            
+            <p class="notice-item">
+                <!-- github -->
+                <span><a target="_blank" href="https://github.com/shuxhan"><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108165043.jpg" alt="Github"></a></span>
+                <!-- juejin -->
+                <span><a target="_blank" href="https://juejin.cn/user/3210229685698430/posts"><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108165800.png" alt="掘金社区"></a></span>
+                <!-- zhihu -->
+                <span><a target="_blank" href="https://www.zhihu.com"><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108172745.ico" alt="知乎"></a></span>
+                <!-- csdn -->
+                <span><a target="_blank" href="https://blog.csdn.net/ZSH_jerry"><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108172932.ico" alt="CSDN"></a></span>
+            </p>
+            
+        </div>
+    </div>
+</section>
+
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">文章分类</h3>
+    <div class="widget">
+      <div class="categories-list">
+        
+           
+            
+              <a class="category-list-item" href="/categories/后端技术">
+                <span class="category-list-link">后端技术</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/未来规划">
+                <span class="category-list-link">未来规划</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/版本控制">
+                <span class="category-list-link">版本控制</span>
+                <span class="category-list-number">(2)</span>
+              </a>
+            
+          
+        
+      </div>
+    </div>
+  </section>
+
+
+    
+        
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
+    </div>
+  </div>
+
+
+    
+        
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul class="recent-posts">
+        
+          <li>
+            <a href="/2021/01/04/Git%E7%9B%B8%E5%85%B3%E7%AC%94%E8%AE%B0/">Git学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/05/10/%E8%A6%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9F%A5%E8%AF%86/">要学习的知识</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/15/Linux%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Linux基础学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/08/Nodejs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Node.js学习笔记</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
+    </div>
+  </section>
+
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">友情链接</h3>
+    <div>
+      <ul class="widget-links">
+          
+          <li>
+              <a target="_blank" rel="noopener" href="https://hwame.top" title="">
+                  鴻塵的博客
+              </a>
+          </li>
+          
+          <li>
+              <a target="_blank" rel="noopener" href="https://www.chen-yuan-yuan.icu" title="">
+                  陈园园的博客
+              </a>
+          </li>
+          
+          <li>
+              <a target="_blank" rel="noopener" href="https://www.aigisss.com/blog/" title="">
+                  爱即是诗
+              </a>
+          </li>
+          
+          <li>
+              <a target="_blank" rel="noopener" href="https://noionion.top/" title="">
+                  noionion
+              </a>
+          </li>
+          
+          <li>
+              <a target="_blank" rel="noopener" href="https://heart-of-engine.github.io/" title="">
+                  Heart-of-engine
+              </a>
+          </li>
+          
+      </ul>
+    </div>
+  </section>
+
+
+<style>
+  .widget-links {
+    list-style: none;
+    padding-left: 10px;
+  }
+  .widget-links >li > a:hover {
+    color: #f40;
+    text-decoration: underline;
+  }
+</style>
+    
+        <section class="widget-wrap">
+    <div class="widget">
+        <div class="notice attention">
+            <p>本博客主题采用的是基于 hexo 打造的 <a href="https://github.com/shuxhan/hexo-theme-simple99" target="_blank">simple99</a>，主题已上架 hexo 官网。</p>
+            <p>如有其他问题，请在博客<a target="_blank" rel="noopener" href="https://shuxhan.com/message">留言</a>，或者发一封邮件给我，我的邮箱地址：zsh981109@163.com</p>
+            
+        </div>
+    </div>
+</section>
+
+    
+    
+</div>
+
+
+      <!-- 目录 -->
+      
+        <div id="toc"></div>
+        <script>
+          $(function () {
+            var elm = $('#toc');
+            var startPos = $(elm).offset().top;
+            $.event.add(window, "scroll", function () {
+              var p = $(window).scrollTop();
+              $(elm).css('margin-left', '0px');
+              $(elm).css('position', ((p) > startPos) ? 'fixed' : 'static');
+              $(elm).css('top', ((p) > startPos) ? '20px' : '')
+            })
+          })
+
+        </script>
+
+  </aside>
+  
+</div>
+
+
+<script>
+  $('#to-top').click(function () { $('html,body').animate({ scrollTop: '0px' }, 500); return false; });
+
+</script>
+                </div>
+            </div>
+            <div class="right-icon">
+                <div id="to-top" class="right-icon-item">
+                  <a>
+                    <span class="top-left"></span>
+                    <span class="top-right"></span>
+                  </a>
+                </div>
+              </div>
+    </div>
+    <footer class="footer">
+  <div class="links-wrap-wrap">
+    <div class="links-wrap">
+    
+      
+        <section class="link-wrap">
+          <h3 class="link-title">导航</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://cn.bing.com" title="">
+                        必应搜索(bing)
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://github.com" title="">
+                        GitHub
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://gitee.com" title="">
+                        Gitee
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.aliyun.com/" title="">
+                        阿里云
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://cloud.tencent.com" title="">
+                        腾讯云
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+
+      
+        <section class="link-wrap">
+          <h3 class="link-title">社区论坛</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.csdn.net" title="">
+                        CSDN
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://juejin.cn" title="">
+                        掘金
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://segmentfault.com" title="">
+                        segmentfault思否
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.cnblogs.com" title="">
+                        博客园
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.v2ex.com/" title="">
+                        V2EX
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://discord.com" title="">
+                        Discord
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+
+      
+        <section class="link-wrap">
+          <h3 class="link-title">文档</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://react.docschina.org" title="">
+                        React官方中文文档
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://hexo.io" title="">
+                        hexo官网
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="http://lesscss.cn" title="">
+                        less中文网
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+    </div>
+  </div>
+  
+    <div class="copyright-wrap">
+      <span>&copy; 2020-2021 树寒</span>
+      <span id="timeDate">载入天数...</span>
+      
+    </div>
+    <span id="busuanzi_container_site_pv">
+      本站总访问量<span id="busuanzi_value_site_pv"></span>次
+    </span>
+    <span id="busuanzi_container_site_uv">
+      ，本站访客数<span id="busuanzi_value_site_uv"></span>人次
+    </span>
+    
+</footer>
+
+<script>
+    var now = new Date();
+    function createtime() {
+      var grt = new Date("06/14/2020 12:00:00");//此处修改你的建站时间或者网站上线时间 
+      now.setTime(now.getTime() + 250);
+      days = (now - grt) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+      document.getElementById("timeDate").innerHTML = "本站已安全运行 " + dnum + " 天 ";
+    }
+    setInterval("createtime()", 1000);
+</script>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script src="/lib/jquery.js"></script>
+
+
+<script src="/lib/waves.js"></script>
+
+
+<script src="/lib/jquery-ui.js"></script>
+
+
+<script src="/lib/jquery.tocify.js"></script>
+
+
+<script src="/js/main.js"></script>
+
+
+        
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    color: rgb(206, 206, 206);
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 3px;
+    user-select: none;
+    outline: 0;
+  }
+
+  .copy-btn:hover {
+    color: #888
+  }
+
+  .highlight-wrap .copy-btn {
+    padding: 2px 6px;
+    position: absolute;
+    right: 10px;
+    top: 1px;
+    z-index: 1;
+  }
+
+
+
+  .highlight-wrap {
+    position: relative;
+  }
+
+  #copysuccess {
+    width: 200px;
+    height: 75px;
+    position: fixed;
+    right: 50%;
+    margin-right: -100px;
+    top: 40%;
+    margin-top: -40px;
+    color: #fff;
+    font-weight: 600;
+    background: #444444d8;
+    display: none;
+    z-index: 99999;
+    border-radius: 10px;
+    text-align: center;
+    line-height: 30px;
+    padding-top: 10px;
+    user-select: none;
+  }
+</style>
+
+<script>
+  addLoadEvent(() => {
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<div>').addClass('copy-btn').append('复制代码').on('click', function (e) {
+        var copysuccess = document.getElementById('copysuccess');
+        copysuccess.style.display = 'block'
+        setTimeout(function () {
+          copysuccess.style.display = 'none'
+        }, 2000)
+        var code = $(this).parent().find(".code")[0].innerText
+          
+                var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+          
+                  if (result) $(this).text('复制成功')
+            else $(this).text('复制失败')
+              
+                $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制代码')
+        }, 1000)
+      }).append(e)
+    })
+  })
+</script>
+
+            <div id="copysuccess">复制成功<br>欢迎阅读文章~</div>
+</body>
+
+</html>
+
+<script>
+    $('#to-top').click(function () { $('html,body').animate({ scrollTop: '0px' }, 500); return false; });
+</script>
