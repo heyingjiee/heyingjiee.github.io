@@ -1339,41 +1339,6 @@ app.post(&quot;/post&quot;,function(request,response)&#123;
 </li>
 </ul>
 <h2 id="8-3-安装宝塔面板"><a href="#8-3-安装宝塔面板" class="headerlink" title="8.3 安装宝塔面板"></a>8.3 安装宝塔面板</h2><p>为了简化操作，我没有使用服务器命令，而是选用了可以可视化操作的宝塔面板</p>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiongqiangwin1314/article/details/76451506">借鉴文章</a></p>
-<ul>
-<li>购买阿里云ECS服务器，创建实例，创建的时候设置用户名和密码，将来用于登录服务器</li>
-</ul>
-<p><img src="https://s1.ax1x.com/2020/04/23/Jw5Gef.png" alt="Jw5Gef.png"></p>
-<ul>
-<li>下载 Putty或是Xshell软件，这里使用了Putty，用于远程连接 。第一次连接的主机会询问是否保存主机的密钥在本地，点击是</li>
-</ul>
-<p><a target="_blank" rel="noopener" href="https://imgchr.com/i/JwI5CQ"><img src="https://s1.ax1x.com/2020/04/23/JwI5CQ.png" alt="JwI5CQ.png"></a></p>
-<p><img src="https://s1.ax1x.com/2020/04/23/JwoQqP.png" alt="JwoQqP.png"></p>
-<ul>
-<li>注意：putty在连接服务器时，如果不执行任何操作，隔一段时间，就会与服务器断开。采用如下方式解决</li>
-</ul>
-<p><img src="https://s1.ax1x.com/2020/04/24/J0Fipd.png" alt="J0Fipd.png"></p>
-<ul>
-<li><p>在云服务器中安装环境，详情见<a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/50775.html?spm=5176.11065259.1996646101.searchclickresult.73aa4729mcloGI">阿里云文档</a>.文档推荐了两种方式，其中一种提到<strong>软连接</strong>，其实就是类似于window中的配置环境变量。</p>
-</li>
-<li><p>使用Xftp，向服务器传输文件。与putty连接相同。输入公网IP，账号密码即可。之后选择保存主机密钥</p>
-</li>
-</ul>
-<p><img src="https://s1.ax1x.com/2020/04/23/JwLRQe.png" alt="JwLRQe.png"></p>
-<p><img src="https://s1.ax1x.com/2020/04/23/JwOh1U.png" alt="JwOh1U.png"></p>
-<p>之后，进入的显示是root目录，返回上一级，把写好的nodejs的文件传到home文件夹中</p>
-<p><img src="https://s1.ax1x.com/2020/04/23/J0pTx0.png" alt="J0pTx0.png"></p>
-<ul>
-<li><p>任意目录下安装pm2启动Node服务（pm2能保证Node服务永远在线，而不会因为关闭ssh客户端之后Node服务就停止了）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g pm2</span><br></pre></td></tr></table></figure>
-<p>安装完成后</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pm2 start index.js --name uop</span><br></pre></td></tr></table></figure>
-
-
-
-
-</li>
-</ul>
 <h1 id="9-相关技术概念补充"><a href="#9-相关技术概念补充" class="headerlink" title="9. 相关技术概念补充"></a>9. 相关技术概念补充</h1><ul>
 <li><p><strong>XHR</strong>（XMLHttpRequest）=&gt;是一个浏览器接口，使得Javascript可以进行http/https通信,<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2012/09/xmlhttprequest_level_2.html">详细介绍</a></p>
 </li>
