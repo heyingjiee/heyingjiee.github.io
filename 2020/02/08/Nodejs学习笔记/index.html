@@ -1283,7 +1283,7 @@ app.post(&quot;/post&quot;,function(request,response)&#123;
 <p><strong>Access-Control-Max-Age</strong></p>
 <p>该字段可选，用来指定本次预检请求的有效期，单位为秒。上面结果中，有效期是20天（1728000秒），即允许缓存该条回应1728000秒（即20天），在此期间，不用发出另一条预检请求。</p>
 <h4 id="预检回应"><a href="#预检回应" class="headerlink" title="预检回应"></a>预检回应</h4><p><strong>服务器</strong>收到”预检”请求以后，检查了<code>Origin</code>、<code>Access-Control-Request-Method</code>和<code>Access-Control-Request-Headers</code>字段以后，如果这几个字段内容满足服务端的设置，以及确认允许跨源请求（即满足服务端Access-Control-Allow-Origin的设置），就可以做出回应。</p>
-<h1 id="8-部署vue-nodejs"><a href="#8-部署vue-nodejs" class="headerlink" title="8.部署vue+nodejs"></a>8.部署vue+nodejs</h1><h2 id="8-1-开始准备"><a href="#8-1-开始准备" class="headerlink" title="8.1 开始准备"></a>8.1 开始准备</h2><ul>
+<h2 id="7-3-文件上传（待补充）"><a href="#7-3-文件上传（待补充）" class="headerlink" title="7.3 文件上传（待补充）"></a>7.3 文件上传（待补充）</h2><h2 id="7-4-cookie（待补充）"><a href="#7-4-cookie（待补充）" class="headerlink" title="7.4 cookie（待补充）"></a>7.4 cookie（待补充）</h2><h1 id="8-部署vue-nodejs"><a href="#8-部署vue-nodejs" class="headerlink" title="8.部署vue+nodejs"></a>8.部署vue+nodejs</h1><h2 id="8-1-开始准备"><a href="#8-1-开始准备" class="headerlink" title="8.1 开始准备"></a>8.1 开始准备</h2><ul>
 <li><p>通过node创建服务器</p>
 <ul>
 <li><p>使用Express创建服务端，将Vue项目build生成的dist文件夹，托管为Express的静态资源</p>
@@ -1328,7 +1328,7 @@ app.post(&quot;/post&quot;,function(request,response)&#123;
 <p>注意几个功能：</p>
 <ul>
 <li><p>安全组。用于开放接口，必须开放端口才能通过<code>网址/IP：端口号</code>被外部访问到。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">常用接口</span><br><span class="line">HTTP 80</span><br><span class="line">HTTPS 443</span><br><span class="line">FTP 20&#x2F;21</span><br><span class="line"></span><br><span class="line">宝塔面板 8888</span><br><span class="line">phpMyAdmin 888</span><br><span class="line"></span><br><span class="line">MySql  3306 </span><br><span class="line">SQL Server 1433</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">常用接口</span><br><span class="line">HTTP 80</span><br><span class="line">HTTPS 443</span><br><span class="line">FTP 20&#x2F;21</span><br><span class="line"></span><br><span class="line">宝塔面板 8888</span><br><span class="line">phpMyAdmin 888</span><br><span class="line"></span><br><span class="line">MySql  3306 </span><br><span class="line">SQL Server 1433</span><br><span class="line">Redis 6379</span><br></pre></td></tr></table></figure></li>
 <li><p>远程连接</p>
 </li>
 </ul>
