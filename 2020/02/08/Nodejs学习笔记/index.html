@@ -1235,9 +1235,9 @@ app.post(&quot;/post&quot;,function(request,response)&#123;
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//router.js新增以下代码</span></span><br><span class="line"><span class="comment">//添加路由中间件自己写的token.js  ,use()会使得以下所有请求都会先进来这个函数,在获取以下请求前验证token是否合法</span></span><br><span class="line"><span class="keyword">var</span> token=<span class="built_in">require</span>(<span class="string">&quot;./token&quot;</span>)</span><br><span class="line">router.use(token)</span><br></pre></td></tr></table></figure>
 <p>使用Postman测试接口,结果如下</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;err_code&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;message&quot;</span>: <span class="string">&quot;登录成功&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;data&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;manager_id&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">&quot;manager_email&quot;</span>: <span class="string">&quot;admin@qq.com&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;manager_name&quot;</span>: <span class="string">&quot;he&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;manager_password&quot;</span>: <span class="string">&quot;123456&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;token&quot;</span>: <span class="string">&quot;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOjEsImV4cCI6MTU4NjYwMjQwMjE1MH0.3C_jq7o98gykWl8MUyDFOeuu9WAYgUqK3qvQbsHpVwI&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;affectedRows&quot;</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="7-2-解决跨域访问（CORS）"><a href="#7-2-解决跨域访问（CORS）" class="headerlink" title="7.2 解决跨域访问（CORS）"></a>7.2 解决跨域访问（CORS）</h2><p>在app.js中添加。因为在服务端设置，对每一个请求均有效果</p>
+<h2 id="7-2-解决跨域访问"><a href="#7-2-解决跨域访问" class="headerlink" title="7.2 解决跨域访问"></a>7.2 解决跨域访问</h2><p>在app.js中添加。因为在服务端设置，对每一个请求均有效果</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//设置允许跨域访问该服务.</span></span><br><span class="line">app.all(<span class="string">&#x27;*&#x27;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">	<span class="comment">//指定服务器允许发起访问的域，比如127.0.0.1:8080</span></span><br><span class="line">    res.header(<span class="string">&#x27;Access-Control-Allow-Origin&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span><br><span class="line">    <span class="comment">//该字段是一个逗号分隔的字符串，指定服务器允许浏览器CORS请求会额外发送的头信息字段 </span></span><br><span class="line">    res.header(<span class="string">&#x27;Access-Control-Allow-Headers&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span><br><span class="line">   	<span class="comment">//服务器接收的请求类型，比如post,delete,put等等方式</span></span><br><span class="line">    res.header(<span class="string">&#x27;Access-Control-Allow-Methods&#x27;</span>, <span class="string">&#x27;*&#x27;</span>);</span><br><span class="line">    <span class="comment">//服务器返回的内容类型</span></span><br><span class="line">    res.header(<span class="string">&#x27;Content-Type&#x27;</span>, <span class="string">&#x27;application/json;charset=utf-8&#x27;</span>);</span><br><span class="line">    next();</span><br><span class="line"></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<h3 id="跨域资源共享"><a href="#跨域资源共享" class="headerlink" title="跨域资源共享"></a>跨域资源共享</h3><p>【整理自<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/04/cors.html%E3%80%91">http://www.ruanyifeng.com/blog/2016/04/cors.html】</a></p>
+<h3 id="跨域资源共享（CORS）"><a href="#跨域资源共享（CORS）" class="headerlink" title="跨域资源共享（CORS）"></a>跨域资源共享（CORS）</h3><p>【整理自<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/04/cors.html%E3%80%91">http://www.ruanyifeng.com/blog/2016/04/cors.html】</a></p>
 <blockquote>
 <p>CORS是一个W3C标准，全称是”跨域资源共享”（Cross-origin resource sharing）。它允许浏览器向跨源服务器，发出<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2012/09/xmlhttprequest_level_2.html"><code>XMLHttpRequest</code></a>请求，从而克服了AJAX只能<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/04/same-origin-policy.html">同源</a>使用的限制</p>
 <p>CORS需要浏览器和服务器同时支持。目前，所有浏览器都支持该功能,且整个CORS通信过程，都是浏览器自动完成，浏览器一旦发现AJAX请求跨源，就会自动添加一些附加的头信息，有时还会多出一次附加的请求【下面讲的复杂请求】，但用户不会有感觉。因此，实现CORS通信的关键是服务器。只要服务器实现了CORS接口，就可以跨源通信。</p>
@@ -1283,7 +1283,71 @@ app.post(&quot;/post&quot;,function(request,response)&#123;
 <p><strong>Access-Control-Max-Age</strong></p>
 <p>该字段可选，用来指定本次预检请求的有效期，单位为秒。上面结果中，有效期是20天（1728000秒），即允许缓存该条回应1728000秒（即20天），在此期间，不用发出另一条预检请求。</p>
 <h4 id="预检回应"><a href="#预检回应" class="headerlink" title="预检回应"></a>预检回应</h4><p><strong>服务器</strong>收到”预检”请求以后，检查了<code>Origin</code>、<code>Access-Control-Request-Method</code>和<code>Access-Control-Request-Headers</code>字段以后，如果这几个字段内容满足服务端的设置，以及确认允许跨源请求（即满足服务端Access-Control-Allow-Origin的设置），就可以做出回应。</p>
-<h2 id="7-3-文件上传（待补充）"><a href="#7-3-文件上传（待补充）" class="headerlink" title="7.3 文件上传（待补充）"></a>7.3 文件上传（待补充）</h2><h2 id="7-4-cookie（待补充）"><a href="#7-4-cookie（待补充）" class="headerlink" title="7.4 cookie（待补充）"></a>7.4 cookie（待补充）</h2><h1 id="8-部署vue-nodejs"><a href="#8-部署vue-nodejs" class="headerlink" title="8.部署vue+nodejs"></a>8.部署vue+nodejs</h1><h2 id="8-1-开始准备"><a href="#8-1-开始准备" class="headerlink" title="8.1 开始准备"></a>8.1 开始准备</h2><ul>
+<h2 id="7-3-文件上传（待补充）"><a href="#7-3-文件上传（待补充）" class="headerlink" title="7.3 文件上传（待补充）"></a>7.3 文件上传（待补充）</h2><h3 id="图片上传"><a href="#图片上传" class="headerlink" title="图片上传"></a>图片上传</h3><ol>
+<li>安装multer模块</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install multer</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>引用模块<br>它是依赖于express的一个模块</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//引用express并配置</span></span><br><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">&quot;express&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> app = express();</span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> multer = <span class="built_in">require</span>(<span class="string">&#x27;multer&#x27;</span>);</span><br><span class="line"><span class="comment">/*var upload = multer(&#123;</span></span><br><span class="line"><span class="comment">	//如果用这种方法上传，要手动添加文明名后缀</span></span><br><span class="line"><span class="comment">        //如果用下面配置的代码，则可以省略这一句</span></span><br><span class="line"><span class="comment">	dest: &#x27;uploads/&#x27;</span></span><br><span class="line"><span class="comment">&#125;)*/</span></span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>配置<br>设置保存文件的地方，并根据上传的文件名对应文件添加后缀<br>可以通过<code>filename</code>属性定制文件保存的格式</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>属性值</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>destination</code></td>
+<td>设置资源的保存路径。注意，如果没有这个配置项，默认会保存在<code>/tmp/uploads</code>下。此外，路径需要自己创建</td>
+</tr>
+<tr>
+<td><code>filename</code></td>
+<td>设置资源保存在本地的文件名</td>
+</tr>
+</tbody></table>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> storage = multer.diskStorage(&#123;</span><br><span class="line">	<span class="comment">//设置上传后文件路径，uploads文件夹会自动创建。</span></span><br><span class="line">	destination: <span class="function"><span class="keyword">function</span>(<span class="params">req, file, cb</span>) </span>&#123;</span><br><span class="line">		cb(<span class="literal">null</span>, <span class="string">&#x27;./uploads&#x27;</span>)</span><br><span class="line">	&#125;,</span><br><span class="line">	<span class="comment">//给上传文件重命名，获取添加后缀名</span></span><br><span class="line">	filename: <span class="function"><span class="keyword">function</span>(<span class="params">req, file, cb</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">var</span> fileFormat = (file.originalname).split(<span class="string">&quot;.&quot;</span>);</span><br><span class="line">		<span class="comment">//给图片加上时间戳格式防止重名名</span></span><br><span class="line">		<span class="comment">//比如把 abc.jpg图片切割为数组[abc,jpg],然后用数组长度-1来获取后缀名</span></span><br><span class="line">		cb(<span class="literal">null</span>, file.fieldname + <span class="string">&#x27;-&#x27;</span> + <span class="built_in">Date</span>.now() + <span class="string">&quot;.&quot;</span> + fileFormat[fileFormat.length - <span class="number">1</span>]);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">var</span> upload = multer(&#123;</span><br><span class="line">	storage: storage</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>接受文件<br><code>upload.single(&#39;xxx&#39;)</code>，xxx与表单中的name属性的值对应<br>这里虽然用到post请求，但实际上不需要<code>bodyParser</code>模块处理</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">app.post(<span class="string">&#x27;/upload-single&#x27;</span>, upload.single(<span class="string">&#x27;logo&#x27;</span>), <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(req.file)</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">&#x27;文件类型：%s&#x27;</span>, req.file.mimetype);</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">&#x27;原始文件名：%s&#x27;</span>, req.file.originalname);</span><br><span class="line">	<span class="built_in">console</span>.log((req.file.originalname).split(<span class="string">&quot;.&quot;</span>))</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">&#x27;文件大小：%s&#x27;</span>, req.file.size);</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">&#x27;文件保存路径：%s&#x27;</span>, req.file.path);</span><br><span class="line">	res.send(&#123;</span><br><span class="line">		ret_code: <span class="string">&#x27;0&#x27;</span></span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>多图上传<br>多图上传只要更改一下地方，前端往file输入框加多一个<code>multiple=&quot;multiple&quot;</code>属性值，此时就可以在选图的时候多选了，当然也可以并列多个file输入框(不推荐多个上传图片输入框)，这样体验会不好</li>
+</ol>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;file&quot;</span> <span class="attr">name</span>=<span class="string">&quot;logo&quot;</span> <span class="attr">multiple</span>=<span class="string">&quot;multiple&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>后端也需要相应的改变</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">app.post(<span class="string">&#x27;/upload-single&#x27;</span>, upload.single(<span class="string">&#x27;logo&#x27;</span>), <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line"><span class="comment">//upload.single(&#x27;logo&#x27;)变为upload.array(&#x27;logo&#x27;, 2)，数字代表可以接受多少张图片</span></span><br><span class="line">app.post(<span class="string">&#x27;/upload-single&#x27;</span>, upload.array(<span class="string">&#x27;logo&#x27;</span>, <span class="number">2</span>), <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;</span><br></pre></td></tr></table></figure>
+<p>如果不想有图片数量上传限制，我们可以用<code>upload.any()</code>方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">app.post(<span class="string">&#x27;/upload-single&#x27;</span>, upload.any(), <span class="function"><span class="keyword">function</span>(<span class="params">req, res, next</span>) </span>&#123;	</span><br><span class="line">	res.append(<span class="string">&quot;Access-Control-Allow-Origin&quot;</span>,<span class="string">&quot;*&quot;</span>);</span><br><span class="line">	res.send(&#123;</span><br><span class="line">		wscats_code: <span class="string">&#x27;0&#x27;</span></span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>前端部分</li>
+</ol>
+<ul>
+<li>formData表单提交</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;http://localhost:3000/upload-single&quot;</span> <span class="attr">method</span>=<span class="string">&quot;post&quot;</span> <span class="attr">enctype</span>=<span class="string">&quot;multipart/form-data&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">h2</span>&gt;</span>单图上传<span class="tag">&lt;/<span class="name">h2</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;file&quot;</span> <span class="attr">name</span>=<span class="string">&quot;logo&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;提交&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>formData表单+ajax提交</li>
+</ul>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;form id=<span class="string">&quot;uploadForm&quot;</span>&gt;</span><br><span class="line">	&lt;p&gt;指定文件名： &lt;input type=<span class="string">&quot;text&quot;</span> name=<span class="string">&quot;filename&quot;</span> value=<span class="string">&quot;&quot;</span> /&gt;&lt;/p&gt;</span><br><span class="line">	&lt;p&gt;上传文件： &lt;input type=<span class="string">&quot;file&quot;</span> name=<span class="string">&quot;logo&quot;</span> /&gt;&lt;/ p&gt;</span><br><span class="line">	&lt;input type=<span class="string">&quot;button&quot;</span> value=<span class="string">&quot;上传&quot;</span> onclick=<span class="string">&quot;doUpload()&quot;</span> /&gt;</span><br><span class="line">&lt;/form&gt;</span><br></pre></td></tr></table></figure>
+<p><code>FormData</code>对象，是可以使用一系列的键值对来模拟一个完整的表单，然后使用<code>XMLHttpRequest</code>发送这个”表单”</p>
+<p><strong>注意点</strong></p>
+<ul>
+<li>processData设置为false。因为data值是FormData对象，不需要对数据做处理。</li>
+<li><code>&lt;form&gt;</code>标签添加<code>enctype=&quot;multipart/form-data&quot;</code>属性。</li>
+<li>cache设置为false，上传文件不需要缓存。</li>
+<li>contentType设置为false。因为是由<code>&lt;form&gt;</code>表单构造的FormData对象，且已经声明了属性<code>enctype=&quot;multipart/form-data&quot;</code>，所以这里设置为false</li>
+</ul>
+<p>上传后，服务器端代码需要使用从查询参数名为logo获取文件输入流对象，因为<code>&lt;input&gt;</code>中声明的是<code>name=&quot;logo&quot;</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doUpload</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	$.ajax(&#123;</span><br><span class="line">		url: <span class="string">&#x27;http://localhost:3000/upload-single&#x27;</span>,</span><br><span class="line">		type: <span class="string">&#x27;POST&#x27;</span>,</span><br><span class="line">		cache: <span class="literal">false</span>, <span class="comment">//不必须</span></span><br><span class="line">		data: <span class="keyword">new</span> FormData($(<span class="string">&#x27;#uploadForm&#x27;</span>)[<span class="number">0</span>]),</span><br><span class="line">		processData: <span class="literal">false</span>,<span class="comment">//必须</span></span><br><span class="line">		contentType: <span class="literal">false</span>,<span class="comment">//必须</span></span><br><span class="line">		success: <span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">			<span class="built_in">console</span>.log(data)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-4-cookie（待补充）"><a href="#7-4-cookie（待补充）" class="headerlink" title="7.4 cookie（待补充）"></a>7.4 cookie（待补充）</h2><h1 id="8-部署vue-nodejs"><a href="#8-部署vue-nodejs" class="headerlink" title="8.部署vue+nodejs"></a>8.部署vue+nodejs</h1><h2 id="8-1-开始准备"><a href="#8-1-开始准备" class="headerlink" title="8.1 开始准备"></a>8.1 开始准备</h2><ul>
 <li><p>通过node创建服务器</p>
 <ul>
 <li><p>使用Express创建服务端，将Vue项目build生成的dist文件夹，托管为Express的静态资源</p>
@@ -1522,6 +1586,13 @@ image/png：png图片格式</code></pre>
                 <span class="category-list-number">(1)</span>
               </a>
             
+           
+            
+              <a class="category-list-item" href="/categories/前端技术">
+                <span class="category-list-link">前端技术</span>
+                <span class="category-list-number">(2)</span>
+              </a>
+            
           
         
       </div>
@@ -1534,7 +1605,7 @@ image/png：png图片格式</code></pre>
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSV/" rel="tag">CSV</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">MySql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSV/" rel="tag">CSV</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">MySql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/js/" rel="tag">js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
     </div>
   </div>
 
@@ -1555,15 +1626,15 @@ image/png：png图片格式</code></pre>
           </li>
         
           <li>
+            <a href="/2020/06/08/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">JS学习笔记</a>
+          </li>
+        
+          <li>
             <a href="/2020/05/10/%E8%A6%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9F%A5%E8%AF%86/">要学习的知识</a>
           </li>
         
           <li>
             <a href="/2020/04/15/Linux%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Linux基础-学习笔记</a>
-          </li>
-        
-          <li>
-            <a href="/2020/02/08/Nodejs%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Node.js学习笔记</a>
           </li>
         
       </ul>
@@ -1575,7 +1646,7 @@ image/png：png图片格式</code></pre>
   <section class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
     </div>
   </section>
 

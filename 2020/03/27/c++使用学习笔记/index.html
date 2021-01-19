@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>
+    何叨叨的小破站
+  </title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="theme-color" content="#4184f3">
+  
+  
+  <link href="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108143023.png" rel="icon" />
+  
+
+  
+<link rel="stylesheet" href="/css/highlight.light.css">
+
+  
+<link rel="stylesheet" href="/css/prism-customize.css">
+
+  
+<link rel="stylesheet" href="/css/nav-icon.css">
+
+  
+<link rel="stylesheet" href="/css/waves.min.css">
+
+  
+<link rel="stylesheet" href="/css/jquery.tocify.css">
+
+  
+<link rel="stylesheet" href="/css/main.css">
+
+  
+<link rel="stylesheet" href="/css/nav-indicator.css">
+
+  
+<link rel="stylesheet" href="/css/twikoo.css">
+
+  
+<link rel="stylesheet" href="/css/search.css">
+
+  
+  
+
+  
+
+  </meta>
+  </meta>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  
+<script src="/js/comment.js"></script>
+
+  
+<script src="/js/copy.js"></script>
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+    <header>
+        <!-- cover image or sth. -->
+    </header>
+    <div id="main" class="m-scene">
+        
+<div class="nav-wrapper" id="header">
+
+    <div class="container">
+        <nav>
+            
+            
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    何叨叨的博客
+                </a>
+            </div>
+
+            <!-- 春节主题 按钮 -->
+<!-- <a onclick="switchThemes()" id="switchspring">
+    <img class="chunjiepic" src="https://nekodeng.gitee.io/medias/spring-img/caishen.png" title="节日模式">
+</a> -->
+<!-- 春节主题 小挂件 -->
+<div class="caishendeng">
+    <div class="caishenxian">
+        <img class="caishenpic lala" src="https://nekodeng.gitee.io/medias/spring-img/caishen.png">
+    </div>
+</div>
+
+
+<style>
+    /*春节模式 */
+    #switchspring {
+        background: #dc8f03;
+        width: 38px;
+        height: 38px;
+        display: block;
+        position: fixed;
+        border-radius: 50%;
+        right: 15px;
+        bottom: 10px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+        cursor: pointer;
+    }
+
+    .chunjiepic {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0px;
+    }
+
+    /*春节主题 挂件吊线*/
+    .caishenxianleft {
+        left: 16% !important;
+        position: absolute;
+        top: 0px;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .caishenxian {
+        position: absolute;
+        top: 0px;
+        right: 36%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .guguxian {
+        position: absolute;
+        top: 0px;
+        left: 20%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .wenzhangxian {
+        left: 50% !important;
+        z-index: 998;
+    }
+
+    /*春节主题 挂件*/
+    .fudai {
+        top: 14px !important;
+        left: -22px !important;
+    }
+
+    .caishenpic {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        position: absolute;
+        top: 12px;
+        right: -22px;
+        z-index: 9;
+        /* transform-origin: 50% -100px; */
+        animation: swing 3.5s infinite ease-in-out;
+        /* -webkit-transform-origin: 50% -100px; */
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .lala {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -4px !important;
+        top: 14px !important;
+    }
+
+    .chunp {
+        width: 216px !important;
+        height: 96px !important;
+        left: -80px !important;
+        top: 6px !important;
+    }
+
+    .fudao {
+        width: 38px;
+        height: 38px;
+        top: 18px !important;
+        left: -19px !important;
+    }
+
+    /* 点击显示或者隐藏总样式开始 */
+    /* .caishendeng,
+    .xiaomaozitx,
+    .labelmz,
+    .friendmz {
+        display: none;
+    } */
+
+    body.themespring .caishendeng,
+    body.themespring .xiaomaozitx,
+    body.themespring .labelmz,
+    body.themespring .friendmz {
+        display: block;
+    }
+
+    /* 点击显示或者隐藏总样式结束 */
+    .toupic {
+        position: relative;
+    }
+
+    .xiaomaozitx {
+        width: 60px;
+        height: 60px;
+        position: absolute;
+        top: -127px;
+        right: 25%;
+        transform: rotate(40deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-animation: mzanimate 1.2s infinite ease-in-out;
+    }
+
+    .labelmz {
+        width: 34px;
+        height: 34px;
+        position: absolute;
+        top: 7px;
+        right: -84px;
+        transform: rotate(40deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: mzanimate 1.8s infinite ease-in-out;
+    }
+
+    .weilemz {
+        position: relative;
+    }
+
+    .friendmz {
+        width: 50px !important;
+        height: 50px !important;
+        position: absolute;
+        top: 8px;
+        right: -90px;
+        transform: rotate(44deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: mzanimate 1.8s infinite ease-in-out;
+    }
+
+    .lions {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -15px !important;
+        top: 14px !important;
+    }
+
+    .fenleiss {
+        position: absolute;
+        top: -64px;
+        left: 20%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .gugus {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -15px !important;
+        top: 9px !important;
+    }
+
+    .huadengpic {
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 1 !important;
+        left: -18px !important;
+        top: 9px !important;
+    }
+
+    .shanzipic {
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 1 !important;
+        left: -18px !important;
+        top: 18px !important;
+    }
+
+    /* .denglong {
+        display: none;
+    } */
+
+    body.themespring .denglong {
+        display: block;
+    }
+
+    @media only screen and (min-width: 1124px) {
+        .nav-menu {
+            padding-right: 0px;
+        }
+
+        body.themespring .nav-menu {
+            padding-right: 96px;
+        }
+    }
+
+    @media only screen and (max-width: 760px) {
+
+        .deng-box,
+        .deng-box1 {
+            width: 40%;
+        }
+
+        body.themespring .right {
+            float: left !important;
+        }
+    }
+
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+        .right {
+            float: left !important;
+        }
+    }
+
+    .deng-box {
+        position: fixed;
+        top: -40px;
+        right: -20px;
+        z-index: 999;
+    }
+
+    .deng-box1 {
+        position: fixed;
+        top: -30px;
+        right: 10px;
+        z-index: 999;
+    }
+
+    .deng-box1 .deng {
+        position: relative;
+        width: 120px;
+        height: 90px;
+        margin: 50px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.8);
+        border-radius: 50% 50%;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 5s infinite ease-in-out;
+        box-shadow: -5px 5px 30px 4px rgba(252, 144, 61, 1);
+    }
+
+    .deng {
+        position: relative;
+        width: 120px;
+        height: 90px;
+        margin: 50px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.8);
+        border-radius: 50% 50%;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3s infinite ease-in-out;
+        box-shadow: -5px 5px 50px 4px rgba(250, 108, 0, 1);
+    }
+
+    .deng-a {
+        width: 100px;
+        height: 90px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.1);
+        margin: 12px 8px 8px 10px;
+        border-radius: 50% 50%;
+        border: 2px solid #dc8f03;
+    }
+
+    .deng-b {
+        width: 45px;
+        height: 90px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.1);
+        margin: -4px 8px 8px 26px;
+        border-radius: 50% 50%;
+        border: 2px solid #dc8f03;
+    }
+
+    .xian {
+        position: absolute;
+        top: -20px;
+        left: 60px;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+    }
+
+    .shui-a {
+        position: relative;
+        width: 5px;
+        height: 20px;
+        margin: -5px 0 0 59px;
+        -webkit-animation: swing 4s infinite ease-in-out;
+        -webkit-transform-origin: 50% -45px;
+        background: #ffa500;
+        border-radius: 0 0 5px 5px;
+    }
+
+    .shui-b {
+        position: absolute;
+        top: 14px;
+        left: -2px;
+        width: 10px;
+        height: 10px;
+        background: #dc8f03;
+        border-radius: 50%;
+    }
+
+    .shui-c {
+        position: absolute;
+        top: 18px;
+        left: -2px;
+        width: 10px;
+        height: 35px;
+        background: #ffa500;
+        border-radius: 0 0 0 5px;
+    }
+
+    .deng:before {
+        position: absolute;
+        top: -7px;
+        left: 29px;
+        height: 12px;
+        width: 60px;
+        content: " ";
+        display: block;
+        z-index: 999;
+        border-radius: 5px 5px 0 0;
+        border: solid 1px #dc8f03;
+        background: #ffa500;
+        background: linear-gradient(to right, #dc8f03, #ffa500, #dc8f03, #ffa500, #dc8f03);
+    }
+
+    .deng:after {
+        position: absolute;
+        bottom: -7px;
+        left: 10px;
+        height: 12px;
+        width: 60px;
+        content: " ";
+        display: block;
+        margin-left: 20px;
+        border-radius: 0 0 5px 5px;
+        border: solid 1px #dc8f03;
+        background: #ffa500;
+        background: linear-gradient(to right, #dc8f03, #ffa500, #dc8f03, #ffa500, #dc8f03);
+    }
+
+    .deng-t {
+        font-family: 华文行楷;
+        font-size: 26px;
+        color: #dc8f03;
+        font-weight: bold;
+        line-height: 44px;
+        text-align: center;
+    }
+
+    .night .deng-t,
+    .night .deng-box,
+    .night .deng-box1 {
+        background: transparent !important;
+    }
+
+    @-moz-keyframes swing {
+        0% {
+            -moz-transform: rotate(-10deg)
+        }
+
+        50% {
+            -moz-transform: rotate(10deg)
+        }
+
+        100% {
+            -moz-transform: rotate(-10deg)
+        }
+    }
+
+    @-webkit-keyframes swing {
+        0% {
+            -webkit-transform: rotate(-10deg)
+        }
+
+        50% {
+            -webkit-transform: rotate(10deg)
+        }
+
+        100% {
+            -webkit-transform: rotate(-10deg)
+        }
+    }
+</style>
+
+<script>
+    // 网站主题切换模式开始
+    if (localStorage.getItem('themespring') === '1') {
+        document.body.classList.add('themespring');
+    }
+    else if (matchMedia('(prefers-color-scheme: themespring)').matches) {
+        document.body.classList.add('themespring');
+    }
+
+    function switchThemes() {
+        var body = document.body;
+        if (body.classList.contains('themespring')) {
+            document.body.classList.remove('themespring');
+            localStorage.setItem('themespring', '0');
+            return;
+        } else {
+            document.body.classList.add('themespring');
+            localStorage.setItem('themespring', '1');
+            return;
+        }
+    };
+// 网站主题切换模式结束
+
+</script>
+
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/message">
+                                留言
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+
+        </nav>
+    </div>
+</div>
+
+
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+  <div class="main main-article">
+    <article>
+
+      
+            <header class="post-header">
+              
+            </header>
+
+            <h1 class="post-title">
+              
+            </h1>
+
+            <section class="post-info post-info-bottom">
+
+              <span class="post-date">发布于
+                <span class="post-date-text">
+                   2020-03-27
+                </span>
+              </span>
+
+
+
+
+              
+                  
+
+                      <!-- 阅读量统计 -->
+                      
+
+
+            </section>
+
+            <section class="post-content">
+
+              <h1 id="1-读入与输出"><a href="#1-读入与输出" class="headerlink" title="1.读入与输出"></a>1.读入与输出</h1><h2 id="1-2输入"><a href="#1-2输入" class="headerlink" title="1.2输入"></a>1.2输入</h2><h3 id="头文件-include-lt-iostream-gt"><a href="#头文件-include-lt-iostream-gt" class="headerlink" title="头文件#include&lt;iostream&gt;"></a>头文件<code>#include&lt;iostream&gt;</code></h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//读普通变量</span></span><br><span class="line"><span class="keyword">int</span> a;</span><br><span class="line"><span class="built_in">cin</span>&gt;&gt;a;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以连续读入, 输入&quot;1 2&quot;,空格会忽略</span></span><br><span class="line"><span class="keyword">int</span> a,b;</span><br><span class="line"><span class="built_in">cin</span>&gt;&gt;a&gt;&gt;b;</span><br><span class="line"></span><br><span class="line"><span class="comment">//读数组</span></span><br><span class="line"><span class="keyword">int</span> a[<span class="number">100</span>];</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)&#123;</span><br><span class="line">   <span class="built_in">cin</span>&gt;&gt;a[i]; </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//读string 不用引入#include&lt;string&gt;,string是内置类型</span></span><br><span class="line">	<span class="comment">//读取一行连续字符串</span></span><br><span class="line">	<span class="built_in">string</span> s;</span><br><span class="line">	<span class="built_in">cin</span>&gt;&gt;s;</span><br><span class="line">	<span class="built_in">cout</span>&lt;&lt;s;</span><br><span class="line">	<span class="comment">//读取一行中间带空格的字符串</span></span><br><span class="line">	<span class="built_in">string</span> s;</span><br><span class="line">	getline(<span class="built_in">cin</span>,str);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//不定数据量读入，oj判题系统会在样例结束输入EOF，自己在调试中输入&quot;ctrl+z&quot;即可。输入EOF后cin会检测到结束循环</span></span><br><span class="line"><span class="keyword">int</span> a;</span><br><span class="line"><span class="keyword">while</span>(<span class="built_in">cin</span>&gt;&gt;a)&#123;</span><br><span class="line">	</span><br><span class="line">&#125; </span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;a;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="1-3-格式化输出"><a href="#1-3-格式化输出" class="headerlink" title="1.3 格式化输出"></a>1.3 格式化输出</h2><h3 id="头文件-include-lt-iomanip-gt"><a href="#头文件-include-lt-iomanip-gt" class="headerlink" title="头文件 #include&lt;iomanip&gt;"></a>头文件 <code>#include&lt;iomanip&gt;</code></h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//输出换行</span></span><br><span class="line"><span class="keyword">int</span> a=<span class="number">1</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;a&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line"><span class="comment">//或者,dev调试有bug，输出endl会卡死，推荐这种写法</span></span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;a&lt;&lt;<span class="string">&quot;\n&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//可以连续输出</span></span><br><span class="line"><span class="keyword">int</span> a=<span class="number">1</span>,b=<span class="number">2</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;a&lt;&lt;<span class="string">&quot;和&quot;</span>&lt;&lt;b</span><br><span class="line">    </span><br><span class="line"><span class="comment">//指定输出宽度（小数点算一位长度）,数字长度不够用空格填充，数字长度比设置宽度大，则不受宽度限制</span></span><br><span class="line"><span class="keyword">float</span> a=<span class="number">1.235</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;setw(<span class="number">10</span>)&lt;&lt;a;   </span><br><span class="line"></span><br><span class="line"><span class="comment">//指定填充符号为*，必须用单引号引起来</span></span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;setfill(<span class="string">&#x27;*&#x27;</span>)&lt;&lt;setw(<span class="number">10</span>)&lt;&lt;a; </span><br><span class="line"></span><br><span class="line"><span class="comment">//除setw外，以下其他设置，如setfill,setprecision,fixed对流的影响是永久的</span></span><br><span class="line"><span class="comment">//setws是临时的，且setw只对紧跟其后的第一个变量起作用</span></span><br><span class="line"><span class="keyword">float</span> a=<span class="number">1.235</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;setfill(<span class="string">&#x27;*&#x27;</span>)&lt;&lt;setw(<span class="number">10</span>)&lt;&lt;a&lt;&lt;<span class="built_in">endl</span>; </span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;setw(<span class="number">6</span>)&lt;&lt;a; </span><br><span class="line"><span class="comment">//输出结果</span></span><br><span class="line"><span class="comment">//*****1.235</span></span><br><span class="line"><span class="comment">//*1.235</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//浮点是指定有效位数输出</span></span><br><span class="line"><span class="keyword">float</span> a=<span class="number">12.1834b</span>5</span><br><span class="line"><span class="keyword">float</span> b=<span class="number">12.8765432</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;setprecision(<span class="number">3</span>)&lt;&lt;a;<span class="comment">//参数指的是输出的有效数字位数（整数位+小数位）超出部分四舍五入，输出：12.2</span></span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;fixed&lt;&lt;setprecision(<span class="number">3</span>)&lt;&lt;b;<span class="comment">//有的时候如果数字过大，会转换为科学计数法输出，fixed保证以小数形式输出，setprecision(3)中的参数是小数点后保留的位数 ，输出：12.876</span></span><br><span class="line"><span class="comment">//注意：其实可以直接写成cout&lt;&lt;fixed&lt;&lt;b即可，因为之前的setprecision处理a时，对流的影响是永久的</span></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>注意：如果cout的格式化输出记不住，要知道cin&gt;&gt;输入的值可以printf配合占位符(比如：%d,%f,%c)等输出，除了cin读入string类型，不可以用printf(“%s”,str)输出，可以用printf(“%c”,s[i])循环输出</li>
+</ul>
+<h1 id="2-数据类型的范围"><a href="#2-数据类型的范围" class="headerlink" title="2.数据类型的范围"></a>2.数据类型的范围</h1><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>表示范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>int(默认是signed int,即有正负)</td>
+<td>-2*10^9 到2*10^9</td>
+</tr>
+<tr>
+<td>long int</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>long long</td>
+<td>-9*10^18  到  9*10^18</td>
+</tr>
+</tbody></table>
+<h1 id="3-string以及相关的处理函数"><a href="#3-string以及相关的处理函数" class="headerlink" title="3.string以及相关的处理函数"></a>3.string以及相关的处理函数</h1><h3 id="头文件-include-lt-string-gt"><a href="#头文件-include-lt-string-gt" class="headerlink" title="头文件#include&lt;string&gt;"></a>头文件<code>#include&lt;string&gt;</code></h3><ul>
+<li><p>基本运算</p>
+<p><img src="https://s1.ax1x.com/2020/03/28/Gku94H.png" alt="Gku94H.png"></p>
+<p>注意：</p>
+<ul>
+<li>s1[i]的类型是char型</li>
+<li>运算符是两个string之间的运算，如果是string s1和char a运算，可以用索引，比如s1[0]=a;</li>
+</ul>
+</li>
+<li><p>其他</p>
+<ul>
+<li>string长度</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//大小</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abc&quot;</span>;</span><br><span class="line">s.length();<span class="comment">//输出3</span></span><br><span class="line">s.size();<span class="comment">//输出3</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>插入</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//插入</span></span><br><span class="line">	<span class="comment">//尾部插入，一个字符（单引号）</span></span><br><span class="line">	s.push_back(<span class="string">&#x27;a&#x27;</span>);</span><br><span class="line">	<span class="comment">//指定位置插入一个字符串（双引号）（从0开始，比如插入位置1，原来1位置的内容后移）</span></span><br><span class="line">	<span class="built_in">string</span> s=<span class="string">&quot;aa&quot;</span>;</span><br><span class="line">	s.inser(<span class="number">0</span>,<span class="string">&quot;he&quot;</span>);<span class="comment">//heaa</span></span><br><span class="line">		<span class="comment">//提醒：所有函数的参数都可变量化，例子</span></span><br><span class="line">		<span class="built_in">string</span> s=<span class="string">&quot;aa&quot;</span>;</span><br><span class="line">		<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">		<span class="built_in">string</span> s2=<span class="string">&quot;he&quot;</span>;</span><br><span class="line">		s.insert(i,s2);<span class="comment">//输出heaa</span></span><br><span class="line">	<span class="comment">//指定位插入字符（单引号），第一个参数是位置（从0开始），第二个参数是插入字符的重复次数</span></span><br><span class="line">	<span class="built_in">string</span> s=<span class="string">&quot;aa&quot;</span>;</span><br><span class="line">	s.insert(<span class="number">0</span>,<span class="number">1</span>,<span class="string">&#x27;h&#x27;</span>);<span class="comment">//输出haa</span></span><br><span class="line">	s.insert(<span class="number">2</span>,<span class="number">3</span>,<span class="string">&#x27;h&#x27;</span>);<span class="comment">//输出hahhha</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//第一个参数，删除位置（从0开始），第二个参数从该位置开始删除多少个元素</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abcde&quot;</span>;</span><br><span class="line">s.erase(<span class="number">1</span>,<span class="number">1</span>);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s;<span class="comment">//输出acde</span></span><br><span class="line">	<span class="comment">//例子，删除指定元素a</span></span><br><span class="line">	<span class="built_in">string</span> s=<span class="string">&quot;abcde&quot;</span>;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;s.length();i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(s[i]==<span class="string">&#x27;a&#x27;</span>)&#123;</span><br><span class="line">            s.erase(i,<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="built_in">cout</span>&lt;&lt;s;<span class="comment">//输出bcde</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>替换</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在string中替换一个字符（单引号）</span></span><br><span class="line">	<span class="comment">//第一个参数：string中替换的位置（从0开始），第二个参数：string中从替换位置起的长度；</span></span><br><span class="line">	<span class="comment">//第三个参数：替换成的 字符 的个数，第四个参数：要替换成的 字符</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abcde&quot;</span>;</span><br><span class="line">s.replace(<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="string">&#x27;h&#x27;</span>);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s;<span class="comment">//输出hbcde</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//更为好用的办法</span></span><br><span class="line">	<span class="built_in">string</span> s=<span class="string">&quot;abcde&quot;</span>;</span><br><span class="line">	<span class="keyword">char</span> a=<span class="string">&#x27;h&#x27;</span>;</span><br><span class="line">	s[<span class="number">1</span>]=a;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;s;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//在string中替换一个字符串（双引号）</span></span><br><span class="line">	<span class="comment">//第一个参数：string中的位置，第二个参数：string中从替换位置起的长度；</span></span><br><span class="line">	<span class="comment">//第三个参数：替换成的 字符串</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abcde&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> s2=<span class="string">&quot;hh&quot;</span>;</span><br><span class="line">s.replace(<span class="number">0</span>,<span class="number">1</span>,s2);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s;<span class="comment">//输出hhabcde</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>查找</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//find（第一个参数为字符或字符串，第二的参数是查询起始地点）</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abcde&quot;</span>;</span><br><span class="line"><span class="keyword">int</span> k=s.find(<span class="string">&#x27;b&#x27;</span>,<span class="number">0</span>);</span><br><span class="line"><span class="keyword">int</span> m=s.find(<span class="string">&quot;de&quot;</span>,<span class="number">0</span>);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;k&lt;&lt;<span class="built_in">endl</span>&lt;&lt;m;</span><br><span class="line"><span class="comment">//输出:</span></span><br><span class="line"><span class="comment">//1</span></span><br><span class="line"><span class="comment">//3</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>大小写转换 tolower,toupper</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//不能直接改变string，需要赋值回去才行</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;ABCD&quot;</span>;</span><br><span class="line">s[<span class="number">0</span>]=<span class="built_in">tolower</span>(s[<span class="number">0</span>]);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s[<span class="number">0</span>];<span class="comment">//输出a</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>仅能对c类型的字符串进行分割，引入<code>#include &lt;cstring&gt;</code></li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//strtok(要分割的字符串，分隔标识符)，函数只分割遇到的第一个标识符，返回分隔的第一段字符串。</span></span><br><span class="line"><span class="comment">//strtok第一个参数为null时，会自动继承上一次分隔的位置，继续分割，然后返回分隔的第一段</span></span><br><span class="line"><span class="keyword">char</span> s[] = <span class="string">&quot;192.168.0.26&quot;</span>;  </span><br><span class="line"><span class="keyword">char</span> *delim = <span class="string">&quot;.&quot;</span>;  </span><br><span class="line"><span class="keyword">char</span> *p;  </span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%s &quot;</span>, strtok(s, delim));  </span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>((p = strtok(<span class="literal">NULL</span>, delim)))    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%s &quot;</span>, p);   </span><br><span class="line"></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//当分割的是空格时，更推荐使用以下方法读入</span></span><br><span class="line"><span class="keyword">char</span> a[<span class="number">100</span>];</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)&#123;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%s&quot;</span>,&amp;a[i]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//输入 a b c,%s忽略读入的第一个空格，读入数据后，如果遇到空格就终止，所以就把空格忽略掉了</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>截取,注意substr不能对原来的字符串造成改变</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abcdef&quot;</span>;</span><br><span class="line"><span class="comment">//截取string中从下标1到2的部分</span></span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s.substr(<span class="number">1</span>,<span class="number">2</span>);<span class="comment">//输出bc</span></span><br><span class="line"></span><br><span class="line"><span class="comment">///////////////////////////////</span></span><br><span class="line"><span class="built_in">string</span> s=<span class="string">&quot;abcdef&quot;</span>;</span><br><span class="line"><span class="comment">//截取string中从下标1到2的部分</span></span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s.substr(<span class="number">3</span>);<span class="comment">//输出def</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<h1 id="4-类型转换"><a href="#4-类型转换" class="headerlink" title="4.类型转换"></a>4.类型转换</h1><blockquote>
+<p>c++11中有很多的新特性有利于我们解决字符串问题，但是dev c++,需要配置下才可以支持c++11.</p>
+<p>在⼯具-编译选项-编译器-编译时加⼊这个命令 <code>-std=c++11</code></p>
+</blockquote>
+<h3 id="头文件-include-lt-string-gt-1"><a href="#头文件-include-lt-string-gt-1" class="headerlink" title="头文件#include&lt;string&gt;"></a>头文件<code>#include&lt;string&gt;</code></h3><ul>
+<li>to_string() ,可以把int，float，double类型的数字转化为字符串并作为返回值返回，不改变原本类型</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a=<span class="number">1</span>;</span><br><span class="line"><span class="built_in">string</span> s=to_string(a);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;s;<span class="comment">//输出1</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>stoi 和stod，把string转为int或是double并作为返回值返回,不改变原类型</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">string s&#x3D;&quot;123&quot;</span><br><span class="line">cout&lt;&lt;stoi(s);&#x2F;&#x2F;输出123</span><br><span class="line"></span><br><span class="line">string s2&#x3D;&quot;1.23&quot;</span><br><span class="line">cout&lt;&lt;stod(s2)&#x2F;&#x2F;输出1.23</span><br></pre></td></tr></table></figure>
+<ul>
+<li>以图理一下关系</li>
+</ul>
+<p><img src="https://s1.ax1x.com/2020/03/28/GECH5q.png" alt="GECH5q.png"></p>
+<h1 id="5-STL"><a href="#5-STL" class="headerlink" title="5.STL"></a>5.STL</h1><p>vector,set,map,stack,queue 这些在c++中都称之为<strong>容器</strong>，都可以通过<code>.size()</code>获取长度，通过迭代器遍历<code>for(auto it = c.begin(); it != c.end(); it++)</code>，<code>*it</code>是容器元素</p>
+<h2 id="5-1-vector"><a href="#5-1-vector" class="headerlink" title="5.1 vector"></a>5.1 vector</h2><p>对读不定长度的字符，我们有string。对于其他输入不定个数的数据我们可以用vector</p>
+<h3 id="头文件-include-lt-vector-gt"><a href="#头文件-include-lt-vector-gt" class="headerlink" title="头文件 #include&lt;vector&gt;"></a>头文件 <code>#include&lt;vector&gt;</code></h3><ul>
+<li>定义，初始化</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.定义⻓度为10的int数组，自动初始化10个元素值都为0</span></span><br><span class="line"><span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">v</span><span class="params">(<span class="number">10</span>)</span></span>; </span><br><span class="line"><span class="comment">//2.或者不指定长度</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v1;</span><br><span class="line"><span class="comment">//然后将⻓度resize设置大小为8，自动初始化8个元素都是0</span></span><br><span class="line">v1.resize(<span class="number">8</span>); </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//3.在定义的时候就可以对vector变量进⾏初始化</span></span><br><span class="line"><span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">v3</span><span class="params">(<span class="number">100</span>, <span class="number">9</span>)</span></span>;<span class="comment">// 把100⻓度的数组中所有的值都初始化为9</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法<ul>
+<li>.size()</li>
+<li>push_back</li>
+<li>通过下标访问，遍历,赋值数据</li>
+<li>通过迭代器访问</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="comment">//1.vector可以通过下标，插入值为什么还要用push_back呢，因为当不指定vector长度时，size是0，没法插入值</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; b;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">cin</span>&gt;&gt;a)&#123;<span class="comment">//ctrl+z输入EOF结束符停止</span></span><br><span class="line">        b.push_back(a);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//2.vector有长度后，可以用下标访问和赋值</span></span><br><span class="line">	<span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">c</span><span class="params">(<span class="number">15</span>)</span></span>; </span><br><span class="line">    c[<span class="number">0</span>]=<span class="number">500</span>;<span class="comment">//把vector中第一个位置赋值为500</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; b.size(); i++) &#123;</span><br><span class="line">       b[i] = <span class="number">15</span>;<span class="comment">//使用下标遍历vector</span></span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//3.使⽤迭代器的⽅式访问vector，迭代器c.end()返回的是最后一个元素的下一个</span></span><br><span class="line">  	<span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">c</span><span class="params">(<span class="number">20</span>, <span class="number">2</span>)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> it = c.begin(); it != c.end(); it++) &#123; </span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; *it &lt;&lt; <span class="string">&quot; &quot;</span>;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="5-2-set"><a href="#5-2-set" class="headerlink" title="5.2 set"></a>5.2 set</h2><p>set是集合，set中的元素都不同，⽽且set会按照元素进⾏从⼩到⼤排序.</p>
+<p>所以有自动去重和排序的作用</p>
+<h3 id="头文件include-lt-set-gt"><a href="#头文件include-lt-set-gt" class="headerlink" title="头文件include &lt;set&gt;"></a>头文件<code>include &lt;set&gt;</code></h3><ul>
+<li>size长度</li>
+<li>insert</li>
+<li>特别注意，set不可用下标查询。遍历只可以用迭代器</li>
+<li>find只可查询数据是否在set集合中</li>
+<li>erase</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;set&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="built_in">set</span>&lt;<span class="keyword">int</span>&gt; s;</span><br><span class="line">    <span class="built_in">cin</span>&gt;&gt;i;</span><br><span class="line">    s.insert(i);<span class="comment">//插入数据</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ⽤迭代器遍历集合s</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> it = s.begin(); it != s.end(); it++) &#123; </span><br><span class="line"> 		<span class="built_in">cout</span> &lt;&lt; *it &lt;&lt; <span class="string">&quot; &quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt;  (s.find(<span class="number">2</span>) != s.end()) ;<span class="comment">//find找到了就输出1，如果没找到就和s.end()相等了.返回0</span></span><br><span class="line">    </span><br><span class="line">    s.erase(<span class="number">1</span>);<span class="comment">//删除1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-3-map"><a href="#5-3-map" class="headerlink" title="5.3 map"></a>5.3 map</h2><p>map是键值对，会⾃动将所有的键值对按照键从⼩到⼤排序，</p>
+<h3 id="头文件-include-lt-map-gt"><a href="#头文件-include-lt-map-gt" class="headerlink" title="头文件#include&lt;map&gt;"></a>头文件<code>#include&lt;map&gt;</code></h3><ul>
+<li>size()</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; m; <span class="comment">// 定义⼀个空的map m，键是string类型的，值是int类型的</span></span><br><span class="line">    </span><br><span class="line"> 	m[<span class="string">&quot;hello&quot;</span>] = <span class="number">2</span>; <span class="comment">// 将key为&quot;hello&quot;, value为2的键值对(key-value)存⼊map中</span></span><br><span class="line">    <span class="comment">//如果key不存在，则返回0</span></span><br><span class="line"> 	<span class="built_in">cout</span> &lt;&lt; m[<span class="string">&quot;hello&quot;</span>] &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 访问map中key为&quot;hello&quot;的value, </span></span><br><span class="line">	m[<span class="string">&quot;world&quot;</span>] = <span class="number">3</span>; <span class="comment">// 将&quot;world&quot;键对应的值修改为3</span></span><br><span class="line"></span><br><span class="line">     <span class="comment">// ⽤迭代器遍历，输出map中所有的元素，键⽤it-&gt;first获取，值⽤it-&gt;second获取</span></span><br><span class="line">     <span class="keyword">for</span> (<span class="keyword">auto</span> it = m.begin(); it != m.end(); it++) &#123;</span><br><span class="line">     	<span class="built_in">cout</span> &lt;&lt; it-&gt;first &lt;&lt; <span class="string">&quot; &quot;</span> &lt;&lt; it-&gt;second &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// 访问map的第⼀个元素begin()，输出它的键和值</span></span><br><span class="line">     <span class="built_in">cout</span> &lt;&lt; m.begin()-&gt;first &lt;&lt; <span class="string">&quot; &quot;</span> &lt;&lt; m.begin()-&gt;second &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">     <span class="comment">// 访问map的最后⼀个元素rbegin()，输出它的键和值</span></span><br><span class="line">     <span class="built_in">cout</span> &lt;&lt; m.rbegin()-&gt;first &lt;&lt; <span class="string">&quot; &quot;</span> &lt;&lt; m.rbegin()-&gt;second &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">     <span class="comment">// 输出map的元素个数</span></span><br><span class="line"> 	 <span class="built_in">cout</span> &lt;&lt; m.size() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"> 	 <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-4-stack"><a href="#5-4-stack" class="headerlink" title="5.4 stack"></a>5.4 stack</h2><h3 id="头文件-include-lt-stack-gt"><a href="#头文件-include-lt-stack-gt" class="headerlink" title="头文件#include&lt;stack&gt;"></a>头文件<code>#include&lt;stack&gt;</code></h3><ul>
+<li>size</li>
+<li>push()入栈</li>
+<li>pop删除栈顶元素</li>
+<li>top取栈顶</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stack&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"> 	<span class="built_in">stack</span>&lt;<span class="keyword">int</span>&gt; s; <span class="comment">// 定义⼀个空栈s</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">    s.push(i); <span class="comment">// 将元素i压⼊栈s中</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; s.top() &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 访问s的栈顶元素</span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; s.size() &lt;&lt; <span class="built_in">endl</span>; <span class="comment">// 输出s的元素个数</span></span><br><span class="line">    s.pop(); <span class="comment">// 移除栈顶元素</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+<h1 id="6-其他头文件，常用内容"><a href="#6-其他头文件，常用内容" class="headerlink" title="6.其他头文件，常用内容"></a>6.其他头文件，常用内容</h1><h3 id="include-lt-cmath-gt"><a href="#include-lt-cmath-gt" class="headerlink" title="#include&lt;cmath&gt;"></a><code>#include&lt;cmath&gt;</code></h3><ul>
+<li>sqrt开方</li>
+<li>pow(底数，指数)</li>
+<li>求Π</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iomanip&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;fixed&lt;&lt;setprecision(<span class="number">40</span>)&lt;&lt;<span class="built_in">acos</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="include-lt-cctype-gt"><a href="#include-lt-cctype-gt" class="headerlink" title="#include&lt;cctype&gt;"></a><code>#include&lt;cctype&gt;</code></h3><h3 id="include-lt-typeinfo-gt"><a href="#include-lt-typeinfo-gt" class="headerlink" title="#include&lt;typeinfo&gt;"></a><code>#include&lt;typeinfo&gt;</code></h3><ul>
+<li><p>获取文件类型：typeid(变量名).name()</p>
+<p>返回值：i是int型； c是char型 ；Ss是string型</p>
+</li>
+</ul>
+<h3 id="include-lt-algorithm-gt"><a href="#include-lt-algorithm-gt" class="headerlink" title="#include&lt;algorithm&gt;"></a><code>#include&lt;algorithm&gt;</code></h3><ul>
+<li>sort()  :对⼀个数组进⾏排序，默认从小到大（int arr[]数组或者vector数组都⾏），vector是容器，要⽤v.begin()和v.end()表示头尾；⽽int arr[]⽤arr表示数组的⾸地址，arr+n表示尾部</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//</span></span><br><span class="line">sort(v.begin(), v.end());</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cmp</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123; <span class="comment">// cmp函数返回的值是bool类型</span></span><br><span class="line"> 	<span class="keyword">return</span> a &gt; b; <span class="comment">// 从⼤到⼩排列</span></span><br><span class="line">&#125;</span><br><span class="line">sort(arr, arr + <span class="number">10</span>, cmp);</span><br></pre></td></tr></table></figure>
+<p>结构体例子</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stu</span> &#123;</span> <span class="comment">// 定义⼀个结构体stu，number表示学号，score表示分数</span></span><br><span class="line"> <span class="keyword">int</span> number;</span><br><span class="line"> <span class="keyword">int</span> score;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cmp</span><span class="params">(stu a, stu b)</span> </span>&#123; <span class="comment">// cmp函数，返回值是bool，传⼊的参数类型应该是结构体stu类型</span></span><br><span class="line">     <span class="keyword">if</span> (a.score != b.score) <span class="comment">// 如果学⽣分数不同，就按照分数从⼤到⼩排列</span></span><br><span class="line">     	<span class="keyword">return</span> a.score &gt; b.score;</span><br><span class="line">     <span class="keyword">else</span> <span class="comment">// 如果学⽣分数相同，就按照学号从⼩到⼤排列</span></span><br><span class="line">     	<span class="keyword">return</span> a.number &lt; b.number;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 有时候这种简单的if-else语句我喜欢直接⽤⼀个C语⾔⾥⾯的三⽬运算符表示～</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">cmp</span><span class="params">(stu a, stu b)</span> </span>&#123;</span><br><span class="line">	 <span class="keyword">return</span> a.score != b.score ? a.score &gt; b.score : a.number &lt;b.number;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+            </section>
+    </article>
+    
+
+
+        <!-- 版权声明 -->
+        
+<div class="post-copyright">
+    <div>
+        <strong>本文作者：</strong>
+        <span>何叨叨</span>
+    </div>
+    <div>
+        <strong>本文链接：</strong>
+        <a href="http://example.com/c++使用学习笔记">
+            http://example.com/c++使用学习笔记
+        </a>
+    </div>
+    <div>
+        <span>欢迎任何形式的转载，但请务必注明出处。</span>
+    </div>
+    <div>
+        <span>由于笔者水平有限，如果文章或代码有表述不当之处，还请不吝赐教。</span>
+    </div>
+</div>
+
+
+
+
+
+
+<style>
+    .post-copyright {
+        background-color: #fff;
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.05);
+        display: block;
+        margin: 20px auto;
+        margin-bottom: 15px;
+        padding: 10px;
+        font-size: 15px;
+        color: #2e2d2d;
+        word-break: break-all;
+        line-height: 1.8;
+    }
+
+
+    .post-copyright a {
+        color: #2e2d2d;
+        border-bottom: 1px solid #999; 
+    }
+
+    .post-copyright a:hover {
+        color: #2e2d2d;
+        border-bottom: 1px solid #000; 
+    }
+</style>
+
+          <!-- comments -->
+          <div class="comments">
+    <h3 id="commenttitle" style="margin-top: 20px;margin-left: 10px;">评论区</h3>
+    <div id="tcomment"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/twikoo@0.6.0/dist/twikoo.all.min.js"></script>
+<script>twikoo.init({ envId: '', el: '#tcomment' })</script>
+
+            <div class="right-icon">
+              <div id="to-valine" class="right-icon-item">
+                <a href="#commenttitle">评论</a>
+              </div>
+            </div>
+
+  </div>
+
+
+  <aside>
+    <div class="aside-wrap">
+    
+        <section class="widget-wrap">
+    <h3 class="widget-title">简介</h3>
+    <div class="widget">
+        <div class="notice">
+            <img class="notice-img" src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108164434.jpg">
+            <p>路漫漫其修远兮，<br>吾将上下而求索!<br></p>
+            
+            <p class="notice-item">
+                <!-- github -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108165043.jpg" alt="Github"></a></span>
+                <!-- juejin -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108165800.png" alt="掘金社区"></a></span>
+                <!-- zhihu -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108172745.ico" alt="知乎"></a></span>
+                <!-- csdn -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108172932.ico" alt="CSDN"></a></span>
+            </p>
+            
+        </div>
+    </div>
+</section>
+
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">文章分类</h3>
+    <div class="widget">
+      <div class="categories-list">
+        
+           
+            
+              <a class="category-list-item" href="/categories/版本控制">
+                <span class="category-list-link">版本控制</span>
+                <span class="category-list-number">(2)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/未来规划">
+                <span class="category-list-link">未来规划</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/后端技术">
+                <span class="category-list-link">后端技术</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/Python">
+                <span class="category-list-link">Python</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/前端技术">
+                <span class="category-list-link">前端技术</span>
+                <span class="category-list-number">(2)</span>
+              </a>
+            
+          
+        
+      </div>
+    </div>
+  </section>
+
+
+    
+        
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSV/" rel="tag">CSV</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">MySql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/js/" rel="tag">js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
+    </div>
+  </div>
+
+
+    
+        
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul class="recent-posts">
+        
+          <li>
+            <a href="/2021/01/10/python%E7%88%AC%E8%99%AB%E8%BF%9B%E9%98%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Python商业爬虫进阶--学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/04/Git%E7%9B%B8%E5%85%B3%E7%AC%94%E8%AE%B0/">Git学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/08/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">JS学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/05/10/%E8%A6%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9F%A5%E8%AF%86/">要学习的知识</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/15/Linux%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Linux基础-学习笔记</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
+    </div>
+  </section>
+
+
+    
+        <section class="widget-wrap">
+    <div class="widget">
+        <div class="notice attention">
+            <p>本博客主题采用的是基于 hexo 打造的 <a href="https://github.com/shuxhan/hexo-theme-simple99" target="_blank">simple99</a>，主题已上架 hexo 官网。</p>
+            <p>如有其他问题，请在博客<a target="_blank" rel="noopener" href="https://shuxhan.com/message">留言</a>，或者发一封邮件给我，我的邮箱地址：zsh981109@163.com</p>
+            
+        </div>
+    </div>
+</section>
+
+    
+    
+</div>
+
+
+      <!-- 目录 -->
+      
+</div>
+
+
+<script>
+  $('#to-top').click(function () { $('html,body').animate({ scrollTop: '0px' }, 500); return false; });
+
+</script>
+                </div>
+            </div>
+            <div class="right-icon">
+                <div id="to-top" class="right-icon-item">
+                  <a>
+                    <span class="top-left"></span>
+                    <span class="top-right"></span>
+                  </a>
+                </div>
+              </div>
+    </div>
+    <footer class="footer">
+  <div class="links-wrap-wrap">
+    <div class="links-wrap">
+    
+      
+        <section class="link-wrap">
+          <h3 class="link-title">导航</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://cn.bing.com" title="">
+                        必应搜索(bing)
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://github.com" title="">
+                        GitHub
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://gitee.com" title="">
+                        Gitee
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.aliyun.com/" title="">
+                        阿里云
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://cloud.tencent.com" title="">
+                        腾讯云
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+
+      
+        <section class="link-wrap">
+          <h3 class="link-title">社区论坛</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.csdn.net" title="">
+                        CSDN
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://juejin.cn" title="">
+                        掘金
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://segmentfault.com" title="">
+                        segmentfault思否
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.cnblogs.com" title="">
+                        博客园
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.v2ex.com/" title="">
+                        V2EX
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://discord.com" title="">
+                        Discord
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+
+      
+        <section class="link-wrap">
+          <h3 class="link-title">文档</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://react.docschina.org" title="">
+                        React官方中文文档
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://hexo.io" title="">
+                        hexo官网
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="http://lesscss.cn" title="">
+                        less中文网
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+    </div>
+  </div>
+  
+    <div class="copyright-wrap">
+      <span>&copy; 2020-2021 何叨叨</span>
+      <span id="timeDate">载入天数...</span>
+      
+    </div>
+    <span id="busuanzi_container_site_pv">
+      本站总访问量<span id="busuanzi_value_site_pv"></span>次
+    </span>
+    <span id="busuanzi_container_site_uv">
+      ，本站访客数<span id="busuanzi_value_site_uv"></span>人次
+    </span>
+    
+</footer>
+
+<script>
+    var now = new Date();
+    function createtime() {
+      var grt = new Date("06/14/2020 12:00:00");//此处修改你的建站时间或者网站上线时间 
+      now.setTime(now.getTime() + 250);
+      days = (now - grt) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+      document.getElementById("timeDate").innerHTML = "本站已安全运行 " + dnum + " 天 ";
+    }
+    setInterval("createtime()", 1000);
+</script>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script src="/lib/jquery.js"></script>
+
+
+<script src="/lib/waves.js"></script>
+
+
+<script src="/lib/jquery-ui.js"></script>
+
+
+<script src="/lib/jquery.tocify.js"></script>
+
+
+<script src="/js/main.js"></script>
+
+
+        
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    color: rgb(206, 206, 206);
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 3px;
+    user-select: none;
+    outline: 0;
+  }
+
+  .copy-btn:hover {
+    color: #888
+  }
+
+  .highlight-wrap .copy-btn {
+    padding: 2px 6px;
+    position: absolute;
+    right: 10px;
+    top: 1px;
+    z-index: 1;
+  }
+
+
+
+  .highlight-wrap {
+    position: relative;
+  }
+
+  #copysuccess {
+    width: 200px;
+    height: 75px;
+    position: fixed;
+    right: 50%;
+    margin-right: -100px;
+    top: 40%;
+    margin-top: -40px;
+    color: #fff;
+    font-weight: 600;
+    background: #444444d8;
+    display: none;
+    z-index: 99999;
+    border-radius: 10px;
+    text-align: center;
+    line-height: 30px;
+    padding-top: 10px;
+    user-select: none;
+  }
+</style>
+
+<script>
+  addLoadEvent(() => {
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<div>').addClass('copy-btn').append('复制代码').on('click', function (e) {
+        var copysuccess = document.getElementById('copysuccess');
+        copysuccess.style.display = 'block'
+        setTimeout(function () {
+          copysuccess.style.display = 'none'
+        }, 2000)
+        var code = $(this).parent().find(".code")[0].innerText
+          
+                var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+          
+                  if (result) $(this).text('复制成功')
+            else $(this).text('复制失败')
+              
+                $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制代码')
+        }, 1000)
+      }).append(e)
+    })
+  })
+</script>
+
+            <div id="copysuccess">复制成功<br>欢迎阅读文章~</div>
+</body>
+
+</html>
+
+<script>
+    $('#to-top').click(function () { $('html,body').animate({ scrollTop: '0px' }, 500); return false; });
+</script>
