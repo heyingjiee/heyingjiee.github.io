@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>
+    前端必须知道的几件事 | 何叨叨的小破站
+  </title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta name="theme-color" content="#4184f3">
+  
+  
+  <link href="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108143023.png" rel="icon" />
+  
+
+  
+<link rel="stylesheet" href="/css/highlight.light.css">
+
+  
+<link rel="stylesheet" href="/css/prism-customize.css">
+
+  
+<link rel="stylesheet" href="/css/nav-icon.css">
+
+  
+<link rel="stylesheet" href="/css/waves.min.css">
+
+  
+<link rel="stylesheet" href="/css/jquery.tocify.css">
+
+  
+<link rel="stylesheet" href="/css/main.css">
+
+  
+<link rel="stylesheet" href="/css/nav-indicator.css">
+
+  
+<link rel="stylesheet" href="/css/twikoo.css">
+
+  
+<link rel="stylesheet" href="/css/search.css">
+
+  
+  
+
+  
+
+  </meta>
+  </meta>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+  
+<script src="/js/comment.js"></script>
+
+  
+<script src="/js/copy.js"></script>
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+    <header>
+        <!-- cover image or sth. -->
+    </header>
+    <div id="main" class="m-scene">
+        
+<div class="nav-wrapper" id="header">
+
+    <div class="container">
+        <nav>
+            
+            
+            <div class="logo wave">
+                <a href="/" id="logo">
+                    何叨叨的博客
+                </a>
+            </div>
+
+            <!-- 春节主题 按钮 -->
+<!-- <a onclick="switchThemes()" id="switchspring">
+    <img class="chunjiepic" src="https://nekodeng.gitee.io/medias/spring-img/caishen.png" title="节日模式">
+</a> -->
+<!-- 春节主题 小挂件 -->
+<div class="caishendeng">
+    <div class="caishenxian">
+        <img class="caishenpic lala" src="https://nekodeng.gitee.io/medias/spring-img/caishen.png">
+    </div>
+</div>
+
+
+<style>
+    /*春节模式 */
+    #switchspring {
+        background: #dc8f03;
+        width: 38px;
+        height: 38px;
+        display: block;
+        position: fixed;
+        border-radius: 50%;
+        right: 15px;
+        bottom: 10px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+        cursor: pointer;
+    }
+
+    .chunjiepic {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0px;
+    }
+
+    /*春节主题 挂件吊线*/
+    .caishenxianleft {
+        left: 16% !important;
+        position: absolute;
+        top: 0px;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .caishenxian {
+        position: absolute;
+        top: 0px;
+        right: 36%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .guguxian {
+        position: absolute;
+        top: 0px;
+        left: 20%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .wenzhangxian {
+        left: 50% !important;
+        z-index: 998;
+    }
+
+    /*春节主题 挂件*/
+    .fudai {
+        top: 14px !important;
+        left: -22px !important;
+    }
+
+    .caishenpic {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        position: absolute;
+        top: 12px;
+        right: -22px;
+        z-index: 9;
+        /* transform-origin: 50% -100px; */
+        animation: swing 3.5s infinite ease-in-out;
+        /* -webkit-transform-origin: 50% -100px; */
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .lala {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -4px !important;
+        top: 14px !important;
+    }
+
+    .chunp {
+        width: 216px !important;
+        height: 96px !important;
+        left: -80px !important;
+        top: 6px !important;
+    }
+
+    .fudao {
+        width: 38px;
+        height: 38px;
+        top: 18px !important;
+        left: -19px !important;
+    }
+
+    /* 点击显示或者隐藏总样式开始 */
+    /* .caishendeng,
+    .xiaomaozitx,
+    .labelmz,
+    .friendmz {
+        display: none;
+    } */
+
+    body.themespring .caishendeng,
+    body.themespring .xiaomaozitx,
+    body.themespring .labelmz,
+    body.themespring .friendmz {
+        display: block;
+    }
+
+    /* 点击显示或者隐藏总样式结束 */
+    .toupic {
+        position: relative;
+    }
+
+    .xiaomaozitx {
+        width: 60px;
+        height: 60px;
+        position: absolute;
+        top: -127px;
+        right: 25%;
+        transform: rotate(40deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-animation: mzanimate 1.2s infinite ease-in-out;
+    }
+
+    .labelmz {
+        width: 34px;
+        height: 34px;
+        position: absolute;
+        top: 7px;
+        right: -84px;
+        transform: rotate(40deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: mzanimate 1.8s infinite ease-in-out;
+    }
+
+    .weilemz {
+        position: relative;
+    }
+
+    .friendmz {
+        width: 50px !important;
+        height: 50px !important;
+        position: absolute;
+        top: 8px;
+        right: -90px;
+        transform: rotate(44deg);
+        position: absolute;
+        z-index: 99;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: mzanimate 1.8s infinite ease-in-out;
+    }
+
+    .lions {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -15px !important;
+        top: 14px !important;
+    }
+
+    .fenleiss {
+        position: absolute;
+        top: -64px;
+        left: 20%;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+        transform-origin: 50% -100px;
+        animation: swing 3.5s infinite ease-in-out;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3.5s infinite ease-in-out;
+    }
+
+    .gugus {
+        width: 32px !important;
+        height: 32px !important;
+        opacity: 1 !important;
+        left: -15px !important;
+        top: 9px !important;
+    }
+
+    .huadengpic {
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 1 !important;
+        left: -18px !important;
+        top: 9px !important;
+    }
+
+    .shanzipic {
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 1 !important;
+        left: -18px !important;
+        top: 18px !important;
+    }
+
+    /* .denglong {
+        display: none;
+    } */
+
+    body.themespring .denglong {
+        display: block;
+    }
+
+    @media only screen and (min-width: 1124px) {
+        .nav-menu {
+            padding-right: 0px;
+        }
+
+        body.themespring .nav-menu {
+            padding-right: 96px;
+        }
+    }
+
+    @media only screen and (max-width: 760px) {
+
+        .deng-box,
+        .deng-box1 {
+            width: 40%;
+        }
+
+        body.themespring .right {
+            float: left !important;
+        }
+    }
+
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+        .right {
+            float: left !important;
+        }
+    }
+
+    .deng-box {
+        position: fixed;
+        top: -40px;
+        right: -20px;
+        z-index: 999;
+    }
+
+    .deng-box1 {
+        position: fixed;
+        top: -30px;
+        right: 10px;
+        z-index: 999;
+    }
+
+    .deng-box1 .deng {
+        position: relative;
+        width: 120px;
+        height: 90px;
+        margin: 50px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.8);
+        border-radius: 50% 50%;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 5s infinite ease-in-out;
+        box-shadow: -5px 5px 30px 4px rgba(252, 144, 61, 1);
+    }
+
+    .deng {
+        position: relative;
+        width: 120px;
+        height: 90px;
+        margin: 50px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.8);
+        border-radius: 50% 50%;
+        -webkit-transform-origin: 50% -100px;
+        -webkit-animation: swing 3s infinite ease-in-out;
+        box-shadow: -5px 5px 50px 4px rgba(250, 108, 0, 1);
+    }
+
+    .deng-a {
+        width: 100px;
+        height: 90px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.1);
+        margin: 12px 8px 8px 10px;
+        border-radius: 50% 50%;
+        border: 2px solid #dc8f03;
+    }
+
+    .deng-b {
+        width: 45px;
+        height: 90px;
+        background: #d8000f;
+        background: rgba(216, 0, 15, 0.1);
+        margin: -4px 8px 8px 26px;
+        border-radius: 50% 50%;
+        border: 2px solid #dc8f03;
+    }
+
+    .xian {
+        position: absolute;
+        top: -20px;
+        left: 60px;
+        width: 2px;
+        height: 20px;
+        background: #dc8f03;
+    }
+
+    .shui-a {
+        position: relative;
+        width: 5px;
+        height: 20px;
+        margin: -5px 0 0 59px;
+        -webkit-animation: swing 4s infinite ease-in-out;
+        -webkit-transform-origin: 50% -45px;
+        background: #ffa500;
+        border-radius: 0 0 5px 5px;
+    }
+
+    .shui-b {
+        position: absolute;
+        top: 14px;
+        left: -2px;
+        width: 10px;
+        height: 10px;
+        background: #dc8f03;
+        border-radius: 50%;
+    }
+
+    .shui-c {
+        position: absolute;
+        top: 18px;
+        left: -2px;
+        width: 10px;
+        height: 35px;
+        background: #ffa500;
+        border-radius: 0 0 0 5px;
+    }
+
+    .deng:before {
+        position: absolute;
+        top: -7px;
+        left: 29px;
+        height: 12px;
+        width: 60px;
+        content: " ";
+        display: block;
+        z-index: 999;
+        border-radius: 5px 5px 0 0;
+        border: solid 1px #dc8f03;
+        background: #ffa500;
+        background: linear-gradient(to right, #dc8f03, #ffa500, #dc8f03, #ffa500, #dc8f03);
+    }
+
+    .deng:after {
+        position: absolute;
+        bottom: -7px;
+        left: 10px;
+        height: 12px;
+        width: 60px;
+        content: " ";
+        display: block;
+        margin-left: 20px;
+        border-radius: 0 0 5px 5px;
+        border: solid 1px #dc8f03;
+        background: #ffa500;
+        background: linear-gradient(to right, #dc8f03, #ffa500, #dc8f03, #ffa500, #dc8f03);
+    }
+
+    .deng-t {
+        font-family: 华文行楷;
+        font-size: 26px;
+        color: #dc8f03;
+        font-weight: bold;
+        line-height: 44px;
+        text-align: center;
+    }
+
+    .night .deng-t,
+    .night .deng-box,
+    .night .deng-box1 {
+        background: transparent !important;
+    }
+
+    @-moz-keyframes swing {
+        0% {
+            -moz-transform: rotate(-10deg)
+        }
+
+        50% {
+            -moz-transform: rotate(10deg)
+        }
+
+        100% {
+            -moz-transform: rotate(-10deg)
+        }
+    }
+
+    @-webkit-keyframes swing {
+        0% {
+            -webkit-transform: rotate(-10deg)
+        }
+
+        50% {
+            -webkit-transform: rotate(10deg)
+        }
+
+        100% {
+            -webkit-transform: rotate(-10deg)
+        }
+    }
+</style>
+
+<script>
+    // 网站主题切换模式开始
+    if (localStorage.getItem('themespring') === '1') {
+        document.body.classList.add('themespring');
+    }
+    else if (matchMedia('(prefers-color-scheme: themespring)').matches) {
+        document.body.classList.add('themespring');
+    }
+
+    function switchThemes() {
+        var body = document.body;
+        if (body.classList.contains('themespring')) {
+            document.body.classList.remove('themespring');
+            localStorage.setItem('themespring', '0');
+            return;
+        } else {
+            document.body.classList.add('themespring');
+            localStorage.setItem('themespring', '1');
+            return;
+        }
+    };
+// 网站主题切换模式结束
+
+</script>
+
+            <div class="nav-toggle-icon" >
+                <div class="material-hamburger">
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                    <span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="menu-wrapper">
+                <div class="nav-indicator">
+                </div>
+                <ul class="menus">
+                    
+                     
+                        <li>
+                            <a class="wave " href="/">
+                                首页
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/archives">
+                                归档
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/about">
+                                关于
+                            </a>
+                        </li>
+                     
+                        <li>
+                            <a class="wave " href="/message">
+                                留言
+                            </a>
+                        </li>
+                     
+                    
+                   
+                </ul>
+            </div>
+
+        </nav>
+    </div>
+</div>
+
+
+            <div class="container content">
+                <div class="scene_element scene_element--fadein">
+                    <div class="row">
+  <div class="main main-article">
+    <article>
+
+      
+        <header class="post-header with-cover" style="background-image:url('https://gitee.com/hyj1270433876/blog-img/raw/master/面试相关/u=3385337683,1229590272&fm=26&gp=0.png')">
+          
+            </header>
+
+            <h1 class="post-title">
+              前端必须知道的几件事
+            </h1>
+
+            <section class="post-info post-info-bottom">
+
+              <span class="post-date">发布于
+                <span class="post-date-text">
+                   2020-02-06
+                </span>
+              </span>
+
+
+
+
+              
+                <span class="post-category">分类:
+                  <a class="article-category-link" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+                </span>
+                
+                  
+                    <span class="post-tags">
+                      <ul class="post-tag-list" itemprop="keywords"><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="post-tag-list-item"><a class="post-tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li></ul>
+                    </span>
+                    
+
+                      <!-- 阅读量统计 -->
+                      
+
+
+            </section>
+
+            <section class="post-content">
+
+              <h1 id="Js的注意点"><a href="#Js的注意点" class="headerlink" title="Js的注意点"></a>Js的注意点</h1><h2 id="类和构造函数的区别？"><a href="#类和构造函数的区别？" class="headerlink" title="类和构造函数的区别？"></a>类和构造函数的区别？</h2><p>通常我们所谓的类就是用new来构造实例的普通函数。<br>通常实例化一个构造函数的时候，里面的this是指向被实例化的实例的。如下示例所示：</p>
+<p><img src="https://image-static.segmentfault.com/265/544/2655443404-5c7bc2a72e2cc_articlex" alt="clipboard.png"><br>但有的时候我们想直接执行函数来进行实例化，而不是用new。这个时候构造函数里面的this指向便不再是被实例化的实例了，就变成了Ins函数的接受者全局变量window，严格模式下则会直接抛出错误。<br>通常的解决方案是判断this是否是构造函数的实例，若是则继续执行，若不是则进行new的操作。代码如下：</p>
+<p><img src="https://image-static.segmentfault.com/169/056/1690568308-5c7bc320d5857_articlex" alt="clipboard.png"></p>
+<p>在构造函数参数个数固定的情况下这种方案是可行的。这种方式的一个缺点是它需要额外的函数调用，因此代价有点高。<br>在进行构造函数实例化的时候，如果构造函数内部没有明确return语句返回值，那么该构造函数会自动的构造一个实例对象返回，但是如果我们明确返回了非简单数据类型（简单数据类型还是会自动构造实例对象返回）的对象的话，构造函数实例化的时候返回的就是该对象。如此，我们可以构造如下的通用情况下的构造函数：</p>
+<p><img src="https://image-static.segmentfault.com/302/368/302368033-5c7bc364b2d62_articlex" alt="clipboard.png"></p>
+<h2 id="new一个对象过程发生了什么？"><a href="#new一个对象过程发生了什么？" class="headerlink" title="new一个对象过程发生了什么？"></a>new一个对象过程发生了什么？</h2><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210414211637552.png" alt="image-20210414211637552"></p>
+<p>1、创建一个新对象，如：var person = {};</p>
+<p>2、新对象的_proto_属性指向构造函数的原型对象。</p>
+<p>3、将构造函数的作用域赋值给新对象。（也所以this对象指向新对象）</p>
+<p>4、执行构造函数内部的代码，将属性添加给person中的this对象。</p>
+<p>5、返回新对象person。</p>
+<h2 id="深浅拷贝"><a href="#深浅拷贝" class="headerlink" title="深浅拷贝"></a>深浅拷贝</h2><h2 id="节流防抖"><a href="#节流防抖" class="headerlink" title="节流防抖"></a>节流防抖</h2><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000018428170">https://segmentfault.com/a/1190000018428170</a></p>
+<p>防抖</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">debounce</span>(<span class="params">fn,delay</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> timer = <span class="literal">null</span> <span class="comment">//借助闭包</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(timer)&#123;</span><br><span class="line">            <span class="built_in">clearTimeout</span>(timer) </span><br><span class="line">        &#125;</span><br><span class="line">        timer = <span class="built_in">setTimeout</span>(fn,delay) <span class="comment">// 简化写法</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>节流</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">throttle</span>(<span class="params">fn,delay</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> valid = <span class="literal">true</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">       <span class="keyword">if</span>(!valid)&#123;</span><br><span class="line">           <span class="comment">//休息时间 暂不接客</span></span><br><span class="line">           <span class="keyword">return</span> <span class="literal">false</span> </span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">// 工作时间，执行函数并且在间隔期内把状态位设为无效</span></span><br><span class="line">        valid = <span class="literal">false</span></span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">            fn()</span><br><span class="line">            valid = <span class="literal">true</span>;</span><br><span class="line">        &#125;, delay)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="宏任务与微任务"><a href="#宏任务与微任务" class="headerlink" title="宏任务与微任务"></a>宏任务与微任务</h2><h2 id="promise"><a href="#promise" class="headerlink" title="promise"></a>promise</h2><h2 id="经典问题"><a href="#经典问题" class="headerlink" title="经典问题"></a>经典问题</h2><p>1.实现以下函数</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413112024671.png" alt="image-20210413112024671"></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">repeat</span>(<span class="params">func, times, wait</span>) </span>&#123;  <span class="comment">//补充代码</span></span><br><span class="line">            <span class="keyword">return</span> <span class="function">(<span class="params">text</span>) =&gt;</span> &#123;</span><br><span class="line">                count=<span class="number">1</span></span><br><span class="line">                <span class="built_in">setInterval</span>(<span class="function">()=&gt;</span>&#123;</span><br><span class="line">                    <span class="keyword">if</span>(count&lt;=times)&#123;</span><br><span class="line">                        count++;</span><br><span class="line">                        func(text)</span><br><span class="line">                    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                        <span class="built_in">clearInterval</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    </span><br><span class="line">                &#125;,wait)</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> repeatFunc = repeat(<span class="built_in">console</span>.log, <span class="number">4</span>, <span class="number">3000</span>)</span><br><span class="line">repeatFunc(<span class="string">&quot;helloworld&quot;</span>)<span class="comment">//会输出四次helloworld，每次间隔3s</span></span><br></pre></td></tr></table></figure>
+
+
+<h1 id="CSS的注意点"><a href="#CSS的注意点" class="headerlink" title="CSS的注意点"></a>CSS的注意点</h1><h2 id="CSS元素（实现居中）"><a href="#CSS元素（实现居中）" class="headerlink" title="CSS元素（实现居中）"></a>CSS元素（实现居中）</h2><p>html元素分为行内元素和块级元素，以及inline-block元素</p>
+<h3 id="行级元素"><a href="#行级元素" class="headerlink" title="行级元素"></a>行级元素</h3><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410003844069.png" alt="image-20210410003844069"></p>
+<p>如：a标签是行内元素，为了看的更清晰，给三个行内元素都加了红色的边框。</p>
+<ul>
+<li>行内元素不是独占一行，且没有<code>height</code>和<code>width</code>属性，长宽都是紧随内部文字的长宽，不存在内部的水平居中和垂直居中的问题</li>
+<li>有<code>line-height</code>的概念,元素中线距上下各二分之一行高的长度</li>
+<li>vertical-align是行内元素的独占属性，指定元素与</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">        a &#123;</span><br><span class="line">           </span><br><span class="line">            border: solid 1px red;</span><br><span class="line">            line-height: 100px;</span><br><span class="line">            </span><br><span class="line">         &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">hr</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>MYSQL<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>LINUX<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>PHP<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">hr</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="块级元素"><a href="#块级元素" class="headerlink" title="块级元素"></a>块级元素</h3><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410004406761.png" alt="image-20210410004406761"></p>
+<p>如：div标签是行内元素。这里使用<code>display:block</code>将a标签转化为块级元素。</p>
+<ul>
+<li>块级元素独占一行，有<code>height</code>和<code>width</code>属性。通过<code>text-align:center</code>使实现块级元素内部水平居中。通过使<code>height</code>和<code>line-height</code>的值一样，实现块级元素内部垂直居中</li>
+<li>有<code>line-height</code>的概念,元素中线距上下各二分之一行高的长度</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">a &#123;</span><br><span class="line">     display: block;</span><br><span class="line">     border: solid 1px red;</span><br><span class="line"></span><br><span class="line">     width: 100px;</span><br><span class="line">     height: 100px;</span><br><span class="line">     line-height: 100px;</span><br><span class="line">     text-align: center;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>MYSQL<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>LINUX<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>PHP<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="行级块元素"><a href="#行级块元素" class="headerlink" title="行级块元素"></a>行级块元素</h3><p>如：使用<code>display:inline-block</code>将a标签转化为inline-block元素。</p>
+<ul>
+<li>实现块级元素不独占一行的效果，有<code>height</code>和<code>width</code>属性。通过<code>text-align:center</code>使实现块级元素内部水平居中。通过使<code>height</code>和<code>line-height</code>的值一样，实现块级元素内部垂直居中</li>
+<li>有<code>line-height</code>的概念,元素中线距上下各二分之一行高的长度</li>
+</ul>
+<h2 id="BFC机制"><a href="#BFC机制" class="headerlink" title="BFC机制"></a>BFC机制</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_36422236/article/details/88763187">https://blog.csdn.net/sinat_36422236/article/details/88763187</a></p>
+<p>应用于：</p>
+<ul>
+<li><p>清除浮动</p>
+</li>
+<li><p>2栏自适应布局</p>
+</li>
+<li><p>消除外边界重叠</p>
+<p>外边界重叠</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210416080234736.png" alt="image-20210416080234736"></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">    div &#123;</span><br><span class="line">        border: solid red 1px;</span><br><span class="line">        height: 50px;</span><br><span class="line">        width: 50px;</span><br><span class="line">        margin: 20px;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span>  </span><br></pre></td></tr></table></figure>
+<p>使用BFC消除外边界重叠</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210416075958513.png" alt="image-20210416075958513"></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">main</span> <span class="attr">style</span>=<span class="string">&quot;overflow: hidden;&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">main</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">    div &#123;</span><br><span class="line">        border: solid red 1px;</span><br><span class="line">        height: 50px;</span><br><span class="line">        width: 50px;</span><br><span class="line">        margin: 20px;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span>  </span><br></pre></td></tr></table></figure>
+
+
+
+
+</li>
+</ul>
+<h2 id="盒子模型"><a href="#盒子模型" class="headerlink" title="盒子模型"></a>盒子模型</h2><p>对div设置height和width，指的是border内部的高和宽（不包括broder的边界线）</p>
+<p>可以使用<code>box-sizing: border-box;</code>,设置div的height和width，指的是（broder+盒子内部）整体的大小</p>
+<h2 id="CSS的定位布局"><a href="#CSS的定位布局" class="headerlink" title="CSS的定位布局"></a>CSS的定位布局</h2><h3 id="浮动布局（清除浮动）"><a href="#浮动布局（清除浮动）" class="headerlink" title="浮动布局（清除浮动）"></a>浮动布局（清除浮动）</h3><p><strong>浮动带来的第一个问题</strong></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411214458639.png" alt="image-20210411214458639"></p>
+<p>第一个紫色的div浮动起来，第二个红色的div感知不到浮动元素，就会挤占浮动元素的位置。</p>
+<p>注意：浮动元素可以感知到其他浮动元素和未浮动元素</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">   	<span class="tag">&lt;<span class="name">div</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">   	<span class="tag">&lt;<span class="name">div</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span>     </span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">       *&#123;</span><br><span class="line"><span class="css">           <span class="selector-tag">margin</span><span class="selector-pseudo">:0</span>;</span></span><br><span class="line">           padding: 0;</span><br><span class="line">       &#125;</span><br><span class="line">       body&#123;</span><br><span class="line"><span class="css">           <span class="selector-tag">padding</span><span class="selector-pseudo">:200px</span> 200<span class="selector-tag">px</span>;</span></span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line"><span class="css">       <span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(1)</span>&#123;</span></span><br><span class="line">           height: 100px;  </span><br><span class="line">           width: 100px;     </span><br><span class="line">           background-color: blueviolet;</span><br><span class="line">           float: left;</span><br><span class="line">       &#125;</span><br><span class="line">    </span><br><span class="line"><span class="css">       <span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(2)</span>&#123;</span></span><br><span class="line">           height: 200px;  </span><br><span class="line">           width: 200px;     </span><br><span class="line"><span class="css">           <span class="selector-tag">background-color</span><span class="selector-pseudo">:red</span>;</span></span><br><span class="line">          </span><br><span class="line">         </span><br><span class="line">       &#125;</span><br><span class="line">   <span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>浮动带来的第二个问题</strong></p>
+<p>子元素设置浮动会造成父元素塌陷</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411215411431.png" alt="image-20210411215411431"></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411215553233.png" alt="image-20210411215553233"></p>
+<p><strong>清除浮动的办法</strong></p>
+<p>方法一</p>
+<p>​    解决浮动带来的<strong>第一个</strong>问题，红色块的css中添加<code>clear:both</code></p>
+<p>方法二</p>
+<p>​    使用伪类，增加一个看不见的元素在浮动元素之后，设置<code>clear:both</code>,原理和第一个相同</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/* 选中第一个浮动的紫色方块，在后面添加一个浮动清除 */</span><br><span class="line">div:nth-child(1)::after&#123;</span><br><span class="line">  display: block;</span><br><span class="line">  content: &quot;&quot;;</span><br><span class="line">  clear: both;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法三</p>
+<p>​    <strong>利用BFC机制</strong>，父元素设置<code>overflow:hidden</code>，可以解决浮动带来的<strong>第二个</strong>问题</p>
+<h3 id="绝对布局（实现居中）"><a href="#绝对布局（实现居中）" class="headerlink" title="绝对布局（实现居中）"></a>绝对布局（实现居中）</h3><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410175834199.png" alt="image-20210410175834199"></p>
+<ul>
+<li>自己计算。手动设置 <code>left:50px; top:50px;</code></li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"> <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="css">    <span class="selector-class">.red</span>&#123;</span></span><br><span class="line">        background-color: red;</span><br><span class="line">        height: 200px;</span><br><span class="line">        width: 200px;</span><br><span class="line"><span class="css">        <span class="comment">/* 父元素得有position，子元素的位置才是相对于父元素变化 */</span></span></span><br><span class="line">        position: relative;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="css">    <span class="selector-class">.blue</span>&#123;</span></span><br><span class="line">        background-color: blue;</span><br><span class="line">        height: 100px;</span><br><span class="line">        width: 100px;</span><br><span class="line"><span class="css">        <span class="selector-tag">position</span><span class="selector-pseudo">:absolute</span>;</span></span><br><span class="line"><span class="css">        <span class="selector-tag">top</span><span class="selector-pseudo">:50px</span>;</span></span><br><span class="line">        left: 50px;</span><br><span class="line">    &#125;</span><br><span class="line"> <span class="tag">&lt;/<span class="name">style</span>&gt;</span>   </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;red&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;blue&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>自动计算。直接设置 <code>left:50%; top:50%;</code>,然后设置<code>margin-top</code>和<code>margin-left</code>为居中元素的高和宽的一半</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"> <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="css">    <span class="selector-class">.red</span>&#123;</span></span><br><span class="line">        background-color: red;</span><br><span class="line">        height: 200px;</span><br><span class="line">        width: 200px;</span><br><span class="line"><span class="css">        <span class="comment">/* 父元素得有position，子元素的位置才是相对于父元素变化 */</span></span></span><br><span class="line">        position: relative;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="css">    <span class="selector-class">.blue</span>&#123;</span></span><br><span class="line">        background-color: blue;</span><br><span class="line">        height: 100px;</span><br><span class="line">        width: 100px;</span><br><span class="line"><span class="css">        <span class="selector-tag">position</span><span class="selector-pseudo">:absolute</span>;</span></span><br><span class="line"><span class="css">        <span class="comment">/*父元素 高，宽的一半*/</span></span></span><br><span class="line"><span class="css">        <span class="selector-tag">top</span><span class="selector-pseudo">:50</span>%;</span></span><br><span class="line">        left: 50%;</span><br><span class="line">        </span><br><span class="line"><span class="css">        <span class="comment">/*blue块的高，宽的一半*/</span></span></span><br><span class="line">        margin-top: -50px;</span><br><span class="line">        margin-left: -50px;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"> <span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;red&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;blue&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>行级元素使用绝对布局后，会变成块级元素。可以设置<code>height</code>和<code>width</code></li>
+</ul>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410184213796.png" alt="image-20210410184213796"></p>
+<p>图上的左上的角标是行内元素span，但是可以控制宽高</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="css">     <span class="selector-class">.red</span>&#123;</span></span><br><span class="line">         background-color: orange;</span><br><span class="line">         height: 200px;</span><br><span class="line">         width: 200px;</span><br><span class="line">         position: relative;</span><br><span class="line">     &#125;</span><br><span class="line">     </span><br><span class="line">     span&#123;</span><br><span class="line"><span class="css">         <span class="selector-tag">background-color</span><span class="selector-pseudo">:red</span>;</span></span><br><span class="line">         border-radius: 50%;</span><br><span class="line">         position: absolute;</span><br><span class="line">         left: 5px;</span><br><span class="line"><span class="css">         <span class="selector-tag">top</span><span class="selector-pseudo">:5px</span>;</span></span><br><span class="line">         height: 50px;</span><br><span class="line">         width: 50px;</span><br><span class="line">         text-align: center;</span><br><span class="line">         line-height: 50px;</span><br><span class="line">     &#125;</span><br><span class="line">  <span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;red&quot;</span>&gt;</span> </span><br><span class="line">      <span class="tag">&lt;<span class="name">span</span>&gt;</span>新<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="弹性布局"><a href="#弹性布局" class="headerlink" title="弹性布局"></a>弹性布局</h3><h4 id="弹性盒子属性"><a href="#弹性盒子属性" class="headerlink" title="弹性盒子属性"></a>弹性盒子属性</h4><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>flex-direction</td>
+<td>指定子元素的主轴方向。</td>
+</tr>
+<tr>
+<td>flex-wrap</td>
+<td>指定子元素溢出是否换行。不写，则默认不换行，压缩子元素大小</td>
+</tr>
+<tr>
+<td>justify-content</td>
+<td>指定子元素在主轴上的布局方式。flex-start|flex-end|center|space-between|space-around|space-evenly</td>
+</tr>
+<tr>
+<td>align-items</td>
+<td>控制交叉轴上的布局方式。stretch（默认拉伸子元素，但是必须保证子元素没有设置height）|center|flex-start|flex-end</td>
+</tr>
+<tr>
+<td>align-content</td>
+<td>控制交叉轴上的布局方式。stretch|center|flex-start|flex-end|space-between|space-around|space-evenly</td>
+</tr>
+</tbody></table>
+<p><code>align-items</code>和<code>align-content</code>都是控制交叉轴的。两个有什么区别吗？</p>
+<ul>
+<li><p>以下是<code>align-items=center</code>的效果。是对一行元素在交叉轴上的布局进行控制，只有4个参数。遇到多行子元素，只能控制多行中的某一行子元素。所以多行时，需要使用<code>align-content</code></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411160717638.png" alt="image-20210411160717638"></p>
+</li>
+<li><p><code>align-content</code>是实现多行元素在垂直轴上的布局。可以通过<code>space-between|space-around|space-evenly</code>等属性实现均分的布局</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411162215655.png" alt="image-20210411162215655"></p>
+</li>
+</ul>
+<p><strong>巧用<code>space-between</code>和flex-grow</strong></p>
+<p>顶部和底部设置高度，中心主体部分不设置高度，然后设置中心主体的权重<code>flex-grow=1</code>,就会直接占用了剩下的空间</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411165520455.png" alt="image-20210411165520455"></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">article</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>顶部<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>中心主体<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>底部<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">article</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">    *&#123;</span><br><span class="line"><span class="css">        <span class="selector-tag">margin</span><span class="selector-pseudo">:0</span>;</span></span><br><span class="line">        padding: 0;</span><br><span class="line">    &#125;</span><br><span class="line">    body&#123;</span><br><span class="line"><span class="css">        <span class="selector-tag">padding</span><span class="selector-pseudo">:200px</span> 200<span class="selector-tag">px</span>;</span></span><br><span class="line">    &#125;</span><br><span class="line">    article&#123;</span><br><span class="line"><span class="css">        <span class="selector-tag">border</span><span class="selector-pseudo">:black</span> <span class="selector-tag">solid</span> 1<span class="selector-tag">px</span>;</span></span><br><span class="line">        display: flex;</span><br><span class="line">        width: 250px;</span><br><span class="line">        height: 400px;</span><br><span class="line">        flex-direction: column;</span><br><span class="line">        justify-content: space-between;</span><br><span class="line">   </span><br><span class="line">    &#125;</span><br><span class="line"><span class="css">    <span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(1)</span>&#123;</span></span><br><span class="line">        border: red solid 1px;</span><br><span class="line">        height: 50px;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="css">    <span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(2)</span>&#123;</span></span><br><span class="line">        border: red solid 1px;</span><br><span class="line">        flex-grow: 1;</span><br><span class="line">       </span><br><span class="line">    &#125;</span><br><span class="line"><span class="css">    <span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(3)</span>&#123;</span></span><br><span class="line">        border: red solid 1px;</span><br><span class="line">        height: 50px;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="弹性盒子中元素属性"><a href="#弹性盒子中元素属性" class="headerlink" title="弹性盒子中元素属性"></a>弹性盒子中元素属性</h4><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>align-self</td>
+<td>单独指定添加该属性的子元素的布局。stretch|flex-start|flex-end|center</td>
+</tr>
+<tr>
+<td>flex</td>
+<td>flex是flex-grow、flex-shrink 、flex-basis缩写组合。第一个参数是剩余空间的扩张比例。第二个参数是剩余空间的收缩比例，设置为0，则一行子元素溢出父元素，子元素将不会压缩大小，默认不写，会自动压缩。第三个参数，flex-basis的 优先级大于 width、height，指定了该参数，子元素大小则不会受扩张和收缩的影响。</td>
+</tr>
+<tr>
+<td>order</td>
+<td>默认为 order:0， 数值越小越在前面，可以负数或整数。</td>
+</tr>
+</tbody></table>
+<p>注意：子元素，可以是div，span这种Dom元素，还可以是文本。所有元素都是一个个部分，不区分块级元素和行级元素，都是按照flex的属性进行布局</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411180524596.png" alt="image-20210411180524596"></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">article</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>第一部分<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    中间文字</span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>第二部分<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">article</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">    *&#123;</span><br><span class="line"><span class="css">        <span class="selector-tag">margin</span><span class="selector-pseudo">:0</span>;</span></span><br><span class="line">        padding: 0;</span><br><span class="line">    &#125;</span><br><span class="line">    body&#123;</span><br><span class="line"><span class="css">        <span class="selector-tag">padding</span><span class="selector-pseudo">:200px</span> 200<span class="selector-tag">px</span>;</span></span><br><span class="line">    &#125;</span><br><span class="line">    article&#123;</span><br><span class="line"><span class="css">        <span class="selector-tag">border</span><span class="selector-pseudo">:black</span> <span class="selector-tag">solid</span> 1<span class="selector-tag">px</span>;</span></span><br><span class="line">        display: flex;</span><br><span class="line"><span class="css">        <span class="selector-tag">width</span><span class="selector-pseudo">:300px</span>;</span></span><br><span class="line">        height: 200px;</span><br><span class="line">        flex-direction: row;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    div&#123;</span><br><span class="line">        border: red solid 1px;</span><br><span class="line">        height: 50px;       </span><br><span class="line">        background-color: blueviolet;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="自适应布局"><a href="#自适应布局" class="headerlink" title="自适应布局"></a>自适应布局</h2><ul>
+<li><p>左侧浮动或者绝对定位，然后右侧margin撑开</p>
+</li>
+<li><p>2栏自适应布局：左侧浮动元素，右侧BFC元素，不与左侧浮动元素重叠。增加窗口宽度，左侧大小不变，右侧宽度随页面增加</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411222840116.png" alt="image-20210411222840116"></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;left&quot;</span>&gt;</span>LEFT<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;right&quot;</span>&gt;</span>RIGHT<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">  *&#123;</span><br><span class="line">        margin: 0;</span><br><span class="line">        padding: 0;</span><br><span class="line">    &#125;</span><br><span class="line">    body &#123;</span><br><span class="line">        width: 100%;</span><br><span class="line">        position: relative;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"><span class="css"> <span class="selector-class">.left</span> &#123;</span></span><br><span class="line">        width: 100px;</span><br><span class="line">        height: 150px;</span><br><span class="line">        float: left;</span><br><span class="line">        background: rgb(139, 214, 78);</span><br><span class="line">        text-align: center;</span><br><span class="line">        line-height: 150px;</span><br><span class="line">        font-size: 20px;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line"><span class="css">    <span class="selector-class">.right</span> &#123;</span></span><br><span class="line">        overflow: hidden;</span><br><span class="line">        height: 300px;</span><br><span class="line">        background: rgb(170, 54, 236);</span><br><span class="line">        text-align: center;</span><br><span class="line">        line-height: 300px;</span><br><span class="line">        font-size: 40px;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><p>3栏自适应布局：使用flex。中间部分会随着窗口宽度变化</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210416083052847.png" alt="image-20210416083052847"></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">article</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>左侧<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>中心主体<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>右侧<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">article</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">*&#123;</span><br><span class="line"><span class="css">    <span class="selector-tag">margin</span><span class="selector-pseudo">:0</span>;</span></span><br><span class="line">    padding: 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">article&#123;</span><br><span class="line">    display: flex;</span><br><span class="line">    flex-direction: row;</span><br><span class="line">    justify-content: space-between;</span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(1)</span>&#123;</span></span><br><span class="line">    width: 200px;</span><br><span class="line">    height: 400px;</span><br><span class="line">    background-color: blueviolet;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(2)</span>&#123;</span></span><br><span class="line">    </span><br><span class="line">    background-color: coral;</span><br><span class="line">    flex-grow: 1;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(3)</span>&#123;</span></span><br><span class="line">    width: 200px;</span><br><span class="line">    height: 400px;</span><br><span class="line">    background-color: springgreen;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="网络与浏览器"><a href="#网络与浏览器" class="headerlink" title="网络与浏览器"></a>网络与浏览器</h1></li>
+</ul>
+<h2 id="Http与Https"><a href="#Http与Https" class="headerlink" title="Http与Https"></a>Http与Https</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaoming100001/article/details/81109617">好文</a></p>
+<p><strong>基本概念</strong></p>
+<p>HTTP是超文本传输协议，HTTP的初衷是为了提供一种发布和接收HTML页面的方法。</p>
+<p>HTTPS使用的主要目的是提供对网站服务器的身份认证，同时保护交换数据的隐私与完整性。</p>
+<p>TLS是传输层加密协议，前身是SSL协议，由网景公司1995年发布，有时候两者不区分。</p>
+<p>多路复用：通过一个的HTTP/2连接请求发起多重的请求-响应消息，多个请求共享一个TCP连接，而不是依赖建立多个TCP连接。</p>
+<p><strong>HTTP的发展史</strong></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413221452645.png" alt="image-20210413221452645"></p>
+<p><strong>http/2 VS http/1.1</strong></p>
+<ul>
+<li><p>HTTP2.0的多路复用（ 1次连接）</p>
+</li>
+<li><p>HTTP2.0服务端推送</p>
+</li>
+<li><p>HTTP2.0压缩消息头</p>
+</li>
+<li><p>HTTP2.0的基本单位为二进制帧</p>
+</li>
+<li><p>HTTP2.0中帧具有优先级</p>
+</li>
+</ul>
+<p><strong>HTTP特点</strong></p>
+<ul>
+<li>无状态：协议对客户端没有状态存储，对事物处理没有“记忆”能力，比如访问一个网站需要反复进行登录操作</li>
+<li>无连接：HTTP/1.1之前，由于无状态特点，每次请求需要通过TCP三次握手四次挥手，和服务器重新建立连接。比如某个客户机在短时间多次请求同一个资源，服务器并不能区别是否已经响应过用户的请求，所以每次需要重新响应请求，需要耗费不必要的时间和流量。</li>
+<li>基于请求和响应：基本的特性，由客户端发起请求，服务端响应简单快速、灵活</li>
+<li>通信使用明文、请求和响应不会对通信方进行确认、无法保护数据的完整性</li>
+</ul>
+<p><strong>HTTPS特点</strong> </p>
+<ul>
+<li>基于HTTP协议，通过SSL或TLS提供加密处理数据、验证对方身份以及数据完整性保护</li>
+</ul>
+<ul>
+<li>内容加密：采用混合加密技术，中间者无法直接查看明文内容</li>
+</ul>
+<ul>
+<li><p>验证身份：通过证书认证客户端访问的是自己的服务器</p>
+</li>
+<li><p>保护数据完整性：防止传输的内容被中间人冒充或者篡改</p>
+</li>
+</ul>
+<h2 id="状态码"><a href="#状态码" class="headerlink" title="状态码"></a>状态码</h2><p><strong>2开头 （请求成功）</strong></p>
+<p>200   （成功）  服务器已成功处理了请求。</p>
+<p><strong>3开头 （请求被重定向）</strong></p>
+<p>301   （永久移动）  请求的网页已永久移动到新位置。 服务器返回此响应（对 GET 或 HEAD 请求的响应）时，会自动将请求者转到新位置。</p>
+<p>302   （临时移动）  服务器目前从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。</p>
+<p>303   （查看其他位置） 请求者应当对不同的位置使用单独的 GET 请求来检索响应时，服务器返回此代码。 </p>
+<p>304   （未修改） 自从上次请求后，请求的网页未修改过。 服务器返回此响应时，不会返回网页内容。<strong>协商缓存</strong> </p>
+<p>305   （使用代理） 请求者只能使用代理访问请求的网页。 如果服务器返回此响应，还表示请求者应使用代理。 307   （临时重定向）  服务器目前从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。</p>
+<p><strong>4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理。</strong></p>
+<p>404   （未找到） 服务器找不到请求的网页。 405   （方法禁用） 禁用请求中指定的方法。 406   （不接受） 无法使用请求的内容特性响应请求的网页。 407   （需要代理授权） 此状态代码与 401（未授权）类似，但指定请求者应当授权使用代理。 408   （请求超时）  服务器等候请求时发生超时。 409   （冲突）  服务器在完成请求时发生冲突。 服务器必须在响应中包含有关冲突的信息。 410   （已删除）  如果请求的资源已永久删除，服务器就会返回此响应。 411   （需要有效长度） 服务器不接受不含有效内容长度标头字段的请求。 412   （未满足前提条件） 服务器未满足请求者在请求中设置的其中一个前提条件。 413   （请求实体过大） 服务器无法处理请求，因为请求实体过大，超出服务器的处理能力。 414   （请求的 URI 过长） 请求的 URI（通常为网址）过长，服务器无法处理。 415   （不支持的媒体类型） 请求的格式不受请求页面的支持。 416   （请求范围不符合要求） 如果页面无法提供请求的范围，则服务器会返回此状态代码。 417   （未满足期望值） 服务器未满足”期望”请求标头字段的要求。</p>
+<p><strong>5开头（服务器错误）这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错。</strong></p>
+<p>500   （服务器内部错误）  服务器遇到错误，无法完成请求。 501   （尚未实施） 服务器不具备完成请求的功能。 例如，服务器无法识别请求方法时可能会返回此代码。 502   （错误网关） 服务器作为网关或代理，从上游服务器收到无效响应。 503   （服务不可用） 服务器目前无法使用（由于超载或停机维护）。 通常，这只是暂时状态。 504   （网关超时）  服务器作为网关或代理，但是没有及时从上游服务器收到请求。 505   （HTTP 版本不受支持） 服务器不支持请求中所用的 HTTP 协议版本。</p>
+<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><h3 id="强缓存"><a href="#强缓存" class="headerlink" title="强缓存"></a>强缓存</h3><p>强缓存就是给资源设置个过期时间，客户端每次请求资源时都会看是否过期；只有在过期才会去询问服务器。</p>
+<p>当浏览器去请求某个文件的时候，服务端就在respone header里面对该文件做了缓存配置。缓存的时间、缓存类型都由服务端控制，具体表现为：<br> respone header 的<code>cache-control</code>字段，常见的值有max-age, public ,private ,no-cache ,no-store等</p>
+<p>如下图respon header中,<strong>cahe-control:max-age=31536000,public,immutable</strong></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411232414821.png" alt="image-20210411232414821"></p>
+<p><code>max-age</code>表示缓存的时间是31536000秒（1年）</p>
+<p><code>public</code>表示可以被浏览器和代理服务器缓存，代理服务器一般可用nginx来做。</p>
+<p><code>immutable</code>表示该资源永远不变，但是实际上该资源并不是永远不变，它这么设置的意思是为了让用户在刷新页面的时候不要去请求服务器！如果你只设置了cahe-control:max-age=31536000,public  这属于强缓存，每次用户正常打开这个页面，浏览器会判断缓存是否过期，没有过期就从缓存中读取数据；但是有一些用户会点击浏览器的刷新按钮去刷新页面，这时候就算资源没有过期，浏览器也会直接去请求服务器，这就是额外的请求消耗了，这时候就相当于是走协商缓存的流程了。如果cahe-control:max-age=315360000,public再加个immutable的话，就算用户刷新页面，浏览器也不会发起请求去服务，浏览器会直接从本地磁盘或者内存中读取缓存并返回200状态，看上图的红色框（from memory cache）</p>
+<p><strong>总结</strong></p>
+<ul>
+<li><p>cache-control: max-age=xxxx，public<br><strong>客户端和代理服务器</strong>都可以缓存该资源；客户端在xxx秒的有效期内，如果有请求该资源的需求的话就直接读取缓存,statu code:200 ，如果用户做了刷新操作，就向服务器发起http请求</p>
+</li>
+<li><p>cache-control: max-age=xxxx，private<br>只让<strong>客户端</strong>可以缓存该资源；代理服务器不缓存。客户端在xxx秒内直接读取缓存,statu code:200</p>
+</li>
+<li><p>cache-control: max-age=xxxx，immutable<br>客户端在xxx秒的有效期内，如果有请求该资源的需求的话就直接读取缓存,statu code:200 ，即使用户做了刷新操作，也不向服务器发起http请求</p>
+</li>
+<li><p>cache-control: no-cache<br>跳过设置强缓存，但是不妨碍设置协商缓存；一般如果你做了强缓存，只有在强缓存失效了才走协商缓存的，设置了no-cache就不会走强缓存了，每次请求都回询问服务端。</p>
+</li>
+<li><p>cache-control: no-store<br>不缓存，这个会让客户端、服务器都不缓存，也就没有所谓的强缓存、协商缓存了。</p>
+</li>
+</ul>
+<h3 id="协商缓存"><a href="#协商缓存" class="headerlink" title="协商缓存"></a>协商缓存</h3><p>上面说到的强缓存就是给资源设置个过期时间，客户端每次请求资源时都会看是否过期；只有在过期才会去询问服务器。所以，强缓存就是为了给客户端自给自足用的。而当某天，客户端请求该资源时发现其过期了，这是就会去请求服务器了，而这时候去请求服务器的这过程就可以设置协商缓存。这时候，协商缓存就是需要客户端和服务器两端进行交互的。</p>
+<p><strong>怎么设置协商缓存？</strong></p>
+<p>response header里面的设置<code>etag</code>和<code>last-modified</code>两个字段</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">etag: <span class="string">&#x27;5c20abbd-e2e8&#x27;</span></span><br><span class="line">last-modified: Mon, 24 Dec 2018 09:49:49 GMT</span><br></pre></td></tr></table></figure>
+<p><code>etag</code>：每个文件有一个，改动文件了就变了，就是个文件hash，每个文件唯一</p>
+<p><code>last-modified</code>：文件的修改时间，精确到秒</p>
+<p>也就是说，每次请求返回来 response header 中的 etag和 last-modified，在下次请求时在 request header 就把这两个带上，服务端把你带过来的标识进行对比，然后判断资源是否更改了，如果更改就直接返回新的资源，和更新对应的response header的标识etag、last-modified。如果资源没有变，那就不变etag、last-modified</p>
+<p><strong>协商缓存流程</strong></p>
+<ul>
+<li><p>服务端发现资源没有改变的时候，会走如下流程：</p>
+<p>发请求–&gt;看资源是否过期–&gt;过期–&gt;请求服务器–&gt;服务器对比资源是否改变（通过对比 etag）–&gt;没改变-&gt;返回<strong>304状态码</strong>–&gt;客户端用缓存的老资源。</p>
+</li>
+<li><p>服务端发现资源改变的时候，会走如下流程：</p>
+<p>发请求–&gt;看资源是否过期–&gt;过期–&gt;请求服务器–&gt;服务器对比资源是否改变（通过对比 etag）–&gt;改变–&gt;返回<strong>200状态码</strong>–&gt;客户端如第一次接收该资源一样，记下它的cache-control中的max-age、etag、last-modified等。</p>
+</li>
+</ul>
+<p><strong>总结</strong></p>
+<p>请求资源时，把用户本地该资源的 etag 同时带到服务端，服务端和最新资源做对比。<br> 如果资源没更改，返回304，浏览器读取本地缓存。<br> 如果资源有更改，返回200，返回最新的资源。</p>
+<p><strong>补充</strong></p>
+<p>response header中的etag、last-modified在客户端重新向服务端发起请求时，会在request header中换个key名：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// response header</span></span><br><span class="line">etag: <span class="string">&#x27;5c20abbd-e2e8&#x27;</span></span><br><span class="line">last-modified: Mon, <span class="number">24</span> Dec <span class="number">2018</span> <span class="number">09</span>:<span class="number">49</span>:<span class="number">49</span> GMT</span><br><span class="line"></span><br><span class="line"><span class="comment">// request header 变为</span></span><br><span class="line"><span class="keyword">if</span>-none-matched: <span class="string">&#x27;5c20abbd-e2e8&#x27;</span></span><br><span class="line"><span class="keyword">if</span>-modified-since: Mon, <span class="number">24</span> Dec <span class="number">2018</span> <span class="number">09</span>:<span class="number">49</span>:<span class="number">49</span> GMT</span><br></pre></td></tr></table></figure>
+<p><strong>为什么要有etag？</strong><br> 你可能会觉得使用last-modified已经足以让浏览器知道本地的缓存副本是否足够新，为什么还需要etag呢？HTTP1.1中etag的出现（也就是说，etag是新增的，为了解决之前只有If-Modified的缺点）主要是为了解决几个last-modified比较难解决的问题：</p>
+<ol>
+<li><p>一些文件也许会周期性的更改，但是他的内容并不改变(仅仅改变的修改时间)，这个时候我们并不希望客户端认为这个文件被修改了，而重新get；</p>
+</li>
+<li><p>某些文件修改非常频繁，比如在秒以下的时间内进行修改，(比方说1s内修改了N次)，if-modified-since能检查到的粒度是秒级的，这种修改无法判断(或者说UNIX记录MTIME只能精确到秒)；</p>
+</li>
+<li><p>某些服务器不能精确的得到文件的最后修改时间。</p>
+</li>
+</ol>
+<h3 id="本地存储"><a href="#本地存储" class="headerlink" title="本地存储"></a>本地存储</h3><p>[ localStorage;sessionStorage; Cookie ]</p>
+<p><strong>webstorage</strong></p>
+<p>存储在客户端，包括localStorage和sessionStorage</p>
+<ul>
+<li>localStorage生命周期是永久，这意味着除非用户显示在浏览器提供的UI上清除localStorage信息，否则这些信息将永远存在。存放数据大小为一般为5MB,而且它仅在客户端（即浏览器）中保存，不参与和服务器的通信</li>
+<li>sessionStorage仅在当前会话下有效，关闭页面或浏览器后被清除。存放数据大小为一般为5MB,而且它仅在客户端（即浏览器）中保存，不参与和服务器的通信。</li>
+</ul>
+<p><strong>cookie</strong><br>存储在客户端，在HTTP请求发送Set-Cookie HTTP头作为响应的一部分。通过name=value的形式存储。</p>
+<p><strong>共同点</strong></p>
+<p>都是保存在浏览器端，且同源的。 </p>
+<p><strong>区别</strong></p>
+<p>sessionStorage和localStorage不会自动把数据发给服务器，仅在本地保存，而cookie数据始终在同源的http请求中携带，即cookie在浏览器和服务器间来回传递。</p>
+<p>cookie数据不能超过4k(适合保存小数据)。sessionStorage和localStorage容量较大。</p>
+<p>数据有效期不同，localStorage：始终有效，窗口或浏览器关闭也一直保存，需手动清除；sessionStorage：仅在当前浏览器窗口关闭前有效；cookie只在设置的cookie过期时间之前一直有效，即使窗口或浏览器关闭。</p>
+<p>作用域不同。 localStorage 在所有同源窗口中都是共享的；sessionStorage不在不同的浏览器窗口中共享；cookie也是在所有同源窗口中都是共享的。</p>
+<p><strong>应用场景</strong></p>
+<p>localStorage：常用于长期登录（+判断用户是否已登录），适合长期保存在本地的数据。sessionStorage ：敏感账号一次性登录； cookies与服务器交互</p>
+<h2 id="跨域（补充）"><a href="#跨域（补充）" class="headerlink" title="跨域（补充）"></a>跨域（补充）</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38128179/article/details/84956552">跨域</a></p>
+<p>出于浏览器的<strong>同源策略</strong>限制。同源策略（Sameoriginpolicy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。同源策略会阻止一个域的javascript脚本和另外一个域的内容进行交互。所谓同源（即指在同一个域）就是两个页面具有相同的协议（protocol），主机（host）和端口号（port）</p>
+<p><strong>跨域的解决方案</strong></p>
+<ul>
+<li><p><strong>JSONP</strong></p>
+<p>JSONP 是服务器与客户端跨源通信的常用方法。最大特点就是简单适用，兼容性好（兼容低版本IE），缺点是只支持get请求，不支持post请求。</p>
+<p>核心思想：网页通过添加一个<code>&lt;script&gt;元素</code>，向服务器请求 JSON 数据，服务器收到请求后，将数据放在一个指定名字的回调函数的参数位置传回来。</p>
+</li>
+<li><p><strong>CORS</strong></p>
+<p>CORS 是跨域资源分享（Cross-Origin Resource Sharing）的缩写。它是 W3C 标准，属于跨源 AJAX 请求的根本解决方法。</p>
+<p><strong>1、普通跨域请求：只需服务器端设置Access-Control-Allow-Origin</strong></p>
+</li>
+</ul>
+<p>  <strong>2、带cookie跨域请求：前后端都需要进行设置</strong></p>
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//前端axios</span></span><br><span class="line">axios.defaults.withCredentials = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//后端Node.js</span></span><br><span class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">&#x27;http&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> server = http.createServer();</span><br><span class="line"><span class="keyword">var</span> qs = <span class="built_in">require</span>(<span class="string">&#x27;querystring&#x27;</span>);</span><br><span class="line"> </span><br><span class="line">server.on(<span class="string">&#x27;request&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> postData = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据块接收中</span></span><br><span class="line">    req.addListener(<span class="string">&#x27;data&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">chunk</span>) </span>&#123;</span><br><span class="line">        postData += chunk;</span><br><span class="line">    &#125;);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据接收完毕</span></span><br><span class="line">    req.addListener(<span class="string">&#x27;end&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        postData = qs.parse(postData);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// 跨域后台设置</span></span><br><span class="line">        res.writeHead(<span class="number">200</span>, &#123;</span><br><span class="line">            <span class="comment">// 后端允许发送Cookie</span></span><br><span class="line">            <span class="string">&#x27;Access-Control-Allow-Credentials&#x27;</span>: <span class="string">&#x27;true&#x27;</span>, </span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 允许访问的域（协议+域名+端口）</span></span><br><span class="line">            <span class="string">&#x27;Access-Control-Allow-Origin&#x27;</span>: <span class="string">&#x27;http://www.domain1.com&#x27;</span>,    </span><br><span class="line">            <span class="comment">/* </span></span><br><span class="line"><span class="comment">             * 此处设置的cookie还是domain2的而非domain1，因为后端也不能跨域写cookie(nginx反向代理可以实现)，</span></span><br><span class="line"><span class="comment">             * 但只要domain2中写入一次cookie认证，后面的跨域接口都能从domain2中获取cookie，从而实现所有的接口都能跨域访问</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="string">&#x27;Set-Cookie&#x27;</span>: <span class="string">&#x27;l=a123456;Path=/;Domain=www.domain2.com;HttpOnly&#x27;</span>  <span class="comment">// HttpOnly的作用是让js无法读取cookie</span></span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        res.write(<span class="built_in">JSON</span>.stringify(postData));</span><br><span class="line">        res.end();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">server.listen(<span class="string">&#x27;8080&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;Server is running at port 8080...&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+<h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>用户访问网站的过程</p>
+<p><strong>从浏览器打开<a href="http://www.baidu.com地址回车发送请求到看到页面的过程：">http://www.baidu.com地址回车发送请求到看到页面的过程：</a></strong></p>
+<p>主要分成 <strong>两个</strong> 步骤：</p>
+<p>第一步：DNS服务器将域名解析成IP</p>
+<p>具体来说：</p>
+<ol>
+<li>客户端用户从浏览器输入 <a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a> 网站网址后回车后，浏览器会查询<strong>浏览器缓存</strong>，查找是否存在网址对应的IP解析记录。如果有，就直接获取到IP地址，然后访问网站；</li>
+<li>如果浏览器缓存没有该记录，则在<strong>操作系统缓存</strong>即本地hosts文件中查找对应的IP；</li>
+<li>如果还是没有，则将查询请求发给路由器，查看<strong>路由器缓存</strong>里是否有该IP地址的缓存；</li>
+<li>如果依然没有，向<strong>本地域名服务器</strong>（Local DNS：一般是网络服务提供商，比如电信，移动，联通服务商）发出请求，获取IP；</li>
+<li>以上都失败的话，LDNS会从DNS系统的“.”根开始（根域名服务器）请求<a target="_blank" rel="noopener" href="http://www.baidu.com域名的解析,经过一系列的查找各个层次dns服务器,最终会查找到www.baidu.com域名对应的**授权dns服务器**,而这个授权dns服务器,正是该企业购买域名时用于管理域名解析的服务器.这个服务器有www.baidu.com对应的ip解析记录,如果此时都没有,就表示企业的运维人员么有给www.baidu.com域名做解析;/">www.baidu.com域名的解析，经过一系列的查找各个层次DNS服务器，最终会查找到www.baidu.com域名对应的**授权DNS服务器**，而这个授权DNS服务器，正是该企业购买域名时用于管理域名解析的服务器。这个服务器有www.baidu.com对应的IP解析记录，如果此时都没有，就表示企业的运维人员么有给www.baidu.com域名做解析；</a></li>
+<li>LDNS把收到来自授权DNS服务器关于<a target="_blank" rel="noopener" href="http://www.baidu.com对应的ip解析记录发给客户端浏览器,并且在ldns本地把域名和ip的对应解析缓存起来,以便下一次更快的返回相同的解析请求的记录;/">www.baidu.com对应的IP解析记录发给客户端浏览器，并且在LDNS本地把域名和IP的对应解析缓存起来，以便下一次更快的返回相同的解析请求的记录；</a></li>
+</ol>
+<p>第二步：客户端浏览器获取到了<a target="_blank" rel="noopener" href="http://www.baidu.com的对应ip地址,接下来浏览器会请求获得的ip地址对应的web服务器,web服务器接收到客户的请求并响应处理,将客户请求的内容返回给客户端浏览器;/">www.baidu.com的对应IP地址，接下来浏览器会请求获得的IP地址对应的Web服务器，Web服务器接收到客户的请求并响应处理，将客户请求的内容返回给客户端浏览器；</a></p>
+<h2 id="XSS-跨站脚本漏洞攻击"><a href="#XSS-跨站脚本漏洞攻击" class="headerlink" title="XSS(跨站脚本漏洞攻击)"></a>XSS(跨站脚本漏洞攻击)</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4fcb4b411a66">原文</a></p>
+<p>跨站脚本攻击是指恶意攻击者往Web页面里插入恶意Script代码，当用户浏览该页之时，嵌入其中Web里面的Script代码会被执行，从而达到恶意攻击用户的目的。<br> xss漏洞通常是通过php的输出函数将javascript代码输出到html页面中，通过用户本地浏览器执行的，所以xss漏洞关键就是<strong>寻找参数未过滤的输出函数</strong>。<br> 常见的输出函数有： <code>echo printf print print_r sprintf die var-dump var_export</code>.</p>
+<p><strong>xss 分类：（三类）</strong></p>
+<ul>
+<li>反射型XSS：**&lt;非持久化&gt;** 攻击者事先制作好攻击链接, 需要欺骗用户自己去点击链接才能触发XSS代码（服务器中没有这样的页面和内容），一般容易出现在搜索页面。</li>
+<li>存储型XSS：**&lt;持久化&gt;** 代码是存储在服务器中的，如在个人信息或发表文章等地方，加入代码，如果没有过滤或过滤不严，那么这些代码将储存到服务器中，每当有用户访问该页面的时候都会触发代码执行，这种XSS非常危险，容易造成蠕虫，大量盗窃cookie（虽然还有种DOM型XSS，但是也还是包括在存储型XSS内）。</li>
+<li>DOM型XSS：基于文档对象模型(Document Objeet Model，DOM)的一种漏洞。DOM是一个与平台、编程语言无关的接口，它允许程序或脚本动态地访问和更新文档内容、结构和样式，处理后的结果能够成为显示页面的一部分。DOM中有很多对象，其中一些是用户可以操纵的，如uRI ，location，refelTer等。客户端的脚本程序可以通过DOM动态地检查和修改页面内容，它不依赖于提交数据到服务器端，而从客户端获得DOM中的数据在本地执行，如果DOM中的数据没有经过严格确认，就会产生DOM XSS漏洞。</li>
+</ul>
+<h2 id="CSRF-跨站点请求伪造攻击"><a href="#CSRF-跨站点请求伪造攻击" class="headerlink" title="CSRF(跨站点请求伪造攻击)"></a>CSRF(跨站点请求伪造攻击)</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaoxinshuaiga/article/details/80766369">好文</a></p>
+<p>CSRF跨站点请求伪造(Cross—Site Request Forgery)，跟XSS攻击一样，存在巨大的危害性，你可以这样来理解：<br>    攻击者盗用了你的身份，以你的名义发送恶意请求，对服务器来说这个请求是完全合法的，但是却完成了攻击者所期望的一个操作，比如以你的名义发送邮件、发消息，盗取你的账号，添加系统管理员，甚至于购买商品、虚拟货币转账等。 如下：其中Web A为存在CSRF漏洞的网站，Web B为攻击者构建的恶意网站，User C为Web A网站的合法用户。</p>
+
+            </section>
+    </article>
+    
+
+
+        <!-- 版权声明 -->
+        
+<div class="post-copyright">
+    <div>
+        <strong>本文作者：</strong>
+        <span>何叨叨</span>
+    </div>
+    <div>
+        <strong>本文链接：</strong>
+        <a href="http://example.com/前端面试核心点">
+            http://example.com/前端面试核心点
+        </a>
+    </div>
+    <div>
+        <span>欢迎任何形式的转载，但请务必注明出处。</span>
+    </div>
+    <div>
+        <span>由于笔者水平有限，如果文章或代码有表述不当之处，还请不吝赐教。</span>
+    </div>
+</div>
+
+
+
+
+
+
+<style>
+    .post-copyright {
+        background-color: #fff;
+  box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.05);
+        display: block;
+        margin: 20px auto;
+        margin-bottom: 15px;
+        padding: 10px;
+        font-size: 15px;
+        color: #2e2d2d;
+        word-break: break-all;
+        line-height: 1.8;
+    }
+
+
+    .post-copyright a {
+        color: #2e2d2d;
+        border-bottom: 1px solid #999; 
+    }
+
+    .post-copyright a:hover {
+        color: #2e2d2d;
+        border-bottom: 1px solid #000; 
+    }
+</style>
+
+          <!-- comments -->
+          <div class="comments">
+    <h3 id="commenttitle" style="margin-top: 20px;margin-left: 10px;">评论区</h3>
+    <div id="tcomment"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/twikoo@0.6.0/dist/twikoo.all.min.js"></script>
+<script>twikoo.init({ envId: '', el: '#tcomment' })</script>
+
+            <div class="right-icon">
+              <div id="to-valine" class="right-icon-item">
+                <a href="#commenttitle">评论</a>
+              </div>
+            </div>
+
+  </div>
+
+
+  <aside>
+    <div class="aside-wrap">
+    
+        <section class="widget-wrap">
+    <h3 class="widget-title">简介</h3>
+    <div class="widget">
+        <div class="notice">
+            <img class="notice-img" src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108164434.jpg">
+            <p>路漫漫其修远兮，<br>吾将上下而求索!<br></p>
+            
+            <p class="notice-item">
+                <!-- github -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108165043.jpg" alt="Github"></a></span>
+                <!-- juejin -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108165800.png" alt="掘金社区"></a></span>
+                <!-- zhihu -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108172745.ico" alt="知乎"></a></span>
+                <!-- csdn -->
+                <span><a target="_blank" href=""><img src="https://shuxhan-imgbed.oss-cn-hangzhou.aliyuncs.com/img/20210108172932.ico" alt="CSDN"></a></span>
+            </p>
+            
+        </div>
+    </div>
+</section>
+
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">文章分类</h3>
+    <div class="widget">
+      <div class="categories-list">
+        
+           
+            
+              <a class="category-list-item" href="/categories/版本控制">
+                <span class="category-list-link">版本控制</span>
+                <span class="category-list-number">(2)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/未来规划">
+                <span class="category-list-link">未来规划</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/后端技术">
+                <span class="category-list-link">后端技术</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/Python">
+                <span class="category-list-link">Python</span>
+                <span class="category-list-number">(1)</span>
+              </a>
+            
+           
+            
+              <a class="category-list-item" href="/categories/前端技术">
+                <span class="category-list-link">前端技术</span>
+                <span class="category-list-number">(2)</span>
+              </a>
+            
+          
+        
+      </div>
+    </div>
+  </section>
+
+
+    
+        
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSV/" rel="tag">CSV</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">MySql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/js/" rel="tag">js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
+    </div>
+  </div>
+
+
+    
+        
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul class="recent-posts">
+        
+          <li>
+            <a href="/2021/01/10/python%E7%88%AC%E8%99%AB%E8%BF%9B%E9%98%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Python商业爬虫进阶--学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2021/01/04/Git%E7%9B%B8%E5%85%B3%E7%AC%94%E8%AE%B0/">Git学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/08/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">JS学习笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2020/05/10/%E8%A6%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9F%A5%E8%AF%86/">要学习的知识</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/15/Linux%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Linux基础-学习笔记</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+        
+  <section class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
+    </div>
+  </section>
+
+
+    
+        <section class="widget-wrap">
+    <div class="widget">
+        <div class="notice attention">
+            <p>本博客主题采用的是基于 hexo 打造的 <a href="https://github.com/shuxhan/hexo-theme-simple99" target="_blank">simple99</a>，主题已上架 hexo 官网。</p>
+            <p>如有其他问题，请在博客<a target="_blank" rel="noopener" href="https://shuxhan.com/message">留言</a>，或者发一封邮件给我，我的邮箱地址：zsh981109@163.com</p>
+            
+        </div>
+    </div>
+</section>
+
+    
+    
+</div>
+
+
+      <!-- 目录 -->
+      
+        <div id="toc"></div>
+        <script>
+          $(function () {
+            var elm = $('#toc');
+            var startPos = $(elm).offset().top;
+            $.event.add(window, "scroll", function () {
+              var p = $(window).scrollTop();
+              $(elm).css('margin-left', '0px');
+              $(elm).css('position', ((p) > startPos) ? 'fixed' : 'static');
+              $(elm).css('top', ((p) > startPos) ? '20px' : '')
+            })
+          })
+
+        </script>
+
+  </aside>
+  
+</div>
+
+
+<script>
+  $('#to-top').click(function () { $('html,body').animate({ scrollTop: '0px' }, 500); return false; });
+
+</script>
+                </div>
+            </div>
+            <div class="right-icon">
+                <div id="to-top" class="right-icon-item">
+                  <a>
+                    <span class="top-left"></span>
+                    <span class="top-right"></span>
+                  </a>
+                </div>
+              </div>
+    </div>
+    <footer class="footer">
+  <div class="links-wrap-wrap">
+    <div class="links-wrap">
+    
+      
+        <section class="link-wrap">
+          <h3 class="link-title">导航</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://cn.bing.com" title="">
+                        必应搜索(bing)
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://github.com" title="">
+                        GitHub
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://gitee.com" title="">
+                        Gitee
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.aliyun.com/" title="">
+                        阿里云
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://cloud.tencent.com" title="">
+                        腾讯云
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+
+      
+        <section class="link-wrap">
+          <h3 class="link-title">社区论坛</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.csdn.net" title="">
+                        CSDN
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://juejin.cn" title="">
+                        掘金
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://segmentfault.com" title="">
+                        segmentfault思否
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.cnblogs.com" title="">
+                        博客园
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://www.v2ex.com/" title="">
+                        V2EX
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://discord.com" title="">
+                        Discord
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+
+      
+        <section class="link-wrap">
+          <h3 class="link-title">文档</h3>
+          <div>
+            <ul class="link-item-wrap">
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://react.docschina.org" title="">
+                        React官方中文文档
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="https://hexo.io" title="">
+                        hexo官网
+                    </a>
+                </li>
+                
+                <li class="link-item">
+                    <a target="_blank" rel="noopener" href="http://lesscss.cn" title="">
+                        less中文网
+                    </a>
+                </li>
+                
+            </ul>
+          </div>
+        </section>
+      
+
+    </div>
+  </div>
+  
+    <div class="copyright-wrap">
+      <span>&copy; 2020-2021 何叨叨</span>
+      <span id="timeDate">载入天数...</span>
+      
+    </div>
+    <span id="busuanzi_container_site_pv">
+      本站总访问量<span id="busuanzi_value_site_pv"></span>次
+    </span>
+    <span id="busuanzi_container_site_uv">
+      ，本站访客数<span id="busuanzi_value_site_uv"></span>人次
+    </span>
+    
+</footer>
+
+<script>
+    var now = new Date();
+    function createtime() {
+      var grt = new Date("06/14/2020 12:00:00");//此处修改你的建站时间或者网站上线时间 
+      now.setTime(now.getTime() + 250);
+      days = (now - grt) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+      document.getElementById("timeDate").innerHTML = "本站已安全运行 " + dnum + " 天 ";
+    }
+    setInterval("createtime()", 1000);
+</script>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<script src="/lib/jquery.js"></script>
+
+
+<script src="/lib/waves.js"></script>
+
+
+<script src="/lib/jquery-ui.js"></script>
+
+
+<script src="/lib/jquery.tocify.js"></script>
+
+
+<script src="/js/main.js"></script>
+
+
+        
+<style>
+  .copy-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    color: rgb(206, 206, 206);
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 3px;
+    user-select: none;
+    outline: 0;
+  }
+
+  .copy-btn:hover {
+    color: #888
+  }
+
+  .highlight-wrap .copy-btn {
+    padding: 2px 6px;
+    position: absolute;
+    right: 10px;
+    top: 1px;
+    z-index: 1;
+  }
+
+
+
+  .highlight-wrap {
+    position: relative;
+  }
+
+  #copysuccess {
+    width: 200px;
+    height: 75px;
+    position: fixed;
+    right: 50%;
+    margin-right: -100px;
+    top: 40%;
+    margin-top: -40px;
+    color: #fff;
+    font-weight: 600;
+    background: #444444d8;
+    display: none;
+    z-index: 99999;
+    border-radius: 10px;
+    text-align: center;
+    line-height: 30px;
+    padding-top: 10px;
+    user-select: none;
+  }
+</style>
+
+<script>
+  addLoadEvent(() => {
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<div>').addClass('copy-btn').append('复制代码').on('click', function (e) {
+        var copysuccess = document.getElementById('copysuccess');
+        copysuccess.style.display = 'block'
+        setTimeout(function () {
+          copysuccess.style.display = 'none'
+        }, 2000)
+        var code = $(this).parent().find(".code")[0].innerText
+          
+                var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+          
+                  if (result) $(this).text('复制成功')
+            else $(this).text('复制失败')
+              
+                $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制代码')
+        }, 1000)
+      }).append(e)
+    })
+  })
+</script>
+
+            <div id="copysuccess">复制成功<br>欢迎阅读文章~</div>
+</body>
+
+</html>
+
+<script>
+    $('#to-top').click(function () { $('html,body').animate({ scrollTop: '0px' }, 500); return false; });
+</script>

@@ -1487,11 +1487,145 @@
 
 
 
+<h2 id="如何进行手机APP的数据爬取？"><a href="#如何进行手机APP的数据爬取？" class="headerlink" title="如何进行手机APP的数据爬取？"></a>如何进行手机APP的数据爬取？</h2><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/pZzkHr1cn1LosW-TRCjavQ">原文</a></p>
+<p>平时我们的爬虫多是针对网页的，但是随着手机端APP应用数量的增多，相应的爬取需求也就越来越多，因此<code>手机端APP的数据爬取</code>对于一名爬虫工程师来说是一项必备的技能。我们知道，网页爬取的时候我经常使用<code>F12开发者工具</code>或者<code>fiddler</code>之类的工具来帮助我们分析浏览器行为。那对于手机的APP该如何使用呢？同样的，我们也可以使用<code>fiddler</code>来分析。好了，本篇博主将会给大家介绍如何在电脑端使用<code>fiddler</code>进行手机APP的抓包。</p>
+<p>首先了解一下fiddler（百度百科）：</p>
+<blockquote>
+<p>Fiddler是一个http协议调试代理工具，它能够记录并检查所有你的电脑和互联网之间的http通讯，设置断点，查看所有的“进出”Fiddler的数据（指cookie,html,js,css等文件，这些都可以让你胡乱修改的意思）。 Fiddler 要比其他的网络调试器要更加简单，因为它不仅仅暴露http通讯还提供了一个用户友好的格式。</p>
+</blockquote>
+<p>完成此项工作的整个流程可分为如下几个步骤。</p>
+<h4 id="1-下载fiddler抓包工具"><a href="#1-下载fiddler抓包工具" class="headerlink" title="1. 下载fiddler抓包工具"></a>1. 下载fiddler抓包工具</h4><p><code>fiddler</code>的官方下载链接：<a target="_blank" rel="noopener" href="https://www.telerik.com/download/fiddler">https://www.telerik.com/download/fiddler</a><br>安装步骤没什么特别，常规下一步完成即可。</p>
+<h4 id="2-设置fiddler"><a href="#2-设置fiddler" class="headerlink" title="2. 设置fiddler"></a>2. 设置fiddler</h4><p>这里有两点需要说明一下。</p>
+<ul>
+<li>设置允许抓取<code>HTTPS</code>信息包</li>
+</ul>
+<p>  操作很简单，打开下载好的<code>fiddler</code>，找到 <code>Tools -&gt; Options</code>，然后在<code>HTTPS</code>的工具栏下勾选<code>Decrpt HTTPS traffic</code>，在新弹出的选项栏下勾选<code>Ignore server certificate errors</code>。这样，fiddler就会抓取到<code>HTTPS</code>的信息包，否则会一直显示<code>tunnel</code>。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114059462.png" alt="image-20210127114059462"></p>
+<ul>
+<li>设置允许外部设备发送<code>HTTP/HTTPS</code>到<code>fiddler</code><br>相同的，在<code>Connections</code>选项栏下勾选<code>Allow remote computers to connect</code>，并记住上面的端口号<code>8888</code>，端口号后面会使用到。</li>
+</ul>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114115443.png" alt="image-20210127114115443"></p>
+<p>好了，需要的fiddler设置就配置完成了。</p>
+<h4 id="3-设置手机端"><a href="#3-设置手机端" class="headerlink" title="3. 设置手机端"></a>3. 设置手机端</h4><p>设置手机端之前，我们需要记住一点：<strong>电脑和手机需要在同一个网络下进行操作</strong>。可以使用<code>wifi</code>或者<code>手机热点</code>等来完成。</p>
+<p>假如你已经让电脑和手机处于同一个网络下了，这时候我们需要知道此网络的<code>ip地址</code>，可以在命令行输入<code>ipconfig</code>简单的获得，如图。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114131732.png" alt="image-20210127114131732"></p>
+<p>好了，下面我们开始手机端的设置。</p>
+<p>手机APP的抓取操作对于<code>Android</code>和<code>Apple</code>系统都可用，博主使用的苹果系统，在此以苹果系统为例。</p>
+<p>首先进入到手机<code>wifi</code>的设置界面，选择当前连接网络的更多信息，在苹果中是一个<code>叹号</code>。点击进入后你会在最下面看到<code>HTTP代理</code>的选项，选择点击进入，选择 手动。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114156087.png" alt="image-20210127114156087"></p>
+<p>进入后，填写上面记住的<code>ip地址</code>和<code>端口号</code>，确定保存。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114208511.png" alt="image-20210127114208511"></p>
+<h4 id="4-下载fiddler安全证书"><a href="#4-下载fiddler安全证书" class="headerlink" title="4. 下载fiddler安全证书"></a>4. 下载fiddler安全证书</h4><p>手机端设置完成后，我们还需要下载<code>fiddler安全证书</code>，可以在在手机上打开浏览器输入一个上面ip地址和端口号组成的url：<a href="http://192.168.43.38:8888。打开后你会看到如下的界面，然后点击`FiddlerRoot">http://192.168.43.38:8888。打开后你会看到如下的界面，然后点击`FiddlerRoot</a> certificate<code>下载</code>fiddler证书`。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114222176.png" alt="image-20210127114222176"></p>
+<p>以上就简单完成了所有的操作，最后我们测试一下是否好用。</p>
+<h4 id="5-手机端测试"><a href="#5-手机端测试" class="headerlink" title="5. 手机端测试"></a>5. 手机端测试</h4><p>就以<code>知乎APP</code>为例，在手机上打开 知乎APP。下面是电脑上<code>fiddler</code>的抓包结果。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Python%E7%9B%B8%E5%85%B3/image-20210127114243324.png" alt="image-20210127114243324"></p>
+<p>结果没有问题，抓到信息包。然后就可以使用我们分析网页的方法来进行后续的操作了。</p>
+<h2 id="爬虫模拟登录—OAUTH的详解"><a href="#爬虫模拟登录—OAUTH的详解" class="headerlink" title="爬虫模拟登录—OAUTH的详解"></a>爬虫模拟登录—OAUTH的详解</h2><p>原创 Python爬虫之路 <a href="javascript:void(0);">Python数据科学</a> <em>2018-02-15</em></p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUzODYwMDAzNA==&mid=2247483793&idx=1&sn=b8937d3c706694c9ac770e1a84b6d970&chksm=fad4769ccda3ff8a7e580a890cbcf34449622868181e9f2dc213bbd7b9f6d050131671219558&scene=21#wechat_redirect">解读爬虫中HTTP的秘密（基础篇）</a><br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUzODYwMDAzNA==&mid=2247483807&idx=1&sn=6c4d41085af58b5abc6839b7f60ac2b0&chksm=fad47692cda3ff84fb008312cd1058853363ba140f74a398b2c35591d975035b09550f0c54f4&scene=21#wechat_redirect">解读爬虫中HTTP的秘密（高阶篇）</a><br><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUzODYwMDAzNA==&mid=2247483823&idx=1&sn=fa741c8458bdf9857d06ad281fe26c4c&chksm=fad476a2cda3ffb43c2d87473fe2d79033b83bb0527e7e5bada70cea7da4cf4ef07ebfb5d15b&scene=21#wechat_redirect">Python爬虫之模拟登录京东商城</a></p>
+</blockquote>
+<p>前两篇分享了HTTP的基本概念和高级用法，以及<code>京东模拟登录</code>的实战内容。本篇博主将会继续与大家分享HTTP中的另一个有趣内容：<code>OAUTH</code>，它也是在爬虫的模拟登录中可能会用到的，下面给大家详细介绍一下。</p>
+<h3 id="OAUTH的定义"><a href="#OAUTH的定义" class="headerlink" title="OAUTH的定义"></a>OAUTH的定义</h3><p>引自<code>百度百科</code>的定义：</p>
+<blockquote>
+<p>OAUTH协议为用户资源的授权提供了一个安全的、开放而又简易的标准。与以往的授权方式不同之处是OAUTH的授权不会使第三方触及到用户的帐号信息（如用户名与密码），即第三方无需使用用户的用户名与密码就可以申请获得该用户资源的授权，因此OAUTH是安全的。oAuth是Open Authorization的简写。</p>
+</blockquote>
+<p>目前，最新的OAUTH协议使用2.0版本，具体内容被记录在<code>RFC6749</code>标准中，可参考链接：<em><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc6749">https://tools.ietf.org/html/rfc6749</a></em>。</p>
+<h3 id="OAUTH的应用"><a href="#OAUTH的应用" class="headerlink" title="OAUTH的应用"></a>OAUTH的应用</h3><p><strong>一个简单而不陌生的例子。</strong></p>
+<p>我们平时访问某个网站或论坛，如果进行一些个人操作（比如留言），网页一般会弹出让我们先登录的提示。如果这时候我没有账号又不想注册的话，该怎么办呢？我们通常会点击一个第三方的小图标（比如微信）而完成登录。有些网站甚至没有用户注册的功能，完全依靠第三方网站登录获取用户信息。</p>
+<p>比如我们使用<code>微博账号</code>来登录<code>segmentfault</code>网站。</p>
+<p>网页会首先被重定向到<code>微博</code>的登录界面进行登录，我们输入我们的账号和密码后，<code>segementfault</code>网站会根据从微博账号获取的信息（比如你的微博头像、昵称、好友列表等）来创建一个用户。当然，segmentfault是不会知道你的微博密码的，因为我们必须保证用户登录信息的安全性而不能将密码明文出去。这一系列的安全性的授权操作都源于使用了<code>OAUTH协议</code>。</p>
+<p>其实在这一过程中，<code>OAUTH协议</code>解决了传统第三方登录方法的一些弊端，比如：</p>
+<ul>
+<li>避免了传统方法中直接使用<code>用户名称</code>和<code>密码</code>进行第三方登录的行为，而是通过<code>token</code>的形式使登录过程更安全可靠。</li>
+<li>避免了传统方法中修改密码会丧失所有第三方程序授权的尴尬。</li>
+<li>避免了因任意一个第三方程序被破解而泄露用户信息的缺点。</li>
+</ul>
+<p>也正是基于这些，<code>OAUTH</code>就应运而生了。那么，上述的第三方授权登录过程到底是怎么实现的呢？这一过程怎么进行的呢？我们带着这些问题继续往下看。</p>
+<h3 id="OAUTH实现的思路"><a href="#OAUTH实现的思路" class="headerlink" title="OAUTH实现的思路"></a>OAUTH实现的思路</h3><p>通过上面应用的介绍，我们不难发现这其中可大概分为三个对象，分别是：</p>
+<ul>
+<li>客户端（上面的segmentfault）</li>
+<li>第三方（上面的weibo）</li>
+<li>用户（我们自己）。</li>
+</ul>
+<p>清楚这个之后，我们看看<code>OAUTH</code>授权的大概思路。</p>
+<ul>
+<li>使用<code>OAUTH</code>协议，客户端不会与第三方登录网站直接联系，而是先通过一个授权的中间层来建立联系（有的网站将授权服务器和资源服务器分开使用，有的一起使用）。在这个<code>授权层</code>下，用户密码等安全信息不会泄露给客户端，而是通过反馈一个临时的令牌<code>token</code>来代替用户信息完成授权。<code>token</code>相当于一把<code>钥匙</code>，并且区别于用户密码，<code>token</code>令牌是经过加密算法生成的，一般的很难破解。</li>
+<li>另外，用户可以指定<code>token</code>令牌的权限范围和有效期，以适度的开放资源。</li>
+<li>得到授权后，客户端就会带着<code>token</code>，并根据用户规定的权限范围和有效期来规矩的获取资源信息。</li>
+</ul>
+<p><strong>这只是一个大体的思路，说白了就是通过一个授权层隔离了<code>客户端</code>与<code>用户信息</code>，并在授权层基础上使用了一把<code>安全的钥匙</code>来代替用户完成授权。</strong></p>
+<h3 id="OAUTH的运行流程"><a href="#OAUTH的运行流程" class="headerlink" title="OAUTH的运行流程"></a>OAUTH的运行流程</h3><p>基于这个思路，RFC6749标准规定了四种不同的授权流程供选择，分别是：</p>
+<ul>
+<li>授权码模式（authorization code）</li>
+<li>简化模式（implicit）</li>
+<li>密码模式（resource owner password credentials）</li>
+<li>客户端模式（client credentials）</li>
+</ul>
+<p>上面提到的<code>微博web网站</code>使用<code>OAUTH2.0授权码模式</code>完成授权。其它客户端进行第三方登录之前，需要先在微博开放平台上注册一个应用，在应用里填写信息。注册完后，开放平台会给客户端（比如上面提到的<code>segmentfault</code>）颁发一个<code>client_id</code>和一个<code>APP Secret</code>，供授权请求使用。</p>
+<p>下面将详细介绍微博的授权流程，即<code>授权码模式</code>，其它模式可以参考官方文档：<em><a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc6749">https://tools.ietf.org/html/rfc6749</a></em>。</p>
+<h3 id="OAUTH的详细实现过程"><a href="#OAUTH的详细实现过程" class="headerlink" title="OAUTH的详细实现过程"></a>OAUTH的详细实现过程</h3><p>下面是<code>OAUTH2.0</code>协议的详细流程图：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/NOM5HN2icXzwVaJAVwEk6rqgZ6zwr9RJjVng72mFfnFf3Zya0LWQk7QDSxwexs6Fz6T3EQ7icqswSvwWich2vBK1A/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="图片"></p>
+<p>博主以上面<code>segmentfault</code>通过微博第三方登录为例来详细说明<code>OAUTH</code>授权流程。</p>
+<p><strong>&lt;1&gt; 第一步</strong></p>
+<p>首先用户点击微博图标进行第三方登录，然后页面跳转到微博登录界面等待用户输入账号密码授权。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/NOM5HN2icXzwVaJAVwEk6rqgZ6zwr9RJjMFo6aXuTYuzrOzqYvKCP3rpEZCt7LnamibnAUOwAibw4kEmrq8hp78UQ/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1" alt="图片"></p>
+<p>登录界面url如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;api.weibo.com&#x2F;oauth2&#x2F;authorize?</span><br><span class="line">client_id&#x3D;1742025894&amp;</span><br><span class="line">redirect_uri&#x3D;https%3A%2F%2Fsegmentfault.com%2Fuser%2Foauth%2Fweibo&amp;</span><br><span class="line">scope&#x3D;follow_app_official_microblog</span><br></pre></td></tr></table></figure>
+<p>客服端通过<code>application/x-www-form-urlencoded</code>格式并使用 UTF8编码 将下列参数加入到 <code>query string</code> 中来建立URI请求。</p>
+<ul>
+<li><strong>client_id</strong>：即segmentfault在微博开放平台申请的应用ID号。</li>
+<li><strong>redirect_uri</strong>：用户授权后需要跳转到的url地址。</li>
+<li><strong>scope</strong>：用户授权的权限范围和有效期。</li>
+</ul>
+<p><strong>&lt;2&gt; 第二步</strong></p>
+<p>页面跳转到上一步骤的<code>redirect_uri</code>地址并在末尾添加一个授权码<code>code</code>值，在后面步骤中会用<code>code</code>值来换取<code>token</code>。</p>
+<p>跳转地址如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;segmentfault.com&#x2F;user&#x2F;oauth&#x2F;weibo?</span><br><span class="line"></span><br><span class="line">code&#x3D;e7ec7daeb7bbf8cb9d622152cd449ae0</span><br></pre></td></tr></table></figure>
 
 
+<ul>
+<li><strong>code</strong>：授权码，且只能被客户端使用一次，否则会被授权服务器拒绝。该码与上面的应用ID和重定向URI，是一种映射关系。</li>
+</ul>
+<p>这也验证了<code>reponse_type</code>是<code>code</code>类型的正确性。</p>
+<p><strong>&lt;3&gt; 第三步</strong></p>
+<p><code>segmentfault</code>客户端使用授权的<code>code</code>来获得钥匙<code>token</code>。</p>
+<p>获取token可以通过对微博OAuth2的<code>access_token接口</code>进行POST请求完成，请求链接如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;api.weibo.com&#x2F;oauth2&#x2F;access_token</span><br></pre></td></tr></table></figure>
+<p>当然，请求还需要携带以下参数才行。</p>
+<blockquote>
+<ul>
+<li><strong>client_id</strong>：申请应用时分配的AppKey</li>
+<li><strong>client_sceret</strong>：申请应用时分配的AppSecret</li>
+<li><strong>grant_type</strong>：请求的类型，填写authorization_code</li>
+<li><strong>code</strong>：调用authorize获得的code值</li>
+<li><strong>redirect_uri</strong>：回调地址，需需与注册应用里的回调地址一致</li>
+</ul>
+</blockquote>
+<p><strong>&lt;4&gt; 第四步</strong></p>
+<p>返回上步请求获得的token信息。一个实例结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">       &quot;access_token&quot;: &quot;ACCESS_TOKEN&quot;,</span><br><span class="line">       &quot;expires_in&quot;: 1234,</span><br><span class="line">       &quot;remind_in&quot;:&quot;798114&quot;,</span><br><span class="line">       &quot;uid&quot;:&quot;12341234&quot;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 
 
-<h2 id="Fiddler工具"><a href="#Fiddler工具" class="headerlink" title="Fiddler工具"></a>Fiddler工具</h2><p>第三方文档<a target="_blank" rel="noopener" href="https://www.cnblogs.com/yyhh/p/5140852.html">https://www.cnblogs.com/yyhh/p/5140852.html</a></p>
+<p>参数说明：</p>
+<blockquote>
+<ul>
+<li><strong><em>\</em>access_token**</strong>：用户授权的唯一票据，用于调用微博的开放接口，同时也是第三方应用验证微博用户登录的唯一票据，第三方应用应该用该票据和自己应用内的用户建立唯一影射关系，来识别登录状态，不能使用本返回值里的UID字段来做登录识别。</li>
+<li><strong>expires_in</strong>：access_token的生命周期，单位是秒数。</li>
+<li><strong>remind_in</strong>：access_token的生命周期。</li>
+<li><strong>uid</strong>：授权用户的UID，本字段只是为了方便开发者，减少一次user/show接口调用而返回的，第三方应用不能用此字段作为用户登录状态的识别，只有access_token才是用户授权的唯一票据。</li>
+</ul>
+</blockquote>
+<p><strong>&lt;5&gt; 第五步</strong></p>
+<p>使用上一步获得的token获取用户的名称头像等信息。可以通过请求如下链接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;api.weibo.com&#x2F;2&#x2F;users&#x2F;show.json</span><br></pre></td></tr></table></figure>
+
+
+<p>同时请求需要携带以上获取的token和 uid参数。</p>
+<p><strong><em>\</em>&lt;6&gt; 第六步**</strong></p>
+<p>返回获取的用户名称头像等已授权信息。</p>
+<p>以上就是整个微博OAUTH授权流程的详细介绍。</p>
+<h3 id="OAUTH总结"><a href="#OAUTH总结" class="headerlink" title="OAUTH总结"></a>OAUTH总结</h3><h2 id="Fiddler工具"><a href="#Fiddler工具" class="headerlink" title="Fiddler工具"></a>Fiddler工具</h2><p>第三方文档<a target="_blank" rel="noopener" href="https://www.cnblogs.com/yyhh/p/5140852.html">https://www.cnblogs.com/yyhh/p/5140852.html</a></p>
 
             </section>
     </article>
