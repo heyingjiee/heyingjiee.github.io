@@ -653,7 +653,17 @@
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">throttle</span>(<span class="params">fn,delay</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> valid = <span class="literal">true</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">       <span class="keyword">if</span>(!valid)&#123;</span><br><span class="line">           <span class="comment">//休息时间 暂不接客</span></span><br><span class="line">           <span class="keyword">return</span> <span class="literal">false</span> </span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">// 工作时间，执行函数并且在间隔期内把状态位设为无效</span></span><br><span class="line">        valid = <span class="literal">false</span></span><br><span class="line">        <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">            fn()</span><br><span class="line">            valid = <span class="literal">true</span>;</span><br><span class="line">        &#125;, delay)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
-<h2 id="宏任务与微任务"><a href="#宏任务与微任务" class="headerlink" title="宏任务与微任务"></a>宏任务与微任务</h2><h2 id="promise"><a href="#promise" class="headerlink" title="promise"></a>promise</h2><h2 id="经典问题"><a href="#经典问题" class="headerlink" title="经典问题"></a>经典问题</h2><p>1.实现以下函数</p>
+<h2 id="宏任务与微任务"><a href="#宏任务与微任务" class="headerlink" title="宏任务与微任务"></a>宏任务与微任务</h2><h2 id="promise"><a href="#promise" class="headerlink" title="promise"></a>promise</h2><p><strong>promise和aync/await：</strong></p>
+<p>Promise 和 async-await 都是优化异步编程体验的解决方案。</p>
+<p><strong>promise</strong> 出现解决了传统 callback 函数回调地狱的问题，支持链式调用可以.then，promise 分别有 3 种状态一旦函数执行 promise 有了结果就无法改变，遇到复杂的业务逻辑 promise 显然不是那么方便需要不停 then 这样语法显然也不美观。</p>
+<p><strong>async,await</strong> 是基于 promise 实现的，它是基于 Generator 函数的语法糖，它拥有内置执行器，它返回的是一个 promise 对象，可以使异步代码看起来像同步代码一样，更方便阅读和理解代码，解决了 promise 里面不停.then 的问题</p>
+<h2 id="for和forEach"><a href="#for和forEach" class="headerlink" title="for和forEach"></a>for和forEach</h2><p>首先，for循环在最开始执行循环的时候，会建立一个循环变量i，之后每次循环都是操作这个变量，也就是说它是对一个循环变量在重复的赋值，因此 i 在最后只会存储一个值；</p>
+<p>而forEach()虽然变量名没变，但是实际上每次循环都会创建一个独立不同的变量，而存储的数值自然也是不同的数值，因此相互之间不会影响，如下:</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/20210427095358.png" alt="image-20210427095358667"></p>
+<p> 　上面代码中，我们会发现使用for循环给每个p绑定事件时，无法正确的找到对应的p元素，最后显示的都是最后一个，这就是因为for循环是一瞬间执行完的，并且只有一个变量，只会存储一个值，也就是最后的那个值；而forEach()则可以正确的找到对应的p元素，因为每次循环都会创建一个不同的变量去记录。</p>
+<p>　　其次，我们知道for循环实际上是可以使用break和continue去终止循环的，但是forEach不行；</p>
+<p>　　那我们知道其实foreach相比较于for来说代码量其实是少了很多的，也有一些缺陷，那么我们该如何区分使用更好呢？一般来说，for多数时候都可以使用，当然一般我们需要知道循环次数；而forEach更适合于集合对象的遍历和操作，具体的我们还是需要根据不同的情景区分去使用了。</p>
+<h2 id="经典问题"><a href="#经典问题" class="headerlink" title="经典问题"></a>经典问题</h2><p>1.实现以下函数</p>
 <p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413112024671.png" alt="image-20210413112024671"></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">repeat</span>(<span class="params">func, times, wait</span>) </span>&#123;  <span class="comment">//补充代码</span></span><br><span class="line">            <span class="keyword">return</span> <span class="function">(<span class="params">text</span>) =&gt;</span> &#123;</span><br><span class="line">                count=<span class="number">1</span></span><br><span class="line">                <span class="built_in">setInterval</span>(<span class="function">()=&gt;</span>&#123;</span><br><span class="line">                    <span class="keyword">if</span>(count&lt;=times)&#123;</span><br><span class="line">                        count++;</span><br><span class="line">                        func(text)</span><br><span class="line">                    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                        <span class="built_in">clearInterval</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    </span><br><span class="line">                &#125;,wait)</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> repeatFunc = repeat(<span class="built_in">console</span>.log, <span class="number">4</span>, <span class="number">3000</span>)</span><br><span class="line">repeatFunc(<span class="string">&quot;helloworld&quot;</span>)<span class="comment">//会输出四次helloworld，每次间隔3s</span></span><br></pre></td></tr></table></figure>
 
@@ -789,7 +799,7 @@
 </tr>
 <tr>
 <td>flex</td>
-<td>flex是flex-grow、flex-shrink 、flex-basis缩写组合。第一个参数是剩余空间的扩张比例。第二个参数是剩余空间的收缩比例，设置为0，则一行子元素溢出父元素，子元素将不会压缩大小，默认不写，会自动压缩。第三个参数，flex-basis的 优先级大于 width、height，指定了该参数，子元素大小则不会受扩张和收缩的影响。</td>
+<td>flex是flex-grow、flex-shrink 、flex-basis缩写组合。第一个参数是剩余空间的扩张比例。第二个参数是剩余空间的收缩比例，设置为0，则一行子元素溢出父元素，子元素将不会压缩大小，默认不写，会自动压缩。第三个参数，flex-basis的 优先级大于 width、height，指定了该参数，子元素大小则不会随着窗口大小自适应。</td>
 </tr>
 <tr>
 <td>order</td>
@@ -808,9 +818,177 @@
 <li><p>3栏自适应布局：使用flex。中间部分会随着窗口宽度变化</p>
 <p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210416083052847.png" alt="image-20210416083052847"></p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">article</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>左侧<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>中心主体<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>右侧<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">article</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">*&#123;</span><br><span class="line"><span class="css">    <span class="selector-tag">margin</span><span class="selector-pseudo">:0</span>;</span></span><br><span class="line">    padding: 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">article&#123;</span><br><span class="line">    display: flex;</span><br><span class="line">    flex-direction: row;</span><br><span class="line">    justify-content: space-between;</span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(1)</span>&#123;</span></span><br><span class="line">    width: 200px;</span><br><span class="line">    height: 400px;</span><br><span class="line">    background-color: blueviolet;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(2)</span>&#123;</span></span><br><span class="line">    </span><br><span class="line">    background-color: coral;</span><br><span class="line">    flex-grow: 1;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(3)</span>&#123;</span></span><br><span class="line">    width: 200px;</span><br><span class="line">    height: 400px;</span><br><span class="line">    background-color: springgreen;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h1 id="网络与浏览器"><a href="#网络与浏览器" class="headerlink" title="网络与浏览器"></a>网络与浏览器</h1></li>
+<h1 id="Node的注意点"><a href="#Node的注意点" class="headerlink" title="Node的注意点"></a>Node的注意点</h1></li>
 </ul>
-<h2 id="Http与Https"><a href="#Http与Https" class="headerlink" title="Http与Https"></a>Http与Https</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaoming100001/article/details/81109617">好文</a></p>
+<h1 id="Vue的注意点"><a href="#Vue的注意点" class="headerlink" title="Vue的注意点"></a>Vue的注意点</h1><h2 id="那你能讲一讲-MVVM-吗？"><a href="#那你能讲一讲-MVVM-吗？" class="headerlink" title="那你能讲一讲 MVVM 吗？"></a><strong>那你能讲一讲 MVVM 吗？</strong></h2><p>MVVM 是 Model-View-ViewModel 缩写，也就是把 MVC 中的 Controller 演变成 ViewModel。Model 层代表数据模型，View 代表 UI 组件，</p>
+<p>ViewModel 是 View 和 Model 层的桥梁，数据会绑定到 viewModel 层并自动将数据渲染到页面中，视图变化的时候会通知 viewModel 层更新数据。</p>
+<h2 id="简单说一下-Vue2-x-响应式数据原理"><a href="#简单说一下-Vue2-x-响应式数据原理" class="headerlink" title="简单说一下 Vue2.x 响应式数据原理"></a><strong>简单说一下 Vue2.x 响应式数据原理</strong></h2><p>Vue 在初始化数据时，会使用 Object.defineProperty 重新定义 data 中的所有属性，当页面使用对应属性时，首先会进行依赖收集(收集当前组件的 watcher)</p>
+<p>如果属性发生变化会通知相关依赖进行更新操作(发布订阅)。</p>
+<h2 id="那你知道-Vue3-x-响应式数据原理吗？"><a href="#那你知道-Vue3-x-响应式数据原理吗？" class="headerlink" title="那你知道 Vue3.x 响应式数据原理吗？"></a><strong>那你知道 Vue3.x 响应式数据原理吗？</strong></h2><p>(还好我有看，这个难不倒我)</p>
+<p>Vue3.x 改用 Proxy 替代 Object.defineProperty。因为 Proxy 可以直接监听对象和数组的变化，并且有多达 13 种拦截方法。</p>
+<p>并且作为新标准将受到浏览器厂商重点持续的性能优化。</p>
+<blockquote>
+<p>❝ Proxy 只会代理对象的第一层，那么 Vue3 又是怎样处理这个问题的呢？❞</p>
+</blockquote>
+<p>（很简单啊）</p>
+<p>判断当前 Reflect.get 的返回值是否为 Object，如果是则再通过 reactive 方法做代理， 这样就实现了深度观测。</p>
+<blockquote>
+<p>❝ 监测数组的时候可能触发多次 get/set，那么如何防止触发多次呢？❞</p>
+</blockquote>
+<p>我们可以判断 key 是否为当前被代理对象 target 自身属性，也可以判断旧值与新值是否相等，只有满足以上两个条件之一时，才有可能执行 trigger。</p>
+<p>面试官抬起了头。心里暗想</p>
+<p>(这小子还行，比上两个强，应该是多多少少看过 Vue3 的源码了)</p>
+<h2 id="再说一下-vue2-x-中如何监测数组变化"><a href="#再说一下-vue2-x-中如何监测数组变化" class="headerlink" title="再说一下 vue2.x 中如何监测数组变化"></a><strong>再说一下 vue2.x 中如何监测数组变化</strong></h2><p>使用了函数劫持的方式，重写了数组的方法，Vue 将 data 中的数组进行了原型链重写，指向了自己定义的数组原型方法。</p>
+<p>这样当调用数组 api 时，可以通知依赖更新。如果数组中包含着引用类型，会对数组中的引用类型再次递归遍历进行监控。这样就实现了监测数组变化。</p>
+<p>（能问到这的面试官都比较注重深度，这些常规操作要记牢）</p>
+<p>（原型链的细节可以参考我的另一篇专栏）</p>
+<h2 id="说一下-v-model-的原理-双向数据绑定"><a href="#说一下-v-model-的原理-双向数据绑定" class="headerlink" title="说一下 v-model 的原理/双向数据绑定"></a><strong>说一下 v-model 的原理/双向数据绑定</strong></h2><p>v-model 本质就是一个语法糖，可以看成是 value + input 方法的语法糖。可以通过 model 属性的 prop 和 event 属性来进行自定义。</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/20210428103832.png" alt="image-20210428103832160"></p>
+<p>原生的 v-model，会根据标签的不同生成不同的事件和属性。</p>
+<h2 id="响应式与双向绑定区别？"><a href="#响应式与双向绑定区别？" class="headerlink" title="响应式与双向绑定区别？"></a>响应式与双向绑定区别？</h2><h2 id="nextTick-知道吗，实现原理是什么？"><a href="#nextTick-知道吗，实现原理是什么？" class="headerlink" title="nextTick 知道吗，实现原理是什么？"></a>nextTick 知道吗，实现原理是什么？</h2><p>定义：在下次 DOM 更新循环结束之后执行延迟回调。在修改数据之后立即使用这个方法，获取更新后的 DOM。</p>
+<p>所以就衍生出了这个获取更新后的DOM的Vue方法。所以放在Vue.nextTick()回调函数中的执行的应该是会对DOM进行操作的 js代码；</p>
+<p>理解：nextTick()，是将回调函数延迟在下一次dom更新数据后调用，简单的理解是：当数据更新了，在dom中渲染后，自动执行该函数</p>
+<p><strong>不使用nextTick()</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;div class&#x3D;&quot;hello&quot;&gt;</span><br><span class="line">    &lt;div&gt;</span><br><span class="line">      &lt;button id&#x3D;&quot;firstBtn&quot; @click&#x3D;&quot;testClick()&quot; ref&#x3D;&quot;aa&quot;&gt;&#123;&#123;testMsg&#125;&#125;&lt;&#x2F;button&gt;</span><br><span class="line">    &lt;&#x2F;div&gt;</span><br><span class="line">  &lt;&#x2F;div&gt;</span><br><span class="line">&lt;&#x2F;template&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">    export default &#123;</span><br><span class="line">      name: &#39;HelloWorld&#39;,</span><br><span class="line">      data () &#123;</span><br><span class="line">        return &#123;</span><br><span class="line">          testMsg:&quot;原始值&quot;,</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      methods:&#123;</span><br><span class="line">        testClick:function()&#123;</span><br><span class="line">          let that&#x3D;this;</span><br><span class="line">          that.testMsg&#x3D;&quot;修改后的值&quot;;</span><br><span class="line">          console.log(that.$refs.aa.innerText);   &#x2F;&#x2F;that.$refs.aa获取指定DOM，输出：原始值</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>使用this.$nextTick()</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">methods:&#123;</span><br><span class="line">    testClick:function()&#123;</span><br><span class="line">      let that&#x3D;this;</span><br><span class="line">      that.testMsg&#x3D;&quot;修改后的值&quot;;</span><br><span class="line">      that.$nextTick(function()&#123;</span><br><span class="line">        console.log(that.$refs.aa.innerText);  &#x2F;&#x2F;输出：修改后的值</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>注意：Vue 实现响应式并不是数据发生变化之后 DOM 立即变化，而是按一定的策略进行 DOM 的更新。$nextTick 是在下次 DOM 更新循环结束之后执行延迟回调，在修改数据之后使用 $nextTick，则可以在回调中获取更新后的 DOM。</p>
+<p><strong>原理</strong></p>
+<p>在下次 DOM 更新循环结束之后执行延迟回调。nextTick 主要使用了宏任务和微任务。根据执行环境分别尝试采用</p>
+<p>Promise</p>
+<p>MutationObserver</p>
+<p>setImmediate</p>
+<p>如果以上都不行则采用 setTimeout</p>
+<p>定义了一个异步方法，多次调用 nextTick 会将方法存入队列中，通过这个异步方法清空当前队列。</p>
+<p>（关于宏任务和微任务以及事件循环可以参考我的另两篇专栏）</p>
+<p>(看到这你就会发现，其实问框架最终还是考验你的原生 JavaScript 功底)</p>
+<h2 id="说一下-Vue-的生命周期"><a href="#说一下-Vue-的生命周期" class="headerlink" title="说一下 Vue 的生命周期"></a>说一下 Vue 的生命周期</h2><p>beforeCreate 是 new Vue()之后触发的第一个钩子，在当前阶段 data、methods、computed 以及 watch 上的数据和方法都不能被访问。</p>
+<p>created 在实例创建完成后发生，当前阶段已经完成了数据观测，也就是可以使用数据，更改数据，在这里更改数据不会触发 updated 函数。</p>
+<p>可以做一些初始数据的获取，在当前阶段无法与 Dom 进行交互，如果非要想，可以通过 vm.$nextTick 来访问 Dom。</p>
+<p>beforeMount 发生在挂载之前，在这之前 template 模板已导入渲染函数编译。而当前阶段虚拟 Dom 已经创建完成，即将开始渲染。</p>
+<p>在此时也可以对数据进行更改，不会触发 updated。</p>
+<p>mounted 在挂载完成后发生，在当前阶段，真实的 Dom 挂载完毕，数据完成双向绑定，可以访问到 Dom 节点，使用$refs 属性对 Dom 进行操作。</p>
+<p>beforeUpdate 发生在更新之前，也就是响应式数据发生更新，虚拟 dom 重新渲染之前被触发，你可以在当前阶段进行更改数据，不会造成重渲染。</p>
+<p>updated 发生在更新完成之后，当前阶段组件 Dom 已完成更新。要注意的是避免在此期间更改数据，因为这可能会导致无限循环的更新。</p>
+<p>beforeDestroy 发生在实例销毁之前，在当前阶段实例完全可以被使用，我们可以在这时进行善后收尾工作，比如清除计时器。</p>
+<p>destroyed 发生在实例销毁之后，这个时候只剩下了 dom 空壳。组件已被拆解，数据绑定被卸除，监听被移出，子实例也统统被销毁。</p>
+<p>(关于 Vue 的生命周期详解感兴趣的也请移步我的另一篇专栏)</p>
+<h2 id="你的接口请求一般放在哪个生命周期中？"><a href="#你的接口请求一般放在哪个生命周期中？" class="headerlink" title="你的接口请求一般放在哪个生命周期中？"></a><strong>你的接口请求一般放在哪个生命周期中？</strong></h2><p>接口请求一般放在 mounted 中，但需要注意的是服务端渲染时不支持 mounted，需要放到 created 中。</p>
+<h2 id="再说一下-Computed-，-Watch"><a href="#再说一下-Computed-，-Watch" class="headerlink" title="再说一下 Computed ， Watch"></a>再说一下 Computed ， Watch</h2><p>用法： 区别：</p>
+<ol>
+<li>两者自动追踪数据，执行相关函数</li>
+<li>computed是计算属性，用法与data一致，计算的变量不需要再data中声明。watch的属性必须事先在data中声明</li>
+<li>watch像事件监听，对象发生变化时，执行相关操作。数据变化的同时进行异步操作或者是比较大的开销，那么watch为最佳选择</li>
+<li>通常把模板中的复杂计算放在computed中</li>
+</ol>
+<p><strong>compute的例子</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">var vm &#x3D; new Vue(&#123;</span><br><span class="line">  el: &#39;#demo&#39;,</span><br><span class="line">  data: &#123;</span><br><span class="line">    firstName: &#39;Foo&#39;,</span><br><span class="line">    lastName: &#39;Bar&#39;</span><br><span class="line">  &#125;,</span><br><span class="line">  computed: &#123;</span><br><span class="line">    fullName: function () &#123;</span><br><span class="line">      return this.firstName + &#39; &#39; + this.lastName</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><strong>watch的例子</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">var vm &#x3D; new Vue(&#123;</span><br><span class="line">  el: &#39;#demo&#39;,</span><br><span class="line">  data: &#123;</span><br><span class="line">    firstName: &#39;Foo&#39;,</span><br><span class="line">    lastName: &#39;Bar&#39;,</span><br><span class="line">    fullName: &#39;Foo Bar&#39;</span><br><span class="line">  &#125;,</span><br><span class="line">  watch: &#123;</span><br><span class="line">    firstName: function (val) &#123;</span><br><span class="line">      this.fullName &#x3D; val + &#39; &#39; + this.lastName</span><br><span class="line">    &#125;,</span><br><span class="line">    lastName: function (val) &#123;</span><br><span class="line">      this.fullName &#x3D; this.firstName + &#39; &#39; + val</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="说一下-v-if-和-v-show-的区别"><a href="#说一下-v-if-和-v-show-的区别" class="headerlink" title="说一下 v-if 和 v-show 的区别"></a><strong>说一下 v-if 和 v-show 的区别</strong></h2><p>当条件不成立时，v-if 不会渲染 DOM 元素，v-show 操作的是样式(display)，切换当前 DOM 的显示和隐藏。</p>
+<h2 id="组件中的-data-为什么是一个函数？"><a href="#组件中的-data-为什么是一个函数？" class="headerlink" title="组件中的 data 为什么是一个函数？"></a><strong>组件中的 data 为什么是一个函数？</strong></h2><p>一个组件被复用多次的话，也就会创建多个实例。本质上，这些实例用的都是同一个构造函数。如果 data 是对象的话，对象属于引用类型，会影响到所有的实例。</p>
+<p>所以为了保证组件不同的实例之间 data 不冲突，data 必须是一个函数。</p>
+<h2 id="Vue-事件绑定原理说一下"><a href="#Vue-事件绑定原理说一下" class="headerlink" title="Vue 事件绑定原理说一下"></a><strong>Vue 事件绑定原理说一下</strong></h2><p>原生事件绑定是通过 addEventListener 绑定给真实元素的，组件事件绑定是通过 Vue 自定义的$on 实现的。</p>
+<blockquote>
+<p>❝ 面试官：(这小子基础还可以，接下来我得上上难度了） ❞</p>
+</blockquote>
+<h2 id="Vue-模版编译原理知道吗，能简单说一下吗？"><a href="#Vue-模版编译原理知道吗，能简单说一下吗？" class="headerlink" title="Vue 模版编译原理知道吗，能简单说一下吗？"></a><strong>Vue 模版编译原理知道吗，能简单说一下吗？</strong></h2><p>简单说，Vue 的编译过程就是将 template 转化为 render 函数的过程。会经历以下阶段：</p>
+<p><strong>生成 AST 树</strong></p>
+<p><strong>优化</strong></p>
+<p><strong>codegen</strong></p>
+<p>首先解析模版，生成 AST 语法树(一种用 JavaScript 对象的形式来描述整个模板)。使用大量的正则表达式对模板进行解析，</p>
+<p>遇到标签、文本的时候都会执行对应的钩子进行相关处理。</p>
+<p>Vue 的数据是响应式的，但其实模板中并不是所有的数据都是响应式的。有一些数据首次渲染后就不会再变化，对应的 DOM 也不会变化。</p>
+<p>那么优化过程就是深度遍历 AST 树，按照相关条件对树节点进行标记。这些被标记的节点(静态节点)我们就可以跳过对它们的比对，对运行时的模板起到很大的优化作用。</p>
+<p>编译的最后一步是将优化后的 AST 树转换为可执行的代码。</p>
+<blockquote>
+<p>❝ 面试官：(精神小伙啊，有点东西，难度提升，不信难不倒你）❞</p>
+</blockquote>
+<h2 id="Vue2-x-和-Vue3-x-渲染器的-diff-算法分别说一下"><a href="#Vue2-x-和-Vue3-x-渲染器的-diff-算法分别说一下" class="headerlink" title="Vue2.x 和 Vue3.x 渲染器的 diff 算法分别说一下"></a><strong>Vue2.x 和 Vue3.x 渲染器的 diff 算法分别说一下</strong></h2><p>简单来说，diff 算法有以下过程</p>
+<p>同级比较，再比较子节点</p>
+<p>先判断一方有子节点一方没有子节点的情况(如果新的 children 没有子节点，将旧的子节点移除)</p>
+<p>比较都有子节点的情况(核心 diff)</p>
+<p>递归比较子节点</p>
+<p>正常 Diff 两个树的时间复杂度是 O(n^3)，但实际情况下我们很少会进行跨层级的移动 DOM，所以 Vue 将 Diff 进行了优化，从 O(n^3) -&gt; O(n)，</p>
+<p>只有当新旧 children 都为多个子节点时才需要用核心的 Diff 算法进行同层级比较。</p>
+<p>Vue2 的核心 Diff 算法采用了双端比较的算法，同时从新旧 children 的两端开始进行比较，借助 key 值找到可复用的节点，再进行相关操作。</p>
+<p>相比 React 的 Diff 算法，同样情况下可以减少移动节点次数，减少不必要的性能损耗，更加的优雅。</p>
+<p>Vue3.x 借鉴了 ivi 算法和 inferno 算法</p>
+<p>在创建 VNode 时就确定其类型，以及在 mount/patch 的过程中采用位运算来判断一个 VNode 的类型，在这个基础之上再配合核心的 Diff 算法，</p>
+<p>使得性能上较 Vue2.x 有了提升。(实际的实现可以结合 Vue3.x 源码看。)</p>
+<p>该算法中还运用了动态规划的思想求解最长递归子序列。</p>
+<p>(看到这你还会发现，框架内无处不蕴藏着数据结构和算法的魅力)</p>
+<blockquote>
+<p>❝ 面试官：(可以可以，看来是个苗子，不过自我介绍属实有些无聊，下一题) ❞</p>
+</blockquote>
+<h2 id="再说一下虚拟-Dom-以及-key-属性的作用"><a href="#再说一下虚拟-Dom-以及-key-属性的作用" class="headerlink" title="再说一下虚拟 Dom 以及 key 属性的作用"></a><strong>再说一下虚拟 Dom 以及 key 属性的作用</strong></h2><p>由于在浏览器中操作 DOM 是很昂贵的。频繁的操作 DOM，会产生一定的性能问题。这就是虚拟 Dom 的产生原因。</p>
+<p>Vue2 的 Virtual DOM 借鉴了开源库 snabbdom 的实现。</p>
+<p><strong>Virtual DOM 本质就是用一个原生的 JS 对象去描述一个 DOM 节点。是对真实 DOM 的一层抽象。(也就是源码中的 VNode 类，它定义在 src/core/vdom/vnode.js 中。)</strong></p>
+<p>VirtualDOM 映射到真实 DOM 要经历 VNode 的 create、diff、patch 等阶段。</p>
+<p><strong>「key 的作用是尽可能的复用 DOM 元素。」</strong></p>
+<p>新旧 children 中的节点只有顺序是不同的时候，最佳的操作应该是通过移动元素的位置来达到更新的目的。</p>
+<p>需要在新旧 children 的节点中保存映射关系，以便能够在旧 children 的节点中找到可复用的节点。key 也就是 children 中节点的唯一标识。</p>
+<h2 id="keep-alive-了解吗？"><a href="#keep-alive-了解吗？" class="headerlink" title="keep-alive 了解吗？"></a><strong>keep-alive 了解吗？</strong></h2><p>keep-alive 可以实现组件缓存，当组件切换时不会对当前组件进行卸载。</p>
+<p>常用的两个属性 include/exclude，允许组件有条件的进行缓存。</p>
+<p>两个生命周期 activated/deactivated，用来得知当前组件是否处于活跃状态。</p>
+<p>keep-alive 的中还运用了 LRU(Least Recently Used)算法。</p>
+<p>（又是数据结构与算法，原来算法在前端有这么多的应用）</p>
+<h2 id="Vue-中组件生命周期调用顺序说一下"><a href="#Vue-中组件生命周期调用顺序说一下" class="headerlink" title="Vue 中组件生命周期调用顺序说一下"></a><strong>Vue 中组件生命周期调用顺序说一下</strong></h2><p>组件的调用顺序都是先父后子,渲染完成的顺序是先子后父。</p>
+<p>组件的销毁操作是先父后子，销毁完成的顺序是先子后父。</p>
+<p><strong>加载渲染过程</strong></p>
+<p>父 beforeCreate-&gt;父 created-&gt;父 beforeMount-&gt;子 beforeCreate-&gt;子 created-&gt;子 beforeMount- &gt;子 mounted-&gt;父 mounted</p>
+<p><strong>子组件更新过程</strong></p>
+<p>父 beforeUpdate-&gt;子 beforeUpdate-&gt;子 updated-&gt;父 updated</p>
+<p><strong>父组件更新过程</strong></p>
+<p>父 beforeUpdate -&gt; 父 updated</p>
+<p><strong>销毁过程</strong></p>
+<p>父 beforeDestroy-&gt;子 beforeDestroy-&gt;子 destroyed-&gt;父 destroyed</p>
+<h2 id="Vue2-x-组件通信有哪些方式？"><a href="#Vue2-x-组件通信有哪些方式？" class="headerlink" title="Vue2.x 组件通信有哪些方式？"></a>Vue2.x 组件通信有哪些方式？</h2><p><strong>父子组件通信</strong></p>
+<p>父-&gt;子 props，子-&gt;父 $on、$emit</p>
+<p>获取父子组件实例 $parent、$children</p>
+<p>Ref 获取实例的方式调用组件的属性或者方法</p>
+<p>Provide、inject 官方不推荐使用，但是写组件库时很常用</p>
+<p><strong>兄弟组件通信</strong></p>
+<p>Event Bus 实现跨组件通信 Vue.prototype.$bus = new Vue</p>
+<p>Vuex</p>
+<p><strong>跨级组件通信</strong></p>
+<p>Vuex</p>
+<p>$attrs、$listeners</p>
+<p>Provide、inject</p>
+<h2 id="SSR-了解吗？"><a href="#SSR-了解吗？" class="headerlink" title="SSR 了解吗？"></a><strong>SSR 了解吗？</strong></h2><p>SSR 也就是服务端渲染，也就是将 Vue 在客户端把标签渲染成 HTML 的工作放在服务端完成，然后再把 html 直接返回给客户端。</p>
+<p>SSR 有着更好的 SEO、并且首屏加载速度更快等优点。不过它也有一些缺点，比如我们的开发条件会受到限制，</p>
+<p>服务器端渲染只支持 beforeCreate 和 created 两个钩子，当我们需要一些外部扩展库时需要特殊处理，</p>
+<p>服务端渲染应用程序也需要处于 Node.js 的运行环境。还有就是服务器会有更大的负载需求。</p>
+<h2 id="你都做过哪些-Vue-的性能优化？"><a href="#你都做过哪些-Vue-的性能优化？" class="headerlink" title="你都做过哪些 Vue 的性能优化？"></a><strong>你都做过哪些 Vue 的性能优化？</strong></h2><p>编码阶段</p>
+<p>尽量减少 data 中的数据，data 中的数据都会增加 getter 和 setter，会收集对应的 watcher</p>
+<p>v-if 和 v-for 不能连用</p>
+<p>如果需要使用 v-for 给每项元素绑定事件时使用事件代理</p>
+<p>SPA 页面采用 keep-alive 缓存组件</p>
+<p>在更多的情况下，使用 v-if 替代 v-show</p>
+<p>key 保证唯一</p>
+<p>使用路由懒加载、异步组件</p>
+<p>防抖、节流</p>
+<p>第三方模块按需导入</p>
+<p>长列表滚动到可视区域动态加载</p>
+<p>图片懒加载</p>
+<p><strong>SEO 优化</strong></p>
+<p>预渲染</p>
+<p>服务端渲染 SSR</p>
+<p><strong>打包优化</strong></p>
+<p>压缩代码</p>
+<p>Tree Shaking/Scope Hoisting</p>
+<p>使用 cdn 加载第三方模块</p>
+<p>多线程打包 happypack</p>
+<p>splitChunks 抽离公共文件</p>
+<p>sourceMap 优化</p>
+<p><strong>用户体验</strong></p>
+<p>骨架屏</p>
+<p>PWA</p>
+<p>还可以使用缓存(客户端缓存、服务端缓存)优化、服务端开启 gzip 压缩等。</p>
+<p>(优化是个大工程，会涉及很多方面，这里申请另开一个专栏)</p>
+<h2 id="hash-路由和-history-路由实现原理说一下"><a href="#hash-路由和-history-路由实现原理说一下" class="headerlink" title="hash 路由和 history 路由实现原理说一下"></a><strong>hash 路由和 history 路由实现原理说一下</strong></h2><p>location.hash 的值实际就是 URL 中#后面的东西。</p>
+<p>history 实际采用了 HTML5 中提供的 API 来实现，主要有 history.pushState()和 history.replaceState()。</p>
+<h1 id="网络与浏览器"><a href="#网络与浏览器" class="headerlink" title="网络与浏览器"></a>网络与浏览器</h1><h2 id="Http与Https"><a href="#Http与Https" class="headerlink" title="Http与Https"></a>Http与Https</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaoming100001/article/details/81109617">好文</a></p>
 <p><strong>基本概念</strong></p>
 <p>HTTP是超文本传输协议，HTTP的初衷是为了提供一种发布和接收HTML页面的方法。</p>
 <p>HTTPS使用的主要目的是提供对网站服务器的身份认证，同时保护交换数据的隐私与完整性。</p>
@@ -846,11 +1024,21 @@
 <li>内容加密：采用混合加密技术，中间者无法直接查看明文内容</li>
 </ul>
 <ul>
-<li><p>验证身份：通过证书认证客户端访问的是自己的服务器</p>
-</li>
-<li><p>保护数据完整性：防止传输的内容被中间人冒充或者篡改</p>
-</li>
+<li>验证身份：通过证书认证客户端访问的是自己的服务器</li>
+<li>保护数据完整性：防止传输的内容被中间人冒充或者篡改</li>
 </ul>
+<h2 id="V8引擎内存机制"><a href="#V8引擎内存机制" class="headerlink" title="V8引擎内存机制"></a>V8引擎内存机制</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/michaelxuzhi___/article/details/106224978">https://blog.csdn.net/michaelxuzhi___/article/details/106224978</a></p>
+<p><strong>为什么限制内存大小？</strong></p>
+<p>1、够用了，js设计的初衷是浏览器脚本语言，只执行一次，便释放内存</p>
+<p>2、如果不限制，回收一次100MB的内存大概花费3ms，V8引擎在回收垃圾时，是<strong>暂停住所有代码的执行</strong>，一旦垃圾过多，在回收内存的时候，中断的时间过长，体验不佳。</p>
+<p><strong>新生代内存</strong>：保存新变量，存活时间短的<br><strong>老生代内存</strong>：保存老变量，存活时间长的（老变量：经过几次垃圾回收也没有被杀死的变量）</p>
+<p>新生代变量晋升老生代变量的条件：①这个变量经历过内存回收，当未被回收 ②新生代内存空间一旦超过占用临界值，①中的变量就会被移到老生代内存中<br>新生代内存特点：内存回收频率快，因为频率快，所以要求回收这个动作要快，即持续时间短，所以采用了牺牲空间换取时间的算法。</p>
+<p><strong>新生代内存回收机制</strong></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/20210427094118.png" alt="image-20210427094117135">假设所有新变量都存在From中，那么在回收的过程中，会先标记活变量，将活着的变量全部复制到To当中，清空From，第二次回收时，标记活变量，将活着的变量全部复制到From当中，清空To 也就是：标记-复制-清空的过程<br><strong>老生代内存回收机制</strong><br>假设在内存中有一片连续的区域：1，2，3，4，5 此时2，4死亡，标记并删除后，内存变为：1，-，3，-，5 这时内存空间会不连续，也就是所谓的内存碎片，如果不进行修补，有可能会放不进数组，因为在数据结构中，数组中的元素是储存在内存中的连续一片地址中的。所以在V8引擎中，老生代内存在标记-删除之后，还要进行一次排列，整理内存碎片。<br>标记死亡变量，删除死亡变量，整理内存空间 也就是标记-删除-整理的过程</p>
+<p><strong>总结：</strong>新生代内存：标记-复制-清空（省时，费空间） 老生代内存：标记-删除-整理</p>
+<p><strong>内存回收时机</strong></p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/20210427094400.png" alt="image-20210427094359903"></p>
+<p>在内存占用接近临界值的时候，开始回收内存<br>全局变量：只在程序执行完成才会被回收，否则永久保留</p>
 <h2 id="状态码"><a href="#状态码" class="headerlink" title="状态码"></a>状态码</h2><p><strong>2开头 （请求成功）</strong></p>
 <p>200   （成功）  服务器已成功处理了请求。</p>
 <p><strong>3开头 （请求被重定向）</strong></p>
