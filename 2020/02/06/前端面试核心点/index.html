@@ -820,10 +820,20 @@
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">article</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>左侧<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>中心主体<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span>右侧<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">article</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">*&#123;</span><br><span class="line"><span class="css">    <span class="selector-tag">margin</span><span class="selector-pseudo">:0</span>;</span></span><br><span class="line">    padding: 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">article&#123;</span><br><span class="line">    display: flex;</span><br><span class="line">    flex-direction: row;</span><br><span class="line">    justify-content: space-between;</span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(1)</span>&#123;</span></span><br><span class="line">    width: 200px;</span><br><span class="line">    height: 400px;</span><br><span class="line">    background-color: blueviolet;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(2)</span>&#123;</span></span><br><span class="line">    </span><br><span class="line">    background-color: coral;</span><br><span class="line">    flex-grow: 1;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="css"><span class="selector-tag">div</span><span class="selector-pseudo">:nth-child(3)</span>&#123;</span></span><br><span class="line">    width: 200px;</span><br><span class="line">    height: 400px;</span><br><span class="line">    background-color: springgreen;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <h1 id="Node的注意点"><a href="#Node的注意点" class="headerlink" title="Node的注意点"></a>Node的注意点</h1></li>
 </ul>
-<h1 id="Vue的注意点"><a href="#Vue的注意点" class="headerlink" title="Vue的注意点"></a>Vue的注意点</h1><h2 id="那你能讲一讲-MVVM-吗？"><a href="#那你能讲一讲-MVVM-吗？" class="headerlink" title="那你能讲一讲 MVVM 吗？"></a><strong>那你能讲一讲 MVVM 吗？</strong></h2><p>MVVM 是 Model-View-ViewModel 缩写，也就是把 MVC 中的 Controller 演变成 ViewModel。Model 层代表数据模型，View 代表 UI 组件，</p>
-<p>ViewModel 是 View 和 Model 层的桥梁，数据会绑定到 viewModel 层并自动将数据渲染到页面中，视图变化的时候会通知 viewModel 层更新数据。</p>
+<h1 id="Vue的注意点"><a href="#Vue的注意点" class="headerlink" title="Vue的注意点"></a>Vue的注意点</h1><h2 id="那你能讲一讲-MVVM-吗？"><a href="#那你能讲一讲-MVVM-吗？" class="headerlink" title="那你能讲一讲 MVVM 吗？"></a><strong>那你能讲一讲 MVVM 吗？</strong></h2><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210510231523.png" alt="image-20210510231522863"></p>
+<p>MVVM 是 Model-View-ViewModel 缩写，也就是把 MVC 中的 Controller 演变成 ViewModel。Model 层代表数据模型，View 代表 UI 组件，ViewModel 是 View 和 Model 层的桥梁，数据会绑定到 viewModel 层并自动将数据渲染到页面中，视图变化的时候会通知 viewModel 层更新数据。</p>
+<h2 id="什么是响应式与双向数据绑定？"><a href="#什么是响应式与双向数据绑定？" class="headerlink" title="什么是响应式与双向数据绑定？"></a>什么是响应式与双向数据绑定？</h2><p><strong>响应式：</strong>在data中声明的变量，会被Vue追踪，一旦发生变化，视图层绑定该变量的Dom元素也会变化</p>
+<p><strong>双向数据绑定：</strong>指的是在<input>,<textarea>和<select>元素上的v-model指令</p>
+<p>比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;input v-model&#x3D;&quot;message&quot; placeholder&#x3D;&quot;edit me&quot;&gt;</span><br></pre></td></tr></table></figure>
+<p>input输入框中输入数据，直接导致data中message值发生变化。data中message被修改，输入框中输入的数据也会跟着变化</p>
 <h2 id="简单说一下-Vue2-x-响应式数据原理"><a href="#简单说一下-Vue2-x-响应式数据原理" class="headerlink" title="简单说一下 Vue2.x 响应式数据原理"></a><strong>简单说一下 Vue2.x 响应式数据原理</strong></h2><p>Vue 在初始化数据时，会使用 Object.defineProperty 重新定义 data 中的所有属性，当页面使用对应属性时，首先会进行依赖收集(收集当前组件的 watcher)</p>
 <p>如果属性发生变化会通知相关依赖进行更新操作(发布订阅)。</p>
+<p><strong>补充：</strong></p>
+<p> Object.defineProperty</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> object1 = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.defineProperty(object1, <span class="string">&#x27;property1&#x27;</span>, &#123;</span><br><span class="line">  value: <span class="number">42</span>,</span><br><span class="line">  writable: <span class="literal">false</span></span><br><span class="line">&#125;);<span class="comment">//给object1添加属性property1,属性值是42，不可修改</span></span><br><span class="line"></span><br><span class="line">object1.property1 = <span class="number">77</span>;</span><br><span class="line"><span class="comment">// throws an error in strict mode</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(object1.property1);</span><br><span class="line"><span class="comment">// expected output: 42</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>依赖收集</p>
+<p>Vue是一个实现数据驱动视图的框架~~（废话，大家都知道，说重点） 我们都知道，Vue能够实现当一个数据变更时，视图就进行刷新，而且用到这个数据的其他地方也会同步变更；而且，这个数据必须是在有被依赖的情况下，视图和其他用到数据的地方才会变更。 所以，<strong>Vue要能够知道一个数据是否被使用</strong>，实现这种机制的技术叫做<code>依赖收集</code></p>
 <h2 id="那你知道-Vue3-x-响应式数据原理吗？"><a href="#那你知道-Vue3-x-响应式数据原理吗？" class="headerlink" title="那你知道 Vue3.x 响应式数据原理吗？"></a><strong>那你知道 Vue3.x 响应式数据原理吗？</strong></h2><p>(还好我有看，这个难不倒我)</p>
 <p>Vue3.x 改用 Proxy 替代 Object.defineProperty。因为 Proxy 可以直接监听对象和数组的变化，并且有多达 13 种拦截方法。</p>
 <p>并且作为新标准将受到浏览器厂商重点持续的性能优化。</p>
@@ -836,8 +846,6 @@
 <p>❝ 监测数组的时候可能触发多次 get/set，那么如何防止触发多次呢？❞</p>
 </blockquote>
 <p>我们可以判断 key 是否为当前被代理对象 target 自身属性，也可以判断旧值与新值是否相等，只有满足以上两个条件之一时，才有可能执行 trigger。</p>
-<p>面试官抬起了头。心里暗想</p>
-<p>(这小子还行，比上两个强，应该是多多少少看过 Vue3 的源码了)</p>
 <h2 id="再说一下-vue2-x-中如何监测数组变化"><a href="#再说一下-vue2-x-中如何监测数组变化" class="headerlink" title="再说一下 vue2.x 中如何监测数组变化"></a><strong>再说一下 vue2.x 中如何监测数组变化</strong></h2><p>使用了函数劫持的方式，重写了数组的方法，Vue 将 data 中的数组进行了原型链重写，指向了自己定义的数组原型方法。</p>
 <p>这样当调用数组 api 时，可以通知依赖更新。如果数组中包含着引用类型，会对数组中的引用类型再次递归遍历进行监控。这样就实现了监测数组变化。</p>
 <p>（能问到这的面试官都比较注重深度，这些常规操作要记牢）</p>
@@ -845,14 +853,14 @@
 <h2 id="说一下-v-model-的原理-双向数据绑定"><a href="#说一下-v-model-的原理-双向数据绑定" class="headerlink" title="说一下 v-model 的原理/双向数据绑定"></a><strong>说一下 v-model 的原理/双向数据绑定</strong></h2><p>v-model 本质就是一个语法糖，可以看成是 value + input 方法的语法糖。可以通过 model 属性的 prop 和 event 属性来进行自定义。</p>
 <p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/20210428103832.png" alt="image-20210428103832160"></p>
 <p>原生的 v-model，会根据标签的不同生成不同的事件和属性。</p>
-<h2 id="响应式与双向绑定区别？"><a href="#响应式与双向绑定区别？" class="headerlink" title="响应式与双向绑定区别？"></a>响应式与双向绑定区别？</h2><h2 id="nextTick-知道吗，实现原理是什么？"><a href="#nextTick-知道吗，实现原理是什么？" class="headerlink" title="nextTick 知道吗，实现原理是什么？"></a>nextTick 知道吗，实现原理是什么？</h2><p>定义：在下次 DOM 更新循环结束之后执行延迟回调。在修改数据之后立即使用这个方法，获取更新后的 DOM。</p>
+<h2 id="nextTick-实现原理是什么？"><a href="#nextTick-实现原理是什么？" class="headerlink" title="nextTick 实现原理是什么？"></a>nextTick 实现原理是什么？</h2><p>定义：在下次 DOM 更新循环结束之后执行延迟回调。在修改数据之后立即使用这个方法，获取更新后的 DOM。</p>
 <p>所以就衍生出了这个获取更新后的DOM的Vue方法。所以放在Vue.nextTick()回调函数中的执行的应该是会对DOM进行操作的 js代码；</p>
 <p>理解：nextTick()，是将回调函数延迟在下一次dom更新数据后调用，简单的理解是：当数据更新了，在dom中渲染后，自动执行该函数</p>
 <p><strong>不使用nextTick()</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;div class&#x3D;&quot;hello&quot;&gt;</span><br><span class="line">    &lt;div&gt;</span><br><span class="line">      &lt;button id&#x3D;&quot;firstBtn&quot; @click&#x3D;&quot;testClick()&quot; ref&#x3D;&quot;aa&quot;&gt;&#123;&#123;testMsg&#125;&#125;&lt;&#x2F;button&gt;</span><br><span class="line">    &lt;&#x2F;div&gt;</span><br><span class="line">  &lt;&#x2F;div&gt;</span><br><span class="line">&lt;&#x2F;template&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">    export default &#123;</span><br><span class="line">      name: &#39;HelloWorld&#39;,</span><br><span class="line">      data () &#123;</span><br><span class="line">        return &#123;</span><br><span class="line">          testMsg:&quot;原始值&quot;,</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      methods:&#123;</span><br><span class="line">        testClick:function()&#123;</span><br><span class="line">          let that&#x3D;this;</span><br><span class="line">          that.testMsg&#x3D;&quot;修改后的值&quot;;</span><br><span class="line">          console.log(that.$refs.aa.innerText);   &#x2F;&#x2F;that.$refs.aa获取指定DOM，输出：原始值</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&lt;&#x2F;script&gt;</span><br></pre></td></tr></table></figure>
 <p><strong>使用this.$nextTick()</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">methods:&#123;</span><br><span class="line">    testClick:function()&#123;</span><br><span class="line">      let that&#x3D;this;</span><br><span class="line">      that.testMsg&#x3D;&quot;修改后的值&quot;;</span><br><span class="line">      that.$nextTick(function()&#123;</span><br><span class="line">        console.log(that.$refs.aa.innerText);  &#x2F;&#x2F;输出：修改后的值</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
-<p>注意：Vue 实现响应式并不是数据发生变化之后 DOM 立即变化，而是按一定的策略进行 DOM 的更新。$nextTick 是在下次 DOM 更新循环结束之后执行延迟回调，在修改数据之后使用 $nextTick，则可以在回调中获取更新后的 DOM。</p>
+<p><strong>注意</strong>：<strong>Vue 实现响应式并不是数据发生变化之后 DOM 立即变化，而是按一定的策略进行 DOM 的更新。</strong>$nextTick 是在下次 DOM 更新循环结束之后执行延迟回调，在修改数据之后使用 $nextTick，则可以在回调中获取更新后的 DOM。</p>
 <p><strong>原理</strong></p>
 <p>在下次 DOM 更新循环结束之后执行延迟回调。nextTick 主要使用了宏任务和微任务。根据执行环境分别尝试采用</p>
 <p>Promise</p>
@@ -862,7 +870,8 @@
 <p>定义了一个异步方法，多次调用 nextTick 会将方法存入队列中，通过这个异步方法清空当前队列。</p>
 <p>（关于宏任务和微任务以及事件循环可以参考我的另两篇专栏）</p>
 <p>(看到这你就会发现，其实问框架最终还是考验你的原生 JavaScript 功底)</p>
-<h2 id="说一下-Vue-的生命周期"><a href="#说一下-Vue-的生命周期" class="headerlink" title="说一下 Vue 的生命周期"></a>说一下 Vue 的生命周期</h2><p>beforeCreate 是 new Vue()之后触发的第一个钩子，在当前阶段 data、methods、computed 以及 watch 上的数据和方法都不能被访问。</p>
+<h2 id="说一下-Vue-的生命周期"><a href="#说一下-Vue-的生命周期" class="headerlink" title="说一下 Vue 的生命周期"></a>说一下 Vue 的生命周期</h2><p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511001215.jpg" alt="13119812-5890a846b6efa045"></p>
+<p>beforeCreate 是 new Vue()之后触发的第一个钩子，在当前阶段 data、methods、computed 以及 watch 上的数据和方法都不能被访问。</p>
 <p>created 在实例创建完成后发生，当前阶段已经完成了数据观测，也就是可以使用数据，更改数据，在这里更改数据不会触发 updated 函数。</p>
 <p>可以做一些初始数据的获取，在当前阶段无法与 Dom 进行交互，如果非要想，可以通过 vm.$nextTick 来访问 Dom。</p>
 <p>beforeMount 发生在挂载之前，在这之前 template 模板已导入渲染函数编译。而当前阶段虚拟 Dom 已经创建完成，即将开始渲染。</p>
@@ -873,13 +882,23 @@
 <p>beforeDestroy 发生在实例销毁之前，在当前阶段实例完全可以被使用，我们可以在这时进行善后收尾工作，比如清除计时器。</p>
 <p>destroyed 发生在实例销毁之后，这个时候只剩下了 dom 空壳。组件已被拆解，数据绑定被卸除，监听被移出，子实例也统统被销毁。</p>
 <p>(关于 Vue 的生命周期详解感兴趣的也请移步我的另一篇专栏)</p>
+<h2 id="生命周期调用顺序说一下"><a href="#生命周期调用顺序说一下" class="headerlink" title="生命周期调用顺序说一下"></a><strong>生命周期调用顺序说一下</strong></h2><p>组件的调用顺序都是先父后子,渲染完成的顺序是先子后父。</p>
+<p>组件的销毁操作是先父后子，销毁完成的顺序是先子后父。</p>
+<p><strong>加载渲染过程</strong></p>
+<p>父 beforeCreate-&gt;父 created-&gt;父 beforeMount-&gt;子 beforeCreate-&gt;子 created-&gt;子 beforeMount- &gt;子 mounted-&gt;父 mounted</p>
+<p><strong>子组件更新过程</strong></p>
+<p>父 beforeUpdate-&gt;子 beforeUpdate-&gt;子 updated-&gt;父 updated</p>
+<p><strong>父组件更新过程</strong></p>
+<p>父 beforeUpdate -&gt; 父 updated</p>
+<p><strong>销毁过程</strong></p>
+<p>父 beforeDestroy-&gt;子 beforeDestroy-&gt;子 destroyed-&gt;父 destroyed</p>
 <h2 id="你的接口请求一般放在哪个生命周期中？"><a href="#你的接口请求一般放在哪个生命周期中？" class="headerlink" title="你的接口请求一般放在哪个生命周期中？"></a><strong>你的接口请求一般放在哪个生命周期中？</strong></h2><p>接口请求一般放在 mounted 中，但需要注意的是服务端渲染时不支持 mounted，需要放到 created 中。</p>
 <h2 id="再说一下-Computed-，-Watch"><a href="#再说一下-Computed-，-Watch" class="headerlink" title="再说一下 Computed ， Watch"></a>再说一下 Computed ， Watch</h2><p>用法： 区别：</p>
 <ol>
 <li>两者自动追踪数据，执行相关函数</li>
 <li>computed是计算属性，用法与data一致，计算的变量不需要再data中声明。watch的属性必须事先在data中声明</li>
 <li>watch像事件监听，对象发生变化时，执行相关操作。数据变化的同时进行异步操作或者是比较大的开销，那么watch为最佳选择</li>
-<li>通常把模板中的复杂计算放在computed中</li>
+<li>通常把模板中的复杂计算放在computed中，且computed具有缓存，只在相关响应式依赖发生改变时它们才会重新求值</li>
 </ol>
 <p><strong>compute的例子</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">var vm &#x3D; new Vue(&#123;</span><br><span class="line">  el: &#39;#demo&#39;,</span><br><span class="line">  data: &#123;</span><br><span class="line">    firstName: &#39;Foo&#39;,</span><br><span class="line">    lastName: &#39;Bar&#39;</span><br><span class="line">  &#125;,</span><br><span class="line">  computed: &#123;</span><br><span class="line">    fullName: function () &#123;</span><br><span class="line">      return this.firstName + &#39; &#39; + this.lastName</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
@@ -889,9 +908,6 @@
 <h2 id="组件中的-data-为什么是一个函数？"><a href="#组件中的-data-为什么是一个函数？" class="headerlink" title="组件中的 data 为什么是一个函数？"></a><strong>组件中的 data 为什么是一个函数？</strong></h2><p>一个组件被复用多次的话，也就会创建多个实例。本质上，这些实例用的都是同一个构造函数。如果 data 是对象的话，对象属于引用类型，会影响到所有的实例。</p>
 <p>所以为了保证组件不同的实例之间 data 不冲突，data 必须是一个函数。</p>
 <h2 id="Vue-事件绑定原理说一下"><a href="#Vue-事件绑定原理说一下" class="headerlink" title="Vue 事件绑定原理说一下"></a><strong>Vue 事件绑定原理说一下</strong></h2><p>原生事件绑定是通过 addEventListener 绑定给真实元素的，组件事件绑定是通过 Vue 自定义的$on 实现的。</p>
-<blockquote>
-<p>❝ 面试官：(这小子基础还可以，接下来我得上上难度了） ❞</p>
-</blockquote>
 <h2 id="Vue-模版编译原理知道吗，能简单说一下吗？"><a href="#Vue-模版编译原理知道吗，能简单说一下吗？" class="headerlink" title="Vue 模版编译原理知道吗，能简单说一下吗？"></a><strong>Vue 模版编译原理知道吗，能简单说一下吗？</strong></h2><p>简单说，Vue 的编译过程就是将 template 转化为 render 函数的过程。会经历以下阶段：</p>
 <p><strong>生成 AST 树</strong></p>
 <p><strong>优化</strong></p>
@@ -901,10 +917,8 @@
 <p>Vue 的数据是响应式的，但其实模板中并不是所有的数据都是响应式的。有一些数据首次渲染后就不会再变化，对应的 DOM 也不会变化。</p>
 <p>那么优化过程就是深度遍历 AST 树，按照相关条件对树节点进行标记。这些被标记的节点(静态节点)我们就可以跳过对它们的比对，对运行时的模板起到很大的优化作用。</p>
 <p>编译的最后一步是将优化后的 AST 树转换为可执行的代码。</p>
-<blockquote>
-<p>❝ 面试官：(精神小伙啊，有点东西，难度提升，不信难不倒你）❞</p>
-</blockquote>
-<h2 id="Vue2-x-和-Vue3-x-渲染器的-diff-算法分别说一下"><a href="#Vue2-x-和-Vue3-x-渲染器的-diff-算法分别说一下" class="headerlink" title="Vue2.x 和 Vue3.x 渲染器的 diff 算法分别说一下"></a><strong>Vue2.x 和 Vue3.x 渲染器的 diff 算法分别说一下</strong></h2><p>简单来说，diff 算法有以下过程</p>
+<h2 id="Vue2-x-和-Vue3-x-渲染器的-diff-算法分别说一下"><a href="#Vue2-x-和-Vue3-x-渲染器的-diff-算法分别说一下" class="headerlink" title="Vue2.x 和 Vue3.x 渲染器的 diff 算法分别说一下"></a><strong>Vue2.x 和 Vue3.x 渲染器的 diff 算法分别说一下</strong></h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wind-lanyan/p/9061684.html">diff算法详解</a></p>
+<p>简单来说，diff 算法有以下过程</p>
 <p>同级比较，再比较子节点</p>
 <p>先判断一方有子节点一方没有子节点的情况(如果新的 children 没有子节点，将旧的子节点移除)</p>
 <p>比较都有子节点的情况(核心 diff)</p>
@@ -921,11 +935,15 @@
 <blockquote>
 <p>❝ 面试官：(可以可以，看来是个苗子，不过自我介绍属实有些无聊，下一题) ❞</p>
 </blockquote>
-<h2 id="再说一下虚拟-Dom-以及-key-属性的作用"><a href="#再说一下虚拟-Dom-以及-key-属性的作用" class="headerlink" title="再说一下虚拟 Dom 以及 key 属性的作用"></a><strong>再说一下虚拟 Dom 以及 key 属性的作用</strong></h2><p>由于在浏览器中操作 DOM 是很昂贵的。频繁的操作 DOM，会产生一定的性能问题。这就是虚拟 Dom 的产生原因。</p>
+<h2 id="说一下虚拟-Dom"><a href="#说一下虚拟-Dom" class="headerlink" title="**说一下虚拟 Dom **"></a>**说一下虚拟 Dom **</h2><p>由于在浏览器中操作 DOM 是很昂贵的。频繁的操作 DOM，会产生一定的性能问题。这就是虚拟 Dom 的产生原因。</p>
 <p>Vue2 的 Virtual DOM 借鉴了开源库 snabbdom 的实现。</p>
 <p><strong>Virtual DOM 本质就是用一个原生的 JS 对象去描述一个 DOM 节点。是对真实 DOM 的一层抽象。(也就是源码中的 VNode 类，它定义在 src/core/vdom/vnode.js 中。)</strong></p>
+<p>virtual DOM是将真实的DOM的数据抽取出来，以对象的形式模拟树形结构。比如dom是这样的：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>123<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>对应的virtual DOM（伪代码）：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Vnode = &#123;</span><br><span class="line">    tag: <span class="string">&#x27;div&#x27;</span>,</span><br><span class="line">    children: [</span><br><span class="line">        &#123; <span class="attr">tag</span>: <span class="string">&#x27;p&#x27;</span>, <span class="attr">text</span>: <span class="string">&#x27;123&#x27;</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>VirtualDOM 映射到真实 DOM 要经历 VNode 的 create、diff、patch 等阶段。</p>
-<p><strong>「key 的作用是尽可能的复用 DOM 元素。」</strong></p>
+<h2 id="key-属性的作用"><a href="#key-属性的作用" class="headerlink" title="key 属性的作用"></a><strong>key 属性的作用</strong></h2><p><strong>「key 的作用是尽可能的复用 DOM 元素。」</strong></p>
 <p>新旧 children 中的节点只有顺序是不同的时候，最佳的操作应该是通过移动元素的位置来达到更新的目的。</p>
 <p>需要在新旧 children 的节点中保存映射关系，以便能够在旧 children 的节点中找到可复用的节点。key 也就是 children 中节点的唯一标识。</p>
 <h2 id="keep-alive-了解吗？"><a href="#keep-alive-了解吗？" class="headerlink" title="keep-alive 了解吗？"></a><strong>keep-alive 了解吗？</strong></h2><p>keep-alive 可以实现组件缓存，当组件切换时不会对当前组件进行卸载。</p>
@@ -933,16 +951,6 @@
 <p>两个生命周期 activated/deactivated，用来得知当前组件是否处于活跃状态。</p>
 <p>keep-alive 的中还运用了 LRU(Least Recently Used)算法。</p>
 <p>（又是数据结构与算法，原来算法在前端有这么多的应用）</p>
-<h2 id="Vue-中组件生命周期调用顺序说一下"><a href="#Vue-中组件生命周期调用顺序说一下" class="headerlink" title="Vue 中组件生命周期调用顺序说一下"></a><strong>Vue 中组件生命周期调用顺序说一下</strong></h2><p>组件的调用顺序都是先父后子,渲染完成的顺序是先子后父。</p>
-<p>组件的销毁操作是先父后子，销毁完成的顺序是先子后父。</p>
-<p><strong>加载渲染过程</strong></p>
-<p>父 beforeCreate-&gt;父 created-&gt;父 beforeMount-&gt;子 beforeCreate-&gt;子 created-&gt;子 beforeMount- &gt;子 mounted-&gt;父 mounted</p>
-<p><strong>子组件更新过程</strong></p>
-<p>父 beforeUpdate-&gt;子 beforeUpdate-&gt;子 updated-&gt;父 updated</p>
-<p><strong>父组件更新过程</strong></p>
-<p>父 beforeUpdate -&gt; 父 updated</p>
-<p><strong>销毁过程</strong></p>
-<p>父 beforeDestroy-&gt;子 beforeDestroy-&gt;子 destroyed-&gt;父 destroyed</p>
 <h2 id="Vue2-x-组件通信有哪些方式？"><a href="#Vue2-x-组件通信有哪些方式？" class="headerlink" title="Vue2.x 组件通信有哪些方式？"></a>Vue2.x 组件通信有哪些方式？</h2><p><strong>父子组件通信</strong></p>
 <p>父-&gt;子 props，子-&gt;父 $on、$emit</p>
 <p>获取父子组件实例 $parent、$children</p>
@@ -986,8 +994,15 @@
 <p>PWA</p>
 <p>还可以使用缓存(客户端缓存、服务端缓存)优化、服务端开启 gzip 压缩等。</p>
 <p>(优化是个大工程，会涉及很多方面，这里申请另开一个专栏)</p>
-<h2 id="hash-路由和-history-路由实现原理说一下"><a href="#hash-路由和-history-路由实现原理说一下" class="headerlink" title="hash 路由和 history 路由实现原理说一下"></a><strong>hash 路由和 history 路由实现原理说一下</strong></h2><p>location.hash 的值实际就是 URL 中#后面的东西。</p>
-<p>history 实际采用了 HTML5 中提供的 API 来实现，主要有 history.pushState()和 history.replaceState()。</p>
+<h2 id="hash-路由和-history-路由实现原理说一下"><a href="#hash-路由和-history-路由实现原理说一下" class="headerlink" title="hash 路由和 history 路由实现原理说一下"></a><strong>hash 路由和 history 路由实现原理说一下</strong></h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4295aec31302">浅谈Vue原理</a></p>
+<p>随着前端应用的业务功能起来越复杂，用户对于使用体验的要求越来越高，单面（<code>SPA</code>）成为前端应用的主流形式。大型单页应用最显著特点之一就是采用的前端路由系统，通过改变<code>URL</code>，在不重新请求页面的情况下，更新页面视图。</p>
+<p><strong>更新视图但不重新请求页面，是前端路由原理的核心之一</strong>，目前在浏览器环境中这一功能的实现主要有<code>2</code>种方式：</p>
+<ul>
+<li><p> location.hash：hash的值实际就是 URL 中#后面的东西。（实际上就是锚点）</p>
+</li>
+<li><p>history ：实际采用了 HTML5 中提供的 API 来实现，主要有 history.pushState()和 history.replaceState()。</p>
+</li>
+</ul>
 <h1 id="网络与浏览器"><a href="#网络与浏览器" class="headerlink" title="网络与浏览器"></a>网络与浏览器</h1><h2 id="Http与Https"><a href="#Http与Https" class="headerlink" title="Http与Https"></a>Http与Https</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaoming100001/article/details/81109617">好文</a></p>
 <p><strong>基本概念</strong></p>
 <p>HTTP是超文本传输协议，HTTP的初衷是为了提供一种发布和接收HTML页面的方法。</p>
@@ -1027,7 +1042,21 @@
 <li>验证身份：通过证书认证客户端访问的是自己的服务器</li>
 <li>保护数据完整性：防止传输的内容被中间人冒充或者篡改</li>
 </ul>
-<h2 id="V8引擎内存机制"><a href="#V8引擎内存机制" class="headerlink" title="V8引擎内存机制"></a>V8引擎内存机制</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/michaelxuzhi___/article/details/106224978">https://blog.csdn.net/michaelxuzhi___/article/details/106224978</a></p>
+<h2 id="V8引擎内存机制"><a href="#V8引擎内存机制" class="headerlink" title="V8引擎内存机制"></a>V8引擎内存机制</h2><p>JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，栈内存存储基本类型数据以及引用类型数据的内存地址，堆内存储存引用类型的数据</p>
+<p><img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511125508.png" alt="image-20210511125507639"></p>
+<ol>
+<li>栈内存的回收：栈内存调用栈上下文切换后就被回收，比较简单</li>
+<li>堆内存的回收：V8 的堆内存分为<strong>新生代内存和老生代内存</strong>，新生代内存是临时分配的内存，存在时间短，老生代内存存在时间长</li>
+</ol>
+<p><img src="https://img.bosszhipin.com/beijin/cms/0f4ec1d2ee97c0493785ed36e12e118b26b1843edb5867970fca7c28c0d4ecae8ed151f9047a473e853d69196fe541ef." alt="img"></p>
+<p><strong>新生代内存回收机制：</strong></p>
+<p>新生代内存容量小，64 位系统下仅有 32M。新生代内存分为 From、To 两部分，进行垃圾回收时，先扫描 From，将非存活对象回收，将存活对象顺序复制到 To 中，之后调换 From/To，等待下一次回收。</p>
+<p><strong>老生代内存回收机制：</strong></p>
+<ol>
+<li>晋升：如果新生代的变量经过多次回收依然存在，那么就会被放入老生代内存中</li>
+<li>标记清除：老生代内存会先遍历所有对象并打上标记，然后对正在使用或被强引用的对象取消标记，回收被标记的对象</li>
+<li>整理内存碎片：把对象挪到内存的一端</li>
+</ol>
 <p><strong>为什么限制内存大小？</strong></p>
 <p>1、够用了，js设计的初衷是浏览器脚本语言，只执行一次，便释放内存</p>
 <p>2、如果不限制，回收一次100MB的内存大概花费3ms，V8引擎在回收垃圾时，是<strong>暂停住所有代码的执行</strong>，一旦垃圾过多，在回收内存的时候，中断的时间过长，体验不佳。</p>
@@ -1118,28 +1147,74 @@
 <p>作用域不同。 localStorage 在所有同源窗口中都是共享的；sessionStorage不在不同的浏览器窗口中共享；cookie也是在所有同源窗口中都是共享的。</p>
 <p><strong>应用场景</strong></p>
 <p>localStorage：常用于长期登录（+判断用户是否已登录），适合长期保存在本地的数据。sessionStorage ：敏感账号一次性登录； cookies与服务器交互</p>
-<h2 id="跨域（补充）"><a href="#跨域（补充）" class="headerlink" title="跨域（补充）"></a>跨域（补充）</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38128179/article/details/84956552">跨域</a></p>
-<p>出于浏览器的<strong>同源策略</strong>限制。同源策略（Sameoriginpolicy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。同源策略会阻止一个域的javascript脚本和另外一个域的内容进行交互。所谓同源（即指在同一个域）就是两个页面具有相同的协议（protocol），主机（host）和端口号（port）</p>
+<h2 id="跨域"><a href="#跨域" class="headerlink" title="跨域"></a>跨域</h2><p><strong>浏览器的同源策略</strong>：同源策略（Sameoriginpolicy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。同源策略会阻止一个域的javascript脚本和另外一个域的内容进行交互。</p>
+<p><strong>同域的概念：</strong>简单的解释就是相同域名,端口相同,协议相同</p>
+<table>
+<thead>
+<tr>
+<th>当前网页URL地址：study.cn/json/jsonp/jsonp.html</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求地址</td>
+<td>形式</td>
+<td>结果</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="http://study.cn/test/a.html">http://study.cn/test/a.html</a></td>
+<td>同一域名,不同文件夹</td>
+<td>成功</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="http://study.cn/json/jsonp/jsonp.html">http://study.cn/json/jsonp/jsonp.html</a></td>
+<td>同一域名,统一文件夹</td>
+<td>成功</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="http://a.study.cn/json/jsonp/jsonp.html">http://a.study.cn/json/jsonp/jsonp.html</a></td>
+<td>不同域名,文件路径相同</td>
+<td>失败</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="http://study.cn:8080/json/jsonp/jsonp.html">http://study.cn:8080/json/jsonp/jsonp.html</a></td>
+<td>同一域名,不同端口</td>
+<td>失败</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://study.cn/json/jsonp/jsonp.html">https://study.cn/json/jsonp/jsonp.html</a></td>
+<td>同一域名,不同协议</td>
+<td>失败</td>
+</tr>
+</tbody></table>
+<p><strong>跨域:</strong></p>
+<p>浏览器对于javascript的同源策略的限制，例如a.cn下面的js不能调用b.cn中的<strong>js,对象或数据</strong>(因为a.cn和b.cn是不同域),所以就出现了跨域的概念</p>
 <p><strong>跨域的解决方案</strong></p>
 <ul>
 <li><p><strong>JSONP</strong></p>
-<p>JSONP 是服务器与客户端跨源通信的常用方法。最大特点就是简单适用，兼容性好（兼容低版本IE），缺点是只支持get请求，不支持post请求。</p>
-<p>核心思想：网页通过添加一个<code>&lt;script&gt;元素</code>，向服务器请求 JSON 数据，服务器收到请求后，将数据放在一个指定名字的回调函数的参数位置传回来。</p>
-</li>
+<p><strong>核心思想：</strong>Web 页面上直接使用Ajax受到同源策略的影响。但是，通过<code>&lt;script&gt;</code>调用js文件不受浏览器同源策略的影响，所以通过 Script 便签可以进行跨域的请求</p>
+<p><strong>优点：</strong>简单适用，兼容性好（兼容低版本IE）</p>
+<p><strong>缺点：</strong>只支持get请求，不支持post请求。它只支持跨域 HTTP 请求这种情况,不能解决不同域的两个页面或 iframe 之间进行数据通信</p>
+<p><strong>过程：</strong>网页通过添加一个<code>&lt;script&gt;元素</code>，向服务器请求 JSON 数据，服务器收到请求后，将数据放在一个指定名字的回调函数的参数位置传回来。</p>
+<p><strong>例子：</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--前端代码--&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>index.html<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">	<span class="function"><span class="keyword">function</span> <span class="title">jsonpCallback</span>(<span class="params">data</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">	    alert(<span class="string">&#x27;获得 X 数据:&#x27;</span> + data.x);</span></span><br><span class="line">	&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;http://127.0.0.1:3000?callback=jsonpCallback&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//后端node的代码</span></span><br><span class="line"><span class="keyword">const</span> url = <span class="built_in">require</span>(<span class="string">&#x27;url&#x27;</span>);</span><br><span class="line">	</span><br><span class="line"><span class="built_in">require</span>(<span class="string">&#x27;http&#x27;</span>).createServer(<span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">const</span> data = &#123;</span><br><span class="line">	x: <span class="number">10</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">const</span> callback = url.parse(req.url, <span class="literal">true</span>).query.callback;</span><br><span class="line">    res.writeHead(<span class="number">200</span>);</span><br><span class="line">    res.end(<span class="string">`<span class="subst">$&#123;callback&#125;</span>(<span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(data)&#125;</span>)`</span>);</span><br><span class="line"> </span><br><span class="line">&#125;).listen(<span class="number">3000</span>, <span class="string">&#x27;127.0.0.1&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;启动服务，监听 127.0.0.1:3000&#x27;</span>);</span><br></pre></td></tr></table></figure></li>
 <li><p><strong>CORS</strong></p>
-<p>CORS 是跨域资源分享（Cross-Origin Resource Sharing）的缩写。它是 W3C 标准，属于跨源 AJAX 请求的根本解决方法。</p>
+<p>CORS是一个 W3C 标准 ，全称是跨域资源分享（Cross-Origin Resource Sharing），它允许浏览器向跨源服务器，发出 XMLHttpRequest 请求，从而<strong>克服了 Ajax 只能同源使用的限制</strong>。实现 CORS 通信的关键是服务器。只要服务器实现了 CORS 接口，就可以跨源通信。</p>
+<p>CORS 的优缺点：使用简单方便，更为安全；支持 POST 请求方式；CORS 是一种新型的跨域问题的解决方案，存在兼容问题，仅支持 IE 10 以上</p>
 <p><strong>1、普通跨域请求：只需服务器端设置Access-Control-Allow-Origin</strong></p>
+<p><strong>2、带cookie跨域请求：前后端都需要进行设置</strong></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//前端axios</span></span><br><span class="line">axios.defaults.withCredentials = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//后端Node.js</span></span><br><span class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">&#x27;http&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> server = http.createServer();</span><br><span class="line"><span class="keyword">var</span> qs = <span class="built_in">require</span>(<span class="string">&#x27;querystring&#x27;</span>);</span><br><span class="line"> </span><br><span class="line">server.on(<span class="string">&#x27;request&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> postData = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据块接收中</span></span><br><span class="line">    req.addListener(<span class="string">&#x27;data&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">chunk</span>) </span>&#123;</span><br><span class="line">        postData += chunk;</span><br><span class="line">    &#125;);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据接收完毕</span></span><br><span class="line">    req.addListener(<span class="string">&#x27;end&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        postData = qs.parse(postData);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// 跨域后台设置</span></span><br><span class="line">        res.writeHead(<span class="number">200</span>, &#123;</span><br><span class="line">            <span class="comment">// 后端允许发送Cookie</span></span><br><span class="line">            <span class="string">&#x27;Access-Control-Allow-Credentials&#x27;</span>: <span class="string">&#x27;true&#x27;</span>, </span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 允许访问的域（协议+域名+端口）</span></span><br><span class="line">            <span class="string">&#x27;Access-Control-Allow-Origin&#x27;</span>: <span class="string">&#x27;http://www.domain1.com&#x27;</span>,    </span><br><span class="line">            <span class="comment">/* </span></span><br><span class="line"><span class="comment">             * 此处设置的cookie还是domain2的而非domain1，因为后端也不能跨域写cookie(nginx反向代理可以实现)，</span></span><br><span class="line"><span class="comment">             * 但只要domain2中写入一次cookie认证，后面的跨域接口都能从domain2中获取cookie，从而实现所有的接口都能跨域访问</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="string">&#x27;Set-Cookie&#x27;</span>: <span class="string">&#x27;l=a123456;Path=/;Domain=www.domain2.com;HttpOnly&#x27;</span>  <span class="comment">// HttpOnly的作用是让js无法读取cookie</span></span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        res.write(<span class="built_in">JSON</span>.stringify(postData));</span><br><span class="line">        res.end();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">server.listen(<span class="string">&#x27;8080&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;Server is running at port 8080...&#x27;</span>);</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>Server Proxy</strong></p>
+<p>即，服务器代理，当你需要有跨域的请求操作时发送请求给后端，让后端帮你代为请求，然后最后将获取的结果发送给你。</p>
+<p>假设有这样的一个场景，你的页面需要访问<a href="http://link.zhihu.com/?target=https://cnodejs.org/api/v1">https://cnodejs.org/api/v1/topics</a>，当时因为不同域，所以你可以将请求后端，让其对该请求代为转发。</p>
+<p>代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> url = <span class="built_in">require</span>(<span class="string">&#x27;url&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> http = <span class="built_in">require</span>(<span class="string">&#x27;http&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> https = <span class="built_in">require</span>(<span class="string">&#x27;https&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">const</span> server = http.createServer(<span class="function">(<span class="params">req, res</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> path = url.parse(req.url).path.slice(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span>(path === <span class="string">&#x27;topics&#x27;</span>) &#123;</span><br><span class="line">	https.get(<span class="string">&#x27;https://cnodejs.org/api/v1/topics&#x27;</span>, <span class="function">(<span class="params">resp</span>) =&gt;</span> &#123;</span><br><span class="line">	    <span class="keyword">let</span> data = <span class="string">&quot;&quot;</span>;</span><br><span class="line">	    resp.on(<span class="string">&#x27;data&#x27;</span>, <span class="function"><span class="params">chunk</span> =&gt;</span> &#123;</span><br><span class="line">		data += chunk;</span><br><span class="line">	    &#125;);</span><br><span class="line">	    resp.on(<span class="string">&#x27;end&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">		res.writeHead(<span class="number">200</span>, &#123;</span><br><span class="line">		    <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/json; charset=utf-8&#x27;</span></span><br><span class="line">		&#125;);</span><br><span class="line">		res.end(data);</span><br><span class="line">	    &#125;);</span><br><span class="line">	&#125;)		</span><br><span class="line">    &#125;</span><br><span class="line">&#125;).listen(<span class="number">3000</span>, <span class="string">&#x27;127.0.0.1&#x27;</span>);</span><br><span class="line"> </span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;启动服务，监听 127.0.0.1:3000&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<p>通过代码你可以看出，当你访问 <a href="http://link.zhihu.com/?target=http://127.0.0.1:3000">http://127.0.0.1:3000</a> 的时候，服务器收到请求，会代你发送请求<a href="http://link.zhihu.com/?target=https://cnodejs.org/api/v1">https://cnodejs.org/api/v1/topics</a> 最后将获取到的数据发送给浏览器。</p>
 </li>
 </ul>
-<p>  <strong>2、带cookie跨域请求：前后端都需要进行设置</strong></p>
-  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//前端axios</span></span><br><span class="line">axios.defaults.withCredentials = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
-  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//后端Node.js</span></span><br><span class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">&#x27;http&#x27;</span>);</span><br><span class="line"><span class="keyword">var</span> server = http.createServer();</span><br><span class="line"><span class="keyword">var</span> qs = <span class="built_in">require</span>(<span class="string">&#x27;querystring&#x27;</span>);</span><br><span class="line"> </span><br><span class="line">server.on(<span class="string">&#x27;request&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> postData = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据块接收中</span></span><br><span class="line">    req.addListener(<span class="string">&#x27;data&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params">chunk</span>) </span>&#123;</span><br><span class="line">        postData += chunk;</span><br><span class="line">    &#125;);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据接收完毕</span></span><br><span class="line">    req.addListener(<span class="string">&#x27;end&#x27;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        postData = qs.parse(postData);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// 跨域后台设置</span></span><br><span class="line">        res.writeHead(<span class="number">200</span>, &#123;</span><br><span class="line">            <span class="comment">// 后端允许发送Cookie</span></span><br><span class="line">            <span class="string">&#x27;Access-Control-Allow-Credentials&#x27;</span>: <span class="string">&#x27;true&#x27;</span>, </span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 允许访问的域（协议+域名+端口）</span></span><br><span class="line">            <span class="string">&#x27;Access-Control-Allow-Origin&#x27;</span>: <span class="string">&#x27;http://www.domain1.com&#x27;</span>,    </span><br><span class="line">            <span class="comment">/* </span></span><br><span class="line"><span class="comment">             * 此处设置的cookie还是domain2的而非domain1，因为后端也不能跨域写cookie(nginx反向代理可以实现)，</span></span><br><span class="line"><span class="comment">             * 但只要domain2中写入一次cookie认证，后面的跨域接口都能从domain2中获取cookie，从而实现所有的接口都能跨域访问</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="string">&#x27;Set-Cookie&#x27;</span>: <span class="string">&#x27;l=a123456;Path=/;Domain=www.domain2.com;HttpOnly&#x27;</span>  <span class="comment">// HttpOnly的作用是让js无法读取cookie</span></span><br><span class="line">        &#125;);</span><br><span class="line"> </span><br><span class="line">        res.write(<span class="built_in">JSON</span>.stringify(postData));</span><br><span class="line">        res.end();</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line">server.listen(<span class="string">&#x27;8080&#x27;</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&#x27;Server is running at port 8080...&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
 <h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2><p>用户访问网站的过程</p>
 <p><strong>从浏览器打开<a href="http://www.baidu.com地址回车发送请求到看到页面的过程：">http://www.baidu.com地址回车发送请求到看到页面的过程：</a></strong></p>
 <p>主要分成 <strong>两个</strong> 步骤：</p>
@@ -1163,7 +1238,7 @@
 <li>DOM型XSS：基于文档对象模型(Document Objeet Model，DOM)的一种漏洞。DOM是一个与平台、编程语言无关的接口，它允许程序或脚本动态地访问和更新文档内容、结构和样式，处理后的结果能够成为显示页面的一部分。DOM中有很多对象，其中一些是用户可以操纵的，如uRI ，location，refelTer等。客户端的脚本程序可以通过DOM动态地检查和修改页面内容，它不依赖于提交数据到服务器端，而从客户端获得DOM中的数据在本地执行，如果DOM中的数据没有经过严格确认，就会产生DOM XSS漏洞。</li>
 </ul>
 <h2 id="CSRF-跨站点请求伪造攻击"><a href="#CSRF-跨站点请求伪造攻击" class="headerlink" title="CSRF(跨站点请求伪造攻击)"></a>CSRF(跨站点请求伪造攻击)</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaoxinshuaiga/article/details/80766369">好文</a></p>
-<p>CSRF跨站点请求伪造(Cross—Site Request Forgery)，跟XSS攻击一样，存在巨大的危害性，你可以这样来理解：<br>    攻击者盗用了你的身份，以你的名义发送恶意请求，对服务器来说这个请求是完全合法的，但是却完成了攻击者所期望的一个操作，比如以你的名义发送邮件、发消息，盗取你的账号，添加系统管理员，甚至于购买商品、虚拟货币转账等。 如下：其中Web A为存在CSRF漏洞的网站，Web B为攻击者构建的恶意网站，User C为Web A网站的合法用户。</p>
+<p>CSRF跨站点请求伪造(Cross—Site Request Forgery)，跟XSS攻击一样，存在巨大的危害性，你可以这样来理解：<br>攻击者盗用了你的身份，以你的名义发送恶意请求，对服务器来说这个请求是完全合法的，但是却完成了攻击者所期望的一个操作，比如以你的名义发送邮件、发消息，盗取你的账号，添加系统管理员，甚至于购买商品、虚拟货币转账等。 如下：其中Web A为存在CSRF漏洞的网站，Web B为攻击者构建的恶意网站，User C为Web A网站的合法用户。</p>
 
             </section>
     </article>
@@ -1304,7 +1379,7 @@
             
               <a class="category-list-item" href="/categories/前端技术">
                 <span class="category-list-link">前端技术</span>
-                <span class="category-list-number">(2)</span>
+                <span class="category-list-number">(3)</span>
               </a>
             
           
@@ -1319,7 +1394,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSV/" rel="tag">CSV</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">MySql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/js/" rel="tag">js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CSV/" rel="tag">CSV</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySql/" rel="tag">MySql</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nodejs/" rel="tag">Nodejs</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Npm/" rel="tag">Npm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVN/" rel="tag">SVN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/js/" rel="tag">js</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue2-0/" rel="tag">vue2.0</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F/" rel="tag">命令格式</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B8%B8%E7%94%A8Linux%E5%91%BD%E4%BB%A4/" rel="tag">常用Linux命令</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%83%A8%E7%BD%B2%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="tag">部署与优化</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2Hexo/" rel="tag">静态博客Hexo</a></li></ul>
     </div>
   </div>
 
@@ -1332,6 +1407,10 @@
       <ul class="recent-posts">
         
           <li>
+            <a href="/2021/05/08/Webpack/">无题</a>
+          </li>
+        
+          <li>
             <a href="/2021/01/10/python%E7%88%AC%E8%99%AB%E8%BF%9B%E9%98%B6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Python商业爬虫进阶--学习笔记</a>
           </li>
         
@@ -1340,15 +1419,11 @@
           </li>
         
           <li>
-            <a href="/2020/06/08/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">JS学习笔记</a>
+            <a href="/2020/07/01/Vue%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Vue学习笔记</a>
           </li>
         
           <li>
-            <a href="/2020/05/10/%E8%A6%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9F%A5%E8%AF%86/">要学习的知识</a>
-          </li>
-        
-          <li>
-            <a href="/2020/04/15/Linux%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">Linux基础-学习笔记</a>
+            <a href="/2020/06/08/js%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">JS系统学习笔记</a>
           </li>
         
       </ul>
@@ -1360,7 +1435,7 @@
   <section class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li></ul>
     </div>
   </section>
 
