@@ -676,7 +676,7 @@
 <ul>
 <li>行内元素不是独占一行，且没有<code>height</code>和<code>width</code>属性，长宽都是紧随内部文字的长宽，不存在内部的水平居中和垂直居中的问题</li>
 <li>有<code>line-height</code>的概念,元素中线距上下各二分之一行高的长度</li>
-<li>vertical-align是行内元素的独占属性，指定元素与</li>
+<li>vertical-align是行内元素的独占属性，该属性定义行内元素的基线相对于该元素所在行的基线的垂直对齐。</li>
 </ul>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> <span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line">        a &#123;</span><br><span class="line">           </span><br><span class="line">            border: solid 1px red;</span><br><span class="line">            line-height: 100px;</span><br><span class="line">            </span><br><span class="line">         &#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">hr</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>MYSQL<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>LINUX<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;&quot;</span>&gt;</span>PHP<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">hr</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
@@ -1278,23 +1278,78 @@
 <li>input有几种类型</li>
 </ul>
 <h2 id="CSS"><a href="#CSS" class="headerlink" title="CSS"></a>CSS</h2><ul>
-<li>flex布局：实现两栏（左固定 右自适应）/三栏（左右固定 中间自适应）布局</li>
-<li>常见伪元素、伪类，越多越好</li>
-<li>垂直水平居中方法，越多越好</li>
-<li>八种定位属性的具体含义 - static relative fixed absolute sticky inherit initial unset</li>
-<li>选择器和优先级，权重- 这里继承优先级最低</li>
-<li>哪些CSS属性可继承？</li>
-<li>回流重绘的概念、触发条件，避免回流重绘的操作，flush队列，display:none触发的是哪一个， visibility:hidden呢</li>
-<li>BFC（块级格式上下文）的概念，触发条件，渲染规则，应用场景</li>
-<li>移动端适配 - 这里涉及到的东西可就多了：媒体查询，viewport，em/rem，vw/vh</li>
-<li>行内元素的padding和margin生效吗？</li>
+<li><p>flex布局：实现两栏（左固定 右自适应）/三栏（左右固定 中间自适应）布局</p>
+</li>
+<li><p>常见伪元素、伪类，越多越好</p>
+</li>
+<li><p>垂直水平居中方法，越多越好</p>
+</li>
+<li><p>八种定位属性的具体含义 - static relative fixed absolute sticky inherit initial unset</p>
+</li>
+<li><p>选择器和优先级，权重- 这里继承优先级最低</p>
+</li>
+<li><p>哪些CSS属性可继承？</p>
+</li>
+<li><p>回流重绘的概念、触发条件，避免回流重绘的操作，flush队列，display:none触发的是哪一个， visibility:hidden呢 </p>
+<p>浏览器的重绘和重排发生在哪里 什么错误会引起重绘重排。</p>
+<p>translate()是否会触发重绘,怎么避免触发重绘</p>
+</li>
+<li><p>css3 硬件加速</p>
+</li>
+<li><p>BFC（块级格式上下文）的概念，触发条件，渲染规则，应用场景。 overflow 的 visible 可以触发 BFC 吗，BFC 可以解决什么问题</p>
+</li>
+<li><p>移动端适配 - 这里涉及到的东西可就多了：媒体查询，viewport，em/rem，vw/vh</p>
+</li>
+<li><p>行内元素的padding和margin生效吗？</p>
+</li>
+<li><p>css 盒模型是什么? 有什么方法可以改变盒模型</p>
+<p> box-sizing 的 border-box 和 content 的区别? 为什么要有 border-sizing? 有什么应用场景? 主要解决什么问题</p>
+</li>
+<li><p>伪类与为伪元素的区别</p>
+</li>
+<li><p>css3新增了哪些属性</p>
+</li>
+<li><p>脱离文档流的过程</p>
+</li>
+<li><p>flex的属性，实现均匀分布的属性</p>
+</li>
+<li><p>css三角形的实现</p>
+</li>
+<li><p>选择器，优先级</p>
+</li>
+<li><p>rem原理，vh/vw原理及缺点</p>
+</li>
+<li><p>sticky和fixed属性快速滑动出现的问题</p>
+</li>
+<li><p>给一个图片，只知道url，实现图片铺满和居中。backgroud的图片居中</p>
+</li>
+<li><p>src和href的区别</p>
+</li>
+<li><p>html中的块级元素、行内元素分别有哪些</p>
+</li>
+<li><p>block、inline和inline-block的元素有什么差别</p>
+</li>
+<li><p>flex：1和flex：0.1各会呈现什么样的状态</p>
+</li>
+<li><p>css 加载之后。发生了什么？ css om树 然后 html dom树 然后渲染树 最后 还要计算尺寸</p>
+</li>
+<li><p>display hidden会不会在这个节点上</p>
+</li>
+<li><p>如何解决css类名重</p>
+</li>
 </ul>
 <h2 id="JS"><a href="#JS" class="headerlink" title="JS"></a>JS</h2><h3 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h3><ul>
 <li><p>js数据类型</p>
 </li>
-<li><p>提到了Symbol，那么Symbol(‘1’) === Symbol(‘1’)返回什么</p>
+<li><p>js中的隐式转换</p>
+<p>字符与数字</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//只有+是追加，其他运算都是转化为数字</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;2&quot;</span>+<span class="number">1</span>)<span class="comment">// 21</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;2&quot;</span>-<span class="number">1</span>)<span class="comment">// 1</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;3&quot;</span>/<span class="number">2</span>)<span class="comment">// 1.5</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">&quot;2&quot;</span>*<span class="number">3</span>)<span class="comment">// 6</span></span><br></pre></td></tr></table></figure>
+
+
 </li>
-<li><p>如何区分引用类型（Object等）</p>
+</ul>
+<ul>
+<li><p>提到了Symbol，那么Symbol(‘1’) === Symbol(‘1’)返回什么</p>
 </li>
 <li><p><strong>ES5 和 ES6的继承</strong></p>
 </li>
@@ -1310,24 +1365,168 @@
 </li>
 <li><p>说下一你熟悉的模式，那vue有哪些地方是使用到观察者模式。</p>
 </li>
-<li><p><strong>null和undefined的区别。为什么 == 结果是true，而 === 结果是false</strong> </p>
+<li><p><strong>null和undefined的区别。为什么 == 结果是true，而 === 结果是false</strong> 。null和undefined区别，类型判断的区别</p>
 <blockquote>
 </blockquote>
 </li>
-<li><p><strong>怎么实现继承，继承的方法</strong> </p>
+<li><p><strong>怎么实现继承，继承的方法</strong> 。原型链实现的继承会有什么问题？怎么解决</p>
 </li>
 <li><p><strong>axios内部怎么实现（ajax）、那ajax怎么实现(XmlHttpRequest)</strong></p>
 </li>
 <li><p><strong>new 实例化一个对象 / new一个对象时发生了什么？四个步骤</strong> </p>
 </li>
-<li><p> <strong>防抖节流的使用，区别，手写 **</strong></p>
+<li><p> **防抖节流的使用，区别，手写 **。如果防抖要一开始就执行一次该怎么处理</p>
 </li>
-<li><p><strong>Eventloop，可以顺便说一下浏览器渲染进程，哪些是宏任务微任务</strong> </p>
+<li><p><strong>Eventloop（事件循环机制），可以顺便说一下浏览器渲染进程，哪些是宏任务微任务</strong> </p>
 </li>
-<li><p><strong>事件流，事件代理解决的问题</strong> </p>
-<h3 id="代码题"><a href="#代码题" class="headerlink" title="代码题"></a>代码题</h3><p>实现一个拖拽过程，使用原生js。没实现出来，大概过程写了。<br>写一个函数，让页面上一个div内容从60一秒减一直到变成0<br>实现一个效果，就是像手机刷微博刷到底了再显示一些内容，只要写伪代码<br>让一个图片滚动显示，类似轮播图那样，有几种实现方式<br>写一个单例，new该对象的时候总是返回同一个对象</p>
-<h2 id="VUE"><a href="#VUE" class="headerlink" title="VUE"></a>VUE</h2></li>
+<li><p>事件机制</p>
+</li>
+<li><p><strong>事件流：</strong> 事件发生时会在元素节点与根节点之间按照特定的顺序传播，路径所经过的所有节点都会收到该事件，这个传播过程即DOM事件流。</p>
+</li>
+<li><p><strong>事件委托/事件代理</strong>：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/liugang-vip/p/5616484.html">好文</a></p>
+</li>
+<li><p>用户频繁输入，怎么优化性能（防抖、节流）</p>
+</li>
+<li><p>讲一下 js 事件流？事件捕获和事件冒泡有什么应用场景</p>
+</li>
+<li><p>generator</p>
+</li>
+<li><p>instanceof 的原理</p>
+</li>
+<li><p>setTimeout 可以确保每隔一秒打印一个数据吗? 如何实现</p>
+<p>setTimeout 和 setInterval 有什么区别</p>
+</li>
+<li><p>call apply bind 的区别， bind 的原理</p>
+</li>
+<li><p>传入一个嵌套对象{a: {b: {c: 1}}}，获取c的值</p>
+</li>
+<li><p>实现事件绑定的几种方法及其区别（这在我上一篇<a href="">面经</a>帖子中详细说明过了） </p>
+<ul>
+<li>行内绑定 onclick=”” this指向window </li>
+<li>动态绑定 btn.onclick = function(){} this指向当前操作的dom对象 </li>
+<li>事件监听 addEventListener(eventName,handle,useCapture) 或 attachEvent()</li>
+</ul>
+</li>
+<li><p>说说怎么实现深拷贝和浅拷贝？用JSON.stringify实现深拷贝有什么弊端？</p>
+</li>
+<li><p>js继承的方式，优缺点，es6 extends可以继承多个父类吗？</p>
+</li>
+<li><p>JS的数据类型有哪些？基本数据类型和引用数据类型有什么区别？为什么基本类型和引用类型都不存储在堆里？</p>
+</li>
+<li><p>JS中Array有哪些方法？说其中的reduce()，数组一些操作如splice</p>
+</li>
+<li><p>JS的垃圾回收机制？</p>
+</li>
+<li><p>script标签中defer和async</p>
+</li>
+<li><p>DOM原生的方法知道几个，说一下？</p>
+</li>
+<li><p>写es5怎么实现私有变量 </p>
+</li>
+<li><p>箭头函数的的this和arguments问题9888888999</p>
+</li>
+<li><p>为什么js是单线程  </p>
+</li>
+<li><p>ES5的继承和ES6的继承的区别</p>
+<p>为什么ES6中的继承要这样规定，有什么好处（起因是我说ES6中的子类的this是继承了父类的this）</p>
+<p>箭头函数能不能做构造函数，为什么</p>
+</li>
+<li><p>js中new的过程</p>
+</li>
+<li><p>js的几种模块化方案</p>
+</li>
+<li><p>js数组的方法 哪些改变哪些不改变</p>
+</li>
+<li><p>instanceof的原理和弊端</p>
+</li>
+<li><p>es6中map和set方法有什么不同？</p>
+</li>
+<li><p>浏览器 dom 事件模型有什么</p>
+</li>
+<li><p>string是基本数据类型还可以调用数组的那些方法</p>
+</li>
+<li><p>arguments转换成数组</p>
+</li>
+</ul>
+<h3 id="看代码说输出"><a href="#看代码说输出" class="headerlink" title="看代码说输出"></a>看代码说输出</h3><p>关于this和变量提升的代码题，看代码说结果(搜点例题看)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">作者：Jason_liang</span><br><span class="line">链接：https:&#x2F;&#x2F;www.nowcoder.com&#x2F;discuss&#x2F;646193?type&#x3D;2&amp;order&#x3D;3&amp;pos&#x3D;5&amp;page&#x3D;1&amp;channel&#x3D;-1&amp;source_id&#x3D;discuss_tag_nctrack</span><br><span class="line">来源：牛客网</span><br><span class="line"></span><br><span class="line">const obj &#x3D; &#123;</span><br><span class="line">a: 1,</span><br><span class="line">b: &quot;2&quot;,</span><br><span class="line">c: [ 1, 2, 3],</span><br><span class="line">&#125;;</span><br><span class="line">const fuc &#x3D; ( obj) &#x3D;&gt; &#123;</span><br><span class="line">const props &#x3D; &#123; ... obj &#125;;</span><br><span class="line">props. a &#x3D; &quot;1&quot;;</span><br><span class="line">props. b &#x3D; 2;</span><br><span class="line">props. c. push( 4);</span><br><span class="line">return props;</span><br><span class="line">&#125;;</span><br><span class="line">const obj2 &#x3D; fuc( obj);</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; 2</span><br><span class="line">Function. prototype. a &#x3D; () &#x3D;&gt; &#123;</span><br><span class="line">console. log( 1);</span><br><span class="line">&#125;;</span><br><span class="line">Object. prototype. b &#x3D; () &#x3D;&gt; &#123;</span><br><span class="line">console. log( 2);</span><br><span class="line">&#125;;</span><br><span class="line">function A() &#123;&#125;</span><br><span class="line">const a &#x3D; new A();</span><br><span class="line"></span><br><span class="line">a. a();</span><br><span class="line">a. b();</span><br><span class="line">A. a();</span><br><span class="line">A. b();</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; 3</span><br><span class="line">console. log( 1);</span><br><span class="line"></span><br><span class="line">setTimeout(() &#x3D;&gt; &#123;</span><br><span class="line">console. log( 2);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">setImmediate(() &#x3D;&gt; &#123;</span><br><span class="line">console. log( 3);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">new Promise(( resolve) &#x3D;&gt; &#123;</span><br><span class="line">console. log( 4);</span><br><span class="line"></span><br><span class="line">resolve();</span><br><span class="line"></span><br><span class="line">console. log( 5);</span><br><span class="line">&#125;). then(() &#x3D;&gt; &#123;</span><br><span class="line">console. log( 6);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">Promise. resolve(). then(() &#x3D;&gt; &#123;</span><br><span class="line">console. log( 7);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">作者：Jason_liang</span><br><span class="line">链接：https:&#x2F;&#x2F;www.nowcoder.com&#x2F;discuss&#x2F;646193?type&#x3D;2&amp;order&#x3D;3&amp;pos&#x3D;5&amp;page&#x3D;1&amp;channel&#x3D;-1&amp;source_id&#x3D;discuss_tag_nctrack</span><br><span class="line">来源：牛客网</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; 1</span><br><span class="line">var  a  &#x3D;  10;</span><br><span class="line">function  foo() &#123;</span><br><span class="line">   console. log( a);</span><br><span class="line">   let  a  &#x3D;  20;</span><br><span class="line">&#125;</span><br><span class="line">foo();</span><br><span class="line">&#x2F;&#x2F; 是否会报错</span><br><span class="line">var  a  &#x3D;  10;</span><br><span class="line">function  foo() &#123;</span><br><span class="line">   let  a  &#x3D;  20;</span><br><span class="line">&#125;</span><br><span class="line">foo();</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">作者：牛背上的我</span><br><span class="line">链接：https:&#x2F;&#x2F;www.nowcoder.com&#x2F;discuss&#x2F;642883?type&#x3D;2&amp;order&#x3D;3&amp;pos&#x3D;7&amp;page&#x3D;1&amp;channel&#x3D;-1&amp;source_id&#x3D;discuss_tag_nctrack</span><br><span class="line">来源：牛客网</span><br><span class="line"></span><br><span class="line">console.log(str,num);</span><br><span class="line">var str &#x3D; &quot;sfd&quot;;</span><br><span class="line">var num &#x3D; &quot;123&quot;</span><br><span class="line">function fn2() &#123;</span><br><span class="line">console.log(str,num);</span><br><span class="line">str &#x3D; &quot;dfdg&quot;;</span><br><span class="line">var num &#x3D; &quot;345&quot;;</span><br><span class="line">num &#x3D; &quot;098&quot;;</span><br><span class="line">str &#x3D; &quot;candy&quot;;</span><br><span class="line">console.log(str,num);</span><br><span class="line">&#125;</span><br><span class="line">fn2();</span><br><span class="line">console.log(str,num);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;说输出 </span><br><span class="line">var var1 &#x3D; 1; </span><br><span class="line">function b()&#123; var var1 &#x3D; 1; var var2 &#x3D; 2;  a(); &#125; </span><br><span class="line">function a()&#123;  console.log(var1);  console.log(var2); &#125;  </span><br><span class="line">b();  </span><br><span class="line">console.log(var1); &#x2F;&#x2F;1 1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">let x &#x3D; 5; </span><br><span class="line">function fn(x) &#123; return function(y) &#123;  console.log(&#39;result &#x3D; &#39;, y + (++x));  &#125; &#125; let f &#x3D; fn(6); f(7); console.log(&#39;x&#x3D;&#39;, x);</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">undefined</span> == <span class="literal">null</span> <span class="literal">undefined</span> === <span class="literal">null</span></span><br><span class="line"><span class="built_in">isNaN</span>(<span class="string">&quot;100&quot;</span>)</span><br><span class="line"><span class="built_in">parseInt</span>(<span class="string">&quot;1a&quot;</span>) === <span class="number">1</span></span><br><span class="line">[] <span class="keyword">instanceof</span> <span class="built_in">Array</span></span><br><span class="line">!![]</span><br><span class="line"><span class="number">1</span>===’<span class="number">1</span>’</span><br><span class="line"><span class="literal">null</span>===<span class="literal">undefined</span></span><br><span class="line">!!’’</span><br></pre></td></tr></table></figure>
+<h2 id="VUE"><a href="#VUE" class="headerlink" title="VUE"></a>VUE</h2><ul>
 <li><p>双向绑定原理，有没用过vue3，vue3为什么改用proxy</p>
+<p>proxy和object.defineProperty的区别</p>
+</li>
+<li><p>为什么 vue 不建议在 action 中修改 state 而是在 mutation 中修改？有什么好处？</p>
+</li>
+<li><p>Vue 数据变化怎么更新页面</p>
+<p> vue data中的数据改变，什么时候不会引起页面的重新渲染，什么时候会引起？</p>
+<p>Vue 可以实现对新增属性的响应式吗？怎么实现的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">好像有以一个vm.set</span><br></pre></td></tr></table></figure>
+<p> Vue 是数据变化了就会去更新视图吗T</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">不是，立即更新视图，所以才有了nextTick</span><br><span class="line">vue的nexttick原理</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Vue3中对响应式原理的优化（Proxy），有哪些优势</p>
+</li>
+<li><p>Vue路由守卫，有哪些钩子</p>
+</li>
+<li><p><strong>diff算法有了解吗？它是怎么工作的？为什么它是操作虚拟DOM</strong></p>
+</li>
+<li><p>Vue 的 VDOM 是怎么实现的？为什么可以减少不必要的渲染？为什么效率会更高？频繁修改 DOM 怎么去存储前面的 DOM 操作？频繁修改 DOM 是多少时间内频繁修改？</p>
+</li>
+<li><p>Vue 是怎么提高性能的？</p>
+</li>
+<li><p>vue的响应式原理，它是怎么操作数据更新的，$watch()内部是怎么操作的</p>
+</li>
+<li><p>虚拟DOM的理解</p>
+<p>答：虚拟DOM本质上是<a target="_blank" rel="noopener" href="http://www.mianshigee.com/interview/search?q=JavaScript">JavaScript</a> 对象，这个对象就是更加轻量级的对DOM的描述。</p>
+</li>
+<li><p>vue路由传参<a target="_blank" rel="noopener" href="https://www.cnblogs.com/niejunchan/p/12866375.html">https://www.cnblogs.com/niejunchan/p/12866375.html</a></p>
+</li>
+<li><p>vue监听数组 变异方法等</p>
+</li>
+<li><p>watch的原理机制</p>
+</li>
+<li></li>
+</ul>
+<h2 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h2><ul>
+<li>node的服务框架，express的洋葱模型</li>
+<li>node中的事件循环</li>
+<li>node中this的指向</li>
+<li>express框架和Koa的区别</li>
+<li>介绍一下你对中间件的理解</li>
+<li>Node作为服务端语言，跟其他服务端语言比有什么特性？优势和劣势是什么？</li>
+<li>node多进程 多线程</li>
+<li>CommonJS和啥啥啥的区别？答：我没了解过CommonJs</li>
+</ul>
+<h2 id="小程序"><a href="#小程序" class="headerlink" title="小程序"></a>小程序</h2><ul>
+<li><p>uni-app 的 h5 和 小程序打包出的文件有什么区别</p>
+<p>uni-app 怎么实现跨平台的</p>
+</li>
+<li><p>小程序原理，为什么可以在微信中渲染出来。有接触过小程序跨端吗</p>
+<p>小程序中，不能直接操作DOM节点，有什么意义？</p>
+<p>小程序和H5有什么本质区别？小程序有一套自己的框架，为什么要自己弄这一套框架，优势在哪？</p>
+<p>微信小程序授权登录怎么实现的？</p>
+</li>
+<li><p>微信小程序中我有一个列表页，点击添加可以跳转到一个表单页，填写表单点击提交后返回列表页列表刷新，点击返回或者滑动返回列表不刷新，问如何实现（我这里只是想到了localStorage和Global data，但是其实还有一个是页面栈的跳转的时候可以传参来实现）</p>
+</li>
+<li><p>说说wx.navigateTo可以包含的参数</p>
+</li>
+<li><p>觉得微信小程序和pc端vue开发时有什么不同</p>
+</li>
+</ul>
+<h2 id="webpack"><a href="#webpack" class="headerlink" title="webpack"></a>webpack</h2><ul>
+<li><p>webpack实现过程，是怎么完成解析依赖的？</p>
+</li>
+<li><p>webpack你了解吗？它的打包过程是怎样的？你听过happy-track这个工具吗</p>
+</li>
+</ul>
+<h2 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h2><ul>
+<li><p>git rebase有用过吗?对git的理解，对于新建branch的应用场景</p>
+</li>
+<li><p>git代码回滚</p>
 </li>
 </ul>
 <h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
@@ -1343,11 +1542,27 @@
 </li>
 <li><p>几种本地存储，对比</p>
 </li>
-<li><p>跨域，几种解决方式，jsonp为什么能那样做</p>
+<li><p>跨域，几种解决方式</p>
+<p>jsonp为什么能那样做，手写一个 jsonp</p>
+<p>iframe 有什么缺点? 有什么优点?为什么 iframe 可以实现跨域</p>
+<p>有什么标签是可以支持跨域的? 为什么这些标签可以跨域</p>
 </li>
-<li><p>状态码</p>
+<li><p>http 状态码204， 301 ，302 ，304 是什么，1开头的有哪些</p>
+</li>
+<li><p>使用<code>setInterval</code>请求实时数据，返回顺序不一致怎么解决</p>
+</li>
+<li><p>两个同源tag之间通信（监听+cookie）</p>
 </li>
 <li><p>http有几种请求方式，get和put的区别</p>
+<p>简单请求和复杂请求区别</p>
+<p>了解https吗？说说https的加密和证书？加密和证书解决了什么？</p>
+<p>http1.1 和 2.0 有什么区别？ 简单介绍https 2.0，http 2.0 在体积优化上除了压缩还有别的策略吗</p>
+<p>http和https的区别</p>
+<p>浏览器对 http 请求的并发限制一般是多少个</p>
+<p>http/https区别以及加密方法</p>
+<p> ssl握手过程，非对称加密和对称加密的区别</p>
+<p>对称加密和非对称加密，https握手过程</p>
+<p>https怎么保证数据不被纂改，我提到了hash比对，就问了我hash<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E7%AE%97%E6%B3%95">算法</a>是什么</p>
 </li>
 <li><p>输入url到展示页面的过程</p>
 </li>
@@ -1355,6 +1570,235 @@
 <blockquote>
 <p>TCP和UDP端口是可以相同的,因为TCP和UDP都在OSI的第四层,端口号就是第四层,也就是说端口只是TCP定义的数据而已,TCP端口和UDP端口就是两个传输层协议自己的东西,分别进行维护。tcp维护着tcp的端口列表,udp维护着udp的端口,所以不会冲突可以监听。</p>
 </blockquote>
+<p>说说http 与 tcp 的关系？</p>
+<p>tcp可以建立多个连接吗？</p>
+</li>
+<li><p>websocket 为什么要加心跳? websocket 不是长连接吗，为什么还要加心跳去维持连接。小程序切后台后怎么处理？websocket 会断开吗</p>
+</li>
+<li><p>怎么实现白天黑夜主题切换</p>
+</li>
+<li><p>了解的设计模式，说一下发布订阅。 聊聊设计模式， 装饰器模式、单例模式</p>
+</li>
+<li><p>说一下对 typescript 的理解</p>
+</li>
+<li><p>如何实现并发请求? 如果不使用 promise 呢</p>
+</li>
+<li><p>说一下对 webpack 的理解？webpack 打包后的文件是怎么样的。loder 和 plugin 的区别</p>
+</li>
+<li><p> 静态资源没有改变可以怎么做优化（CDN）</p>
+</li>
+<li><p><strong>了解多端的原理吗？</strong></p>
+</li>
+<li><p>有了 Last-Modified 为什么还要有 Etag？为什么有了 Expires 还要有 Cache-Control？Expires 会造成什么问题</p>
+<p>浏览器的缓存策略，cache-control中的no-cache和no-store的差异</p>
+</li>
+<li><p>hooks的使用和缺点</p>
+</li>
+<li><p>html执行机制即浏览器加载机制。浏览器的渲染原理</p>
+</li>
+<li><p>HTTP缓存</p>
+</li>
+<li><p>前端性能优化？</p>
+<p> 性能优化有哪些？</p>
+<ul>
+<li>答： CDN ， Webpack插件压缩， 静态缓存， 图片懒加载 </li>
+<li>其实后面追问代码上的性能优化的： </li>
+<li>我列举大量的dom操作可以用 requestIdleCallback 的低优先级特性向浏览器申请主线程使用权, 自然就扯到React 的 Fiber Reconciler相对于Stack Reconciler 的优化 ，这一段说的挺多的</li>
+</ul>
+</li>
+<li><p>content-type的类型</p>
+</li>
+<li><p>怎么让数据库查询更快，数据库为什么用mysql</p>
+</li>
+<li><p>权限组件是怎么设计的</p>
+</li>
+<li><p>babel原理 </p>
+<p> （1）babel的转译过程分为三个阶段：parsing、transforming、generating，以ES6代码转译为ES5代码为例，babel转译的具体过程如下： </p>
+<p> •ES6代码输入 </p>
+<p> •babylon进行解析得到AST </p>
+<p> •plugin用babel-traverse对AST树进行遍历转译,得到新的AST树 </p>
+<p> •用babel-generator通过AST树生成ES5代码</p>
+</li>
+<li><p>Promise规范</p>
+</li>
+<li><p>用户反馈白屏，你这边没问题，怎么解决</p>
+</li>
+<li><p>大文件上传（以muitipart/form-data为例，或者blob）的时候HTTP是如何切片的（不知道）</p>
+</li>
+<li><p>登录模式里 怎么保证cookie安全的方法</p>
+</li>
+<li><p>iframe你使用过吗</p>
+</li>
+<li><p>讲一下ssr</p>
+</li>
+<li><p>restful风格规范是什么</p>
+</li>
+<li><p>cdn加速原理，没有缓存到哪里拿</p>
+</li>
+<li><p>如果页面上有很多个checkbox怎么尽可能少的向后台传输数据</p>
+</li>
+<li><p>如何防止密码被盗</p>
+</li>
+<li><p>实现一个自适应的正方形</p>
+</li>
+<li><p>XML和JSON区别</p>
+</li>
+<li><p>有什么方法可以保持前后端实时通信</p>
+</li>
+<li><p>AMD和CMD都是浏览器端的js模块化规范，分别由require.js和sea.js实现。 CommonJS是服务器端的js模块化规范，由NodeJS实现【RequireJS遵循AMD规范，Sea.js遵循CMD规范】</p>
+</li>
+</ul>
+<h2 id="待整理"><a href="#待整理" class="headerlink" title="待整理"></a>待整理</h2><ul>
+<li>null&gt;0, null&lt;0, null&gt;=0,null&lt;=0, null == 0</li>
+<li>[]==[]   {}=={}的结果解释原因(都是false)</li>
+</ul>
+<h2 id="代码题"><a href="#代码题" class="headerlink" title="代码题"></a>代码题</h2><ul>
+<li><p>把字符串解析成对象形式</p>
+<p>注意：decodeUrl函数可以把url编码解析成文字，对于普通文字，无作用会原样返回；split(“=”)函数对于<code>user=</code>返回的结果是数组，第一个元素是user，第二个元素是“”；对于<code>age</code>返回的结果是age，如果这时还取第二个元素，那值是undefined</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> str=<span class="string">&#x27;www.baidu.com?user=jack&amp;id=21&amp;id=23&amp;city=%E5%8C%97%E4%BA%AC&amp;age&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">fun</span>(<span class="params">str</span>)</span>&#123;</span><br><span class="line">	<span class="keyword">let</span> temp=str.split(<span class="string">&quot;?&quot;</span>)[<span class="number">1</span>].split(<span class="string">&quot;&amp;&quot;</span>);</span><br><span class="line">	<span class="keyword">let</span> res=&#123;&#125;;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">let</span> i=<span class="number">0</span>;i&lt;temp.length;i++)&#123;</span><br><span class="line">		key=temp[i].split(<span class="string">&quot;=&quot;</span>)[<span class="number">0</span>];</span><br><span class="line">		value=temp[i].split(<span class="string">&quot;=&quot;</span>)[<span class="number">1</span>];</span><br><span class="line">		<span class="keyword">if</span>(value==<span class="literal">undefined</span>)&#123;</span><br><span class="line">			res[key]=<span class="string">&quot;enable&quot;</span>;</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="keyword">if</span>(res[key]==<span class="literal">undefined</span>)&#123;</span><br><span class="line">				res[key]=<span class="built_in">decodeURI</span>(value);</span><br><span class="line">			&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">				res[key]=[].concat(res[key],value);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">console</span>.log(fun(str));</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+<ul>
+<li><p>用 vue 写一个<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E7%99%BE%E5%BA%A6">百度</a>搜索框组件（可以不写样式，只写业务逻辑，用 fetch 模拟请求）</p>
+</li>
+<li><p>实现一个搜索栏（实现关键函数即可）</p>
+</li>
+<li><p>给 input 事件加上防抖 or 节流。手写：用户搜索框输入结束实时搜索（其实就是防抖的手写）</p>
+</li>
+<li><p>手写原型链继承</p>
+</li>
+<li><p>给字符串增加一个方法，传入一个数字n，输出重复n次的字符串，字符串的 repeat 方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入 &#39;abc&#39;._repeat(3)</span><br><span class="line">输出 &#39;abcabcabc&#39;</span><br></pre></td></tr></table></figure>
+<p>一道编程题，实现repeat函数，后面说不用循环，我没想出来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; &#39;abc&#39;.repeat(3) </span><br><span class="line">&#x2F;&#x2F;&#39;abcabcabc&#39; </span><br><span class="line"></span><br><span class="line">let str &#x3D; &#39;123&#39; </span><br><span class="line">String.prototype.repeat &#x3D; function(count)&#123; </span><br><span class="line">let str &#x3D; this; </span><br><span class="line">let result &#x3D; &#39;&#39;; </span><br><span class="line">for(let i&#x3D;0;i&lt;count;i++)&#123; </span><br><span class="line">result +&#x3D; str;  </span><br><span class="line">&#125; </span><br><span class="line">return result;  </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure></li>
+<li><p>手写promise.all</p>
+</li>
+<li><p>实现Array.flat。不使用flat函数实现数组扁平化(多种方法)</p>
+</li>
+<li><p>实现一个类，有原型方法和静态方法，并用一个子类进行继承（ES5/ES6）</p>
+</li>
+<li><p><strong>css布局</strong></p>
+</li>
+<li><p>两列布局左边固定右边自适应</p>
+<p>如何实现网页两边固定宽度，中间宽度自适应 (应该是圣杯模型，然后并没有想起）</p>
+<p>三栏布局:手写一个三栏布局（flex），当在缩小浏览器窗口到一定限度时，左右两边的固定宽度的容器会被挤压缩小，应该怎么解决（不是min-width）</p>
+<p>在三栏布局里面，为什么要把center部分放在left前面（答：优先显示、性能优先 =》！错误 答案：SEO有关）</p>
+<p>移动版的页面结构</p>
+<p>手写：css实现一个圆？如果border-radius设置100%会怎么样？ 实现一个半圆呢？</p>
+</li>
+<li><p>实现一个筛选条置顶，下方将筛选出内容整体是可滚动的（写HTML和CSS的界面样式）</p>
+</li>
+<li><p>判断一个单向<a href="">链表</a>是否为循环<a href="">链表</a> </p>
+</li>
+<li><p>判断链表是否有环</p>
+<ul>
+<li>使用快指针(步长为2)和慢指针(步长为1) </li>
+<li>如果快指针指向了null则是单<a href="">链表</a> </li>
+<li>如果快指针和慢指针重合了则是循环<a href="">链表</a> </li>
+</ul>
+</li>
+<li><p>写个LRU</p>
+<p>大数相乘</p>
+<p>大数相加</p>
+<p>计算器（写了一半没写出来。。。说了用栈来做的思路）</p>
+<p>每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢（不能用递归），用dp做的，问还能优化空间复杂度么？ 又用了推导出来的公式做的</p>
+</li>
+<li><p>写个订阅者模式 </p>
+</li>
+<li><p>写个正则 去掉两边字符串 trim  </p>
+</li>
+<li><p>写个闭包 模糊查询–》 闭包的防抖应用，比如说输入表达式之后随着输入怎么怎么做</p>
+</li>
+<li><p>两个单<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E9%93%BE%E8%A1%A8">链表</a>找相交点</p>
+</li>
+<li><p>写一个<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E7%AE%97%E6%B3%95">算法</a>——输入两个数组，输出他们的交集（用了filter foreach 最后用了<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E6%8E%92%E5%BA%8F">排序</a>加双指针来解决）</p>
+</li>
+<li><p>给了一条线段和一个点，求它的垂足，考察如何把数学公式转化    为代码</p>
+</li>
+<li><p>给一个三角形和一条线，如何判断他俩是否交叉</p>
+</li>
+<li><p>给了两个字符串，长度为1，如何判断他俩是不是一样的？不能用 == 和 ===，多种思路</p>
+</li>
+<li><p>输入一个字符串，获取出现最多的字符及其次数</p>
+</li>
+<li><p>取身份证的后4位</p>
+</li>
+<li><p>将电话号码中间4位变为⭐</p>
+</li>
+<li><p>手撕:用settimeout实现setinterval</p>
+</li>
+</ul>
+<ul>
+<li><p>vue实现一个div拖拽</p>
+</li>
+<li><p>求树两个节点的最近公共父节点</p>
+</li>
+<li><p>层次遍历<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E4%BA%8C%E5%8F%89%E6%A0%91">二叉树</a></p>
+</li>
+<li><p>找出数组的中间数</p>
+</li>
+<li><p>求三个数之和</p>
+</li>
+<li><p>写逆柯里化</p>
+</li>
+<li><p>算法：给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 的那 两个 整数，并返回它们的数组下标。</p>
+</li>
+<li><p>Vue需求题：<br> 封装一个组件——菜单栏（点击显示或隐藏菜单项，点击菜单项怎么跳到指定位置，点击其它地方隐藏菜单）【点击其它地方隐藏可以通过<strong>target</strong>判断点击的是否为其它地方，或者通过<strong>阻止菜单的冒泡</strong>——stopPropogation】</p>
+<p>】</p>
+</li>
+</ul>
+<ul>
+<li><p>给你一个Dom树节点，找出下面所有的div标签节点</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//树的广度遍历</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getNodeNum</span>(<span class="params">node</span>) </span>&#123;</span><br><span class="line"> <span class="keyword">let</span> children;</span><br><span class="line"> <span class="keyword">let</span> nodeList = [];</span><br><span class="line"> <span class="keyword">let</span> count = <span class="number">0</span>;</span><br><span class="line"> nodeList.push(node);</span><br><span class="line"> <span class="keyword">while</span>(nodeList.length) &#123;</span><br><span class="line">     <span class="keyword">let</span> curNode = nodeList.shift();</span><br><span class="line">     <span class="keyword">if</span>(curNode.nodeName === <span class="string">&#x27;div&#x27;</span>) &#123;</span><br><span class="line">         count++;</span><br><span class="line">     &#125;</span><br><span class="line">     children = curNode.childNodes;</span><br><span class="line">     <span class="keyword">for</span>(<span class="keyword">let</span> i=<span class="number">0</span>;i&lt;children.length;i++) &#123;</span><br><span class="line">         nodeList.push(children[i]);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">return</span> count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>(一趟快排)输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有的奇数位于数组的前半部分，所有的偶数位于数组的后半部分，并保证奇数和奇数，偶数和偶数之间的相对位置不变。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;找到奇数就和前面的偶数依次交换</span><br><span class="line">function split(arr) &#123;</span><br><span class="line"> for(let i&#x3D;0;i&lt;arr.length;i++) &#123;</span><br><span class="line">     if(arr[i]%2&#x3D;&#x3D;&#x3D;1 &amp;&amp; i&gt;0) &#123;</span><br><span class="line">         let cur &#x3D; i;</span><br><span class="line">         for(let j&#x3D;i-1;i&gt;&#x3D;0;j--) &#123;</span><br><span class="line">             [arr[j], arr[cur]] &#x3D; [arr[cur], arr[j]];</span><br><span class="line">             i &#x3D; j;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> return arr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>买咖啡的题目，只有5元、10元、20元，找零问题，很简单只需要说一下思路</p>
+</li>
+<li><p>中等难度题目：给一个二维坐标，有空位，程序员，<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86">产品经理</a>，每个程序员能教会旁边的<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86">产品经理</a>写代码，问教会所有的<a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86">产品经理</a>需要几次，打不到则输出-1</p>
+</li>
+<li><p> 给一个对象，输出内val变量的最大值（内还有两种子对象——father和mother）【面官小哥提醒——利用二叉思想解决】</p>
+</li>
+<li><p>字符串有效性校验：“sadsadas21321{}” 1.关注括号 小() 中[] 大{} 2.所有的括号都是正确的开闭和嵌 3.不能嵌套比自己大的括号</p>
+</li>
+<li><p>手写事件监听</p>
+</li>
+<li><p>数字划分：输入1234987897输出1,234,987,897</p>
+</li>
+<li><p>正则：输入xxxxxxx{xxx}xxx{xx}将括号里面的替换成具体的值，当然不用正则也可以完成</p>
+</li>
+<li><p>n个苹果放在m个盘子里面有多少种方式</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/practice?questionId=1024577">二分查找</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/practice?questionId=644">二叉树层序遍历（bfs）</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.nowcoder.com/jump/super-jump/word?word=%E7%AE%97%E6%B3%95">洗牌算法</a></p>
+</li>
+<li><p>股票的最佳买卖（一次，两次，多次，冻结）</p>
+</li>
+<li><p>把一个数组转为key：value模式[‘tom’,’15’,’man’],把这个数组变成key-value方式</p>
+</li>
+<li><p>正则匹配：以小写字母开头，包含大小写字母，数字，中横线，长度不超过32</p>
+</li>
+<li><p>写一个axios.post请求</p>
+</li>
+<li><p>实现一个简易的模版引擎  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">function tpl (template, data)&#123;  </span><br><span class="line"> &#125;  </span><br><span class="line">&#x2F;&#x2F; 使用  tpl(&#39;&lt;div class&#x3D;&quot;&#123;%className%&#125;&quot;&gt;&#123;%name%&#125;&lt;&#x2F;div&gt;&#39;, &#123;name:123,className:&quot;hd&quot;&#125;) </span><br><span class="line">&#x2F;&#x2F;&lt;div&gt;123&lt;&#x2F;div&gt;</span><br><span class="line">输入：第一行一段字符串模版  第二行一个json数据</span><br><span class="line">输出：一段替换好数据的html代码</span><br><span class="line"></span><br><span class="line">输入样例：</span><br><span class="line">&lt;div class&#x3D;&quot;&#123;%data.className%&#125;&quot;&gt;&#123;%data.name%&#125;&lt;&#x2F;div&gt;</span><br><span class="line">&#123;&quot;data&quot;:&#123;&quot;name&quot;:123,&quot;className&quot;:&quot;hd&quot;&#125;&#125;</span><br><span class="line">输出样例：</span><br><span class="line">&lt;div class&#x3D;&quot;hd&quot;&gt;123&lt;&#x2F;div&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>写一个实现异步代码的封装函数</p>
+</li>
+<li><p><code>function rand(min, max, N)</code>：生成长度是N，且在min、max内不重复的整数随机数组</p>
+</li>
+<li><p>实现一个拖拽过程，使用原生js。没实现出来，大概过程写了。</p>
+</li>
+<li><p>写一个函数，让页面上一个div内容从60一秒减一直到变成0</p>
+</li>
+<li><p>实现一个效果，就是像手机刷微博刷到底了再显示一些内容，只要写伪代码</p>
+</li>
+<li><p>让一个图片滚动显示，类似轮播图那样，有几种实现方式</p>
+</li>
+<li><p>写一个单例，new该对象的时候总是返回同一个对象</p>
 </li>
 </ul>
 

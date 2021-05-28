@@ -1373,27 +1373,8 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">	&lt;!-- 2.为ECharts准备一个具备大小（宽高）的Dom --&gt;</span><br><span class="line">	&lt;div id&#x3D;&quot;main&quot; style&#x3D;&quot;width: 600px;height:400px;&quot;&gt;&lt;&#x2F;div&gt;</span><br><span class="line">&lt;&#x2F;template&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">	&#x2F;&#x2F;1.导入echarts</span><br><span class="line">	import echarts from &quot;echarts&quot;</span><br><span class="line">	&#x2F;&#x2F;深拷贝,创建一个新对象,把两个对象合并成一个放进去</span><br><span class="line">	&#x2F;&#x2F;lodash提供了一个merge(对象1,对象2)函数,返回一个新对象</span><br><span class="line">	import _ from &quot;lodash&quot;</span><br><span class="line">	export default &#123;</span><br><span class="line">		mounted() &#123; &#x2F;&#x2F;dom元素已经渲染完毕</span><br><span class="line">			&#x2F;&#x2F; 3.基于准备好的dom，初始化echarts实例</span><br><span class="line">			var myChart &#x3D; echarts.init(document.getElementById(&#39;main&#39;));</span><br><span class="line">			&#x2F;&#x2F; 4.指定图表的【配置项】和【数据】</span><br><span class="line">			const result &#x3D; _.merge(this.option, res.data)</span><br><span class="line">			&#x2F;&#x2F; 5.使用刚指定的【配置项】和【数据】显示图表。</span><br><span class="line">			myChart.setOption(result);</span><br><span class="line"></span><br><span class="line">		&#125;,</span><br><span class="line">		data() &#123;</span><br><span class="line">			return &#123;</span><br><span class="line">				&#x2F;&#x2F;图的配置项</span><br><span class="line">			    option : &#123;</span><br><span class="line">					title: &#123;</span><br><span class="line">						text: &#39;ECharts 入门示例&#39;</span><br><span class="line">					&#125;,</span><br><span class="line">					tooltip: &#123;&#125;,</span><br><span class="line">					legend: &#123;</span><br><span class="line">						data: [&#39;销量&#39;]</span><br><span class="line">					&#125;,</span><br><span class="line">					xAxis: &#123;</span><br><span class="line">						data: [&quot;衬衫&quot;, &quot;羊毛衫&quot;, &quot;雪纺衫&quot;, &quot;裤子&quot;, &quot;高跟鞋&quot;, &quot;袜子&quot;]</span><br><span class="line">					&#125;,</span><br><span class="line">					yAxis: &#123;&#125;,</span><br><span class="line">					series: [&#123;</span><br><span class="line">						name: &#39;销量&#39;,</span><br><span class="line">						type: &#39;bar&#39;,</span><br><span class="line">						data: [5, 20, 36, 10, 10, 20]</span><br><span class="line">					&#125;]</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;,</span><br><span class="line">		method:&#123;</span><br><span class="line">			&#x2F;&#x2F;取回图的数据</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&lt;&#x2F;script&gt;</span><br><span class="line"></span><br><span class="line">&lt;style&gt;</span><br><span class="line">&lt;&#x2F;style&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 
+<h1 id="推荐文章"><a href="#推荐文章" class="headerlink" title="推荐文章"></a>推荐文章</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/duola8789/article/details/106634473">《深入浅出Vue.js》读书笔记</a></p>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h3 id=""><a href="#" class="headerlink" title=""></a></h3>
             </section>
     </article>
     
