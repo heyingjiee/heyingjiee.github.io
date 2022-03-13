@@ -28,7 +28,7 @@ module.exports = {
           { text: "CSS", link: "/frontBasic/CSS技术精炼.md" },
           { text: "JS", link: "/frontBasic/JS重刷笔记.md" },
           // { text: "Node", link: "/frontBasic/Nodejs学习笔记.md" },
-          // {text:'Vue',link:'/frontBasic/Vue学习笔记.md'}
+          { text: "Vue", link: "/frontBasic/Vue学习笔记.md" },
         ],
       },
       // {text: '算法题库', link: '/algorithm/'},
