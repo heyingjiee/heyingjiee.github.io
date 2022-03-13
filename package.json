@@ -4,8 +4,8 @@
   "description": "我的博客",
   "main": "index.js",
   "scripts": {
-    "dev": "vuepress dev docs",
-    "build": "vuepress build docs",
+    "doc:dev": "vuepress dev docs",
+    "doc:build": "vuepress build docs",
     "deploy": "bash deploy.sh"
   },
   "author": "",
