@@ -1,0 +1,70 @@
+module.exports = {
+  //页面相关配置
+  title: "何叨叨的个人博客",
+  description: "我的个人网站",
+  head: [
+    // 注入到当前页面的 HTML <head> 中的标签
+    ["link", { rel: "icon", href: "/logo.png" }], // 增加一个自定义的 favicon(网页标签的图标)
+  ],
+
+  //相对路径配置（比如部署到https://xxx.github.io/bar/，那么base设置为/bar/）
+  base: "/",
+
+  //markdown的相关配置
+  markdown: {
+    lineNumbers: false, // 代码块显示行号
+  },
+  //默认主题的配置在这里
+  themeConfig: {
+    //
+    logo: "/logo.png", //这个logo是顶部导航栏的logo
+    nav: [
+      // 导航栏配置
+      {
+        text: "前端基础",
+        items: [
+          { text: "CSS", link: "/frontBasic/CSS技术精炼.md" },
+          { text: "JS", link: "/frontBasic/JS重刷笔记.md" },
+          // { text: "Node", link: "/frontBasic/Nodejs学习笔记.md" },
+          // {text:'Vue',link:'/frontBasic/Vue学习笔记.md'}
+        ],
+      },
+      // {text: '算法题库', link: '/algorithm/'},
+      {
+        text: "编程基础",
+        items: [
+          { text: "Git", link: "/programBasic/Git相关笔记.md" },
+          { text: "HTTPS", link: "/programBasic/HTTPS的原理.md" },
+        ],
+      },
+      {
+        text: "其他语言",
+        items: [
+          { text: "Flutter", link: "/otherLanguage/Flutter.md" },
+          { text: "Docker", link: "/otherLanguage/Docker.md" },
+          { text: "Kubenetes", link: "/otherLanguage/Kubenetes.md" },
+          { text: "Mac使用经验", link: "/otherLanguage/Mac使用经验.md" },
+          { text: "c/c++", link: "/otherLanguage/c++使用学习笔记.md" },
+          { text: "Linux", link: "/otherLanguage/Linux学习笔记.md" },
+          {
+            text: "python爬虫",
+            link: "/otherLanguage/python爬虫进阶学习笔记.md",
+          },
+        ],
+      },
+      {
+        text: "其他工具",
+        items: [
+          { text: "vscode", link: "/other/VSCode/VSCode使用指南.md" },
+          { text: "charles", link: "/other/charles的学习笔记.md" },
+          { text: "chrome extension", link: "/other/chrome extension开发.md" },
+        ],
+      },
+    ],
+    displayAllHeaders: true,
+    sidebar: "auto", // 侧边栏配置
+    sidebarDepth: 3, // 侧边栏显示3级
+    lastUpdated: "Last Updated", //最后一次更新时间 string | boolean
+    smoothScroll: true, //页面滚动效果
+  },
+};
