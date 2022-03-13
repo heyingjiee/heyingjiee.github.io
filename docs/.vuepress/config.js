@@ -14,6 +14,8 @@ module.exports = {
   markdown: {
     lineNumbers: false, // 代码块显示行号
   },
+  serviceWorker: true, // 是否开启 PWA
+
   //默认主题的配置在这里
   themeConfig: {
     //
@@ -43,8 +45,14 @@ module.exports = {
           { text: "Flutter", link: "/otherLanguage/Flutter.md" },
           { text: "Docker", link: "/otherLanguage/Docker.md" },
           { text: "Kubenetes", link: "/otherLanguage/Kubenetes.md" },
-          { text: "Mac使用经验", link: "/otherLanguage/Mac使用经验.md" },
-          { text: "c/c++", link: "/otherLanguage/c++使用学习笔记.md" },
+          {
+            text: "Mac使用经验",
+            link: "/otherLanguage/Mac使用经验.md",
+          },
+          {
+            text: "c/c++",
+            link: "/otherLanguage/c++使用学习笔记.md",
+          },
           { text: "Linux", link: "/otherLanguage/Linux学习笔记.md" },
           {
             text: "python爬虫",
@@ -57,14 +65,17 @@ module.exports = {
         items: [
           { text: "vscode", link: "/other/VSCode/VSCode使用指南.md" },
           { text: "charles", link: "/other/charles的学习笔记.md" },
-          { text: "chrome extension", link: "/other/chrome extension开发.md" },
+          {
+            text: "chrome extension",
+            link: "/other/chrome extension开发.md",
+          },
         ],
       },
     ],
     displayAllHeaders: true,
     sidebar: "auto", // 侧边栏配置
     sidebarDepth: 3, // 侧边栏显示3级
-    lastUpdated: "Last Updated", //最后一次更新时间 string | boolean
+    lastUpdated: "最后更新时间", //最后一次更新时间 string | boolean
     smoothScroll: true, //页面滚动效果
   },
 };
