@@ -1552,6 +1552,50 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 | [animation-play-state](http://css.doyoe.com/properties/animation/animation-play-state.htm) | CSS3 |   无   |         检索或设置对象动画的状态         |
 | [animation-fill-mode](http://css.doyoe.com/properties/animation/animation-fill-mode.htm) | CSS3 |   无   |     检索或设置对象动画时间之外的状态     |
 
+一个动画的例子
+
+```html
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+
+		.container {
+			width: 100vw;
+			height: 70vh;
+			background-color: red;
+			transform: translateY(100vh);
+			animation: 0.4s forwards ease-in-out popup-enter;
+		}
+			
+    
+		@keyframes popup-enter { 
+		  from {
+		    transform: translateY(100vh); /* 表示盒子的上边框位置距离浏览器框100vh */
+		  }
+		  to {
+		    transform: translateY(calc(100vh - 100%)); /* 表示盒子的上边框位置距离浏览器框100vh - 自己的高度 = 30vh*/
+		  }
+		}
+	</style>
+	<body>
+		<div class="container">
+			
+		</div>
+	</body>
+</html>
+
+```
+
+![image-20220315103542379](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315103542379%20.png)
+
 ## canvas
 
 [学习 HTML5 Canvas 这一篇文章就够了](https://www.runoob.com/w3cnote/html5-canvas-intro.html)
