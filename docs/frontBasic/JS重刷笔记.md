@@ -57,9 +57,9 @@ _关键字_：
   ```text
   //关键字
   break case catch class extends const continue debugger default delete
-
+  
   do in typeof else export finally for function if import instanceof
-
+  
   new return super switch this throw try var void while With yield
   ```
 
@@ -415,7 +415,7 @@ let a = undefined;
 
 无构造函数创建的方式
 
-​ 因为 undefined 类型不是对象
+ 因为 undefined 类型不是对象
 
 **其他情况下产生的 undefined**
 
@@ -440,7 +440,7 @@ let a = undefined;
   ```javascript
   let stu = {};
   console.log(stu.name); //undefined
-
+  
   console.log(stu.name.firstName); //TypeError: Cannot read properties of undefined (reading 'firstName')
   ```
 
@@ -462,7 +462,7 @@ let a = null;
 
 无构造函数创建的方式
 
-​ 因为 null 类型不是对象
+ 因为 null 类型不是对象
 
 **其他**
 
@@ -1126,6 +1126,111 @@ console.log(++a);
 //String，对字符串应用toString方法
 ```
 
+## 函数（待补充）
+
+## 基本引用类型（待补充）
+
+## 集合引用类型（待补充）
+
+## 错误
+
+### 错误类型
+
+ECMA-262定义了8中错误类型
+
+* **Error**
+
+  Error是错误的基类型，其他错误类型继承自该类型 。一般是开发者抛出
+
+* **InternalError**
+
+  JS引擎发生异常时，例如栈溢出
+
+* **EvalError**
+
+  eval函数的错误使用触发的异常
+
+  ```js
+  new eval()  //抛出EvalError
+  ```
+
+* **RangeError**
+
+  使用Array构造数组时,传入负数或者Number.MAX_VALUE
+
+  ```js
+  let a=new Array(-120) //RangeError: Invalid array length
+  
+  let a=new Array(Number.MAX_VALUE) //RangeError: Invalid array length
+  ```
+
+* **ReferenceError**
+
+  使用了未声明的变量
+
+  ```js
+  console.log(a) //ReferenceError: a is not defined
+  ```
+
+* **SyntaxError**
+
+  语法错误，这个错误触发的情况挺多不具体列举了
+
+* **TypeError**
+
+  JS的某些函数的参数是有类型限制的，如果传入了错误的类型会抛出错误
+
+  还有就是更为常见的，使用了`.`方法，试图访问null或者undefined的属性
+
+  ```js
+  console.log(null.a)//TypeError: Cannot read property 'a' of null
+  
+  console.log(undefined.a)//TypeError: Cannot read property 'a' of null
+  ```
+
+* **URIError**
+
+  只出现在encodeURI()和decodeURI()，传入错误参数，这两个函数非常健壮，极特殊情况下的参数才会报错
+
+  ```js
+  console.log(encodeURI('\uD800')) //URIError: URI malformed
+  ```
+
+  
+
+  
+
+### 错误处理
+
+```js
+try{
+  //可能会出错的代码
+}catch(err){
+  //即使不使用错误对象也必须定义名称 
+  //错误对象的值，不同环境存在差异，但是基本上都会有err.message属性
+}finall{
+  //最终一定会执行
+}
+```
+
+catch和finally，这两者必须至少存在一个。并且，finally存在时，try和catch中的return都会被忽略
+
+```js
+function testFinally(){
+	try {
+		return 1;
+	} catch(err){
+		return 2;
+	}finally{
+		return 3;
+	}
+}
+	
+console.log(testFinally())  //3
+```
+
+
+
 ## 模块化规范
 
 JS 最初设计的目的，仅仅是为了完成一些简单的功能，但是随着前端工程化成为一种趋势，前端项目慢慢开始承载更多更复杂的功能，将单一 JS 文件划分模块的需求也愈发强烈。我们下面梳理下：
@@ -1739,6 +1844,10 @@ export { age } from "./module2.js";
 
 [学习 UMD](https://www.cnblogs.com/wenbinjiang/p/11429368.html)
 
+## 网络请求
+
+## 
+
 ## 疑惑
 
 Array 怎么不在 js 类型中
@@ -1833,7 +1942,7 @@ parseInt('2a')结果是 2，非常大的安全隐患
   ```js
   let str = "hello";
   console.log(str.length); //5
-
+  
   //等价于
   var str = "string";
   var _str = new String(str);
@@ -1852,7 +1961,7 @@ parseInt('2a')结果是 2，非常大的安全隐患
   console.log(str.pro + "world"); //undefinedworld
   ```
 
-  ​
+  
 
 [解答来自此链接](https://zhidao.baidu.com/question/1242686664534046939.html)
 
