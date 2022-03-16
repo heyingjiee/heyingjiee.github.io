@@ -1,13 +1,13 @@
 node_modules/
 
-.DS_Store
+.DS_Store/
 
 #  webstorm vscode
-.idea/
+#.idea/
 .vscode/
 
 
 # vuepress
 .temp
 .cache
-docs/.vuepress/dist
+docs/.vuepress/dist/
