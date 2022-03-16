@@ -3,7 +3,7 @@ node_modules/
 .DS_Store/
 
 #  webstorm vscode
-#.idea/
+.idea/
 .vscode/
 
 
