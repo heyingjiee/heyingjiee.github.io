@@ -280,12 +280,23 @@ systemctl restart docker #重启docker
 systemctl stop firewalld #关闭防火墙
 ```
 
-## SSH配置
+## SSH会话(连接远程服务器)
 
-SSH 为 Secure Shell 的缩写，专为远程登录会话和其他网络服务提供安全性的协议（连接远程服务器时使用）。如果一个用户从本地计算机，使用SSH协议登录另一台远程计算机，我们就可以认为，这种登录是安全的，即使被中途截获，密码也不会泄露
+SSH 为 Secure Shell 的缩写，专为远程登录会话和其他网络服务提供安全性的协议（连接远程服务器时使用）
+
+如果一个用户从本地计算机，使用SSH协议登录另一台远程计算机，我们就可以认为，这种登录是安全的，即使被中途截获，密码也不会泄露
 
 当远程主机中开启openssh服务，那么就对外开放了远程连接的接口，ssh为openssh服务的客户端，sshd为openssh服务的服务端
 
+我们购买的云主机一般ssh是默认开启的
+
+所以我们可以用SSH工具连接远程主机，你可以使用PuTTY或者其他客户端，我这里使用WebStorm内置的SSH工具做演示
+
 ![image-20220319114440731](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319114440731%20.png)
 
+身份验证类型使用"密码"，这个密码就是在购买云主机时，设置设置的
+
 ![image-20220319114703993](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319114703993%20.png)
+
+
+

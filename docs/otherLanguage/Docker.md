@@ -48,7 +48,7 @@ Docker 是一个应用打包、分发、部署的工具，也可以把它理解�
 
 ## 配置镜像源
 
-Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载一个Docker官方镜像可能会需要很长的时间，甚至下载失败，所以我们需要配置镜像源
+Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载一个Docker官方镜像可能会需要很长的时间，甚至下载失败，所以我们需要配置镜像源。配置镜像源后，下载官方仓库（hub.docker.com）里的镜像时，才能更快的下载
 
 | 镜像加速器          | 镜像加速器地址                                               |
 | ------------------- | ------------------------------------------------------------ |
@@ -119,6 +119,20 @@ docker run --name some-redis -d redis
 dockerfile定义了运行镜像所需的所有内容，包括操作系统和软件安装位置
 
 所以，制作自己的镜像前，需要先编写dockerfile，构建镜像时，会读取项目根目录下的 dockerfile，根据其配置规则， 生成镜像
+
+补充下：
+
+**上下文路径**
+
+` .` 是上下文路径，指的是宿主机的`dockerfile`文件所在路径
+
+```shell
+docker build -t nginx:v3 . 
+```
+
+**注意**：上下文路径下不要放无用的文件，因为会一起打包发送给 docker 引擎，如果文件过多会造成过程缓慢。
+
+**dockerfile文件字段**
 
 dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/reference/builder/#run)
 
@@ -206,21 +220,112 @@ dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
 
 * 执行命令
 
-  CMD 指令只能一个（dockerfile文件中如果有多个，只执行最后一个），是容器启动后执行的命令，一般用作程序的入口。如果还需要运行其他命令可以用 && 连接，也可以写成一个shell脚本去执行。例如` CMD cd /app && ./start.sh`
+  **RUN**
 
+  shell格式：
+  
   ```dockerfile
-  CMD ["executable","param1","param2"]
+  RUN <命令行命令> # <命令行命令> 等同于，在终端操作的 shell 命令。
   ```
-
-  RUN命令可以有多个，可以用 && 连接多个命令来减少层级。例如 `RUN npm install && cd /app && mkdir logs`
-
-区别：
-
-RUN 运行会在原镜像的基础上创建一个新的镜像
-
-CMD和ENTRYPOINT定义的命令不管多少条，只会执行最后一条定义的命令
-
-docker run命令会覆盖CMD命令，但是不会覆盖ENTRYPOINT命令
+  
+  exec 格式：
+  
+  ```dockerfile
+  RUN ["可执行文件", "参数1", "参数2"]
+  # RUN ["./test.php", "dev", "offline"] 等价于 RUN ./test.php dev offline
+  ```
+  
+  **注意**：RUN命令可以有多个，但是，指令每执行一次都会在 docker 上新建一层。所以过多无意义的层，会造成镜像膨胀过大。例如：
+  
+  ```dockerfile
+  FROM centos
+  RUN install
+  RUN cd /app
+  RUN mkdir logs
+  ```
+  
+  以上执行会创建 3 层镜像。可简化为以下格式：
+  
+  ```dockerfile
+  FROM centos
+  RUN RUN npm install && cd /app && mkdir logs
+  ```
+  
+  如上，以 **&&** 符号连接命令，这样执行后，只会创建 1 层镜像
+  
+  **CMD**
+  
+  类似于 RUN 指令，用于运行程序，但二者运行的时间点不同:
+  
+  - CMD 在docker run 时运行（运行容器）
+  - RUN 是在 docker build（构建镜像）
+  
+  CMD 指令是容器启动后执行的命令，一般用作程序的入口。CMD 指令指定的程序可被 docker run 命令行参数中指定要运行的程序所覆盖。
+  
+  **注意**：如果 Dockerfile 中如果存在多个 CMD 指令，仅最后一个生效
+  
+  格式：
+  
+  ```dockerfile
+  CMD <shell 命令> 
+  CMD ["<可执行文件或命令>","<param1>","<param2>",...] 
+  CMD ["<param1>","<param2>",...]  # 该写法是为 ENTRYPOINT 指令指定的程序提供默认参数
+  ```
+  
+  推荐使用第二种格式，执行过程比较明确。第一种格式实际上在运行的过程中也会自动转换成第二种格式运行，并且默认可执行文件是 `*.sh`文件
+  
+  **ENTRYPOINT**
+  
+  类似于 CMD 指令，但其不会被 **docker run** 的命令行参数指定的指令所覆盖，而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序。
+  
+  但是, 如果运行 docker run 时使用了 --entrypoint 选项，将覆盖 ENTRYPOINT 指令指定的程序。
+  
+  **优点**：在执行 docker run 的时候可以指定 ENTRYPOINT 运行所需的参数。
+  
+  **注意**：如果 Dockerfile 中如果存在多个 ENTRYPOINT 指令，仅最后一个生效。
+  
+  只有exec格式：
+  
+  ```dockerfile
+  ENTRYPOINT ["<executeable>","<param1>","<param2>",...]
+  ```
+  
+  可以搭配 CMD 命令使用：一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参，以下示例会提到。
+  
+  示例：
+  
+  假设已通过 Dockerfile 构建了 nginx:test 镜像：
+  
+  ```
+  FROM nginx
+  
+  ENTRYPOINT ["nginx", "-c"] # 定参
+  CMD ["/etc/nginx/nginx.conf"] # 变参 
+  ```
+  
+  1、不传参运行
+  
+  ```
+  $ docker run  nginx:test
+  ```
+  
+  容器内会默认运行以下命令，启动主进程。
+  
+  ```
+  nginx -c /etc/nginx/nginx.conf
+  ```
+  
+  2、传参运行
+  
+  ```
+  docker run  nginx:test -c /etc/nginx/new.conf
+  ```
+  
+  容器内会默认运行以下命令，启动主进程(/etc/nginx/new.conf:假设容器内已有此文件)
+  
+  ```
+  nginx -c /etc/nginx/new.conf
+  ```
 
 ## 制作镜像
 
@@ -230,7 +335,6 @@ docker run命令会覆盖CMD命令，但是不会覆盖ENTRYPOINT命令
 
   ```shell
   FROM node:14
-  MAINTAINER heyingjie
   
   # 将根目录代码复制到容器的/app文件夹
   ADD . /app
@@ -252,10 +356,10 @@ docker run命令会覆盖CMD命令，但是不会覆盖ENTRYPOINT命令
    docker build -t test:v1 .
    
    # 镜像名命名为test，镜像版本号为v1 
-   # "."代表build代码的位置是当前目录
+   # "."项目根目录，表示把宿主机项目目录全部构建镜像
   ```
 
-   `-t` 设置镜像的名字和版本号
+   `-t` 设置tag为镜像的名字和版本号
 
   构建镜像成功后，在`Images`选项卡下可以看到刚才build的`test镜像`，版本是`v1`
 
@@ -568,66 +672,9 @@ docker-compose up -d # -d是后台运行的含义
 
   **注意**：strip 1 表示解压时去掉前面1层目录，因为压缩时包含了绝对路径
 
-## 常用命令
-
-**镜像(images)相关**
-
-`docker build -t 镜像名:镜像版本号 . ` 构建镜像
-
-`docker images` 查看镜像列表
-
-**运行容器**
-
-`docker run 镜像名:镜像版本号`  将镜像运行在容器中，如果本地没有该镜像，会自动从远程仓库下载镜像，然后运行到容器
-
-* ` -p 8080:8080` 冒号后的8080是容器端口，冒号前是本机端口，-p是将容器端口映射到本机端口
-* ` --name test-hello` 给容器命名为 test-hello，不指定就会随机生成一个名字
-* ` -d` 在后台运行容器（管理命令行窗口，容器也会继续运行）
-* `--network test` 容器使用名为test的网络
-* `--network-alias test`给容器使用的网络设置别名test
-* `-v  volumeName[localAddress]:dockerAddress` 这个命令是将本地目录挂载到容器内的目录（bind mount），或者创建名为volumeName的Volume，由容器管理该Volume
-* `--volumes-from dockerName `创建容器时，把名为dockerName的容器的所有Volume挂载到新容器（同一个volume可挂载到多个不同容器）
-* `--rm` 自动删除容器
-
-**容器相关**
-`docker ps` 查看当前运行中的容器
-`docker rm container-id` 删除指定 id 的容器
-`docker stop/start container-id` 停止/启动指定 id 的容器
-`docker rmi image-id` 删除指定 id 的镜像
-
-**volume相关**
-
-`docker volume ls` 查看 volume 列表
-
-**网络相关**
-
-`docker network ls` 查看网络列表
-
-**docker-compose相关**
-
-`docker-compose up -d`  运行`docker-compose.yml`文件
-`docker-compose ps` 查看运行状态
-`docker-compose stop` 停止运行
-`docker-compose restart` 重启     、  `docker-compose restart service-name ` 重启单个服务
-`docker-compose exec service-name sh` 进入容器指定服务的命令行
-`docker-compose logs [service-name]` 查看容器运行log
-
-**docker命令大全**
-
-![dockerimg](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
-
-图中还差 `docker commit [容器名/容器id][镜像名:版本号]`未提及，其核心功能就是把正在运行的容器，构建为一个新的镜像【注意：容器必须是运行状态】
-
-同样是构建镜像[docker commit 和docker build的区别 ](https://blog.csdn.net/alwaysbefine/article/details/111375658)是什么？
-
-* commit 是把 容器——>镜像
-* build 是把 镜像/源码——>镜像
-
-`docker info` 查询docker的信息，Registry字段为docker的镜像源
-
 ## 云服务器使用Docker
 
-[阿里云Docker环境的快速搭建](https://developer.aliyun.com/adc/scenario/9fd79b8711984e309f20d82bc65a26fa?spm=a2c6h.19776329.J_1495128370.10.658b3d80jQ9uN9)
+[阿里云Docker环境的快速搭建教程](https://developer.aliyun.com/adc/scenario/9fd79b8711984e309f20d82bc65a26fa?spm=a2c6h.19776329.J_1495128370.10.658b3d80jQ9uN9)
 
 本教程基于CentOS 7安装Docker CE
 
@@ -660,7 +707,7 @@ Docker有两个分支版本：Docker CE和Docker EE，即社区版和企业版�
 
 ### 配置阿里云镜像仓库（镜像加速）
 
-Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载一个Docker官方镜像可能会需要很长的时间，甚至下载失败。为此，阿里云容器镜像服务ACR提供了官方的镜像站点，从而加速官方镜像的下载。下面介绍如何使用阿里云镜像仓库。
+Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载一个Docker官方镜像可能会需要很长的时间，替换为阿里云镜像仓库，从而加速官方镜像的下载
 
 * 访问云容器镜像服务控制台，复制加速器地址
 
@@ -692,9 +739,9 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
   systemctl restart docker
   ```
 
-### 使用Docker安装Nginx服务
+### 安装Nginx镜像
 
-* 查看Docker镜像仓库中Nginx的可用版本
+* 查看Docker官方镜像仓库中Nginx的可用版本
 
   ```shell
   docker search nginx
@@ -736,11 +783,185 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 
 如何从本地连接上远程服务器中的docker呢？[docker远程访问](https://www.cnblogs.com/-wenli/p/13555833.html)
 
-我们可以在官方镜像仓库上传自己的镜像，然后再连接远程服务器的docker，将镜像pull下来，然后run
+我们可以从本地上传自己的镜像到镜像仓库，然后再连接远程服务器的docker，在云服务器中把镜像pull下来，然后run
 
 
 
+## 发布到私有镜像库
 
+上面一直使用的镜像仓库都是官方的，实际上企业一般使用内部的私有镜像仓库，而不是官方的仓库（类似于企业一般使用gitlab搭建的内部仓库，而不是github）
+
+一般部署项目的流程：
+
+**本地开发代码** —> **编译代码** ——> **打包成镜像** ——>**上传私有镜像仓库** ——> **在服务器上拉取镜像** ——> **运行镜像**
+
+为了提高效率，实际上这套流程还可以继续精简，以我所在的公司为例：
+
+**本地开发代码** —> **push到公司内部的git仓库** ——> **在公司自研的部署平台上选择对应仓库和分支** ——>**自动打包git仓库中的对应代码，上传私有镜像仓库，在服务器上拉取镜像，运行镜像**
+
+
+
+为了大致理解流程，这里以阿里云提供的免费的个人镜像仓库为例子，上传一个vue项目的代码
+
+* 创建一个vue项目
+
+  ```shell
+   yarn global add @vue/cli #安装vue脚手架
+   vue create hello-world # 创建一个vue项目，名字是hello-world
+   #过程中要选择一个预设，选择 Default ([Vue 2] babel, eslint) 就好
+  ```
+
+* 编译vue项目
+
+  ```shell
+  yarn build
+  ```
+
+* 本地启动docker，项目根目录下编写dockerfile，构建镜像【详见前面的`制作镜像`章节】
+
+  ```dockerfile
+  #把dockerfile放在dist目录下
+  FROM node
+  
+  ADD . /app
+  
+  WORKDIR /app
+  
+  RUN yarn install
+  
+  CMD yarn serve
+  ```
+
+  ```shell
+  #在dist目录下运行
+   docker build -t  hello-world:v1 .
+  ```
+
+* 创建阿里云镜像仓库（如果有条件可以搭建私有仓库）
+
+  访问阿里云容器镜像服务，在实例列表里有两个选项，分别是个人实例和企业实例，目前个人实例免费，按照流程创建命名空间（一个命名空间下，可以放多个镜像仓库）即可
+
+  ```text
+  https://cr.console.aliyun.com/
+  ```
+
+  登陆创建的镜像仓库
+
+  ![image-20220319205503019](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319205503019%20.png)
+
+  ```shell
+  docker login --username=<用户名> <仓库地址> 
+  ```
+
+  上传hello-world:v1这个镜像到阿里的镜像仓库（先打tag，推送的时候指定的是镜像的tag）
+
+  ```shell
+  docker tag hello-world:v1 [镜像仓库地址/][镜像仓库的命名空间/]hello-world:v4 #我这里起名字为hello-world:v4
+  
+  docker push <tag> 
+  ```
+
+  **注意**：
+
+  * 阿里云镜像仓库中，镜像名就是仓库名，每次推送推动不同版本，都会在这个仓库中记录
+
+    ![image-20220319220741225](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/image-20220319220741225%20.png)
+
+  * 如果push时提示请求被拒绝，重新登录即可
+
+* 将私有镜像库的内容部署到云服务器中
+
+  安装Docker等操作，详见上一章`云服务器使用Docker`
+
+  ```shell
+  sudo su - #切换为root用户
+  systemctl status docker #通过systemctl命令查看docker是否在运行，看看到返回结果中有没有running，有就是在运行
+  docker pull <tag>
+  ```
+
+  
+
+  
+
+## 常用命令
+
+**镜像(images)相关**
+
+`docker build -t 镜像名:版本号 . ` 把本地项目构建成镜像，并打标签为 镜像名:版本号
+
+`docker images` 查看镜像列表
+
+**运行容器**
+
+`docker run 镜像名:镜像版本号`  将镜像运行在容器中，如果本地没有该镜像，会自动从远程仓库下载镜像，然后运行到容器
+
+* ` -p 8080:8080` 冒号后的8080是容器端口，冒号前是本机端口，-p是将容器端口映射到本机端口
+* ` --name test-hello` 给容器命名为 test-hello，不指定就会随机生成一个名字
+* ` -d` 在后台运行容器（管理命令行窗口，容器也会继续运行）
+* `--network test` 容器使用名为test的网络
+* `--network-alias test`给容器使用的网络设置别名test
+* `-v  volumeName[localAddress]:dockerAddress` 这个命令是将本地目录挂载到容器内的目录（bind mount），或者创建名为volumeName的Volume，由容器管理该Volume
+* `--volumes-from dockerName `创建容器时，把名为dockerName的容器的所有Volume挂载到新容器（同一个volume可挂载到多个不同容器）
+* `--rm` 自动删除容器
+
+**volume相关**
+
+`docker volume ls` 查看 volume 列表
+
+**网络相关**
+
+`docker network ls` 查看网络列表
+
+**docker-compose相关**
+
+`docker-compose up -d`  运行`docker-compose.yml`文件
+`docker-compose ps` 查看运行状态
+`docker-compose stop` 停止运行
+`docker-compose restart` 重启     、  `docker-compose restart service-name ` 重启单个服务
+`docker-compose exec service-name sh` 进入容器指定服务的命令行
+`docker-compose logs [service-name]` 查看容器运行log
+
+**登陆镜像仓库**
+
+```shell
+docker login --username=<用户名> [镜像仓库地址] #镜像仓库地址不写，就默认登陆官方镜像仓库
+```
+
+**镜像打tag**
+
+为什么要打tag?  类似于git仓库中的commit记录，给镜像打tag后，才能推送指定tag名的镜像到远程仓库
+
+**镜像名2就是镜像仓库的名字**，上传不同的版本，都在这一个仓库中可以看到
+
+```shell
+docker tag 镜像名1[:版本号1] [镜像仓库地址/][镜像仓库的命名空间/]镜像名2[:版本号2]  #镜像仓库地址不写，就默认登陆官方镜像仓库
+```
+
+**推送镜像到镜像仓库**
+
+```shell
+docker push <tag> # tag也就是上面的[镜像仓库地址/][镜像仓库的命名空间/]镜像名2[:版本号2]
+```
+
+**拉取镜像**
+
+```shell
+docker pull <tag> # tag也就是上面的[镜像仓库地址/][镜像仓库的命名空间/]镜像名2[:版本号2]
+# 如果直接写 镜像名 ，就是默认从官方仓库下载
+```
+
+**docker命令大全**
+
+![dockerimg](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
+
+图中还差 `docker commit [容器名/容器id][镜像名:版本号]`未提及，其核心功能就是把正在运行的容器，构建为一个新的镜像【注意：容器必须是运行状态】
+
+同样是构建镜像[docker commit 和docker build的区别 ](https://blog.csdn.net/alwaysbefine/article/details/111375658)是什么？
+
+* commit 是把 容器——>镜像
+* build 是把 镜像/源码——>镜像
+
+`docker info` 查询docker的信息，Registry字段为docker的镜像源
 
 
 
