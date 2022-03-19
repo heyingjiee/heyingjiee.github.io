@@ -160,3 +160,132 @@ anaconda-ks.cfg install.log install.log.syslog
 
 `clear` 清空命令行
 
+## 用户相关
+
+**切换用户——命令基本格式**
+
+```shell
+[root@localhost ~]# su [选项] 用户名
+```
+
+**切换root用户**
+
+当前用户切换为指定用户的身份，同时所用的工作环境也切换为此用户的环境（包括 PATH 变量、MAIL 变量等），使用 - 选项可省略用户名，默认会切换为 root 用户。
+
+```shell
+sudo su -
+```
+
+**修改用户密码——命令的基本格式**
+
+```shell
+[root@localhost ~]# passwd [选项] 用户名
+```
+
+- -S：查询用户密码的状态，也就是 /etc/shadow 文件中此用户密码的内容。仅 root 用户可用；
+- -l：暂时锁定用户，该选项会在 /etc/shadow 文件中指定用户的加密密码串前添加 "!"，使密码失效。仅 root 用户可用；
+- -u：解锁用户，和 -l 选项相对应，也是只能 root 用户使用；
+- --stdin：可以将通过管道符输出的数据作为用户的密码。主要在批量添加用户时使用；
+- -n 天数：设置该用户修改密码后，多长时间不能再次修改密码，也就是修改 /etc/shadow 文件中各行密码的第 4 个字段；
+- -x 天数：设置该用户的密码有效期，对应 /etc/shadow 文件中各行密码的第 5 个字段；
+- -w 天数：设置用户密码过期前的警告天数，对于 /etc/shadow 文件中各行密码的第 6 个字段；
+- -i 日期：设置用户密码失效日期，对应 /etc/shadow 文件中各行密码的第 7 个字段;
+
+**修改root用户密码**
+
+```shell
+sudo passwd root
+```
+
+## 进程管理
+
+[Systemd 入门教程：命令篇——阮一峰](http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html)
+
+**init**
+
+历史上，Linux 的启动一直采用init进程。
+
+下面的命令用来启动服务
+
+```shell
+$ sudo /etc/init.d/apache2 start
+#或者 
+$ service apache2 start 
+```
+
+这种方法有两个缺点。
+
+一、是启动时间长。init进程是串行启动，只有前一个进程启动完，才会启动下一个进程。
+
+二、是启动脚本复杂。init进程只是执行启动脚本，不管其他事情。脚本需要自己处理各种情况，这往往使得脚本变得很长。
+
+**Systemd 概述**
+
+Systemd 就是为了解决这些问题而诞生的。它的设计目标是，为系统的启动和管理提供一套完整的解决方案。
+
+根据 Linux 惯例，字母d是守护进程（daemon）的缩写。 Systemd 这个名字的含义，就是它要守护整个系统。
+
+使用了 Systemd，就不需要再用init了。Systemd 取代了initd，成为系统的第一个进程（PID 等于 1），其他进程都是它的子进程。
+
+```shell
+$ systemctl --version #查看 Systemd 的版本。
+```
+
+Systemd 可以管理所有系统资源。不同的资源统称为 Unit（单位）
+
+最常用的命令
+
+```shell
+#显示系统状态
+$ systemctl status
+
+# 显示单个 Unit 的状态
+$ sysystemctl status <服务名>
+
+# 立即启动一个服务
+$ sudo systemctl start <服务名>
+
+# 立即停止一个服务
+$ sudo systemctl stop <服务名>
+
+# 重启一个服务
+$ sudo systemctl restart <服务名>
+
+# 杀死一个服务的所有子进程
+$ sudo systemctl kill <服务名>
+
+# 重新加载一个服务的配置文件
+$ sudo systemctl reload <服务名>
+
+# 重载所有修改过的配置文件
+$ sudo systemctl daemon-reload
+
+# 显示某个 Unit 的所有底层参数
+$ systemctl show <服务名>
+
+# 显示某个 Unit 的指定属性的值
+$ systemctl show -p CPUShares <服务名>
+
+# 设置某个 Unit 的指定属性
+$ sudo systemctl set-property <服务名> CPUShares=500
+```
+
+举个例子
+
+```shell
+systemctl restart docker #重启docker
+```
+
+```shell
+systemctl stop firewalld #关闭防火墙
+```
+
+## SSH配置
+
+SSH 为 Secure Shell 的缩写，专为远程登录会话和其他网络服务提供安全性的协议（连接远程服务器时使用）。如果一个用户从本地计算机，使用SSH协议登录另一台远程计算机，我们就可以认为，这种登录是安全的，即使被中途截获，密码也不会泄露
+
+当远程主机中开启openssh服务，那么就对外开放了远程连接的接口，ssh为openssh服务的客户端，sshd为openssh服务的服务端
+
+![image-20220319114440731](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319114440731%20.png)
+
+![image-20220319114703993](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319114703993%20.png)

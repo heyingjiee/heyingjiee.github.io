@@ -1963,7 +1963,117 @@ content:url('./img/oval-1.png)
 
 给伪类添加`position`属性后，伪类元素隐式转换为块级元素，且以**原本的元素**的左上角为坐标系
 
+### 预定义样式
 
+工作后，我发现，每天都在反复的使用flex布局，在一个css文件中，我可能反复写十几遍flex
+
+```css
+display:flex;
+flex-direction:row;
+....
+```
+
+这也太繁琐了，怎么解决呢?
+
+我可以在项目中预定义一些class，通过给div增加class，来简化
+
+```css
+/* flex 主轴水平 */
+.m-flex-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.m-flex-row--top{
+    align-items: flex-start !important;
+}
+.m-flex-row--bottom{
+    align-items: flex-end !important;
+}
+.m-flex-row--left {
+    justify-content: flex-start !important;
+}
+.m-flex-row--right {
+    justify-content: flex-end !important;
+}
+.m-flex-row--between {
+    justify-content: space-between !important;
+}
+.m-flex-row--center{
+    justify-content: center !important;
+}
+.m-flex-row--around{
+  justify-content: space-around;
+}
+
+/*flex换行*/
+.m-flex-row-wrap {
+    flex-wrap: wrap;
+}
+
+/*flex 主轴竖直*/
+.m-flex-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.m-flex-col--left {
+    align-items: flex-start !important;
+}
+.m-flex-col--right {
+    align-items: flex-end !important;
+}
+.m-flex-col--top {
+    justify-content: flex-start !important;
+}
+.yc-flex-col--bottom {
+  justify-content: flex-end !important;
+}
+.m-flex-col--center {
+    justify-content: center !important;
+}
+
+/*flex shrink和grow*/
+.m-flex-no-shrink {
+    flex-shrink: 0 !important;
+}
+.m-flex-grow-1 {
+    flex-grow: 1 !important;
+}
+.m-flex-1 {
+    flex: 1;
+}
+
+
+/* start--文本行数限制--start */
+.m-line-1, .yc-line-1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.m-line-2, .yc-line-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+```
+
+如何使用？
+
+* 微信小程序中：直接将预定义样式写在`app.wxss`，在page中可以直接使用，如果是在component中使用，需要在组件的js中增加以下代码
+
+  ```js
+  Component({
+  	options:{
+      addGlobalClass:true
+  	}
+  })
+  ```
+
+* 在
 
 ### CSS层叠上下文(补充flex的关系)
 

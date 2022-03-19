@@ -8,6 +8,8 @@
 
 * ESlint配置的读取规则
 
+  * 如果项目中不存在ESlint的相关配置，那么ESlint就不会生效
+
   * WebStrom会在项目启动时，自动查找eslint的项目配置文件，并应用
 
   * 右键ESlint配置文件，应用ESlint代码样式规则
@@ -38,6 +40,7 @@
 
 * Prettier配置的读取规则
 
+  * 如果没有Prettier的相关配置文件，Prettier会遵循默认的Prettier规则
   * **是否会自动查找项目下的Prettier配置文件**官方文档未提及
   * 可以右键配置文件，选择应用"Prettier代码样式规则"
 

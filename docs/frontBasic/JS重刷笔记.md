@@ -310,7 +310,17 @@ console.log(stu); //不报错，但是修改失效，输出{name: "张三", age:
 ECMAScript 有两类数据类型
 
 - 基本类型（也称为原始类型）: `undefined`、`null`、`boolean`、`number`、`string`和`symbol`
-- 引用类型：`object`、`array`、`function`【`object`是所有引用类型的基类】
+
+- 引用类型：`object`、`array`、`function`【`object`是所有引用类型的基类】等比较常见
+
+  * 包装类型：Boolean、Number、String 。这几种包装类型我们一般不是使用，而是使用字面量创建值，当对应的基本类型的字面量，使用`.`方法调用相关属性和方法时，就在背后自动创建
+
+    ```js
+    console.log("hello".length); //5 
+    //默认使用了包装类String("hello")，创建了string对象
+    ```
+
+    
 
 #### 变量类型的确定
 
