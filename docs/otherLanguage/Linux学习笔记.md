@@ -280,6 +280,32 @@ systemctl restart docker #重启docker
 systemctl stop firewalld #关闭防火墙
 ```
 
+## 防火墙
+
+查看所有开启的端口
+
+```shell
+firewall-cmd --list-ports
+```
+
+开放某端口
+
+```shell
+firewall-cmd --zone=public --add-port=80/tcp --permanent
+```
+
+ `--zone` 作用域   
+
+`--add-port=80/tcp`  添加端口，格式为：端口/通讯协议  
+
+`--permanent`  永久生效，没有此参数重启后失效
+
+注：开启后需要重启防火墙才生效   
+
+```shell
+firewall-cmd --reload
+```
+
 ## SSH会话(连接远程服务器)
 
 SSH 为 Secure Shell 的缩写，专为远程登录会话和其他网络服务提供安全性的协议（连接远程服务器时使用）

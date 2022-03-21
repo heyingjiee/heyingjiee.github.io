@@ -1168,7 +1168,7 @@ v-on:绑定处理事件=“处理函数”，`v-on:`简写`@`
   ```text
    注意：在文本区域插值 (`<textarea>{{text}}</textarea>`) 并不会生效
   ```
- 
+
 
 * 复选框
 
@@ -4028,9 +4028,9 @@ Lodash.js的官网：https://www.lodashjs.com/
 
 https://www.processon.com/mindmap/6172336c07912943ddf2dcab
 
-# 推荐文章
 
-[《深入浅出Vue.js》读书笔记](https://blog.csdn.net/duola8789/article/details/106634473)
+
+
 
 
 

@@ -116,15 +116,15 @@ docker run --name some-redis -d redis
 
 ## Dockerfile基础入门
 
-dockerfile定义了运行镜像所需的所有内容，包括操作系统和软件安装位置
+Dockerfile定义了运行镜像所需的所有内容，包括操作系统和软件安装位置
 
-所以，制作自己的镜像前，需要先编写dockerfile，构建镜像时，会读取项目根目录下的 dockerfile，根据其配置规则， 生成镜像
+制作自己的镜像前，需要先编写Dockerfile，当调用构建命令（docker build），Docker 引擎会逐一按顺序解析 Dockerfile 中的指令，并根据它们不同的含义执行不同的操作
 
 补充下：
 
 **上下文路径**
 
-` .` 是上下文路径，指的是宿主机的`dockerfile`文件所在路径
+` .` 是上下文路径，指定运行build时所在的目录为上下文路径，`docker build` 命令会将该目录下的内容打包交给 Docker 引擎以帮助构建镜像。（build命令应该用在，要被构建为镜像的项目的根目录下使用）
 
 ```shell
 docker build -t nginx:v3 . 
@@ -132,9 +132,13 @@ docker build -t nginx:v3 .
 
 **注意**：上下文路径下不要放无用的文件，因为会一起打包发送给 docker 引擎，如果文件过多会造成过程缓慢。
 
-**dockerfile文件字段**
+如果确实上下文目录下有些文件，不需要打包给docker，可以在上下文目录下添加忽略文件`.dockerignore`
 
-dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/reference/builder/#run)
+
+
+**Dockerfile文件字段**
+
+Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/reference/builder/#run)
 
 * 拉取镜像
 
@@ -163,12 +167,21 @@ dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   可以以下命令查看
 
   ```shell
-  docker image inspect --format='' myimage
+  docker image inspect --format='' <镜像名/id>
   ```
 
   镜像作者的信息也可以添加进去，所以`MAINTAINER`被废弃了
 
   父镜像的标签会被继承，但是如果有子镜像有相同的标签，会覆盖父镜像
+
+  一个Dockerfile文件可以写多个`LABEL`，如果`LABEL`值中包含空格，需要替换为`\空格 `。如果指令没有写完想要换行写，加`\`即可
+
+  ```dockerfile
+  LABEL multi.label1="value1" multi.label2="value2-1\ value2-2" other="value3"
+  LABEL multi.label1="value1" \
+        multi.label2="value2" \
+        other="value3"
+  ```
 
 * 创建环境变量，后续命令使用变量通过$key使用【如果value中需要有空格，需要使用` \空格`转译】
 
@@ -178,9 +191,9 @@ dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   ENV <key1>=<value1> <key2>=<value2>
   ```
 
-* 运行镜像时，将文件复制到容器中
+* 运行镜像时，将宿主机的文件复制到容器中
 
-  指定`<src>`地址时，如果使用通配符，遵循Go语言的 [filepath.Match](https://golang.org/pkg/path/filepath#Match) 规则
+  指定`<src>`地址时，如果使用通配符，遵循Go语言的 [filepath.Match](https://golang.org/pkg/path/filepath#Match) 规则，注意`<src>`不能超过上文路径
 
   指定`<dist>`时：
 
@@ -228,7 +241,7 @@ dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   RUN <命令行命令> # <命令行命令> 等同于，在终端操作的 shell 命令。
   ```
   
-  exec 格式：
+  exec 格式（双引号）：
   
   ```dockerfile
   RUN ["可执行文件", "参数1", "参数2"]
@@ -276,7 +289,9 @@ dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   
   **ENTRYPOINT**
   
-  类似于 CMD 指令，但其不会被 **docker run** 的命令行参数指定的指令所覆盖，而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序。
+  类似于 CMD 指令，但其不会被 **docker run** 的命令行参数指定的指令所覆盖，
+  
+  当 ENTRYPOINT 与 CMD 同时给出时，CMD 中的内容会作为 ENTRYPOINT 定义命令的参数，最终执行容器启动的只有 ENTRYPOINT 中给出的命令
   
   但是, 如果运行 docker run 时使用了 --entrypoint 选项，将覆盖 ENTRYPOINT 指令指定的程序。
   
@@ -290,63 +305,52 @@ dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   ENTRYPOINT ["<executeable>","<param1>","<param2>",...]
   ```
   
-  可以搭配 CMD 命令使用：一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参，以下示例会提到。
-  
   示例：
   
   假设已通过 Dockerfile 构建了 nginx:test 镜像：
   
-  ```
+  ```dockerfile
   FROM nginx
   
-  ENTRYPOINT ["nginx", "-c"] # 定参
-  CMD ["/etc/nginx/nginx.conf"] # 变参 
+  ENTRYPOINT ["nginx", "-c"] 
+  CMD ["/etc/nginx/nginx.conf"] # 参数
   ```
   
   1、不传参运行
   
-  ```
-  $ docker run  nginx:test
+  ```shell
+  docker run  nginx:test
   ```
   
   容器内会默认运行以下命令，启动主进程。
   
-  ```
+  ```shell
   nginx -c /etc/nginx/nginx.conf
   ```
   
   2、传参运行
   
-  ```
+  ```shell
   docker run  nginx:test -c /etc/nginx/new.conf
   ```
   
   容器内会默认运行以下命令，启动主进程(/etc/nginx/new.conf:假设容器内已有此文件)
   
-  ```
+  ```shell
   nginx -c /etc/nginx/new.conf
   ```
 
 ## 制作镜像
 
-* 在项目根目录新建`dockerfile`文件
+* 在项目根目录新建`Dockerfile`文件
 
-  我直接新建了一个vue项目，在项目根目录新建`dockerfile`文件（记得把node_module文件夹删除，否则构建镜像会非常慢）
+  我直接新建了一个vue项目，在项目根目录新建`Dockerfile`文件（记得把node_module文件夹删除，否则构建镜像会非常慢）
 
   ```shell
-  FROM node:14
+  #把dockerfile放在dist目录下
+  FROM nginx
   
-  # 将根目录代码复制到容器的/app文件夹
-  ADD . /app
-  
-  # 设置容器启动后的默认运行目录为/app
-  WORKDIR /app
-  
-  # 运行命令，安装依赖
-  RUN npm install
-  
-  #启动
-  CMD npm run serve
+  COPY . /usr/share/nginx/html/
   ```
   
 * 将本地项目构建为docker镜像
@@ -817,26 +821,20 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
   yarn build
   ```
 
-* 本地启动docker，项目根目录下编写dockerfile，构建镜像【详见前面的`制作镜像`章节】
+* 本地启动docker，项目根目录下编写Dockerfile，构建镜像【详见前面的`制作镜像`章节】
 
   ```dockerfile
   #把dockerfile放在dist目录下
-  FROM node
+  FROM nginx
   
-  ADD . /app
-  
-  WORKDIR /app
-  
-  RUN yarn install
-  
-  CMD yarn serve
+  COPY . /usr/share/nginx/html/
   ```
-
+  
   ```shell
   #在dist目录下运行
    docker build -t  hello-world:v1 .
   ```
-
+  
 * 创建阿里云镜像仓库（如果有条件可以搭建私有仓库）
 
   访问阿里云容器镜像服务，在实例列表里有两个选项，分别是个人实例和企业实例，目前个人实例免费，按照流程创建命名空间（一个命名空间下，可以放多个镜像仓库）即可
@@ -858,7 +856,7 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
   ```shell
   docker tag hello-world:v1 [镜像仓库地址/][镜像仓库的命名空间/]hello-world:v4 #我这里起名字为hello-world:v4
   
-  docker push <tag> 
+  docker push <tag> #以下的tag表示的都是：[镜像仓库地址/][镜像仓库的命名空间/]hello-world:v4
   ```
 
   **注意**：
@@ -875,19 +873,40 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 
   ```shell
   sudo su - #切换为root用户
+  
   systemctl status docker #通过systemctl命令查看docker是否在运行，看看到返回结果中有没有running，有就是在运行
-  docker pull <tag>
+  
+  docker pull <tag> #下载镜像
+  
+  docker images # 查看下载的镜像，查看是否下载成功
+  
+  docker run -d --name hello-world-container -p 8080:80 <镜像名:版本号> #运行下载的镜像
   ```
-
   
+* 访问
 
+  ```text
+   <云服务器公网IP>:8080 
+  ```
   
+  ![image-20220320003545182](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/image-20220320003545182%20.png)
+  
+  注意：如果访问不到，检查下，是否开启防火墙对应端口，是否云服务器安全策略组的入站安全规则是否添加了端口
+
+
+
+
+
+
 
 ## 常用命令
 
 **镜像(images)相关**
 
-`docker build -t 镜像名:版本号 . ` 把本地项目构建成镜像，并打标签为 镜像名:版本号
+`docker build -t 镜像名:版本号 . ` 
+
+* `-t`指定构建镜像的名字和版本号
+* `.`指定当前目录为上下文目录，COPY和ADD都是以这个目录为基础；例如：`.work`，就是当前目录下的`.work`为上下文目录
 
 `docker images` 查看镜像列表
 
