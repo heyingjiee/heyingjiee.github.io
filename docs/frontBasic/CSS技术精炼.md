@@ -1910,8 +1910,14 @@ display: -webkit-box;
 [深入学习CSS自定义属性(CSS变量)](https://www.w3cplus.com/css3/css-properties-in-depth.html)
 
 ```css
+/* 定义 */
 :root{
-  --a:yellow
+  --color:yellow
+}
+
+/* 使用 */
+div{
+	background-color:var(--color)
 }
 ```
 

@@ -82,7 +82,36 @@
 
   
 
+
+## 终端启动
+
+* 创建命令行启动器
+
+  完成下面的步骤，进入`/usr/local/bin`目录，就可以看到在`bin`文件夹创建了一个`webstorm`文件
+
+  ![image-20220321150206974](https://gitee.com/hyj1270433876/blog-img/raw/master/WebStorm/image-20220321150206974%20.png)
+
+  ![image-20220321150230479](https://gitee.com/hyj1270433876/blog-img/raw/master/WebStorm/image-20220321150230479%20.png)
+
+* 启动项目
+
+  在终端中进入要启动的项目的目录，输入下面的内容，就会启动项目
+
+  ```shell
+  webstorm .
+  ```
+
   
+
+
+
+
+
+
+
+
+
+
 
 
 
