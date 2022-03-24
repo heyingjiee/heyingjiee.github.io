@@ -26,7 +26,8 @@ module.exports = {
         text: "前端基础",
         items: [
           { text: "CSS", link: "/frontBasic/CSS技术精炼.md" },
-          { text: "JS", link: "/frontBasic/JS重刷笔记.md" },
+          { text: "JS重刷笔记", link: "/frontBasic/JS重刷笔记.md" },
+          { text: "JS笔记（旧）", link: "/dealArticle/js学习笔记.md" },
           // { text: "Node", link: "/frontBasic/Nodejs学习笔记.md" },
           { text: "Vue", link: "/frontBasic/Vue学习笔记.md" },
         ],
@@ -61,7 +62,7 @@ module.exports = {
         ],
       },
       {
-        text: "其他工具",
+        text: "其他文章",
         items: [
           { text: "vscode", link: "/other/VSCode/VSCode使用指南.md" },
           { text: "charles", link: "/other/charles的学习笔记.md" },
@@ -69,6 +70,7 @@ module.exports = {
             text: "chrome extension",
             link: "/other/chrome extension开发.md",
           },
+          { text: "前端工程化", link: "/other/前端工程化.md" },
         ],
       },
     ],
