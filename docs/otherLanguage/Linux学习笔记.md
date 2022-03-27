@@ -4,7 +4,7 @@ date: 2020-4-15
 tags: [常用Linux命令,命令格式]
 categories: 版本控制  
 toc: true 
-cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/下载.jpg
+cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/下载.jpg
 ---
 # Linux常用命令
 
@@ -318,11 +318,11 @@ SSH 为 Secure Shell 的缩写，专为远程登录会话和其他网络服务�
 
 所以我们可以用SSH工具连接远程主机，你可以使用PuTTY或者其他客户端，我这里使用WebStorm内置的SSH工具做演示
 
-![image-20220319114440731](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319114440731%20.png)
+![image-20220319114440731](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Linux/image-20220319114440731%20.png)
 
 身份验证类型使用"密码"，这个密码就是在购买云主机时，设置设置的
 
-![image-20220319114703993](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319114703993%20.png)
+![image-20220319114703993](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Linux/image-20220319114703993%20.png)
 
 
 

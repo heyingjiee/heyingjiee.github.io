@@ -4,7 +4,7 @@
 
 charles时一款**代理**抓包工具，即所有的请求经过charles，charles会捕获到数据
 
-![image-20220108143439414](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108143439414%20.png)
+![image-20220108143439414](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108143439414%20.png)
 
 ##  charles的功能
 
@@ -24,47 +24,47 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 下载后打开主界面（我这里下载的是v4.6.2版本）
 
-![image-20220108150350055](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108150350055%20.png)
+![image-20220108150350055](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108150350055%20.png)
 
 
 
 顶部导航栏图标含义
 
-![image-20220108145014636](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108145014636%20.png)
+![image-20220108145014636](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108145014636%20.png)
 
 左侧请求栏
 
 **Structure**表示按照域名展示请求
 
-![image-20220108151118009](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108151118009%20.png)
+![image-20220108151118009](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108151118009%20.png)
 
 **Sequence**表示按照请求的时间展示请求
 
-![image-20220108150844707](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108150844707%20.png)
+![image-20220108150844707](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108150844707%20.png)
 
 右侧请求框
 
 `Overview`选项：会展示该请求的一个大体情况
 
-![image-20220130122958669](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130122958669%20.png)
+![image-20220130122958669](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130122958669%20.png)
 
 `Content`选项：请求和响应的具体内容
 
-![image-20220130123453063](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130123453063%20.png)
+![image-20220130123453063](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130123453063%20.png)
 
 `Summary`选项：也是展示请求的大体资源分布情况
 
-![image-20220130123848881](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130123848881%20.png)
+![image-20220130123848881](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130123848881%20.png)
 
 `Chart`选项：以表格形式告诉我们一个响应时间的分布情况
 
-![image-20220130124554030](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130124554030%20.png)
+![image-20220130124554030](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130124554030%20.png)
 
 `Notes`：点击之后可以对该请求添加笔记，方便后续查看该接口的用途。添加后，可在`Overview`中查看到
 
-![image-20220130124200192](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130124200192%20.png)
+![image-20220130124200192](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130124200192%20.png)
 
-![image-20220130124420160](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130124420160%20.png)
+![image-20220130124420160](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130124420160%20.png)
 
 ## 设置代理
 
@@ -74,19 +74,19 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 **1.获取charles所在设备的IP地址和端口号**
 
-![image-20220130124844584](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130124844584%20.png)
+![image-20220130124844584](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130124844584%20.png)
 
 弹出框中的地址就是本机IP地址
 
-![image-20220116193359025](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116193359025%20.png)
+![image-20220116193359025](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116193359025%20.png)
 
 **2.修改charles的端口号**
 
 如果端口号冲突了，可以进行修改。如果不冲突，一般不用修改的
 
-![image-20220108151846811](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108151846811%20.png)
+![image-20220108151846811](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108151846811%20.png)
 
-![image-20220108152045980](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220108152045980%20.png)
+![image-20220108152045980](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220108152045980%20.png)
 
 **3.给其他设备设置代理**
 
@@ -96,9 +96,9 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 以IOS设备为例：
 
-![image-20220116202000807](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116202000807%20.png)
+![image-20220116202000807](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116202000807%20.png)
 
-![image-20220116202309394](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116202309394%20.png)
+![image-20220116202309394](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116202309394%20.png)
 
 
 
@@ -106,7 +106,7 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 配置完代理后，charles能正常抓取http和https的包，但是https的包，会有一个小锁的标志，数据也显示unknown，content是乱码。需要给要抓包的设备安装证书，开启https代理才行
 
-![image-20220116200209818](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116200209818%20.png)
+![image-20220116200209818](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116200209818%20.png)
 
 **win或mac安装证书**（以mac为例）
 
@@ -116,11 +116,11 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 这里`Install Charles Root Certificate`是把证书直接下载到本机
 
-![image-20220116200515851](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116200515851%20.png)
+![image-20220116200515851](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116200515851%20.png)
 
-![image-20220116201332656](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116201332656%20.png)
+![image-20220116201332656](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116201332656%20.png)
 
-![image-20220116201223399](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116201223399%20.png)
+![image-20220116201223399](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116201223399%20.png)
 
 **手机安装证书**（以IOS为例）
 
@@ -128,33 +128,33 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 手机的https网络请求，会通过charles代理
 
-![image-20220118142246482](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118142246482%20.png)
+![image-20220118142246482](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118142246482%20.png)
 
-![image-20220118142438885](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118142438885%20.png)
+![image-20220118142438885](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118142438885%20.png)
 
 选择允许
 
-![image-20220118142646254](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118142646254%20.png)
+![image-20220118142646254](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118142646254%20.png)
 
 下一步，进入设置——>通用——>VPN与设备管理，找到刚才下载的描述文件，然后安装
 
-![image-20220118150437189](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118150437189%20.png)
+![image-20220118150437189](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118150437189%20.png)
 
-![image-20220118150543541](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118150543541%20.png)
+![image-20220118150543541](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118150543541%20.png)
 
 最后一步，进入设置——>通用——>关于本机——>证书信任配置，找到Charles Proxy CA开启信任
 
-![image-20220118150224914](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118150224914%20.png)
+![image-20220118150224914](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118150224914%20.png)
 
 **5.设置证书代理**
 
-![image-20220118143031376](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118143031376%20.png)
+![image-20220118143031376](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118143031376%20.png)
 
-![image-20220118143053070](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118143053070%20.png)
+![image-20220118143053070](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118143053070%20.png)
 
-![image-20220118143124755](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118143124755%20.png)
+![image-20220118143124755](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118143124755%20.png)
 
-![image-20220118143140779](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220118143140779%20.png)
+![image-20220118143140779](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220118143140779%20.png)
 
 这个`*`代表所有来源的请求，都会使用证书
 
@@ -162,23 +162,23 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 控制特定IP地址才能通过Charles访问网络
 
-![image-20220116190112680](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116190112680%20.png)
+![image-20220116190112680](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116190112680%20.png)
 
-![image-20220116190546619](https://gitee.com/hyj1270433876/blog-img/raw/master/Charles%E7%9B%B8%E5%85%B3/image-20220116190546619%20.png)
+![image-20220116190546619](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Charles%E7%9B%B8%E5%85%B3/image-20220116190546619%20.png)
 
 提示出现，点击允许
 
-![image-20220130120332316](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130120332316%20.png)
+![image-20220130120332316](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130120332316%20.png)
 
 ## 设置流量控制
 
 流量控制可以通过控制网络情况，来实现弱网测试
 
-![image-20220130120430396](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130120430396%20.png)
+![image-20220130120430396](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130120430396%20.png)
 
 
 
-![image-20220130120901980](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220130120901980%20.png)
+![image-20220130120901980](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220130120901980%20.png)
 
 ## 断点的使用
 

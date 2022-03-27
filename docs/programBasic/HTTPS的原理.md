@@ -8,13 +8,13 @@ HTTP协议（HyperText Transfer Protocol，超文本传输协议）是基于TCP�
 
 HTTP协议其实分为两个部分，分别是请求和相应两部分，一次请求对应一次响应
 
-![image-20220119182241436](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220119182241436%20.png)
+![image-20220119182241436](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220119182241436%20.png)
 
 ## HTTPS协议
 
 因为HTTP协议采用明文传输数据，所以具有安全问题，所以出现了HTTPS协议，HTTP协议通过和 SSL（Secure Socket Layer, **安全套接层** ）或 TLS（Transport Layer Security, **安全层传输协议**）的组合使用，将整个通信线路中的数据加密。
 
-![image-20220119194305533](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220119194305533%20.png)
+![image-20220119194305533](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220119194305533%20.png)
 
 HTTPS协议使用对称密钥和非对称密钥混合加密的方式，来进行通信。过程类似于下图，主要分为两个部分
 
@@ -23,7 +23,7 @@ HTTPS协议使用对称密钥和非对称密钥混合加密的方式，来进行
 
 [HTTPS图片地址](https://www.processon.com/embed/61bae30b0e3e740ea73891b1)
 
-![image-20220120100658906](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220120100658906%20.png)
+![image-20220120100658906](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220120100658906%20.png)
 
 对于上图，有几点基本常识需要知道：
 
@@ -35,11 +35,11 @@ HTTPS协议使用对称密钥和非对称密钥混合加密的方式，来进行
 
 对称加密的目的是为了安全的传输对称密钥，使的上方的通讯是被加密的。CA作为一个权威的第三方团体，具有一定的可信度，其颁发的证书中的私钥不可能随意泄漏出去，公钥也能预置在大部分系统的根证书中（市场占有率小的CA机构，有可能会出现证其证书，没有被预置在某个客户端中），且出于安全性考虑，现在的大部分浏览器强制要求使用HTTPS传输数据，如果服务端开发者不使用SSL证书，那网页的访问就会受到影响，以chrome为例子，使用HTTPS协议，但是返回的证书在本地找不到，就会被强制终止访问
 
-![image-20220121101223982](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220121101223982%20.png)
+![image-20220121101223982](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220121101223982%20.png)
 
 从网上找了个图，大体描述了中间人攻击的手段，
 
-![image-20220120101705339](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220120101705339%20.png)
+![image-20220120101705339](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220120101705339%20.png)
 
 这里的核心是中间人把自己的证书安装到了客户端，中间人持有一对假的公钥和私钥，而AC颁发的证书的私钥只有服务端能获取。
 

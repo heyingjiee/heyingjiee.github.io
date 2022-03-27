@@ -4,7 +4,7 @@ date: 2021-1-10
 tags: [Python,爬虫,Redis,CSV,MySql]
 categories: Python 
 toc: true 
-cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/python.jpg
+cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/python.jpg
 ---
 # python爬虫进阶学习笔记
 
@@ -206,7 +206,7 @@ a={
 
 
 
-![Image](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/Image.png)
+![Image](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/Image.png)
 
 目前IP代理：免费的，时效性差，错误率高。付费的IP，贵，但是也有失效的IP
 
@@ -331,7 +331,7 @@ HTTPBasicAuthHandler的参数是密码管理器
 
 2、浏览器在接受到401 Unauthozied后，会弹出登录验证的对话框。用户输入用户名和密码后，浏览器用BASE64编码后，放在请求头的Authorization字段中发送给服务器。如下图:
 
-![image-20210111225731205](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210111225731205.png)
+![image-20210111225731205](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210111225731205.png)
 
 使用Python通过基础验证
 
@@ -409,7 +409,7 @@ load_data()
 
 使用药智网，作为例子 ==>https://www.yaozh.com/login/
 
-![image-20210111232025540](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210111232025540.png)
+![image-20210111232025540](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210111232025540.png)
 
 这里需要注意，因为我们要添加请求头，所以用的oper.open(request)
 
@@ -480,7 +480,7 @@ with open("center.html","w",encoding="utf-8")as f:
 
 HTTPError ：比如404页面找不到
 
-![image-20210112000540954](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210112000540954.png)
+![image-20210112000540954](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210112000540954.png)
 
 URLError ：url不存在
 
@@ -671,7 +671,7 @@ response=requests.get(url,auth=auth)
 
 访问https的网站，如果网站没有CA颁发的受信任SSL证书，浏览器就会中断连接，并提示
 
-![image-20210112121815288](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210112121815288.png)
+![image-20210112121815288](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210112121815288.png)
 
 ```python
 #12306是https网站 ,但是它不是第三方的CA证书，是他自己颁布的证书
@@ -1118,7 +1118,7 @@ s1 = data_xpath.xpath("//div[@id=\"lists\"]/a[{}]/div/div[1]/div[2]/div[2]/*/tex
 
 拼接以后的数据形式
 
-![image-20210113142825985](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210113142825985.png)
+![image-20210113142825985](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210113142825985.png)
 
 **注意点**
 
@@ -1262,7 +1262,7 @@ BtcSpider().run()
 
 快速找到元素的xpath语句
 
-![image-20210113120831129](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210113120831129.png)
+![image-20210113120831129](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210113120831129.png)
 
 
 
@@ -1298,7 +1298,7 @@ json和json型的字符串看起来是一样的，但是json对象可以通过�
 
 
 
-![image-20210113161303403](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210113161303403.png)
+![image-20210113161303403](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210113161303403.png)
 
 ```python
 import json
@@ -1408,7 +1408,7 @@ redis-server redis.windows.conf
 
 ​		出现：
 
-![image-20210115160317698](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115160317698.png)
+![image-20210115160317698](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115160317698.png)
 
 ​		
 
@@ -1422,7 +1422,7 @@ redis-server redis.windows.conf
 
   出现：
 
-  ![image-20210113221255058](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210113221255058.png)
+  ![image-20210113221255058](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210113221255058.png)
 
   证明进入redis命令行，在这个界面可以输入redis命令了
 
@@ -1444,7 +1444,7 @@ CONFIG set 配置名 修改的值
 
 Window下修改配置更简单 ：在安装目录下，以文本的形式打开以下文件，直接编辑文件
 
-![image-20210113222444899](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210113222444899.png)
+![image-20210113222444899](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210113222444899.png)
 
 [菜鸟教程——所有配置项介绍](https://www.runoob.com/redis/redis-conf.html)
 
@@ -1470,7 +1470,7 @@ Window下修改配置更简单 ：在安装目录下，以文本的形式打开�
 
 即主从复制，主机数据更新后根据配置和策略自动同步到备机的 master/slave 机制，Master以写为主，Slave 以读为主
 
-![master](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/master.png)
+![master](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/master.png)
 
 4.redis默认16个数据库，切换数据库。最开始默认在0号数据库
 
@@ -1625,7 +1625,7 @@ lpush one 2 3 4 5
 lrange one 0 -1 //输出5 4 3 2 1
 ```
 
-![image-20210115103139922](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115103139922.png)
+![image-20210115103139922](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115103139922.png)
 
 从右侧推入列表
 
@@ -1639,7 +1639,7 @@ rpush two 2 3 4 5
 lrange two 0 -1 //打印 1 2 3 4 5
 ```
 
-![image-20210115103342624](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115103342624.png)
+![image-20210115103342624](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115103342624.png)
 
 删除/出队
 
@@ -1651,7 +1651,7 @@ lpop two  //出队1
 rpop two  //出队5
 ```
 
-![image-20210115104041741](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115104041741.png)
+![image-20210115104041741](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115104041741.png)
 
 
 
@@ -1663,7 +1663,7 @@ rpop two  //出队5
 linsert two before 3 A
 ```
 
-![image-20210115104240910](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115104240910.png)
+![image-20210115104240910](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115104240910.png)
 
 ```
 //linsert 键名 after 值1 值2 //在值1后插入值2
@@ -1671,7 +1671,7 @@ linsert two before 3 A
 linsert two after 3 B
 ```
 
-![image-20210115104653408](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115104653408.png)
+![image-20210115104653408](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115104653408.png)
 
 
 
@@ -1838,7 +1838,7 @@ result4=client.keys() #[b'pyone', b'one', b'two', b'three']
     * port项为6378，这是slave端的端口号
     * 按照salve.conf重启，`redis-server slave.conf`
 
-  ![image-20210115134454901](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115134454901.png)
+  ![image-20210115134454901](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115134454901.png)
 
 ### MySql
 
@@ -1848,11 +1848,11 @@ result4=client.keys() #[b'pyone', b'one', b'two', b'three']
 
 可以在搜索栏，搜索服务
 
-![image-20210115161003499](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115161003499.png)
+![image-20210115161003499](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115161003499.png)
 
 通过可视化的方式`启动/关闭` MySql服务
 
-![image-20210115161106332](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115161106332.png)
+![image-20210115161106332](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115161106332.png)
 
 #### 登录
 
@@ -2020,9 +2020,9 @@ except Exception as e:
 
 ### 框架结构
 
-![image-20210115230528073](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115230528073.png)
+![image-20210115230528073](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115230528073.png)
 
-![image-20210115231803690](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115231803690.png)
+![image-20210115231803690](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115231803690.png)
 
 
 
@@ -2049,7 +2049,7 @@ scrapy startproject 项目名
 
 新建项目mySpider的目录结构
 
-![image-20210116153455823](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116153455823.png)
+![image-20210116153455823](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116153455823.png)
 
 初始化一个爬虫
 
@@ -2081,11 +2081,11 @@ scrapy crawl 爬虫名
 scrapy startproject mySpider
 ```
 
-![image-20210115234405427](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115234405427.png)
+![image-20210115234405427](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115234405427.png)
 
 生成目录结构
 
-![image-20210115235000137](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115235000137.png)
+![image-20210115235000137](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115235000137.png)
 
 **初始化爬虫**
 
@@ -2096,13 +2096,13 @@ scrapy genspider itcast itcast.cn
 
 一个项目往往是创建多个爬虫，但都是在spiders文件夹下创建以爬虫名命名的文件
 
-![image-20210115235258963](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115235258963.png)
+![image-20210115235258963](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115235258963.png)
 
 
 
 打开`itcast.py`文件
 
-![image-20210115235501335](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210115235501335.png)
+![image-20210115235501335](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210115235501335.png)
 
 **开启User-agent**
 
@@ -2120,7 +2120,7 @@ USER_AGENT:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 
 * 在parse函数中写解析数据相关的代码
 
-  ![image-20210116000818612](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116000818612.png)
+  ![image-20210116000818612](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116000818612.png)
 
 **启动爬虫**
 
@@ -2130,7 +2130,7 @@ scrapy crawl itcast
 
 * 这时候会输出大量日志，影响查看爬虫的print结果
 
-  ![image-20210116001036962](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116001036962.png)
+  ![image-20210116001036962](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116001036962.png)
 
 * 在settings.py文件中，添加以下内容，过滤掉日志
 
@@ -2268,7 +2268,7 @@ scrapy crawl itcast
 
   
 
-  ![image-20210116164028176](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116164028176.png)
+  ![image-20210116164028176](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116164028176.png)
 
   在需要打印日志的位置添加
 
@@ -2282,7 +2282,7 @@ scrapy crawl itcast
   logger.warning(item)
   ```
 
-  ![image-20210116163745749](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116163745749.png)
+  ![image-20210116163745749](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116163745749.png)
 
   
 
@@ -2300,7 +2300,7 @@ ITEM_PIPELINES = {
 
 在`settings.py`文件中，开启了两个管道类，数据进入管道中的顺序，有权重有关【数字越小，从爬虫模块返回的数据越先进入该管道】
 
-![image-20210116160108679](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116160108679.png)
+![image-20210116160108679](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116160108679.png)
 
 **完善管道模块**
 
@@ -2339,7 +2339,7 @@ class MyspiderPipeline2:
 
 * 在`pipeline.py`中，我们大多数时候要写入数据库。这个时候我们要在处理数据的那个管道类里面添加，`open_spider`和`close_spider`两个方法
 
-  ![image-20210117111333000](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210117111333000.png)
+  ![image-20210117111333000](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210117111333000.png)
 
 ```python
 import pymysql
@@ -2421,23 +2421,23 @@ def parse(self,response):
 
 找到下一页的url，翻页到新页面，页面解析方式与原来一样，callback=parse
 
-![image-20210116195205425](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116195205425.png)
+![image-20210116195205425](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116195205425.png)
 
 找到详情页url，详情页解析方式与原来不同，令callback=parse1。然后写parse1函数处理详情页
 
-![image-20210116195337588](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116195337588.png)
+![image-20210116195337588](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116195337588.png)
 
 #### yield scrapy.Request()参数详解
 
-![image-20210116200923173](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116200923173.png)
+![image-20210116200923173](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116200923173.png)
 
 meta参数：在不同parse函数之间传递数据
 
-![image-20210116222423597](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116222423597.png)
+![image-20210116222423597](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116222423597.png)
 
 ### 翻页综合例子
 
-![image-20210116210658318](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210116210658318.png)
+![image-20210116210658318](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210116210658318.png)
 
 ```python
 scrapy startproject yangguang
@@ -2826,14 +2826,14 @@ class CfSpider(CrawlSpider):
 
   
 
-![image-20210127114059462](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114059462.png)
+![image-20210127114059462](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114059462.png)
 
 
 
 - 设置允许外部设备发送`HTTP/HTTPS`到`fiddler`
   相同的，在`Connections`选项栏下勾选`Allow remote computers to connect`，并记住上面的端口号`8888`，端口号后面会使用到。
 
-![image-20210127114115443](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114115443.png)
+![image-20210127114115443](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114115443.png)
 
 好了，需要的fiddler设置就配置完成了。
 
@@ -2843,7 +2843,7 @@ class CfSpider(CrawlSpider):
 
 假如你已经让电脑和手机处于同一个网络下了，这时候我们需要知道此网络的`ip地址`，可以在命令行输入`ipconfig`简单的获得，如图。
 
-![image-20210127114131732](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114131732.png)
+![image-20210127114131732](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114131732.png)
 
 好了，下面我们开始手机端的设置。
 
@@ -2851,17 +2851,17 @@ class CfSpider(CrawlSpider):
 
 首先进入到手机`wifi`的设置界面，选择当前连接网络的更多信息，在苹果中是一个`叹号`。点击进入后你会在最下面看到`HTTP代理`的选项，选择点击进入，选择 手动。
 
-![image-20210127114156087](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114156087.png)
+![image-20210127114156087](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114156087.png)
 
 进入后，填写上面记住的`ip地址`和`端口号`，确定保存。
 
-![image-20210127114208511](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114208511.png)
+![image-20210127114208511](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114208511.png)
 
 #### 4. 下载fiddler安全证书
 
 手机端设置完成后，我们还需要下载`fiddler安全证书`，可以在在手机上打开浏览器输入一个上面ip地址和端口号组成的url：http://192.168.43.38:8888。打开后你会看到如下的界面，然后点击`FiddlerRoot certificate`下载`fiddler证书`。
 
-![image-20210127114222176](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114222176.png)
+![image-20210127114222176](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114222176.png)
 
 以上就简单完成了所有的操作，最后我们测试一下是否好用。
 
@@ -2869,7 +2869,7 @@ class CfSpider(CrawlSpider):
 
 就以`知乎APP`为例，在手机上打开 知乎APP。下面是电脑上`fiddler`的抓包结果。
 
-![image-20210127114243324](https://gitee.com/hyj1270433876/blog-img/raw/master/Python相关/image-20210127114243324.png)
+![image-20210127114243324](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/image-20210127114243324.png)
 
 
 

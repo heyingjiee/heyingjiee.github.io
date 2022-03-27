@@ -536,7 +536,7 @@ if (a) {
 
 这份表格是不同类型变量转化为布尔值的对应关系
 
-![image-20220123003108421](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220123003108421%20.png)
+![image-20220123003108421](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220123003108421%20.png)
 
 总结下：以下 6 个值转化为布尔值，均是 false。其他均是 true，尤其注意[]和{}都是 true
 
@@ -1094,7 +1094,7 @@ console.log(typeof d2, d2); //object { name: 'hi' }
 
 - 变量转化为布尔值
 
-  ![image-20220123003108421](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220123003108421%20.png)
+  ![image-20220123003108421](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220123003108421%20.png)
 
 - 变量转化为数字
 

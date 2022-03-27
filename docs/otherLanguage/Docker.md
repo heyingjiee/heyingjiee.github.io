@@ -22,7 +22,7 @@ Docker 是一个应用打包、分发、部署的工具，也可以把它理解�
 **分发**：你可以把你打包好的“安装包”上传到一个镜像仓库，其他人可以非常方便的获取和安装
 **部署**：拿着“安装包”就可以一个命令运行起来你的应用，自动模拟出一摸一样的运行环境，不管是在 Windows/Mac/Linux
 
-![image-20220202133143406](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220202133143406%20.png)
+![image-20220202133143406](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220202133143406%20.png)
 
 ## 安装Docker
 
@@ -36,15 +36,15 @@ Docker 是一个应用打包、分发、部署的工具，也可以把它理解�
 
 * 安装到Mac
 
-  ![image-20220130162454070](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130162454070%20.png)
+  ![image-20220130162454070](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130162454070%20.png)
 
   输入密码，接受协议
 
-  ![image-20220131152745466](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220131152745466%20.png)
+  ![image-20220131152745466](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220131152745466%20.png)
 
   主界面
 
-  ![image-20220130163730997](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130163730997%20.png)
+  ![image-20220130163730997](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130163730997%20.png)
 
 ## 配置镜像源
 
@@ -61,9 +61,9 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 | 网易云              | https://hub-mirror.c.163.com                                 |
 | 腾讯云              | https://mirror.ccs.tencentyun.com                            |
 
-![image-20220130171834257](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130171834257%20.png)
+![image-20220130171834257](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130171834257%20.png)
 
-![image-20220130173300966](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130173300966%20.png)
+![image-20220130173300966](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130173300966%20.png)
 
 ## 安装软件镜像
 
@@ -84,13 +84,13 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 
 docker hub是官方提供的镜像仓库，直接在[docker hub 官网](https://hub.docker.com/)搜索想要安装在docker中的软件，根据搜索结果的指示进行安装
 
-![image-20220130173924166](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130173924166%20.png)
+![image-20220130173924166](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130173924166%20.png)
 
 以安装redis为例子
 
-![image-20220130175308904](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130175308904%20.png)
+![image-20220130175308904](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130175308904%20.png)
 
-![image-20220130175448691](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130175448691%20.png)
+![image-20220130175448691](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130175448691%20.png)
 
 打来电脑自带的终端，输入以下命令，回车
 
@@ -108,11 +108,11 @@ docker run --name some-redis -d redis
 
 安装完毕后，打开docker客户端，发现`Images`选项卡下可以看到安装的redis镜像
 
-![image-20220130175831031](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130175831031%20.png)
+![image-20220130175831031](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130175831031%20.png)
 
 `Container/Apps`选项卡下也能看到安装的容器 ，注意这里的`some-redis`就是安装命令中起的容器名
 
-![image-20220130180014543](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220130180014543%20.png)
+![image-20220130180014543](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220130180014543%20.png)
 
 ## Dockerfile基础入门
 
@@ -367,7 +367,7 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
 
   构建镜像成功后，在`Images`选项卡下可以看到刚才build的`test镜像`，版本是`v1`
 
-  ![image-20220131162444354](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220131162444354%20.png)
+  ![image-20220131162444354](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220131162444354%20.png)
 
 * 将镜像运行到容器中
 
@@ -386,7 +386,7 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   
   运行成功后，可以在`Containers/Apps`选项卡下看到名为`test-hello`的容器，运行在本机的8080端口
   
-  ![image-20220131162728197](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220131162728197%20.png)
+  ![image-20220131162728197](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220131162728197%20.png)
   
 * 浏览器打开 http://localhost:8083/ ，即可看到项目运行的效果
 
@@ -407,7 +407,7 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
 
 * `tmpfs mount`：将数据存储在内存中
 
-  ![image-20220131174402473](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220131174402473%20.png)
+  ![image-20220131174402473](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220131174402473%20.png)
 
 **bind mount**
 
@@ -428,11 +428,11 @@ docker run -p 8080:8080 --name test-hello -d  -v localAddress:/app test:v1 # loc
 
 **查看bind mount和volume**
 
-![image-20220131175740173](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220131175740173%20.png)
+![image-20220131175740173](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220131175740173%20.png)
 
 Mounts左侧是容器内路径，右侧是该容器内路径对应的本地路径（两种方式挂载目录都是在这里查看）
 
-![image-20220131175842309](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220131175842309%20.png)
+![image-20220131175842309](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220131175842309%20.png)
 
 
 
@@ -475,7 +475,7 @@ docker compose文档 [docker compose](https://docs.docker.com/compose/)
 
   输入`docker compose`，出现以下提示，证明安装成功
 
-  ![image-20220201115026305](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201115026305%20.png)
+  ![image-20220201115026305](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201115026305%20.png)
 
 **安装软件镜像集合**
 
@@ -540,7 +540,7 @@ docker-compose up -d # -d是后台运行的含义
 
   我这里使用`docker tag test:v1 hyjhyj1098/test:v1`，可以看到`Images`选项卡下多了一个`hyjhyj1098/test`的镜像
 
-  ![image-20220201184423220](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201184423220%20.png)
+  ![image-20220201184423220](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201184423220%20.png)
 
   
 
@@ -552,7 +552,7 @@ docker-compose up -d # -d是后台运行的含义
   
   可以在网站看到上传的镜像
   
-  ![image-20220201191854211](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201191854211%20.png)
+  ![image-20220201191854211](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201191854211%20.png)
   
 * 使用远程镜像，如果创建容器的镜像是公开的远程镜像，可以直接使用`image`字段指定远程
   
@@ -582,15 +582,15 @@ docker-compose up -d # -d是后台运行的含义
   
 * 补充：之间在网站上创建镜像仓库
   
-  ![image-20220201182741745](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201182741745%20.png)
+  ![image-20220201182741745](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201182741745%20.png)
   
-  ![image-20220201182948588](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201182948588%20.png)
+  ![image-20220201182948588](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201182948588%20.png)
 
 **阿里云容器镜像服务**
 
 由于官方镜像在国内速度缓慢，所以也可以把镜像托管在阿里云，进去阿里云官网，搜索"容器镜像服务"，按照指示创建远程镜像
 
-![image-20220201193140481](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201193140481%20.png)
+![image-20220201193140481](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201193140481%20.png)
 
 ## 备份和迁移数据
 
@@ -607,7 +607,7 @@ docker-compose up -d # -d是后台运行的含义
 
 - 运行 tar 命令把容器中的/data/下的数据压缩为一个文件，压缩后的文件放在备份目录下
 
-  ![image-20220202112934341](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220202112934341%20.png)
+  ![image-20220202112934341](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220202112934341%20.png)
 
 导入：
 
@@ -626,19 +626,19 @@ docker-compose up -d # -d是后台运行的含义
 
   本地没有mongo这个镜像，会从远程镜像仓库下载
 
-  ![image-20220201202158663](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201202158663%20.png)
+  ![image-20220201202158663](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201202158663%20.png)
 
   然后，运行到容器
 
-  ![image-20220201202309759](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201202309759%20.png)
+  ![image-20220201202309759](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201202309759%20.png)
 
   同时能看到名为 mongo-data 的Volume
 
-  ![image-20220201201908518](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220201201908518%20.png)
+  ![image-20220201201908518](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201201908518%20.png)
 
   这里可以看到mongo的volume数据都是放在容器的/data/目录下
 
-  ![image-20220202113710096](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220202113710096%20.png)
+  ![image-20220202113710096](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220202113710096%20.png)
 
 * 使用以下命令
 
@@ -650,7 +650,7 @@ docker-compose up -d # -d是后台运行的含义
 
   * `-v /Users/yc/Desktop/backup:/backup` 使用bind mount，将本地目录`/Users/yc/Desktop/backup`挂载到ubuntu容器内的`/backup`目录
 
-    ![image-20220202111635697](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220202111635697%20.png)
+    ![image-20220202111635697](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220202111635697%20.png)
 
   * `tar cvf /backup/backup.tar /data/` 压缩/data/，将压缩包命名为backup.tar放在/backup/backup.tar下。这里可以看出来，在压缩命令中使用的容器内地址
 
@@ -658,7 +658,7 @@ docker-compose up -d # -d是后台运行的含义
 
 * mongo的Volume备份到了宿主机的`/Users/yc/Desktop/backup`目录下，可以看到多了一个`backup.tar`文件
 
-  ![image-20220202104939629](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker/image-20220202104939629%20.png)
+  ![image-20220202104939629](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220202104939629%20.png)
 
 迁移
 
@@ -719,7 +719,7 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
   https://cr.console.aliyun.com/
   ```
 
-  ![image-20220317141320392](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220317141320392%20.png)
+  ![image-20220317141320392](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220317141320392%20.png)
 
 * 切换至终端页面。执行如下命令配置Docker的自定义镜像仓库地址【请将下面命令中的镜像仓库地址 https://kqh8****.mirror.aliyuncs.com 替换为上一步阿里云为您提供的专属镜像加速地址】
 
@@ -845,7 +845,7 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 
   登陆创建的镜像仓库
 
-  ![image-20220319205503019](https://gitee.com/hyj1270433876/blog-img/raw/master/Linux/image-20220319205503019%20.png)
+  ![image-20220319205503019](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Linux/image-20220319205503019%20.png)
 
   ```shell
   docker login --username=<用户名> <仓库地址> 
@@ -863,7 +863,7 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 
   * 阿里云镜像仓库中，镜像名就是仓库名，每次推送推动不同版本，都会在这个仓库中记录
 
-    ![image-20220319220741225](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/image-20220319220741225%20.png)
+    ![image-20220319220741225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/image-20220319220741225%20.png)
 
   * 如果push时提示请求被拒绝，重新登录即可
 
@@ -889,7 +889,7 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
    <云服务器公网IP>:8080 
   ```
   
-  ![image-20220320003545182](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/image-20220320003545182%20.png)
+  ![image-20220320003545182](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/image-20220320003545182%20.png)
   
   注意：如果访问不到，检查下，是否开启防火墙对应端口，是否云服务器安全策略组的入站安全规则是否添加了端口
 
@@ -971,7 +971,7 @@ docker pull <tag> # tag也就是上面的[镜像仓库地址/][镜像仓库的�
 
 **docker命令大全**
 
-![dockerimg](https://gitee.com/hyj1270433876/blog-img/raw/master/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
+![dockerimg](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
 
 图中还差 `docker commit [容器名/容器id][镜像名:版本号]`未提及，其核心功能就是把正在运行的容器，构建为一个新的镜像【注意：容器必须是运行状态】
 

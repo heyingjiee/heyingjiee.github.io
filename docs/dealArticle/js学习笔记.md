@@ -5,7 +5,7 @@ date: 2020-6-8
 tags: [js]
 categories: 前端技术  
 toc: true 
-cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Js相关/e4dde71190ef76c6ac26b6319516fdfaaf516737.jpg
+cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Js相关/e4dde71190ef76c6ac26b6319516fdfaaf516737.jpg
 ---
 # 写在前面的话
 
@@ -369,7 +369,7 @@ console.log(typeof stu) //输出object
 
 ## 类型转换
 
-![image-20210412121122798](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412121122798.png)
+![image-20210412121122798](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412121122798.png)
 
 ### 变量类型显式转换
 
@@ -492,7 +492,7 @@ console.log(Boolean(obj)) //输出true
 
 `var a=1`在全局作用域和块级作用域下，会成为window的一个属性。在函数作用域下，不会成为window的属性（函数执行完，就会销毁变量）
 
-![image-20210412111917502](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412111917502.png)
+![image-20210412111917502](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412111917502.png)
 
 `a=1`无论是在全局还是块作用域中，都会成为window的一个属性
 
@@ -601,7 +601,7 @@ console.log(Boolean(obj)) //输出true
 
 * 同一个作用域下不能重复声明，重复声明，会报错。避免像var一样，之后写的变量覆盖了之前的同名变量，还不报错提示
 
-  ![image-20210412112440566](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412112440566.png)
+  ![image-20210412112440566](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412112440566.png)
 
   ```javascript
   //报错，Identifier 'a' has already been declared
@@ -849,7 +849,7 @@ console.log(Boolean(obj)) //输出true
   }//输出 1 2 3
   ```
 
-  ![image-20210412162442406](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412162442406.png)
+  ![image-20210412162442406](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210412162442406.png)
 
 过去的var没有块级作用域，要想实现块级作用于的效果，是如何解决的？
 
@@ -4727,7 +4727,7 @@ console.log(bbb)
 
 [好文](https://blog.csdn.net/cc18868876837/article/details/81211729)
 
-![image-20210414211637552](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210414211637552.png)
+![image-20210414211637552](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210414211637552.png)
 
 总结：
 
@@ -4781,7 +4781,7 @@ console.log(f1.__proto__==Foo.prototype)//输出 true
 console.log(Foo.prototype.__proto__==Object.prototype)//输出 true
 ````
 
-![image-20210414211637552](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210414211637552.png)
+![image-20210414211637552](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210414211637552.png)
 
 
 
@@ -4801,7 +4801,7 @@ let zs=new User("张三",20)
 console.log(zs)//输出见下图
 ```
 
-![image-20210419125616198](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210419125616198.png)
+![image-20210419125616198](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210419125616198.png)
 
 ## 自定义对象的原型链
 
@@ -4817,7 +4817,7 @@ console.log(zs)//输出见下图
 
   
 
-![image-20210413212244932](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413212244932.png)
+![image-20210413212244932](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413212244932.png)
 
 * 在原型链中增加公共属性和函数
 
@@ -4835,7 +4835,7 @@ console.log(zs)//输出见下图
   console.log(User) //输出见下图
   ```
   
-  ![image-20210413214912655](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413214912655.png)
+  ![image-20210413214912655](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413214912655.png)
   
 * 获取对象的原型链
 
@@ -4999,7 +4999,7 @@ console.dir(User);
 console.log(User == User.prototype.constructor); //true
 ```
 
-![111](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418163841016.png)
+![111](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418163841016.png)
 
 普通函数
 
@@ -5011,7 +5011,7 @@ console.dir(Hd);
 console.log(Hd == Hd.prototype.constructor); //true
 ```
 
-![image-20210418163725541](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418163725541.png)
+![image-20210418163725541](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418163725541.png)
 
 
 
@@ -5724,7 +5724,7 @@ console.log(p1)
 console.log(p2)
 ```
 
-![image-20210415000628923](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415000628923.png)
+![image-20210415000628923](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415000628923.png)
 
 **分析以下情况**
 
@@ -5753,7 +5753,7 @@ setTimeout(()=>{
 })
 ```
 
-![image-20210415001615623](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415001615623.png)
+![image-20210415001615623](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415001615623.png)
 
 ## 扩展接口
 
@@ -5899,7 +5899,7 @@ https://houdunren.gitee.io/note/js/15%20Promise.html#%E4%BB%BB%E5%8A%A1%E9%98%9F
   * await +Promise :等待Promise对象中resolve或者reject参数后，返回参数
   * await +异步函数：等待异步函数结束，返回函数中return的值
 
-![image-20210418105050836](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418105050836.png)
+![image-20210418105050836](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418105050836.png)
 
 ## Promise分装AJAX异步请求
 

@@ -16,7 +16,7 @@
 
 ## 盒子模型
 
-![image-20220217154442918](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217154442918%20.png)
+![image-20220217154442918](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217154442918%20.png)
 
 ### 盒子模型
 
@@ -30,7 +30,7 @@
 
 * 当padding\*2就已经大于宽/高时，即content为0时都会超出了设置的宽高时，`box-sizing: border-box;`失效。看下面例子，宽/高都被撑到140px了，设置的宽/高才100px，所以还是被撑到140了）
 
-![image-20210814235552645](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20210814235552645%20.png)
+![image-20210814235552645](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210814235552645%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -73,7 +73,7 @@
 
 两种盒子模型，设置`background`相关的属性（background-color,background-image等），默认都是填充content+padding+border的位置，只不过我们通常是使用`border: 20px solid black;`把border设置实线，所以看到是broder部分不是背景色，其实使用`border: 20px dashed black;`这种点线就能露出来背景色了 。例子是设置背景色为红色，border部分也露出来红色的背景
 
-![image-20210815004319605](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20210815004319605%20.png)
+![image-20210815004319605](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210815004319605%20.png)
 
 ***绝对定位***
 
@@ -115,7 +115,7 @@
 
 * 如果div不设置宽高，块级元素默认宽为100%，高为0。当存在元素时,内部的元素的会**撑起来div的高度**，但是**宽度仍然是继承父元素的100%**，不会被内部元素的宽高影响
 
-  <img src="https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20211012165042255%20.png" alt="image-20211012165042255" style="zoom:50%;" />
+  <img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20211012165042255%20.png" alt="image-20211012165042255" style="zoom:50%;" />
 
   **注意**:内部元素的外边距(margin范围)也是会撑起高度的
 
@@ -150,7 +150,7 @@
 
 **情况一**：两个盒子相离的关系，上下边距会合并
 
-![image-20211015094858916](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20211015094858916%20.png)
+![image-20211015094858916](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20211015094858916%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -194,7 +194,7 @@
 
 **情况二**：两个盒子是包含的关系，一个在外部，一个在内部，这时候子盒子靠在父盒子的左边框和上边框.只有两个盒子设置上边距会合并,设置左边距不会合并
 
-![image-20220218113629144](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220218113629144%20.png)
+![image-20220218113629144](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220218113629144%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -238,13 +238,13 @@
 
 在**情况二**的父元素中添加`overflow:hidden;`将父元素转化为BFC容器
 
-![image-20220218114632865](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220218114632865%20.png)
+![image-20220218114632865](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220218114632865%20.png)
 
 **FFC内部不存在外边距塌陷**
 
 使用flex布局,转化为弹性盒子模型(主轴水平)
 
-![image-20211015095257320](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20211015095257320%20.png)
+![image-20211015095257320](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20211015095257320%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -284,7 +284,7 @@
 
 使用flex布局,转化为弹性盒子模型(主轴竖直)
 
-![image-20220218143410520](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220218143410520%20.png)
+![image-20220218143410520](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220218143410520%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -402,7 +402,7 @@ background-clip和backgound-origin一起使用时，先看背景图放置的位�
 
 效果图：分别指定了3张图
 
-![image-20211130161443584](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png)
+![image-20211130161443584](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png)
 
 
 
@@ -457,7 +457,7 @@ background-clip和backgound-origin一起使用时，先看背景图放置的位�
 
 
 
-![image-20220214215532410](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220214215532410%20.png)
+![image-20220214215532410](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220214215532410%20.png)
 
 `background-image`和`background`同时设置，默认图片在上层
 
@@ -575,7 +575,7 @@ html元素都有默认的display值，基本分为三类：
 
 ### 行级元素
 
-![image-20210410003844069](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410003844069.png)
+![image-20210410003844069](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410003844069.png)
 
 如：a标签是行内元素，为了看的更清晰，给三个行内元素都加了红色的边框。
 
@@ -602,7 +602,7 @@ html元素都有默认的display值，基本分为三类：
 
 ### 块级元素
 
-![image-20210410004406761](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410004406761.png)
+![image-20210410004406761](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410004406761.png)
 
 如：div标签是行内元素。这里使用`display:block`将a标签转化为块级元素。
 
@@ -657,17 +657,17 @@ a {
 
 * 以下是`align-items=center`的效果。是对一行元素在交叉轴上的布局进行控制，只有4个参数。遇到多行子元素，只能控制多行中的某一行子元素。所以多行时，需要使用`align-content`
 
-  ![image-20210411160717638](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411160717638.png)
+  ![image-20210411160717638](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411160717638.png)
 
 * `align-content`是实现多行元素在垂直轴上的布局。可以通过`space-between|space-around|space-evenly`等属性实现均分的布局
 
-  ![image-20210411162215655](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411162215655.png)
+  ![image-20210411162215655](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411162215655.png)
 
 **巧用`space-between`和flex-grow**
 
 顶部和底部设置高度，中心主体部分不设置高度，然后设置中心主体的权重`flex-grow=1`,就会直接占用了剩下的空间
 
-![image-20210411165520455](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411165520455.png)
+![image-20210411165520455](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411165520455.png)
 
 ```html
     <article>
@@ -724,7 +724,7 @@ flex属性的使用
 
 注意：子元素，可以是div，span这种Dom元素，还可以是文本。所有元素都是一个个部分，不区分块级元素和行级元素，都是按照flex的属性进行布局
 
-![image-20210411180524596](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411180524596.png)
+![image-20210411180524596](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411180524596.png)
 
 ```html
     <article>
@@ -763,11 +763,11 @@ flex属性的使用
 
 开启换行，盒子不再压缩，如果空间不够就会换行，如果一行的剩余空间不够一个盒子的宽度，那么就会留下空隙
 
-![image-20220114104016386](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220114104016386%20.png)
+![image-20220114104016386](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220114104016386%20.png)
 
 这种情况下，可以使用`justify-content`属性。使用`justify-content: space-evenly`让一行内的盒子平均分布
 
-![image-20220106161634332](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20220106161634332%20.png)
+![image-20220106161634332](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220106161634332%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -810,14 +810,14 @@ flex属性的使用
 
 flex水平布局，使用`justify-content`属性并不是居中，而是两端对齐，默认情况下，下图中，左右盒子的宽度是根据内部文字撑开的，所以左右两个盒子的大小是不一样的，中间盒子也不是居中的。
 
-![image-20220113192443448](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220113192443448%20.png)
+![image-20220113192443448](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220113192443448%20.png)
 
 但是使用一下方法就可以实现居中：
 
 * 代码中的`flex-basis:100%;`或`width:1px`的目的是使的两边的盒子宽度大小一样，具体值设置多少都可以。
 * 盒子的`flex-grow: 1;flex-shrink: 1;`决定了盒子会自动伸缩，两个盒子始终平分，中间盒子剩下的空间。两边盒子即使内容太多，也不会挤压中间盒子
 
-![image-20220113192633748](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220113192633748%20.png)
+![image-20220113192633748](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220113192633748%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -874,11 +874,11 @@ text-overflow: ellipsis;
 white-space: nowrap;
 ```
 
-可以看出啊文字省略有效果了![image-20220117181914348](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220117181914348%20.png)
+可以看出啊文字省略有效果了![image-20220117181914348](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220117181914348%20.png)
 
 一行超出隐藏的前提是，必须使用了`flex-basis`或`width`确定了长度，否则超长的文字会尽可能的撑起来盒子，破坏原本的比例
 
-![image-20220117182310508](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220117182310508%20.png)
+![image-20220117182310508](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220117182310508%20.png)
 
 实际需求场景：要求左右两侧两端对齐，中间的类型居中。考虑两个问题
 
@@ -887,7 +887,7 @@ white-space: nowrap;
 
 
 
-![image-20220114094922604](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220114094922604%20.png)
+![image-20220114094922604](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220114094922604%20.png)
 
 具体代码实现：
 
@@ -984,7 +984,7 @@ white-space: nowrap;
 
 实现效果：
 
-![image-20220114103905000](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220114103905000%20.png)
+![image-20220114103905000](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220114103905000%20.png)
 
 ## 定位盒子 
 
@@ -1052,7 +1052,7 @@ white-space: nowrap;
 </html>
 ```
 
-![image-20220209151433029](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220209151433029%20.png)
+![image-20220209151433029](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220209151433029%20.png)
 
 ### sticky
 
@@ -1064,7 +1064,7 @@ white-space: nowrap;
 
 * 一、多个吸附元素，属于同级关系时，向下滑动，下面的吸附元素会盖住，之前吸顶的元素
 
-  ![image-20220209154228624](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220209154228624%20.png)
+  ![image-20220209154228624](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220209154228624%20.png)
 
   ```html
   <!DOCTYPE html>
@@ -1132,7 +1132,7 @@ white-space: nowrap;
   
 * 二、多个吸附元素，不属于属于同级关系时，会把前面已吸附的元素挤走
 
-  ![image-20220209154058830](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220209154058830%20.png)
+  ![image-20220209154058830](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220209154058830%20.png)
 
   ```html
   <!DOCTYPE html>
@@ -1211,9 +1211,9 @@ white-space: nowrap;
 
   简化的例子：黄色块长度超出屏幕，滚动时，蓝色会先吸顶，然后当红色块在屏幕中剩下的高度和蓝色块相同时，如果继续滑动，蓝色块就会跟着红色块滑出屏幕
   
-  ![image-20220217140916615](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217140916615%20.png)
+  ![image-20220217140916615](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217140916615%20.png)
   
-  ![image-20220217141124282](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217141124282%20.png)
+  ![image-20220217141124282](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217141124282%20.png)
   
   ```html
   <!DOCTYPE html>
@@ -1277,7 +1277,7 @@ https://blog.csdn.net/weixin_41342585/article/details/79484879
 
 图是从[这篇文章](https://juejin.cn/post/6941206439624966152)拿的，仔细看，html内为BFC上下文，body内可建立BFC或IFC
 
-![image-20220217171648420](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217171648420%20.png)
+![image-20220217171648420](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217171648420%20.png)
 
 **如何创建 BFC？**
 
@@ -1312,7 +1312,7 @@ BFC容器内部均符合以上效果
 * 但是BFC能感知到脱离文档流的浮动元素，这就会产生以一种现象，即使两个盒子处在同一行，BFC块也不会占据浮动元素的位置
 * 增加窗口宽度，左侧宽度不变，右侧BFC元素宽度随页面宽度增加。BFC元素默认宽度仍然遵循盒子模型的规则，即继承父元素的宽度，只不是出去左侧浮动元素后的宽度
 
-![image-20210411222840116](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411222840116.png)
+![image-20210411222840116](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411222840116.png)
 
 ```html
 <div class="left">LEFT</div>
@@ -1353,7 +1353,7 @@ BFC容器内部均符合以上效果
 
 将两个盒子分别放入两个BFC容器中，BFC容器内是独立区域，两个BFC不会垂直方向外边距重叠
 
-![image-20220218182040150](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220218182040150%20.png)
+![image-20220218182040150](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220218182040150%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -1409,7 +1409,7 @@ BFC容器内部均符合以上效果
 
 浮动元素脱离文档流，父容器无法被撑起来，入下图所示
 
-![image-20220218182821052](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220218182821052%20.png)
+![image-20220218182821052](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220218182821052%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -1450,7 +1450,7 @@ BFC容器内部均符合以上效果
 
 给父容器添加属性`overflow: hidden;`，就变成了BFC容器，就能撑起父容器
 
-![image-20220218183104133](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220218183104133%20.png)
+![image-20220218183104133](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220218183104133%20.png)
 
 ### IFC
 
@@ -1594,7 +1594,7 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 
 ```
 
-![image-20220315103542379](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315103542379%20.png)
+![image-20220315103542379](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315103542379%20.png)
 
 ## canvas
 
@@ -1627,7 +1627,7 @@ draw();
 
 需求：盒子宽度自适应，一行3个盒子,平分一行，超出换行。盒子宽高比为2:1
 
-![image-20211215155845687](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211215155845687%20.png)
+![image-20211215155845687](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211215155845687%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -1680,10 +1680,10 @@ draw();
 	<body>
 		<div class="all-container">
 			<div class="item">
-				<img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png">
+				<img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png">
 			</div>
 			<div class="item">
-				<img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png">
+				<img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png">
 			</div>
 			<div class="item">
 				<div class="other">
@@ -1691,7 +1691,7 @@ draw();
 				</div>
 			</div>
 			<div class="item">
-				<!-- <img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png"> -->
+				<!-- <img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211130161443584%20.png"> -->
 			</div>
 		
 		</div>
@@ -1762,7 +1762,7 @@ display: -webkit-box;
 
 * 绝对布局（实现居中）
 
-![image-20210410175834199](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410175834199.png)
+![image-20210410175834199](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410175834199.png)
 
 自己计算。手动设置 `left:50px; top:50px;`
 
@@ -1825,7 +1825,7 @@ display: -webkit-box;
 
 行级元素使用绝对布局后，会变成块级元素。可以设置`height`和`width`
 
-![image-20210410184213796](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410184213796.png)
+![image-20210410184213796](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210410184213796.png)
 
 图上的左上的角标是行内元素span，但是可以控制宽高
 
@@ -2106,7 +2106,7 @@ flex-direction:row;
 
 两个块级元素，将第二个向上移动50px，效果如下图，同级别元素，后来者居上
 
-![image-20220217115516362](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217115516362%20.png)
+![image-20220217115516362](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217115516362%20.png)
 
 ```
 .block1{
@@ -2134,7 +2134,7 @@ flex-direction:row;
 
 定位元素脱离文档流，层级更高
 
-![image-20220217120145986](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217120145986%20.png)
+![image-20220217120145986](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217120145986%20.png)
 
 ```html
 .block{
@@ -2161,7 +2161,7 @@ flex-direction:row;
 
 因为黄色块级元素和红色块级元素同层次，黄色后来者在上，黄色>红色（蓝色），又因为绿色>黄色，所以绿色>红色（蓝色）
 
-![image-20220217121831534](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220217121831534%20.png)
+![image-20220217121831534](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220217121831534%20.png)
 
 ```html
 .block1{
@@ -2219,7 +2219,7 @@ flex-direction:row;
 
    - **大小一样，后来居上**
 
-     ![image-20211201162048703](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211201162048703%20.png)
+     ![image-20211201162048703](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201162048703%20.png)
 
      ```html
      <style>
@@ -2257,7 +2257,7 @@ flex-direction:row;
 
 ​		例子 ：正常，父元素被自元素撑起来，能感知到子元素
 
-![image-20211201155207659](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211201155207659%20.png)
+![image-20211201155207659](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201155207659%20.png)
 
 ```html
 <div class="parent">
@@ -2275,7 +2275,7 @@ flex-direction:row;
 </style>
 ```
 
-.child添加`position: absolute;`后，父元素感知不到子元素了，所有不能撑起来了![image-20211201155422009](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211201155422009%20.png)
+.child添加`position: absolute;`后，父元素感知不到子元素了，所有不能撑起来了![image-20211201155422009](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201155422009%20.png)
 
 * 但是它能感知到其他元素（包括脱离/未脱离文档流的元素）
 
@@ -2283,7 +2283,7 @@ flex-direction:row;
 
   
 
-  ![image-20211201160118290](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211201160118290%20.png)
+  ![image-20211201160118290](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201160118290%20.png)
 
 ```html
 <div class="parent1"></div>
@@ -2307,11 +2307,11 @@ flex-direction:row;
 
 如果，给.parent1添加`position: absolute;`parent1脱离的文档流，parent2感知不到parent1，就会占据前面的空余位置。由于（css层递上下文的规则：定位元素>块级元素，故黄色的在上面）
 
-![image-20211201160319460](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211201160319460%20.png)
+![image-20211201160319460](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201160319460%20.png)
 
 如果，给.parent2添加`position: absolute;`，parent2脱离的文档流，但是可以感知到parent1
 
-![image-20211201161408653](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211201161408653%20.png)
+![image-20211201161408653](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201161408653%20.png)
 
 ## 回流与重绘
 
@@ -2390,4 +2390,4 @@ flex-direction:row;
 
 ## 适配相关知识
 
-![1857BE33-B6AC-4D8C-8CE6-FDCC8C7CF397](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/1857BE33-B6AC-4D8C-8CE6-FDCC8C7CF397%20.png)
+![1857BE33-B6AC-4D8C-8CE6-FDCC8C7CF397](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/1857BE33-B6AC-4D8C-8CE6-FDCC8C7CF397%20.png)

@@ -34,7 +34,7 @@ cout<<"请输入： " ;
 cin>>a>>b>>c;
 ```
 
-![image-20210422212618452](https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/image-20210422212618452.png)
+![image-20210422212618452](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/C++%E7%9B%B8%E5%85%B3/image-20210422212618452.png)
 
 读普通变量
 
@@ -164,7 +164,7 @@ cout<<fixed<<setprecision(3)<<b;//有的时候如果数字过大，会转换为�
 
 * 基本运算
 
-  ![image-20210422213820176](https://gitee.com/hyj1270433876/blog-img/raw/master/C++%E7%9B%B8%E5%85%B3/image-20210422213820176.png)
+  ![image-20210422213820176](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/C++%E7%9B%B8%E5%85%B3/image-20210422213820176.png)
 
   注意：
 

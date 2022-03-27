@@ -5,15 +5,15 @@
 
 第一步
 
-![image-20210803222018962](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20210803222018962%20.png)
+![image-20210803222018962](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210803222018962%20.png)
 
 第二步
 
-![image-20220114121113288](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220114121113288%20.png)
+![image-20220114121113288](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220114121113288%20.png)
 
 第三步，起个名字
 
-![image-20220114121204545](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220114121204545%20.png)
+![image-20220114121204545](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220114121204545%20.png)
 
 第四步，在打开的文件中把以下模版代码粘贴进去
 
@@ -92,7 +92,7 @@
 
 之后新建任意格式的文件，在其中输入vue时，选择提示中的选项，回车就会生成vue的模版
 
-![image-20220114122545735](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20220114122545735%20.png)
+![image-20220114122545735](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220114122545735%20.png)
 
 :::tip
 
@@ -125,7 +125,9 @@
 
 2. **vetur**：可以格式化html、标准css（有分号 、大括号的那种）、标准js（有分号 、双引号的那种）、vue文件。但是，格式化的标准js文件不符合ESlint规范，会给你加上双引号、分号等，像这样
 
-   ![image-20210803213907961](/Users/yc/Library/Application Support/typora-user-images/image-20210803213907961.png)能把html格式化分行显示![image-20210803214100321](https://gitee.com/hyj1270433876/blog-img/raw/master/%E8%B8%A9%E5%9D%91/image-20210803214100321%20.png)
+   ![image-20220327170016269](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220327170016269.png)
+
+   能把html格式化分行显示![image-20210803214100321](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210803214100321%20.png)
 
 3. **Prettier - Code formatter**：只关注格式化，并不具有eslint检查语法等能力，只关心格式化文件(最大长度、混合标签和空格、引用样式等)，包括JavaScript · Flow · TypeScript · CSS · SCSS · Less · JSX · Vue · GraphQL · JSON · Markdown
 

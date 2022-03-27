@@ -4,7 +4,7 @@ date: 2020-7-1
 tags: [vue2.0]
 categories: 前端技术  
 toc: true 
-cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/20210509213814.jpg
+cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/20210509213814.jpg
 ---
 # Vue 2.0前言
 
@@ -183,7 +183,7 @@ Vue是为了克服 HTML 在构建应用上的不足而设计的。其核心特�
 类似于模板引擎,有`{{  变量名  }}`语法
 不同于模板引擎的是 可以通过 ``app1``这个变量直接操作DOM元素，不必再``$(#id名)``来获取DOM元素了
 ```
-![image-20211025172532677](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20211025172532677%20.png)
+![image-20211025172532677](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211025172532677%20.png)
 
 ```html
 <!DOCTYPE html>
@@ -515,7 +515,7 @@ vm.$watch('a', (oldValue,newValue) =>{ })
 
 [Vue生命周期详解](https://blog.csdn.net/weixin_42653522/article/details/106341147)
 
-![13119812-5890a846b6efa045](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511001215.jpg)
+![13119812-5890a846b6efa045](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511001215.jpg)
 
 ```text
 beforeCreate=>创建当前页面vue实例
@@ -1636,7 +1636,7 @@ Vue2.x版本没有内置过滤器
 
   有些时候，我们将封装的一个通用组件放在一个单独的`.vue`文件中，可以通过以下方式引入到当前`.vue`文件中，在vue实例的components字段引用
 
-  ![20210509174212](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/20210509174212.png)
+  ![20210509174212](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/20210509174212.png)
 
 ### 组件模板的定义
 
@@ -1909,7 +1909,7 @@ Provide、inject
 
 ```
 
-![image-20210509162334456](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/20210509162353.png)
+![image-20210509162334456](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/20210509162353.png)
 
 ### 组件上支持v-model
 
@@ -1937,7 +1937,7 @@ Provide、inject
 
 点击不同的按钮，下面对应就会显示不同的组件
 
-![image-20210509233050176](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/20210509233050.png)
+![image-20210509233050176](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/20210509233050.png)
 
 上述内容可以通过 Vue 的 `<component>` 元素加一个特殊的 `is` 属性来实现：
 
@@ -2025,7 +2025,7 @@ Provide、inject
 
 在上面例子中，但在这些组件之间切换的时候，你有时会想保持这些组件的状态，以避免反复重渲染导致的性能问题。(比如，在一个组件中选中某个checkbox，但是切换到另一个组件，再切换回来，选中状态就会消失，keep-alive可以保持状态)
 
-![不使用keep-alive的动态组件](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/20210509234558.png)
+![不使用keep-alive的动态组件](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/20210509234558.png)
 
 ```vue
 <!-- 失活的组件将会被缓存！-->
@@ -2908,19 +2908,19 @@ Vuex 是一个专为 Vue.js 应用程序开发的**状态管理模式**。它采
 
 **看以下例子**
 
-![image-20210511180455117](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511180455.png)
+![image-20210511180455117](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511180455.png)
 
 
 
 **state和getters的用法**
 
-![image-20210511181525182](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511181525.png)
+![image-20210511181525182](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511181525.png)
 
 **mutations的用法:**
 
 更改 Vuex 的 store 中的状态的唯一方法是提交 mutation。且不能是异步方法
 
-![image-20210511183022492](https://gitee.com/hyj1270433876/blog-img/raw/master/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511183022.png)
+![image-20210511183022492](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511183022.png)
 
 **action的用法:**
 

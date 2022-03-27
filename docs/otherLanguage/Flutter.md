@@ -2321,9 +2321,9 @@ environment:
 
 假设我们要在项目中使用[官方的包管理仓库](https://pub.flutter-io.cn/)里的`http`这个包,
 
-![image-20220219132416514](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219132416514%20.png)
+![image-20220219132416514](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219132416514%20.png)
 
-![image-20220219132749295](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219132749295%20.png)
+![image-20220219132749295](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219132749295%20.png)
 
 
 
@@ -2431,7 +2431,7 @@ dart的库通过定义一系列类来实现了Dart语言的所有内置功能
 
 分为了 `classes`、`constants`、 `functions`、 `typedefs` 、`exception`、 `error`
 
-![image-20220210141624978](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220210141624978%20.png)
+![image-20220210141624978](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220210141624978%20.png)
 
 ## Flutter项目
 
@@ -2453,13 +2453,13 @@ flutter doctor -v
 
 `shift`+`command`+`p`，打开命令面板，输入`flutter`后，出现所有flutter插件提供的命令,选择图里的命令，运行环境检测
 
-![image-20220219213716222](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219213716222%20.png)
+![image-20220219213716222](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219213716222%20.png)
 
 #### 创建
 
 `shift`+`command`+`p`，打开命令面板，选择图里的命令，创建项目
 
-![image-20220219213305318](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219213305318%20.png)
+![image-20220219213305318](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219213305318%20.png)
 
 选择项目放置在哪个目录，输入项目名，即可
 
@@ -2475,7 +2475,7 @@ flutter doctor -v
 flutter run 
 ```
 
-![image-20220219222542911](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219222542911%20.png)
+![image-20220219222542911](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219222542911%20.png)
 
 确定哪个是模拟器，输入对应的数字，我这里是`2`
 
@@ -2483,7 +2483,7 @@ flutter run
 
 在运行后的终端中显示一些常用命令
 
-![image-20220219223129817](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219223129817%20.png)
+![image-20220219223129817](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219223129817%20.png)
 
 比较重要的是：
 
@@ -2495,7 +2495,7 @@ flutter run
 
 #### 项目目录结构
 
-![image-20220219223840661](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220219223840661%20.png)
+![image-20220219223840661](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219223840661%20.png)
 
 `main.dart`文件是项目的入口文件
 
@@ -2558,7 +2558,7 @@ class HomeContent extends StatelessWidget {
 2. 定义的MyApp类中，MaterialApp是整个页面的根组件，theme可配置风格 ，home可配置页面整体内容
 3. home中可指定appBar（页面顶部）和body（页面主体区域，HomeContent实例）
 
-![image-20220220014236974](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220014236974%20.png)
+![image-20220220014236974](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220014236974%20.png)
 
 ### 组件
 
@@ -2585,7 +2585,7 @@ class HomeContent extends StatelessWidget {
 
 **垂直列表**
 
-![image-20220220200931640](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220200931640%20.png)
+![image-20220220200931640](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220200931640%20.png)
 
 ```dart
 ListView(
@@ -2625,7 +2625,7 @@ ListView(
 
 这里将ListView组件放在了Container组件中了，Container组件限制了高度为300，ListView的高度也为300，其中的子元素的高度跟随ListView的高度
 
-![image-20220220205852916](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220205852916%20.png)
+![image-20220220205852916](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220205852916%20.png)
 
 ```dart
 Container(
@@ -2657,7 +2657,7 @@ Container(
 
 ListView.builder()这个构造函数，itemBuilder会多次调用，我们写的_getListData方法中只需要return一个ListTile组件即可
 
-![image-20220220222206854](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220222206854%20.png)
+![image-20220220222206854](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220222206854%20.png)
 
 ```dart
 class HomeContent extends StatelessWidget {
@@ -2684,11 +2684,11 @@ class HomeContent extends StatelessWidget {
 
 列表布局组件(垂直滚动)会强制子元素的宽度为自己的宽度 ，且超出屏幕会滚动
 
-![image-20220221003844225](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220221003844225%20.png)
+![image-20220221003844225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220221003844225%20.png)
 
 替换**基本模版**中build函数的return部分
 
-![image-20220224235116169](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220224235116169%20.png)
+![image-20220224235116169](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220224235116169%20.png)
 
 ```dart
 return Column(
@@ -2705,7 +2705,7 @@ return Column(
 
 替换**基本模版**中build函数的return部分
 
-![image-20220228233404199](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220228233404199%20.png)
+![image-20220228233404199](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220228233404199%20.png)
 
 ```dart
 Container(
@@ -2736,7 +2736,7 @@ Container(
 
 **GridView.count**
 
-![image-20220221002503096](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220221002503096%20.png)
+![image-20220221002503096](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220221002503096%20.png)
 
 ```dart
 class HomeContent extends StatelessWidget {
@@ -2777,7 +2777,7 @@ class HomeContent extends StatelessWidget {
 
 替换**基本模版**中的HomeContent类
 
-![image-20220225001802572](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220225001802572%20.png)
+![image-20220225001802572](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220225001802572%20.png)
 
 ```dart
 class HomeContent extends StatelessWidget {
@@ -2823,7 +2823,7 @@ class HomeContent extends StatelessWidget {
 * 这个Container类似于怪异盒子模型，padding的增加，只会向内挤占位置
 * 背景色是内容区域+padding
 
-![image-20220220142335214](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220142335214%20.png)
+![image-20220220142335214](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220142335214%20.png)
 
 ```dart
 Container(
@@ -2864,7 +2864,7 @@ Container(
 
 **举例**：网格布局的两个子元素挨着，我们想要通过padding的方式将两个子元素内的图片向内挤
 
-![image-20220225003436137](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220225003436137%20.png)
+![image-20220225003436137](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220225003436137%20.png)
 
 ```dart
 class HomeContent extends StatelessWidget {
@@ -2894,7 +2894,7 @@ class HomeContent extends StatelessWidget {
 
 所以，使用Padding组件
 
-![image-20220225003910675](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220225003910675%20.png)
+![image-20220225003910675](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220225003910675%20.png)
 
 ```dart
 class HomeContent extends StatelessWidget {
@@ -2953,7 +2953,7 @@ Text("你好123",
 
 `Image.asset`：是传入本地地址
 
-![image-20220220140306550](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220140306550%20.png)
+![image-20220220140306550](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220140306550%20.png)
 
 **使用网络图片**
 
@@ -2982,7 +2982,7 @@ Center(
 
 实现一个圆形图片，如图效果：
 
-![image-20220220142554853](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220220142554853%20.png)
+![image-20220220142554853](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220142554853%20.png)
 
 方法一：给Container容器设置为圆形，然后再设置背景图片
 
@@ -3057,7 +3057,7 @@ Container(
 
 替换**基本模版**中build函数的return部分
 
-![image-20220224234747147](https://gitee.com/hyj1270433876/blog-img/raw/master/Flutter/image-20220224234747147%20.png)
+![image-20220224234747147](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220224234747147%20.png)
 
 ```dart
 Icon(

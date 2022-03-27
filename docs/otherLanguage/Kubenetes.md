@@ -139,13 +139,13 @@ sudo install minikube-darwin-amd64 /usr/local/bin/minikube
   minikube start
   ```
 
-  ![image-20220204130013364](https://gitee.com/hyj1270433876/blog-img/raw/master/K8s/image-20220204130013364%20.png)
+  ![image-20220204130013364](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/K8s/image-20220204130013364%20.png)
 
   打开Docker软件，可以看到下载了一个`kicbase/stable`镜像，启动了一个名为`minikube`的容器（其实就是一个ubuntu的容器，作为一个节点）
 
-  ![image-20220204130120815](https://gitee.com/hyj1270433876/blog-img/raw/master/K8s/image-20220204130120815%20.png)
+  ![image-20220204130120815](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/K8s/image-20220204130120815%20.png)
 
-  ![image-20220204130250736](https://gitee.com/hyj1270433876/blog-img/raw/master/K8s/image-20220204130250736%20.png)
+  ![image-20220204130250736](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/K8s/image-20220204130250736%20.png)
 
 * 查看节点，kubectl 是一个用来跟 K8S 集群进行交互的命令行工具
 
@@ -153,7 +153,7 @@ sudo install minikube-darwin-amd64 /usr/local/bin/minikube
   kubectl get node
   ```
 
-  ![image-20220204133813830](https://gitee.com/hyj1270433876/blog-img/raw/master/K8s/image-20220204133813830%20.png)
+  ![image-20220204133813830](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/K8s/image-20220204133813830%20.png)
 
 ```shell
 # 停止集群

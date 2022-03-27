@@ -5,7 +5,7 @@ date: 2020-2-8
 tags: [Nodejs,Npm,部署与优化]
 categories: 后端技术  
 toc: true 
-cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-20210107225650687.png
+cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/image-20210107225650687.png
 
 ---
 
@@ -107,7 +107,7 @@ cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-2021
   })
   ```
 
-  ![image-20210107224613261](https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-20210107224613261.png)
+  ![image-20210107224613261](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/image-20210107224613261.png)
 
   **注意**：
 
@@ -148,7 +148,7 @@ cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-2021
   })
   ```
 
-  ![image-20210107224834517](https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-20210107224834517.png)
+  ![image-20210107224834517](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/image-20210107224834517.png)
 
   * 修改服务器代码需要``ctrl+c``结束服务器，在输入```node 文件名```重启服务器
 
@@ -259,9 +259,9 @@ cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-2021
     })
     ```
 
-    ![image-20210107224925110](https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-20210107224925110.png)
+    ![image-20210107224925110](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/image-20210107224925110.png)
 
-    ![image-20210107225035829](https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-20210107225035829.png)
+    ![image-20210107225035829](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/image-20210107225035829.png)
 
   * 以上写法有一个缺点，那就是必须得提前设定好所有的访问路径。
 
@@ -405,7 +405,7 @@ exports默认是一个空对象
   console.log("b.js执行")
   ```
 
-  ![image-20210109152652462](https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/image-20210109152652462.png)
+  ![image-20210109152652462](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/image-20210109152652462.png)
 
 * 拿到被加载的文件模块导出的接口对象exports，通过exports访问导出的成员
 
@@ -464,7 +464,7 @@ exports默认是一个空对象
 
 ### 1.5.5 require的加载方法
 
-![nodejs-require](https://gitee.com/hyj1270433876/blog-img/raw/master/Node相关/nodejs-require.jpg)
+![nodejs-require](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Node相关/nodejs-require.jpg)
 
 + 优先从缓存加载【之前加载过，即使后来在文件的其他部分写了require("模块名")  仍然不会重新加载，会从缓存加载】
 

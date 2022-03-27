@@ -10,7 +10,7 @@ webpack 是一种**前端资源构建工具**，**一个静态模块打包器**(
 
 **技能点**
 
-![image-20210508113533991](https://gitee.com/hyj1270433876/blog-img/raw/master/Webpack%E7%9B%B8%E5%85%B3/20210508113534.png)
+![image-20210508113533991](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Webpack%E7%9B%B8%E5%85%B3/20210508113534.png)
 
 
 

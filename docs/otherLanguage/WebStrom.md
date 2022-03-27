@@ -14,23 +14,23 @@
 
   * 右键ESlint配置文件，应用ESlint代码样式规则
 
-    ![image-20220315173214288](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315173214288%20.png)
+    ![image-20220315173214288](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315173214288%20.png)
 
 * 应用ESlint修复
 
   * 在文件中右键
 
-    ![image-20220315173829847](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315173829847%20.png)
+    ![image-20220315173829847](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315173829847%20.png)
 
   * 如果觉得麻烦，可以设置，保存时，自动执行ESlint修复
 
-    ![image-20220315173915201](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315173915201%20.png)
+    ![image-20220315173915201](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315173915201%20.png)
 
 * webstorm对于文件的检查提示和ESlint无关，但是其设置内默认对于JS和TS的代码质量检查，使用ESLint的配置文件的规则，所以如果代码出现违背ESlint配置文件的地方，就会划出红色/黄色波浪线提示
 
-  ![image-20220315173031464](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315173031464%20.png)
+  ![image-20220315173031464](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315173031464%20.png)
 
-  ![image-20220315172858191](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315172858191%20.png)
+  ![image-20220315172858191](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315172858191%20.png)
 
 ## Prettier
 
@@ -48,17 +48,17 @@
 
   * 在文件中右键
 
-    ![image-20220315175144496](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315175144496%20.png)
+    ![image-20220315175144496](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315175144496%20.png)
 
   * 如果觉得麻烦，可以设置保存时，触发
 
-    ![image-20220315174658304](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315174658304%20.png)
+    ![image-20220315174658304](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315174658304%20.png)
 
 * WebStrom的规则检查中，没有对与Prettier规则的检查，即使代码风格违背Prettier也不会有任何提示
 
 * 格式化（⌥ ⌘ L）可以指定为使用Prettier格式化
 
-  ![image-20220315174720761](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315174720761%20.png)
+  ![image-20220315174720761](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315174720761%20.png)
 
   
 
@@ -68,7 +68,7 @@
 
 格式化默认使用设置中的**代码样式**的规则
 
-![image-20220315180811961](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315180811961%20.png)
+![image-20220315180811961](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315180811961%20.png)
 
 * 可以在设置中，对每种语言进行自定义设置
 
@@ -78,7 +78,7 @@
 
   
 
-  ![image-20220315174720761](https://gitee.com/hyj1270433876/blog-img/raw/master/Css%E7%9B%B8%E5%85%B3/image-20220315174720761%20.png)
+  ![image-20220315174720761](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315174720761%20.png)
 
   
 
@@ -89,9 +89,9 @@
 
   完成下面的步骤，进入`/usr/local/bin`目录，就可以看到在`bin`文件夹创建了一个`webstorm`文件
 
-  ![image-20220321150206974](https://gitee.com/hyj1270433876/blog-img/raw/master/WebStorm/image-20220321150206974%20.png)
+  ![image-20220321150206974](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/WebStorm/image-20220321150206974%20.png)
 
-  ![image-20220321150230479](https://gitee.com/hyj1270433876/blog-img/raw/master/WebStorm/image-20220321150230479%20.png)
+  ![image-20220321150230479](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/WebStorm/image-20220321150230479%20.png)
 
 * 启动项目
 

@@ -92,7 +92,7 @@ npm init -y #生成package.json文件
 
 
 
-![image-20220320200541253](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20220320200541253%20.png)
+![image-20220320200541253](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320200541253%20.png)
 
 ## 上传npm官方仓库
 
@@ -123,7 +123,7 @@ npm publish  # 如果推不上去，一般是包的名字和npm仓库中其他�
 
 npmg官网登陆自己的账户，就能看到这个包了
 
-![image-20220320201043339](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20220320201043339%20.png)
+![image-20220320201043339](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320201043339%20.png)
 
 ## 在项目中使用
 
@@ -131,7 +131,7 @@ npmg官网登陆自己的账户，就能看到这个包了
 
 其实就是将我们上面构建的文件，下载到了项目的 `node_modules/包名` 目录下（就是这里的`node_modules/hdd-test1` ）
 
-![image-20220320202137590](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20220320202137590%20.png)
+![image-20220320202137590](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320202137590%20.png)
 
 ```shell
 npm install hdd-test1  
@@ -157,4 +157,4 @@ import HddButton from "@/packages/hdd-button/index.vue";
 <hdd-button></hdd-button>
 ```
 
-![image-20220320202708410](https://gitee.com/hyj1270433876/blog-img/raw/master/Vue%E7%9B%B8%E5%85%B3/image-20220320202708410%20.png)
+![image-20220320202708410](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320202708410%20.png)

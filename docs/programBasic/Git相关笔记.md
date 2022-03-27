@@ -4,7 +4,7 @@ date: 2021-1-4
 tags: [SVN,Git,静态博客Hexo]
 categories: 版本控制 
 toc: true 
-cover: https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/gaitubao_0_png.png
+cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/gaitubao_0_png.png
 ---
 # 彻底系统的学习Git
 
@@ -17,7 +17,7 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 先说集中式版本控制系统，版本库是集中存放在中央服务器的，而干活的时候，用的都是自己的电脑，所以要先从中央服务器取得最新的版本，然后开始干活，干完活了，再把自己的活推送给中央服务器。中央服务器就好比是一个图书馆，你要改一本书，必须先从图书馆借出来，然后回到家自己改，改完了，再放回图书馆。
 
-![l](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/l.jpg)
+![l](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/l.jpg)
 
 集中式版本控制系统最大的毛病就是必须联网才能工作，如果在局域网内还好，带宽够大，速度够快，可如果在互联网上，遇到网速慢的话，可能提交一个10M的文件就需要5分钟，这还不得把人给憋死啊。
 
@@ -29,7 +29,7 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 ## 2.SVN
 
-![rLb0I0](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/rLb0I0.png)
+![rLb0I0](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/rLb0I0.png)
 
 ### 2.1 下载
 
@@ -37,11 +37,11 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 * 安装VisualSVN，端口如果被占用，就点击右侧向下箭头，换另一个端口
 
-  ![rLXI7d](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/rLXI7d.png)
+  ![rLXI7d](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/rLXI7d.png)
 
 * 创建项目仓库，可以添加成员权限
 
-  ![rOiyrt.md](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/rOiyrt.md.png)
+  ![rOiyrt.md](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/rOiyrt.md.png)
 
 * 项目成员下载的，用于与服务端VisualSVN交互 。TortoiseSVN ：https://tortoisesvn.net/
 
@@ -51,7 +51,7 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 * 提交代码：新建了一个文件，在项目目录空白处，右键 SVN  commit ，添加对应备注信息
 
-  <img src="https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/rOP30f.png" alt="rOP30f"  />
+  <img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/rOP30f.png" alt="rOP30f"  />
 
 * 项目目录空白处，右键 SVN update ,就会获取最新版本的代码。**情况一**：服务器文件1【内容：苹果】，本地文件1，我们改了【内容：香蕉】，update就会冲突。**情况二**：服务器文件1【内容：苹果】，本地我们加一个文件2，update不会冲突，会直接把服务器的文件1下载下来，本地文件2不会。
 
@@ -71,7 +71,7 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 * [Git分支管理策略](http://www.ruanyifeng.com/blog/2012/07/git.html)大型团队使用的
 * [Git工作流程](http://www.ruanyifeng.com/blog/2015/12/git-workflow.html?utm_source=tuicool&utm_medium=referral)
 
-![image-20210109090743961](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210109090743961.png)
+![image-20210109090743961](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210109090743961.png)
 
 以下命令会打开一个网页帮助文档
 
@@ -105,7 +105,7 @@ git add --help
   //3.win10左侧搜索栏，搜索Windows PowerShell，点击打开
   ```
 
-  ![image-20210108095402992](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108095402992.png)
+  ![image-20210108095402992](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108095402992.png)
 
 #### 3.1.2 使用Git命令
 
@@ -141,7 +141,7 @@ git add --help
   git config --list
   ```
 
-  ![image-20210108115437140](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108115437140.png)
+  ![image-20210108115437140](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108115437140.png)
 
 * 查看暂存区状态
 
@@ -214,7 +214,7 @@ git add --help
   git log
   ```
 
-  ![image-20210108104424356](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108104424356.png)
+  ![image-20210108104424356](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108104424356.png)
 
   打开图形界面，查看提交记录
 
@@ -222,7 +222,7 @@ git add --help
   gitk
   ```
 
-  ![image-20210108115031271](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108115031271.png)
+  ![image-20210108115031271](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108115031271.png)
 
 * 提交到远程在线仓库
 
@@ -242,7 +242,7 @@ git会在本地有一个远程仓库列表，git clone 下来的项目，git软�
 
 * 在github上建一个新的仓库，复制仓库地址
 
-  ![image-20210108161845084](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108161845084.png)
+  ![image-20210108161845084](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108161845084.png)
 
 * 进入想要放置项目的目录，在Git Bash下输入`git clone 仓库地址` 项目空文件夹，就被下载到本地了
 
@@ -257,15 +257,15 @@ git会在本地有一个远程仓库列表，git clone 下来的项目，git软�
 
 之后会弹出登录GitHub的登录框
 
-![image-20210108154740807](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108154740807.png)
+![image-20210108154740807](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108154740807.png)
 
 我发现这个登录框，输入正确的也登陆不上，会直接提示登录失败，然会让你输入用户名
 
-![image-20210108155038157](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108155038157.png)
+![image-20210108155038157](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108155038157.png)
 
 输入用户名后，弹出框按要求输入密码，输入正确的密码就可以登陆，在GitHub上提交文件了
 
-![image-20210108155149864](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108155149864.png)
+![image-20210108155149864](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108155149864.png)
 
   
 
@@ -298,15 +298,15 @@ git remote show
 
 之后会提示登录框。登陆的GitHub账户是 上面添加的那个仓库地址 所在的GitHub账户
 
-![image-20210108154740807](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108154740807.png)
+![image-20210108154740807](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108154740807.png)
 
 这个登录框，输入正确的也登陆不上，会直接提示登录失败，然会让你输入用户名
 
-![image-20210108155038157](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108155038157.png)
+![image-20210108155038157](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108155038157.png)
 
 输入用户名后，弹出框按要求输入密码，输入正确的密码就可以登陆了
 
-![image-20210108155149864](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108155149864.png)
+![image-20210108155149864](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108155149864.png)
 
 之后提交到GitHub,就不用输入`git remote add 别名 仓库地址`了
 
@@ -400,7 +400,7 @@ git push --set-upstream 别名 分支名
 
 原本只有仓库所在的账户才能提交代码，所以要在GitHub上添加协作者，添加进来的协作者就可以在该仓库提交代码。
 
-![image-20210108230251049](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108230251049.png)
+![image-20210108230251049](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108230251049.png)
 
 #### 3.1.6 Git工作流程
 
@@ -420,7 +420,7 @@ git push --set-upstream 别名 分支名
 
   - 在GitHub上找到Pull requests选项，选择New pull request，向原作者发起提交请求
 
-    ![image-20210108231937900](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210108231937900.png)
+    ![image-20210108231937900](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108231937900.png)
 
     
 
@@ -452,11 +452,11 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 * 登录GitHub，新建仓库
 
-  ![image-20210107182255258](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210107182255258.png)
+  ![image-20210107182255258](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210107182255258.png)
 
 * 复制项目地址，然后克隆到本地
 
-  ![image-20210107182517458](https://gitee.com/hyj1270433876/blog-img/raw/master/Git相关/image-20210107182517458.png)
+  ![image-20210107182517458](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210107182517458.png)
 
   本地找一个目录，进入cmd窗口，输入`git clone github项目地址`即可【过程中需要输入github的用户名和密码】
 
