@@ -2,7 +2,7 @@
 
 ## 参考资料
 
-[css参考手册](http://css.doyoe.com/)
+[CSS参考手册](http://css.doyoe.com/)
 
 [腾讯云学习文档](https://cloud.tencent.com/developer/section/1071827)
 
@@ -647,8 +647,8 @@ a {
 
 | 属性            | 作用                                                         |
 | --------------- | ------------------------------------------------------------ |
-| flex-direction  | 指定子元素的主轴方向。                                       |
-| flex-wrap       | 指定子元素溢出是否换行。不写，则默认不换行，压缩子元素大小   |
+| flex-direction  | 指定子元素的主轴方向                                         |
+| flex-wrap       | 指定子元素溢出是否换行。默认不换行，压缩子元素大小           |
 | justify-content | 指定子元素在主轴上的布局方式。flex-start\|flex-end\|center\|space-between\|space-around\|space-evenly |
 | align-items     | 控制交叉轴上的布局方式。stretch（默认拉伸子元素，但是必须保证子元素没有设置height）\|center\|flex-start\|flex-end |
 | align-content   | 控制交叉轴上的布局方式。stretch\|center\|flex-start\|flex-end\|space-between\|space-around\|space-evenly |
@@ -1462,81 +1462,751 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 
 ## CSS选择器
 
-| 选择器                                                       | 示例                  | 示例说明                                                   | CSS  |
-| :----------------------------------------------------------- | :-------------------- | :--------------------------------------------------------- | :--- |
-| [.*class*](https://www.runoob.com/cssref/sel-class.html)     | .intro                | 选择所有class="intro"的元素                                | 1    |
-| [#*id*](https://www.runoob.com/cssref/sel-id.html)           | #firstname            | 选择所有id="firstname"的元素                               | 1    |
-| [*](https://www.runoob.com/cssref/sel-all.html)              | *                     | 选择所有元素                                               | 2    |
-| *[element](https://www.runoob.com/cssref/sel-element.html)*  | p                     | 选择所有`<p>`元素                                          | 1    |
-| *[element,element](https://www.runoob.com/cssref/sel-element-comma.html)* | div,p                 | 选择所有`<div>`元素和`<p>`元素                             | 1    |
-| [*element* *element*](https://www.runoob.com/cssref/sel-element-element.html) | div p                 | 选择`<div>`元素内的所有`<p>`元素                           | 1    |
-| [*element*>*element*](https://www.runoob.com/cssref/sel-element-gt.html) | div>p                 | 选择所有父级是 `<div>` 元素的` <p> `元素                   | 2    |
-| [*element*+*element*](https://www.runoob.com/cssref/sel-element-pluss.html) | div+p                 | 选择所有紧跟在 `<div>` 元素之后的第一个 `<p> `元素         | 2    |
-| [[*attribute*\]](https://www.runoob.com/cssref/sel-attribute.html) | [target]              | 选择所有带有target属性元素                                 | 2    |
-| [[*attribute*=*value*\]](https://www.runoob.com/cssref/sel-attribute-value.html) | [target=-blank]       | 选择所有使用target="-blank"的元素                          | 2    |
-| [[*attribute*~=*value*\]](https://www.runoob.com/cssref/sel-attribute-value-contains.html) | [title~=flower]       | 选择标题属性包含单词"flower"的所有元素                     | 2    |
-| [[*attribute*\|=*language*\]](https://www.runoob.com/cssref/sel-attribute-value-lang.html) | [lang\|=en]           | 选择 lang 属性等于 **en**，或者以 **en-** 为开头的所有元素 | 2    |
-| [:link](https://www.runoob.com/cssref/sel-link.html)         | a:link                | 选择所有未访问链接                                         | 1    |
-| [:visited](https://www.runoob.com/cssref/sel-visited.html)   | a:visited             | 选择所有访问过的链接                                       | 1    |
-| [:active](https://www.runoob.com/cssref/sel-active.html)     | a:active              | 选择活动链接                                               | 1    |
-| [:hover](https://www.runoob.com/cssref/sel-hover.html)       | a:hover               | 选择鼠标在链接上面时                                       | 1    |
-| [:focus](https://www.runoob.com/cssref/sel-focus.html)       | input:focus           | 选择具有焦点的输入元素                                     | 2    |
-| [:first-letter](https://www.runoob.com/cssref/sel-firstletter.html) | p:first-letter        | 选择每一个`<p>`元素的第一个字母                            | 1    |
-| [:first-line](https://www.runoob.com/cssref/sel-firstline.html) | p:first-line          | 选择每一个`<p>`元素的第一行                                | 1    |
-| [:first-child](https://www.runoob.com/cssref/sel-firstchild.html) | p:first-child         | 指定只有当`<p>`元素是其父级的第一个子级的样式。            | 2    |
-| [:before](https://www.runoob.com/cssref/sel-before.html)     | p:before              | 在每个`<p>`元素之前插入内容                                | 2    |
-| [:after](https://www.runoob.com/cssref/sel-after.html)       | p:after               | 在每个`<p>`元素之后插入内容                                | 2    |
-| [:lang(*language*)](https://www.runoob.com/cssref/sel-lang.html) | p:lang(it)            | 选择一个lang属性的起始值="it"的所有`<p>`元素               | 2    |
-| [*element1*~*element2*](https://www.runoob.com/cssref/sel-gen-sibling.html) | p~ul                  | 选择p元素之后的每一个ul元素                                | 3    |
-| [[*attribute*^=*value*\]](https://www.runoob.com/cssref/sel-attr-begin.html) | a[src^="https"]       | 选择每一个src属性的值以"https"开头的元素                   | 3    |
-| [[*attribute*$=*value*\]](https://www.runoob.com/cssref/sel-attr-end.html) | a[src$=".pdf"]        | 选择每一个src属性的值以".pdf"结尾的元素                    | 3    |
-| [[*attribute**=*value*\]](https://www.runoob.com/cssref/sel-attr-contain.html) | a[src*="runoob"]      | 选择每一个src属性的值包含子字符串"runoob"的元素            | 3    |
-| [:first-of-type](https://www.runoob.com/cssref/sel-first-of-type.html) | p:first-of-type       | 选择每个p元素是其父级的第一个p元素                         | 3    |
-| [:last-of-type](https://www.runoob.com/cssref/sel-last-of-type.html) | p:last-of-type        | 选择每个p元素是其父级的最后一个p元素                       | 3    |
-| [:only-of-type](https://www.runoob.com/cssref/sel-only-of-type.html) | p:only-of-type        | 选择每个p元素是其父级的唯一p元素                           | 3    |
-| [:only-child](https://www.runoob.com/cssref/sel-only-child.html) | p:only-child          | 选择每个p元素是其父级的唯一子元素                          | 3    |
-| [:nth-child(*n*)](https://www.runoob.com/cssref/sel-nth-child.html) | p:nth-child(2)        | 选择每个p元素是其父级的第二个子元素                        | 3    |
-| [:nth-last-child(*n*)](https://www.runoob.com/cssref/sel-nth-last-child.html) | p:nth-last-child(2)   | 选择每个p元素的是其父级的第二个子元素，从最后一个子项计数  | 3    |
-| [:nth-of-type(*n*)](https://www.runoob.com/cssref/sel-nth-of-type.html) | p:nth-of-type(2)      | 选择每个p元素是其父级的第二个p元素                         | 3    |
-| [:nth-last-of-type(*n*)](https://www.runoob.com/cssref/sel-nth-last-of-type.html) | p:nth-last-of-type(2) | 选择每个p元素的是其父级的第二个p元素，从最后一个子项计数   | 3    |
-| [:last-child](https://www.runoob.com/cssref/sel-last-child.html) | p:last-child          | 选择每个p元素是其父级的最后一个子级。                      | 3    |
-| [:root](https://www.runoob.com/cssref/sel-root.html)         | :root                 | 选择文档的根元素                                           | 3    |
-| [:empty](https://www.runoob.com/cssref/sel-empty.html)       | p:empty               | 选择每个没有任何子级的p元素（包括文本节点）                | 3    |
-| [:target](https://www.runoob.com/cssref/sel-target.html)     | #news:target          | 选择当前活动的#news元素（包含该锚名称的点击的URL）         | 3    |
-| [:enabled](https://www.runoob.com/cssref/sel-enabled.html)   | input:enabled         | 选择每一个已启用的输入元素                                 | 3    |
-| [:disabled](https://www.runoob.com/cssref/sel-disabled.html) | input:disabled        | 选择每一个禁用的输入元素                                   | 3    |
-| [:checked](https://www.runoob.com/cssref/sel-checked.html)   | input:checked         | 选择每个选中的输入元素                                     | 3    |
-| [:not(*selector*)](https://www.runoob.com/cssref/sel-not.html) | :not(p)               | 选择每个并非p元素的元素                                    | 3    |
-| [::selection](https://www.runoob.com/cssref/sel-selection.html) | ::selection           | 匹配元素中被用户选中或处于高亮状态的部分                   | 3    |
-| [:out-of-range](https://www.runoob.com/cssref/sel-out-of-range.html) | :out-of-range         | 匹配值在指定区间之外的input元素                            | 3    |
-| [:in-range](https://www.runoob.com/cssref/sel-in-range.html) | :in-range             | 匹配值在指定区间之内的input元素                            | 3    |
-| [:read-write](https://www.runoob.com/cssref/sel-read-write.html) | :read-write           | 用于匹配可读及可写的元素                                   | 3    |
-| [:read-only](https://www.runoob.com/cssref/sel-read-only.html) | :read-only            | 用于匹配设置 "readonly"（只读） 属性的元素                 | 3    |
-| [:optional](https://www.runoob.com/cssref/sel-optional.html) | :optional             | 用于匹配可选的输入元素                                     | 3    |
-| [:required](https://www.runoob.com/cssref/sel-required.html) | :required             | 用于匹配设置了 "required" 属性的元素                       | 3    |
-| [:valid](https://www.runoob.com/cssref/sel-valid.html)       | :valid                | 用于匹配输入值为合法的元素                                 | 3    |
-| [:invalid](https://www.runoob.com/cssref/sel-invalid.html)   | :invalid              | 用于匹配输入值为非法的元素                                 |      |
+### 列表
 
-## 变换
+文档地址：http://css.doyoe.com/selectors/index.htm
+
+![image-20220410005859770](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220410005859770.png)
+
+### 注意
+
+1. **hover**选择器
+
+   将鼠标放到目标元素上，被操作元素就会执行css代码
+
+   如果不写**被操作元素**，默认被操作元素就是目标元素
+
+   ```
+   目标元素选择器:hover被操作元素选择器{
+   	控制被操作元素的css样式
+   }
+   ```
+
+   例如:
+
+   选择控制兄弟元素`.box1:hover+.box2`
+
+   ![2022-04-09 20.04.30](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-09%2020.04.30.gif)
+
+   ```html
+   <!DOCTYPE html>
+   <html>
+   	<style type="text/css">
+   			
+   		.box1{
+   			width: 200px;
+   			height: 100px;
+   			background-color: red;
+   		}
+   			
+   		.box2{
+   			width: 200px;
+   			height: 100px;
+   			background-color: blue;
+   			margin-top: 10px;
+   		}
+   		
+   		.box1:hover+.box2{
+   			transition-duration: 2s;
+   			transform: translateX(1000px)
+   			
+   		}
+   	</style>
+   	<body>
+   		<div class="box1"></div>
+   		<div class="box2"></div>
+   	</body>
+   </html>
+   ```
+
+   
+
+
+
+## 伪元素
+
+通过伪类选择器（`::before` 和 `::after`），给目标元素添加一个伪元素。伪元素顾名思义，不是真正的dom元素，而是一个通过伪类，给目标元素添加一个假的元素
+
+**使用规则**
+
+* `::before` 和 `::after`前的元素是目标元素
+
+* 一个目标元素只能有一个`::before` 和一个 `::after`
+
+  ![image-20220408000851569](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220408000851569.png)
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+  	<style type="text/css">
+  		.box{
+  			position: relative;
+  		}
+  		
+  		.box::after {
+  			content: "1";
+  			position: absolute;
+  			width: 50px;
+  			height: 50px;
+  			background-color: red;
+  
+  		}
+      /*第二个after会覆盖第一个*/
+  		.box::after {
+  			content: "2";
+  			position: absolute;
+  			width: 50px;
+  			height: 50px;
+  			background-color: red;
+  		}
+  		
+  			
+  	</style>
+  	<body>
+  		<div class="box"></div>
+  	</body>
+  </html>
+  ```
+
+* 必须要有content属性，content可以为文字，也可为空字符
+
+* 目标元素添加`position: relative;`，伪元素添加`position: absolute;`，伪类元素转换为块级元素，可设置宽高，且以**目标元素**的左上角为参考系
+
+**例子**
+
+![image-20220407231554582](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220407231554582.png)
+
+```html
+<!DOCTYPE html>
+<html>
+	<style type="text/css">
+		.box::before {
+			content: "方块";
+			position: absolute;
+			top: 50px;
+			width: 100px;
+			height: 100px;
+			border-radius: 2px;
+			background-color: red;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+
+			font-size: 30px;
+			color: white;
+		}
+			
+	</style>
+	<body>
+		<div class="box" style="width:200px;height:200px;background-color: blue; position: relative;"></div>
+	</body>
+</html>
+```
+
+**注意**：普通选择器无法选中伪元素的，必须要使用伪类选择器（`::before` 、`::after`）选中目标元素
+
+`.box:hover::after{}`就是给`class=box`的元素添加hover选择器，然后再找到`::after`伪类
+
+![2022-04-07 23.56.15](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-07%2023.56.15.gif)
+
+```html
+<!DOCTYPE html>
+<html>
+	<style type="text/css">
+			
+		
+		.box{
+			position: relative;
+		}
+		
+		
+		.box::after {
+			content: "";
+			position: absolute;
+			width: 200px;
+			height: 200px;
+			background-color: red;
+			transition: 2s;		
+		}
+			
+		.box:hover::after{
+			transform: rotate(360deg);
+		}
+			
+	</style>
+	<body>
+		<div class="box"></div>
+	</body>
+</html>
+
+```
+
+## 变形与透视
+
+### 属性列表
 
 |                             属性                             | 版本 | 继承性 |                 描述                 |
 | :----------------------------------------------------------: | :--: | :----: | :----------------------------------: |
-| [transform](http://css.doyoe.com/properties/transform/transform.htm) | CSS3 |   无   |         检索或设置对象的变换         |
-| [transform-origin](http://css.doyoe.com/properties/transform/transform-origin.htm) | CSS3 |   无   |  检索或设置对象中的变换所参照的原点  |
+|                          transform                           | CSS3 |   无   |            设置对象的变换            |
+|                       transform-origin                       | CSS3 |   无   |      设置对象发生变换的参照原点      |
 | [transform-style](http://css.doyoe.com/properties/transform/transform-style) | CSS3 |   无   | 指定某元素的子元素是否位于三维空间内 |
 | [perspective](http://css.doyoe.com/properties/transform/perspective.htm) | CSS3 |   无   |    指定观察者与「z=0」平面的距离     |
 | [perspective-origin](http://css.doyoe.com/properties/transform/perspective-origin.htm) | CSS3 |   无   |           指定透视点的位置           |
 | [backface-visibility](http://css.doyoe.com/properties/transform/backface-visibility.htm) | CSS3 |   无   |    指定元素背面面向用户时是否可见    |
 
-## 过渡
+### transform
 
-|                             属性                             | 版本 | 继承性 |                   描述                   |
-| :----------------------------------------------------------: | :--: | :----: | :--------------------------------------: |
-| [transition](http://css.doyoe.com/properties/transition/transition.htm) | CSS3 |   无   | 复合属性。检索或设置对象变换时的过渡效果 |
-| [transition-property](http://css.doyoe.com/properties/transition/transition-property.htm) | CSS3 |   无   |     检索或设置对象中的参与过渡的属性     |
-| [transition-duration](http://css.doyoe.com/properties/transition/transition-duration.htm) | CSS3 |   无   |       检索或设置对象过渡的持续时间       |
-| [transition-timing-function](http://css.doyoe.com/properties/transition/transition-timing-function.htm) | CSS3 |   无   |        检索或设置对象中过渡的类型        |
-| [transition-delay](http://css.doyoe.com/properties/transition/transition-delay.htm) | CSS3 |   无   |       检索或设置对象延迟过渡的时间       |
+平面的轴线，除了图中的X、Y轴，还有Z轴，**Z轴垂直于屏幕，正方向指向屏幕外**
+
+![image-20220410111700895](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220410111700895.png)
+
+* **平面移动**：translate、translateX、translateY
+
+  ```css
+translateX(100px); /*参数正数：水平右移；负数：水平左移*/
+  
+  translateY(100px); /*参数正数：水平下移；负数：水平上移*/
+  
+  translate(100px,100px); /*水平竖直同时移动，第一个参数是水平，第二个是竖直*/
+  ```
+  
+  **参数为百分比时，表示的是自身的宽高的百分比**
+
+* **缩放**：scale、scaleX、scaleY
+
+  ```css
+  scaleX(2)  /*放大为自身宽度的2倍*/
+  scaleY(2)  /*放大为自身高度的2倍*/
+  scale(2,0.5) 	/*宽高同时缩放，宽度放大2倍，高度缩小0.5倍 */
+  ```
+
+  **旋转**：rotate、rotateX、rotateY
+
+  参数是角度，一般使用度数（deg），还有其他角度单位
+
+  |                      角度单位                      | 版本 |       描述       |
+  | :------------------------------------------------: | :--: | :--------------: |
+  |  [deg](http://css.doyoe.com/values/angle/deg.htm)  | CSS3 |  度（Degrees）   |
+  | [grad](http://css.doyoe.com/values/angle/grad.htm) | CSS3 | 梯度（Gradians） |
+  |  [rad](http://css.doyoe.com/values/angle/rad.htm)  | CSS3 | 弧度（Radians）  |
+  | [turn](http://css.doyoe.com/values/angle/turn.htm) | CSS3 | 转、圈（Turns）  |
+  
+  rotateX和rotateY分别绕 X轴和Y轴旋转
+  
+  ```css
+  {
+    /* 以X轴为旋转轴，旋转45deg*/
+  	transform:rotateX(45deg)
+  }
+  ```
+  
+  rotate是以Z为轴，在2d平面旋转，正数是顺时针旋转
+  
+  ```css
+  .box:hover{
+     transform: rotate(45deg); /*查看下图的效果*/
+  }
+  ```
+  
+  ![2022-04-10 16.33.28](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2016.33.28.gif)
+
+* **倾斜**：skew、skewX、skewY
+
+  参数是角度
+
+  举个例子：
+
+  ![2022-04-10 16.39.50](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2016.39.50.gif)
+
+  ```css
+  .box:hover{
+     transform: skew(45deg);
+  }
+  ```
+
+### transform-origin
+
+变形的参考点，
+
+可选值：第一个参数是水平位置，第二个是竖直位置【以元素左上角为参考点】
+
+```
+[<length>|<percentge>|left|center①|right] [<length>|<percentge>|left|center②|right ]
+```
+
+默认值为元素中心，即 `transform-origin:center center`或者`transform-origin:50% 50%`
+
+例子：
+
+![2022-04-10 16.37.05](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2016.37.05.gif)
+
+```html
+<!DOCTYPE html>
+<html>
+    <style type="text/css">
+        .container{
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box{
+            width: 200px;
+            height: 200px;
+            background-color: red;
+            margin-right: 10px;
+            transform-origin: left top;
+            transition: 2s;
+        }
+        .box:hover{
+            transform: rotate(45deg);
+        }
+
+    </style>
+    <body>
+        <div class="container">
+            <div class="box"></div>
+
+        </div>
+    </body>
+</html>
+```
+
+
+
+### 案例
+
+#### 图集案例
+
+![2022-04-10 13.01.21](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2013.01.21.gif)
+
+```html
+<!DOCTYPE html>
+<html>
+<style type="text/css">
+    .container{
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .box{
+        width: 200px;
+        height: 100px;
+        background-color: red;
+        margin-right: 10px;
+    }
+    .box img{
+        width: 100%;
+        height: 100%;
+        transition: 2s;
+    }
+    .box:hover img{
+        transform: scale(1.5);
+    }
+
+
+
+</style>
+<body>
+    <div class="container">
+        <div class="box"><img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E5%8D%9A%E5%AE%A2%E5%A4%B4%E5%83%8F/avatar.png"></div>
+        <div class="box"><img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E5%8D%9A%E5%AE%A2%E5%A4%B4%E5%83%8F/avatar.png"></div>
+        <div class="box"><img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E5%8D%9A%E5%AE%A2%E5%A4%B4%E5%83%8F/avatar.png"></div>
+    </div>
+</body>
+</html>
+```
+
+#### 新年贺卡
+
+```html
+```
+
+
+
+## 过渡（transition）
+
+上一章节学习了变形，过渡就是同一Dom元素在两种不同形态之间变化的过程。transition属性，可以控制过渡的时间和过渡的效果
+
+### 属性列表
+
+|            属性            | 继承性 |                             描述                             |
+| :------------------------: | :----: | :----------------------------------------------------------: |
+|         transition         |   无   |                           复合属性                           |
+|    transition-property     |   无   | 设置对象中哪些属性参与过渡效果（默认值all：所有属性都参与过渡效果） |
+|    transition-duration     |   无   |               过渡持续的时间（默认无过渡时间）               |
+| transition-timing-function |   无   | 过渡变化的速度趋势（比如：过渡速度由快到慢，默认值为ease：慢-快-慢） |
+|      transition-delay      |   无   |          设置对象延迟固定时间才开始过渡（默认为0s）          |
+
+### 过渡基础
+
+![2022-04-02 20.22.46](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/2022-04-02%2020.22.46.gif)
+
+* 当鼠标移动到图形上时：正方形——>圆形；当鼠标移动开时：圆形——>正方形
+
+* 给两种状态之间设置过渡，需要给**结束状态**增加`transtion`属性
+
+* 例子
+
+  **上图的例子**
+
+  hover选择器继承了box中的所有transition相关的属性，所以相当于hover中也有`transition:2s;`所以当鼠标进入div区域时，会花费2s变成圆形。我们也可以单独控制变成圆形的过渡效果，即给`.box：hover`设置`transition`属性
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+  	<style type="text/css">
+  		.box{
+  			width: 100px;
+  			height: 100px;
+  			background-color: red;
+  			transition:2s;/*恢复正方形花费2s*/
+  		}
+  		.box:hover{
+  			border-radius: 50%;/*变成圆形 花费2s（继承.box中的transition属性）*/
+  		}
+  	</style>
+  	<body>
+  		<div class="box"></div>
+  	</body>
+  </html>
+  ```
+
+  **分开设置：（正方形——>圆形） 和 （圆形——>正方形） 过渡**
+
+  ![2022-04-08 00.37.50](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-08%2000.37.50.gif)
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+  	<style type="text/css">
+  		.box{
+  			width: 100px;
+  			height: 100px;
+  			background-color: red;
+  			transition:2s; /*恢复正方形花费2s*/
+  		}
+  		.box:hover{
+  			border-radius: 50%;
+  			transition:0.5s; /*变成圆形 花费0.5s*/
+  		}
+  	</style>
+  	<body>
+  		<div class="box"></div>
+  	</body>
+  </html>
+  ```
+
+  **只设置：（正方形——>圆形） 过渡**
+
+  ![2022-04-10 12.20.48](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2012.20.48.gif)
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+  <style type="text/css">
+      .box{
+          width: 100px;
+          height: 100px;
+          background-color: red;
+  
+      }
+      .box:hover{
+          border-radius: 50%;
+          transition:2s; /*变成圆形 花费2s*/
+      }
+  </style>
+  <body>
+  <div class="box"></div>
+  </body>
+  </html>
+  
+  ```
+
+  记忆小技巧：transtion属性在哪个选择器设置，那个选择器中的属性，就是结束状态呈现的效果
+
+### transition基础属性
+
+**transition-property** 设置对象中哪些属性参与过渡效果（默认值all：所有属性都参与过渡效果），未设置的属性仍然发生变化，只不过没有tranistion属性设置的过渡效果，是瞬间完成变化
+
+**transition-duration** 过渡持续的时间（针对transition-property指定的属性起作用）
+
+**transition-delay** 延迟指定时间，开始过渡效果（针对transition-property指定的属性起作用）
+
+例子中：
+
+状态（正方形，红色）——>（圆形，蓝色）
+
+设置border-radius参与过渡效果，过渡持续时间为2s。背景色不参与过渡效果，过渡时间设置无效
+
+
+
+
+
+![2022-04-02 20.36.52](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/2022-04-02%2020.36.52.gif)
+
+```html
+<!DOCTYPE html>
+<html>
+	<style type="text/css">
+		.box{
+			width: 100px;
+			height: 100px;
+			background-color: red;
+			
+			transition-property: border-radius;
+      transition-duration:2s;
+		}
+		.box:hover{
+      transition-duration:3s;
+      
+			border-radius: 50%;
+			background-color: blue;
+		}
+	</style>
+	<body>
+		<div class="box"></div>
+	</body>
+</html>
+
+```
+
+**注意**：三个属性，如果有多个值，用逗号分隔。有几种情况需要注意：
+
+```css
+/*两个属性个数对应，
+	则 width变化过渡2s，height变化过渡1s
+	transition-delay同理
+*/
+.box{
+  transition-property: width,height;
+	transition-duration:2s,1s;
+  transition-delay:2s,3s;
+}
+
+/*两个属性个数不对应，属性个数>时间个数，则会从第一个时间开始继续分配给剩下的属性
+  则width变化过渡2s，height变化过渡1s，background-color变化过渡2s
+	transition-delay同理
+*/
+.box{
+  transition-property: width,height,background-color;
+	transition-duration:2s,1s;
+  transition-delay:2s,3s;
+}
+
+/*两个属性个数不对应，属性个数<时间个数,多出来的时间没有作用的属性，则无效
+  则width变化过渡2s，height变化过渡1s
+	transition-delay同理
+*/
+.box{
+  transition-property: width,height;
+	transition-duration:2s,1s,3s;
+}
+```
+
+### transition-timing-function
+
+**transition-timing-function** 过渡变化的速度趋势（比如：过渡速度由快到慢）。默认值为ease，速度：慢-快-慢
+
+**可选值**
+
+* 预设的贝塞尔曲线：`ease`、`linear`、`ease-in`、`ease-out`、`ease-in-out`
+
+* 贝塞尔曲线cubin-bezier()描述速度变化
+
+  使用[贝塞尔曲线](https://cubic-bezier.com/#0,0,.58,1)这个网站，生成自己想要的贝塞尔曲线值
+
+  ![image-20220408005602972](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220408005602972.png)
+
+* step过渡
+
+  前两种都是线性变化，而step是一步一步的变化
+
+  * steps(n,start) 表示把过渡时间分为n份，在每份时间的**开始**，发生变化
+
+  * steps(n,end) 表示把过渡时间分为n份，在每份时间的**结束**，发生变化
+
+    下面的例子：steps(3,start)为把3s的过渡到时间分为3份，一份为1s，鼠标放上去的瞬间，就完成第一秒的变化。如果使用steps(3,end)，鼠标放上去第一秒结束的瞬间，才会完成第一秒的变化
+
+    ![2022-04-09 19.00.25](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-09%2019.00.25.gif)
+
+    ```html
+    <!DOCTYPE html>
+    <html>
+    	<style type="text/css">
+    		.box{
+    			width: 100px;
+    			height: 100px;
+    			background-color: red;
+    		}
+    		.box:hover{
+    			border-radius: 50%;
+    			transition-duration:3s;
+    			transition-timing-function: steps(3,start);
+    		}
+    	</style>
+    	<body>
+    		<div class="box"></div>
+    	</body>
+    </html>
+    ```
+
+  *  step-start 和  step-end
+
+    相当于 steps(1,start) 和steps(1,end) ，把过渡时间分为1份，即在开始或结尾，变化一次
+
+### transtion
+
+**transition** 复合属性，所有的transition相关的属性都可以用这一个属性定义
+
+**只需要注意**：
+
+出现一个时间，默认为transtion-duration属性；出现两个时间，按先后顺序分别为transtion-duration、transition-delay属性
+
+其他属性没有顺序限制，写在任意位置，不写就为默认值
+
+* 一个过渡效果
+
+  ```css
+  {
+    transition: 3s 1s linear background;
+  }
+  ```
+
+* 多个过渡效果，用逗号分隔
+
+  ```css
+  {
+    transition: border-raduis 3s 1s linear ,
+    	color 3s 1s linear ,
+    	background-color 3s 1s linear ,
+    ;
+  }
+  ```
+
+### 过渡事件
+
+通过Dom事件，在过渡完成后，给另一个元素添加过渡
+
+![2022-04-08 00.15.19](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-08%2000.15.19.gif)
+
+```html
+<!DOCTYPE html>
+<html>
+	<style type="text/css">
+		div {
+			width: 200px;
+			height: 200px;
+			position: relative;
+
+		}
+
+		div::before {
+			content: "方块";
+			position: absolute;
+			width: 200px;
+			height: 200px;
+			border-radius: 2px;
+			background-color: red;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+
+			font-size: 30px;
+			color: white;
+
+			transition: 2s;
+		}
+
+
+		div:hover::before {
+			transform: rotate(360deg);
+		}
+
+		div::after {
+			content: "hello world";
+			position: absolute;
+			width: 200px;
+			bottom: -30px;
+			text-align: center;
+
+			transform: translateX(-999px) skew(45deg);
+			transition: 1s;
+		}
+
+		div.move::after {
+			transform: translateX(0) skew(0deg);
+		}
+	</style>
+	<body>
+		<div></div>
+	</body>
+	<script type="text/javascript">
+		document.querySelector('div').addEventListener("transitionend",(e)=>{
+			document.querySelector('div').className='move'
+		})
+	</script>
+</html>
+```
+
+### 点赞案例
+
+![2022-04-10 01.40.52](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2001.40.52.gif)
+
+```html
+<!DOCTYPE html>
+<html>
+	<link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.2.0/css/font-awesome.min.css">
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <style type="text/css">
+		.container{
+			position: relative;
+			top: 20px;
+			left: 20px;
+		}
+
+		.box1{
+			color: red;
+			position: absolute;
+		}
+		.box2{
+			color: gray;
+			position: absolute;
+		}
+
+		.change{
+			transition: 2s ease-in-out;
+			transform: scale(3);
+			opacity: 0;
+			color: red;
+		}
+	</style>
+	<body>
+		<div class="container" onclick="heart()">
+			<div class="box1"><i class="fa fa-heart" aria-hidden="true"></i></div>
+			<div class="box2"><i class="fa fa-heart" aria-hidden="true"></i></div>
+		</div>
+	</body>
+    <script>
+        function heart() {
+            $('.box2').toggleClass('change')
+        }
+    </script>
+</html>
+```
+
+
 
 ## 动画
 
@@ -1622,6 +2292,19 @@ draw();
 ![img](https://www.runoob.com/wp-content/uploads/2018/12/2805401035-5b74dd8e6833c_articlex.png)
 
 ## 小知识点 
+
+### 百分比
+
+CSS中使用百分比绝大部分是父元素的百分比，且横向是父元素宽的百分比，纵向的是父元素高的百分比。举个例子：
+
+元素的`margin-left：50%`含义就是左外边距是父元素宽度的50%
+
+元素的`margin-top：50%`含义就是上外边距是父元素高度的50%
+
+**注意有两个特殊的地方**
+
+* transform的translate、translateX、translateY使用百分比，指的是自己的宽高的百分比
+* padding的百分比，无论是上下左右都边距，都是自己素宽度的百分比
 
 ### 固定宽高比 
 
@@ -1790,35 +2473,35 @@ display: -webkit-box;
    </div>
 ```
 
-自动计算。直接设置 `left:50%; top:50%;`,然后设置`margin-top`和`margin-left`为居中元素的高和宽的一半
+自动计算。直接设置 `left:50%; top:50%;`,然后设置transform属性向左向上，移动居中元素的高和宽的一半
 
 ```html
-    <style>
-       .red{
-           background-color: red;
-           height: 200px;
-           width: 200px;
-           /* 父元素得有position，子元素的位置才是相对于父元素变化 */
-           position: relative;
-       }
-       .blue{
-           background-color: blue;
-           height: 100px;
-           width: 100px;
-           position:absolute;
-           /*父元素 高，宽的一半*/
-           top:50%;
-           left: 50%;
-           
-           /*blue块的高，宽的一半*/
-           margin-top: -50px;
-           margin-left: -50px;
+<style>
+    .red{
+        background-color: red;
+        height: 200px;
+        width: 200px;
+        /* 父元素得有position，子元素的位置才是相对于父元素变化 */
+        position: relative;
+    }
+    .blue{
+        background-color: blue;
+        height: 100px;
+        width: 100px;
+        position:absolute;
+        /*父元素 高，宽的一半*/
+        top:50%;
+        left: 50%;
 
-       }
-    </style>
-   <div class="red">
-       <div class="blue"></div>
-   </div>
+        /*blue块的高，宽的一半*/
+        transform: translate(-50%,-50%);
+
+    }
+</style>
+<div class="red">
+    <div class="blue"></div>
+</div>
+
 ```
 
 如果子元素的宽高不确定（比如子元素的宽高是内部撑出来的），将`margin-left`换成`transform:translateX(-50%)`，注意tanslateX的参数如果是百分比，表示的是自己的宽度的百分比，同理，tanslateY，为自己高度的百分比
@@ -1920,54 +2603,6 @@ div{
 	background-color:var(--color)
 }
 ```
-
-### 伪类元素
-
-less中使用伪类添加图片。
-
-```less
-span{
-  &::before {
-     content: '';
-     display: inline-block;
-     background: url('./img/oval-1.png');
-     background-size: cover;
-     width: 0.5rem;
-     height: 0.5rem;
-     position: absolute;
-     top: 0;
-     left: -0.3rem;
-	}
-}
-```
-
-[也可以](https://blog.csdn.net/hbiao68/article/details/105157237)
-
-```less
-content:url('./img/oval-1.png)
-```
-
-**::before和::after的注意事项**
-
-* 默认display:inline
-* 必须设置content属性，否则一切都是无用功；
-* 默认user-select:none，就是::before和::after的内容无法被用户选中的；
-
-**content的值**
-
-* content:"普通字符串";
-
-* content:attr(父元素的html属性名称);
-
-* content:url(图片、音频、视频等资源的url);
-
-* content:"\21e0";【使用unicode字符集，采用4位16进制编码】
-
-* content:"'"attr(title)"'";【 content的多个值可以任意组合，各部分通过空格分隔】
-
-**给伪类元素添加绝对定位**
-
-给伪类添加`position`属性后，伪类元素隐式转换为块级元素，且以**原本的元素**的左上角为坐标系
 
 ### 预定义样式
 
@@ -2079,7 +2714,11 @@ flex-direction:row;
   })
   ```
 
-* 在
+* 在Vue中，只需要在main.js中引入，在任何页面都可以使用
+
+  ```
+  import 'xxx.css'
+  ```
 
 ### CSS层叠上下文(补充flex的关系)
 

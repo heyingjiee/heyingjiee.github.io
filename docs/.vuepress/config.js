@@ -32,12 +32,13 @@ module.exports = {
           { text: "Vue", link: "/frontBasic/Vue学习笔记.md" },
         ],
       },
-      // {text: '算法题库', link: '/algorithm/'},
+      // {text: '前端进阶', link: '/algorithm/'},
       {
         text: "编程基础",
         items: [
           { text: "Git", link: "/programBasic/Git相关笔记.md" },
           { text: "HTTPS", link: "/programBasic/HTTPS的原理.md" },
+          { text: "常用服务端口", link: "/programBasic/常用服务端口.md" },
         ],
       },
       {
@@ -45,32 +46,33 @@ module.exports = {
         items: [
           { text: "Flutter", link: "/otherLanguage/Flutter.md" },
           { text: "Docker", link: "/otherLanguage/Docker.md" },
-          { text: "Kubenetes", link: "/otherLanguage/Kubenetes.md" },
+          { text: "Linux基础", link: "/otherLanguage/Linux学习笔记.md" },
           {
-            text: "Mac使用经验",
-            link: "/otherLanguage/Mac使用经验.md",
-          },
-          {
-            text: "c/c++",
-            link: "/otherLanguage/c++使用学习笔记.md",
-          },
-          { text: "Linux", link: "/otherLanguage/Linux学习笔记.md" },
-          {
-            text: "python爬虫",
+            text: "Python爬虫",
             link: "/otherLanguage/python爬虫进阶学习笔记.md",
           },
+          {
+            text: "C/C++基础",
+            link: "/otherLanguage/c++使用学习笔记.md",
+          },
+          // { text: "Kubenetes", link: "/otherLanguage/Kubenetes.md" },
         ],
       },
       {
         text: "其他文章",
         items: [
-          { text: "vscode", link: "/other/VSCode/VSCode使用指南.md" },
-          { text: "charles", link: "/other/charles的学习笔记.md" },
-          {
-            text: "chrome extension",
-            link: "/other/chrome extension开发.md",
-          },
           { text: "前端工程化", link: "/other/前端工程化.md" },
+          { text: "WebStorm", link: "/other/WebStorm.md" },
+          { text: "Charles", link: "/other/charles的学习笔记.md" },
+          {
+            text: "Mac使用经验",
+            link: "/other/Mac使用经验.md",
+          },
+          // { text: "VSCode", link: "/other/VSCode使用指南.md" },
+          // {
+          //   text: "chrome extension",
+          //   link: "/other/chrome extension开发.md",
+          // },
         ],
       },
     ],

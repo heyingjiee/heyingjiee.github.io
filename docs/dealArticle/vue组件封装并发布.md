@@ -56,7 +56,7 @@ index.js
 ```js
 import HddButton from "@/packages/hdd-button/index.vue";
 const componentList=[HddButton]
-const install=function (){
+const install=function (Vue, options){
     componentList.forEach(component=>{
         Vue.component(component.name,component)
     })
