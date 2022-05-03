@@ -637,7 +637,7 @@ a {
 
 ## 浮动盒子
 
-（待补充）
+（现在基本很少使用浮动布局了，故这里不做介绍）
 
 浮动会脱离文档流，BFC块会能感知到float元素，
 
@@ -1269,6 +1269,328 @@ https://blog.csdn.net/weixin_41342585/article/details/79484879
 
 ## 栅格布局
 
+将页面划分为网格，分为行和列，就像一块地图，可以将元素任意放置在这些块或者块组成的区域中
+
+![image-20220416173918496](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416173918496.png)
+
+### 基础知识
+
+* 父元素使用`display:inline-grid`（块级元素）或者`display:grid`（行内元素）
+
+* 使用
+
+  * **设置行和列**（父元素设置）
+
+    `grid-template-rows` 设置行
+
+    `grid-template-columns`设置列
+
+    以设置行，作为例子 
+
+    ```css
+    grid-template-rows:100px 200px; /*数字；两行/
+    grid-template-rows:25% 50% 25%; /*百分比；三行*/
+    grid-template-rows:1fr 2fr; /*两行，按照1:2分配元素空间*/
+    grid-template-rows:minmax(50px,100px) minmax(50px,100px); /*分成两份，每份会尽可能大的占用空间，但是不会超过各自的最大值*/
+    
+    
+    /*如果是同样的值，可以使用repeat函数，第一个参数：份；第二个参数：每份多大*/
+    grid-template-rows:repeat(3,1fr);/*三行，每行占1份；*/
+    grid-template-rows:repeat(auto-fill,100px) /*自动计算容器,高度能分为几份100px；注意这里，第二个参数如果是以fr为单位，则默认只分一份*/
+    ```
+
+  * **设置行和列间距**（父元素设置）
+
+    ```css
+    row-gap: 10px; /*行间距*/
+    column-gap: 20px;/*列间距*/
+    gap:10px 20px; /*复合属性*/
+    ```
+
+  * 父元素使用栅格布局，子元素如果不设置宽高，子元素宽高会默认为单元格宽高
+
+* 子元素，从左到右，从上到下放置（可以看例子中的子元素的编号）。如果子元素个数超过格子数量，可以给父元素设置`verflow:hidden`隐藏
+
+**例子**
+
+```html
+<div class="container">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+    <div>5</div>
+    <div>6</div>
+    <div>7</div>
+</div>
+
+<style>
+.container{
+    width: 300px;
+    height: 300px;
+    background-color: red;
+    display: grid;
+    grid-template-rows:repeat(3,1fr);
+    grid-template-columns:repeat(3,1fr);
+    row-gap: 10px;
+    column-gap: 10px;
+}
+.container div{
+    background-color: yellow;
+    border: solid 1px black;
+}
+</style>
+```
+
+![image-20220416234156688](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416234156688.png)
+
+### 默认栅格名
+
+（子元素设置）
+
+```text
+/*行开始和结束*/
+grid-row-start: 1;
+grid-row-end: 2;
+
+/*列开始和结束*/
+grid-column-start: 1;
+grid-column-end: 3;
+```
+
+这里以行为例子，属性的编号，就代表行上边线的编号，这里是从1开始的。**注意**：即设置了栅格边距，还是一样的
+
+![image-20220417000355769](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417000355769.png)
+
+![image-20220417000852239](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417000852239.png)
+
+例子如下
+
+![image-20220416234950556](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416234950556.png)
+
+```html
+<div class="container">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+    <div>5</div>
+    <div>6</div>
+    <div>7</div>
+</div>
+
+<style>
+ .container{
+    width: 300px;
+    height: 300px;
+    background-color: red;
+    display: grid;
+    grid-template-rows:repeat(3,1fr);
+    grid-template-columns:repeat(3,1fr);
+    row-gap: 10px;
+    column-gap: 10px;
+    overflow:hidden;
+}
+.container div{
+    background-color: yellow;
+    border: solid 1px black;
+}
+
+.container div:first-child{ /*选中第一个子元素，然后控制这个元素占据格子，其他元素按照默认顺序继续排序*/
+    background-color: blue;
+  	/*网格边界，编号从1开始*/
+    grid-row-start: 1;
+    grid-row-end: 2;
+  	/*网格边界，编号从1开始*/
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+</style>
+```
+
+第一个子元素放置到中间，注意看其他元素还是按照默认顺序排序
+
+![image-20220416235304225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416235304225.png)
+
+```
+.container div:first-child{
+    background-color: blue;
+    grid-row-start: 2;
+    grid-row-end: 3;
+    grid-column-start: 2;
+    grid-column-end: 3;
+}
+```
+
+### 重命名栅格
+
+上面讲了，栅格默认的编号，以行为例子，如下图
+
+![image-20220417000355769](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417000355769.png)
+
+其实，我们可以手动指定名字（父元素设置）
+
+```
+grid-template-rows:[r1-start] 100px [r1-end r2-start] 100px [r2-end];
+grid-template-columns:[c1-start] 100px [c1-end c2-start] 100px [c2-end];
+```
+
+![image-20220417133739971](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417133739971.png)
+
+例子
+
+```html
+<style>
+.container{
+    width: 200px;
+    height: 200px;
+    display: grid;
+    grid-template-rows:[r1-start] 100px [r1-end r2-start] 100px [r2-end];
+    grid-template-columns:[c1-start] 100px [c1-end c2-start] 100px [c2-end];
+    overflow: hidden;/*栅格大小2*2的，如果子元素超过4个，就会超过4个*/
+}
+.container div{
+    background-color: yellow;
+    border: solid 1px black;
+}
+
+.container div:first-child{
+    background-color: blue;
+    grid-row-start: r2-start;
+    grid-row-end: r2-end;
+    grid-column-start: c1-start;
+    grid-column-end: c2-end;
+}
+</style>
+
+<div class="container">
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+    <div>4</div>
+</div>
+```
+
+![image-20220417191031022](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417191031022.png)
+
+还可以简写，**使用repeat重命名**，效果相同
+
+```css
+.container{
+  grid-template-rows:repeat(2,[r-start] 100px [r-end]);
+	grid-template-columns:repeat(2,[c-start] 100px [c-end]);
+} 
+
+.container div:first-child{
+    background-color: blue;
+    grid-row-start: r-start 2; /*数字表示是第几个格*/
+    grid-row-end: r-end 2;
+    grid-column-start: c-start 1;
+    grid-column-end: c-end 2;
+}
+```
+
+### 偏移
+
+`span 数字`偏移几个格子，例子使用默认栅格名
+
+```
+.container div:first-child{
+    background-color: blue;
+    grid-row-start: 2; 
+    grid-row-end: 3;
+    grid-column-start: 1;
+    grid-column-end: span 2;/偏移2个格子/
+}
+```
+
+![image-20220417194928345](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417194928345.png)
+
+不写几句默认是原本的位置，比如第一个子元素默认在第一个格子，`grid-row-start`和`grid-row-column`默认都是1，我不需要改变就可以省略不写
+
+```css
+.container div:first-child{
+    background-color: blue;
+    grid-row-end: span 2;
+    grid-column-end: span 2;
+}
+```
+
+![image-20220417195617843](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417195617843.png)
+
+### 选择栅格简写
+
+```css
+.container div:first-child{
+    background-color: blue;
+  
+    grid-row-start: 2; /*数字表示第几个单元格*/
+    grid-row-end: 3;
+  
+    grid-column-start: 1;
+    grid-column-end: 2;
+}
+/*简写*/
+grid-row:2/3;
+grid-column: 1/2; /*或者使用偏移量 grid-column:1/span 2*/
+```
+
+### 类似BootStrap的栅格系统
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+        .container {
+            width: 100vw;
+            display: grid;
+            grid-template-columns:repeat(12, 1fr);
+            border: solid 1px red;
+
+        }
+
+        .col-1 {
+            grid-column-end: span 1;
+        }
+
+        .col-2 {
+            grid-column-end: span 2;
+        }
+
+        .col-3 {
+            grid-column-end: span 3;
+        }
+
+        .col-4 {
+            grid-column-end: span 4;
+        }
+
+
+        .container div[class^='col'] {
+            background-color: yellow;
+            background-clip: content-box;
+            border: solid 1px black;
+            padding: 5px;
+            grid-row-end: span 2;
+            grid-column-end: span 2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="col-2">1</div>
+    <div class="col-4">2</div>
+    <div class="col-4">3</div>
+    <div class="col-2">4</div>
+</div>
+</body>
+</html>
+```
+
+
+
 ## 格式上下文（详细版）
 
 回一下前面讲的4类格式上下文：BFC 、IFC 、FFC 、GFC，这里详细的讲解下
@@ -1462,104 +1784,466 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 
 ## CSS选择器
 
-### 列表
+用于选中某个元素，然后就可以给这个元素添加样式了
+
+### 选择器列表
 
 文档地址：http://css.doyoe.com/selectors/index.htm
 
 ![image-20220410005859770](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220410005859770.png)
 
-### 注意
+下面仅对常用的选择器进行介绍
 
-1. **hover**选择器
+### 选择器基础
 
-   将鼠标放到目标元素上，被操作元素就会执行css代码
+* 一个元素可添加多个class，空格分隔。多个class中，如果出现重复属性，后面的覆盖前面的
 
-   如果不写**被操作元素**，默认被操作元素就是目标元素
+  ```html
+  <div class="content-block box-font"></div>
+  .content-block{}
+  .box-font{}
+  ```
 
-   ```
-   目标元素选择器:hover被操作元素选择器{
-   	控制被操作元素的css样式
-   }
-   ```
+* 选择器可以叠加使用，最后确定选中的元素
 
-   例如:
+  ```css
+  .school .class>h2+h1{
+    
+  }
+  ```
 
-   选择控制兄弟元素`.box1:hover+.box2`
+* 多个选择器，可以使用一个样式集合，逗号分隔
 
-   ![2022-04-09 20.04.30](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-09%2020.04.30.gif)
+  ```html
+  .content-block,.box-font{
+  }
+  ```
 
-   ```html
-   <!DOCTYPE html>
-   <html>
-   	<style type="text/css">
-   			
-   		.box1{
-   			width: 200px;
-   			height: 100px;
-   			background-color: red;
-   		}
-   			
-   		.box2{
-   			width: 200px;
-   			height: 100px;
-   			background-color: blue;
-   			margin-top: 10px;
-   		}
-   		
-   		.box1:hover+.box2{
-   			transition-duration: 2s;
-   			transform: translateX(1000px)
-   			
-   		}
-   	</style>
-   	<body>
-   		<div class="box1"></div>
-   		<div class="box2"></div>
-   	</body>
-   </html>
-   ```
+### 元素选择器
 
-   
+* **元素名**
 
+  ```html
+  <div></div>
+  div{}
+  ```
 
+* **id选择器和类选择器**
 
-## 伪元素
+  ```html
+  <div id="t-box" class="t-box-c"></div>
+  #t-box{}
+  .t-box-c{}
+  ```
 
-通过伪类选择器（`::before` 和 `::after`），给目标元素添加一个伪元素。伪元素顾名思义，不是真正的dom元素，而是一个通过伪类，给目标元素添加一个假的元素
+### 关系选择器
 
-**使用规则**
+我们以一下这段HTML为例子，看看不同选择器的选择效果
 
-* `::before` 和 `::after`前的元素是目标元素
+```html
+<div class="container">
+    <h1>test1</h1>
+    <div>
+        <h1>test2</h1>
+        <h2>test3</h2>
+    </div>
+    <h2>test4</h2>
+</div>
+```
 
-* 一个目标元素只能有一个`::before` 和一个 `::after`
+* **后代选择器（空格）**
 
-  ![image-20220408000851569](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220408000851569.png)
+  只能选择container下的后代元素（孩子+孙子+...）中的所有h1【可以看到test2这个元素能被选中】
 
+  ```html
+  .container h1{
+      color: red;
+  }
+  ```
+
+  ![image-20220416001630258](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001630258.png)
+
+* **孩子选择器（>）**
+
+  只能选择container下的孩子元素中的所有h1
+
+  ```
+  .container>h1{
+      color: red;
+  }
+  ```
+
+  ![image-20220416001658747](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001658747.png)
+
+* **兄弟选择器（～）**
+
+  前面已经说了`>h1`选中了内容为`test1`的元素，`~h2`则是选中这个元素的兄弟中所有的`h2`
+
+  ```
+  .container>h1~h2{
+      color: red;
+  }
+  ```
+
+  ![image-20220416001944779](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001944779.png)
+
+* **临近兄弟选择器**
+
+  这个例子，HTML更换为
+
+  ```html
+  <div class="container">
+      <h2>上面的兄弟</h2>
+      <h1>test1</h1>
+      <h2>下面的兄弟</h2>
+      <div></div>
+      <h2>下面的稍远的兄弟</h2>
+  </div>
+  ```
+
+  仅能选中h1下面紧挨着的是h2才能被选中
+
+  ```css
+  .container>h1+h2{
+      color: red;
+  }
+  ```
+
+  ![image-20220416002605230](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416002605230.png)
+
+### 属性选择器
+
+* **按照属性名选择**
+
+  选中元素是E且其包含属性att的元素
+
+  ```html		
+  <div name></div>
+  div[name]
+  ```
+
+  ```html
+  <div name title></div>
+  div[name][title]{ /*选中包含name和title属性的元素*/
+  	
+  } 
+  ```
+
+* **按照属性名和属性值选择**
+
+  ```
+  div[name="btn"] 属性值是btn
+  
+  div[name^="btn"] 属性值是btn开头的
+  
+  div[name$="btn"] 属性值是btn结尾的
+  
+  div[name*="btn"] 属性值中包含btn的 ,比如  <div name="elbtnee"></div>
+  
+  div[name～="btn"] 属性值中包含"btn"单独的一个词的（空格区分开），比如  <div name="el btn ee"></div>
+  
+  div[name|="btn"] 属性是btn和以btn-开始的
+  ```
+
+### 伪类选择器
+
+对于不确定存在的元素 或 元素的某种状态进行选择
+
+* **状态选择器**
+
+  给`<a>`可以添加一下选择器，但是需要注意，书写需要按照一定顺序才会生效
+
+  ![image-20220416110330256](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416110330256.png)
+
+  ```text
+  :link  /*选中a链接最初的状态*/
+  :visited     /*选中a链接被点击完成，松开鼠标点击的状态*/
+  :hover  /*选中鼠标悬浮在a链接上的状态*/
+  :active /*选中链接被点击下的状态*/
+  ```
+
+  其中 `:hover`和`:active`可以用在`<a>`标签以外的元素
+
+  **还有**
+
+  `:fouce` 获取焦点的状态
+
+* **结构伪类选择器**
+
+  `E:伪类选择器`，前的E可有可无，加上不过多了，只能选中E这个限定
+
+  **首位位置选择**
+
+  ```text
+  E:first-child /*E是其所在父元素内部的,且其排在第一个位置，才会被选中*/
+  E:last-child 同理
+  ```
+
+  ```html
+  <div class="container">
+      <h1>test1</h1>
+      <div>
+          <h1>test2</h1>
+          <h2>test3</h2>
+      </div>
+      <h2>test4</h2>
+  </div>
+  
+  <style>
+  	.container :first-child{ /*选中内容为test1和test2的元素*/
+     		color: red;
+  	}
+  </style>
+  ```
+
+  ```css
+  <div class="container">
+  		<h2>1111</h2>
+      <h1>test1</h1>
+      <div>
+          <h1>test2</h1>
+          <h2>test3</h2>
+      </div>
+      <h2>test4</h2>
+  </div>
+  
+  <style>
+  	.container h1:first-child{ /*选中内容为test2的元素，test1不是在其所在的层级里不是第一个，所以不能被选中*/
+      	color: red;
+  	}
+  </style>
+  ```
+
+  ****
+
+  ```text
+  E:first-of-type /*E是其所在父元素中，不必排在第一个位置，从上到下找到的第一个E即可；如果一个层级出现多个，仅会选中第一个E*/
+  E:last-of-type 同理
+  ```
+
+  ```html
+  <div class="container">
+  		<h2>1111</h2>
+      <h1>test1</h1>
+      <div>
+          <h1>test2</h1>
+          <h2>test3</h2>
+      </div>
+      <h2>test4</h2>
+  </div>
+  
+  <style>
+  	.container h2:first-of-type{ /*选中内容为1111和test3的元素，注意test4不会被选到，因为这个层级里第一次出现的h2的内容是1111的元素*/
+      	color: red;
+  	 }
+  </style>
+  ```
+
+  **指定位置选择**
+
+  ```text
+  E:nth-child(参数x) /*E是其所在父元素中，且第x个位置就是E，才会被选中*/
+  
+  参数
+  - n：取值范围从1开始到无穷，也就是所有位置中是E的选中（特别注意n从1开始）
+  - 含n的表达：比如n+3，表示从3个开始都选中；-n+3，表示从1到选中
+  - 1，2... ：指定第几个位置
+  -	odd：奇数位置，比如1、3、5，等同于2n+1
+  -	even：偶数位置，比如2、4、6，等同于2n
+  
+  E:nth-last-child 同理
+  ```
+
+  ```text
+  E:nth-of-type(参数x) /*与前面的first-of-type一样，参数x不是位置，而是选中第x个E*/
+  ```
+
+  **唯一选择**
+
+  ```text
+  E:only-of-type /*E是其所在父元素中，唯一一个E，才会选中*/
+  ```
+
+  ```html
+  <div class="container">
+      <h2>test1</h2>
+      <h1>test2</h1>
+      <h2>test3</h2>
+  </div>
+  <style>
+  	.container>h1:only-of-type{/*未选中任何元素*/
+      color: red;
+  	}
+  	.container>h2:only-of-type{/**选中test1的元素/
+      color: red;
+  	}
+  </style>
+  ```
+
+  **排除选择**
+
+  ```
+  E:not(选择器)
+  ```
+
+  ```html
+  <div class="container">
+      <h2>test1</h2>
+      <h2>test2</h2>
+      <h2>test3</h2>
+  </div>
+  <style>
+  	.container :nth-child(n):not(:nth-child(2)){ /*选中test1和test2*/
+      	color:red
+  	}
+  </style>
+  ```
+
+* **其他选择器**
+
+  根选择器
+
+  ```text
+  :root /*选中所有元素*/
+  ```
+
+  空选择器
+
+  ```
+  :empty
+  ```
+
+  ```html
+  .container{
+      width: 200px;
+      height: 200px;
+      border: red solid 1px;
+  }
+  .container :empty{ /*注意这里的空格，是后代选择器，在所有后代中的空元素*/
+      width: 100%;
+      height: 20px;
+      background-color: green;
+  }
+  
+  <div class="container">
+      <div>11</div>
+      <div></div>
+  </div>
+  ```
+
+  ![image-20220416111546282](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416111546282.png)
+  
+* **`::before` 和 `::after`**
+
+  通过伪类选择器（`::before` 和 `::after`），给目标元素添加一个伪元素。伪元素顾名思义，不是真正的dom元素，而是一个通过伪类，给目标元素添加一个假的元素
+
+  **使用规则**
+  
+  * `::before` 和 `::after`前的元素是目标元素
+
+  * 一个目标元素只能有一个`::before` 和一个 `::after`
+
+    ![image-20220408000851569](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220408000851569.png)
+  
+    ```html
+    <!DOCTYPE html>
+    <html>
+    	<style type="text/css">
+    		.box{
+    			position: relative;
+    		}
+    		
+    		.box::after {
+    			content: "1";
+    			position: absolute;
+    			width: 50px;
+    			height: 50px;
+    			background-color: red;
+    
+    		}
+        /*第二个after会覆盖第一个*/
+    		.box::after {
+    			content: "2";
+    			position: absolute;
+    			width: 50px;
+    			height: 50px;
+    			background-color: red;
+    		}
+    		
+    			
+    	</style>
+    	<body>
+    		<div class="box"></div>
+    	</body>
+    </html>
+    ```
+  
+  * 必须要有content属性，content可以为文字，也可为空字符
+  
+  * 目标元素添加`position: relative;`，伪元素添加`position: absolute;`，伪类元素转换为块级元素，可设置宽高，且以**目标元素**的左上角为参考系
+  
+  **例子**
+  
+  ![image-20220407231554582](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220407231554582.png)
+  
   ```html
   <!DOCTYPE html>
   <html>
   	<style type="text/css">
+  		.box::before {
+  			content: "方块";
+  			position: absolute;
+  			top: 50px;
+  			width: 100px;
+  			height: 100px;
+  			border-radius: 2px;
+  			background-color: red;
+  
+  			display: flex;
+  			flex-direction: row;
+  			justify-content: center;
+  			align-items: center;
+  
+  			font-size: 30px;
+  			color: white;
+  		}
+  			
+  	</style>
+  	<body>
+  		<div class="box" style="width:200px;height:200px;background-color: blue; position: relative;"></div>
+  	</body>
+  </html>
+  ```
+  
+  **注意**：普通选择器无法选中伪元素的，必须要使用伪类选择器（`::before` 、`::after`）选中目标元素
+  
+  `.box:hover::after{}`就是给`class=box`的元素添加hover选择器，然后再找到`::after`伪类
+  
+  ![2022-04-07 23.56.15](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-07%2023.56.15.gif)
+  
+  ```html
+  <!DOCTYPE html>
+  <html>
+  	<style type="text/css">
+  			
+  		
   		.box{
   			position: relative;
   		}
   		
-  		.box::after {
-  			content: "1";
-  			position: absolute;
-  			width: 50px;
-  			height: 50px;
-  			background-color: red;
-  
-  		}
-      /*第二个after会覆盖第一个*/
-  		.box::after {
-  			content: "2";
-  			position: absolute;
-  			width: 50px;
-  			height: 50px;
-  			background-color: red;
-  		}
   		
+  		.box::after {
+  			content: "";
+  			position: absolute;
+  			width: 200px;
+  			height: 200px;
+  			background-color: red;
+  			transition: 2s;		
+  		}
+  			
+  		.box:hover::after{
+  			transform: rotate(360deg);
+  		}
   			
   	</style>
   	<body>
@@ -1567,80 +2251,149 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
   	</body>
   </html>
   ```
+  
 
-* 必须要有content属性，content可以为文字，也可为空字符
+​	
 
-* 目标元素添加`position: relative;`，伪元素添加`position: absolute;`，伪类元素转换为块级元素，可设置宽高，且以**目标元素**的左上角为参考系
+### 注意hover
 
-**例子**
+将鼠标放到目标元素上，被操作元素就会执行css代码
 
-![image-20220407231554582](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220407231554582.png)
+如果不写**被操作元素**，默认被操作元素就是目标元素
+
+```
+目标元素选择器:hover被操作元素选择器{
+	控制被操作元素的css样式
+}
+```
+
+例如:
+
+选择控制兄弟元素`.box1:hover+.box2`
+
+![2022-04-09 20.04.30](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-09%2020.04.30.gif)
 
 ```html
 <!DOCTYPE html>
 <html>
 	<style type="text/css">
-		.box::before {
-			content: "方块";
-			position: absolute;
-			top: 50px;
-			width: 100px;
+			
+		.box1{
+			width: 200px;
 			height: 100px;
-			border-radius: 2px;
 			background-color: red;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: center;
-			align-items: center;
-
-			font-size: 30px;
-			color: white;
 		}
 			
+		.box2{
+			width: 200px;
+			height: 100px;
+			background-color: blue;
+			margin-top: 10px;
+		}
+		
+		.box1:hover+.box2{
+			transition-duration: 2s;
+			transform: translateX(1000px)
+			
+		}
 	</style>
 	<body>
-		<div class="box" style="width:200px;height:200px;background-color: blue; position: relative;"></div>
+		<div class="box1"></div>
+		<div class="box2"></div>
 	</body>
 </html>
 ```
 
-**注意**：普通选择器无法选中伪元素的，必须要使用伪类选择器（`::before` 、`::after`）选中目标元素
 
-`.box:hover::after{}`就是给`class=box`的元素添加hover选择器，然后再找到`::after`伪类
 
-![2022-04-07 23.56.15](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-07%2023.56.15.gif)
+## 其他样式控制
+
+### table
+
+**table默认单元格之间有间距**
+
+```text
+border-collapse: separate; //默认为separate单元格之间有间距，collapse取消间距
+border-spacing:10px 20px;//设置单元格间距
+```
+
+![image-20220423191555042](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220423191555042.png)
+
+```html
+<style>
+	table{
+    border: 1px solid black;
+	}
+  td{
+      border: 1px solid black;
+  }
+</style>
+<table>
+    <tr>
+        <td>112222</td>
+        <td>
+            <div>
+                诗，汉语一级字，读作shī，最早见于战国文字，其本义是把心中的思想表达出来的语言，后延伸至比喻美妙而富于生活情趣或能引发人强烈感情的事物等。《说文解字》认为是“心志”。
+            </div>
+        </td>
+    </tr>
+</table>
+```
+
+**踩坑**
+
+当设置单元格内文字不换行时，如果文字过多，给table和td设置的width就可能会失效。下图表格就超出100vw的宽度，第一个单元格也被压缩了
+
+![image-20220423193133607](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220423193133607.png)
+
+使用这个属性，强制宽度生效（表格保持100vw的宽度，第一个单元格宽度正常）
+
+```css
+table-layout:fixed; //默认为auto
+```
+
+![image-20220423193431809](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220423193431809.png)
 
 ```html
 <!DOCTYPE html>
 <html>
-	<style type="text/css">
-			
-		
-		.box{
-			position: relative;
-		}
-		
-		
-		.box::after {
-			content: "";
-			position: absolute;
-			width: 200px;
-			height: 200px;
-			background-color: red;
-			transition: 2s;		
-		}
-			
-		.box:hover::after{
-			transform: rotate(360deg);
-		}
-			
-	</style>
-	<body>
-		<div class="box"></div>
-	</body>
-</html>
+<head>
 
+    <meta charset="utf-8">
+    <style type="text/css">
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        table{
+            width:100vw;
+            background-color: red;
+            border-collapse: collapse;
+            table-layout:fixed;
+        }
+        td{
+            border: 1px solid black;
+        }
+
+    </style>
+    <script>
+    </script>
+</head>
+<body>
+<div>
+    <table>
+        <tr>
+            <td  style="width: 200px; ">112222</td>
+            <td>
+                <div style="white-space: pre; overflow: scroll">
+                    诗，汉语一级字，读作shī，最早见于战国文字，其本义是把心中的思想表达出来的语言，后延伸至比喻美妙而富于生活情趣或能引发人强烈感情的事物等。《说文解字》认为是“心志”。
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
 ```
 
 ## 变形与透视

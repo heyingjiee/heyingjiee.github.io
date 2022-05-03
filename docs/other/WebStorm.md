@@ -194,6 +194,44 @@ WebStorm的项目窗口一直有一个**外部库**的功能，这个功能是�
 
     ![image-20220410013843397](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220410013843397.png)
 
+## 快捷键
+
+### 重构（待补充）
+
+在需要重构的位置，使用快捷键 control+t
+
+![image-20220412004714907](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220412004714907.png)
+
+### 代码导航
+
+* 查找声明/用法（⌘+B）
+
+  【声明与用法，不仅仅是变量，方法，设置引入的Vue组件也可以跳转到定义组件的文件】
+
+  在定义处使用，弹出所有用法的弹窗
+
+  ![image-20220412003245784](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220412003245784.png)
+
+  在用法处使用，直接跳转到声明处
+
+### 搜索与替换
+
+* 全局搜索（⌘+⇧+F）
+
+  ![image-20220412002614621](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220412002614621.png)
+
+* 全局替换（⌘+⇧+R）
+
+  ![image-20220412002732374](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220412002732374.png)
+
+* 当前文件内查找（⌘+F）/替换（⌘+R）
+
+### 最近文件
+
+最近文件弹窗 ⌘+E 
+
+![image-20220412003928827](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220412003928827.png)
+
 ## 插件推荐
 
 ### Chinese Language Pack
@@ -263,3 +301,10 @@ WebStorm内置的Git工具已经非常强大了，但是这款Git插件提供一
 安装插件后，在这里配置相关功能
 
 ![image-20220409104147262](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220409104147262.png)
+
+## 问题与解决方案
+
+### 无法识别vue中的@路径
+
+![image-20220412001403190](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/image-20220412001403190.png)
+

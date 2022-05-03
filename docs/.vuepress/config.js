@@ -46,6 +46,7 @@ module.exports = {
         items: [
           { text: "Flutter", link: "/otherLanguage/Flutter.md" },
           { text: "Docker", link: "/otherLanguage/Docker.md" },
+          { text: "Nginx", link: "/otherLanguage/Nginx学习.md" },
           { text: "Linux基础", link: "/otherLanguage/Linux学习笔记.md" },
           {
             text: "Python爬虫",
