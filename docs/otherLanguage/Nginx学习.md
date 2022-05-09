@@ -560,12 +560,31 @@ location ~*/(js|css|img){
 ### URL重写
 
 ```shell
+rewrite是URL重写的关键指令，根据regex（正则表达式）部分内容，重定向到replacement，结尼是flag标记。
+
+rewrite    <regex>   <replacement>  [flag];
+关键字				正则				替代内容     flagt标记
+
+正则：per1森容正则表达式语句进行规则匹配
+替代内容：将正则匹配的内容替换成replacement
+
+flag标记说明：
+last  #本条规则匹配完成后，继续向下匹配新的1ocation URI规则
+break #本条规则匹配完成即终止，不再匹配后面的任何规则
+
+redirect #返回302临重定向，游览器地址会显示跳转后的URL地址
+permanent #返回301永久重定向，测览器地址栏会显示跳转后的URL地址
+```
+
+浏览器地址栏访问 `xxx/123.html`实际上是访问`xxx/index.jsp?pageNum=123`
+
+```shell
 server {
         listen       80;
         server_name  localhost;
 				
 				location / { 
-						rewrite 
+						rewrite ^/([0-9]+).html$ /index.jsp?pageNum=$1  break;
         		proxy_pass http://xxx;
         }
       

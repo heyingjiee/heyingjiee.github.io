@@ -26,7 +26,7 @@ module.exports = {
         text: "前端基础",
         items: [
           { text: "CSS", link: "/frontBasic/CSS技术精炼.md" },
-          { text: "JS重刷笔记", link: "/frontBasic/JS重刷笔记.md" },
+          { text: "JS重刷笔记（持续更新）", link: "/frontBasic/JS重刷笔记.md" },
           { text: "JS笔记（旧）", link: "/dealArticle/js学习笔记.md" },
           // { text: "Node", link: "/frontBasic/Nodejs学习笔记.md" },
           { text: "Vue", link: "/frontBasic/Vue学习笔记.md" },
@@ -44,7 +44,8 @@ module.exports = {
       {
         text: "其他语言",
         items: [
-          { text: "Flutter", link: "/otherLanguage/Flutter.md" },
+          { text: "Go语言（持续更新）", link: "/dealArticle/Go学习笔记.md" },
+          { text: "Flutter（持续更新）", link: "/otherLanguage/Flutter.md" },
           { text: "Docker", link: "/otherLanguage/Docker.md" },
           { text: "Nginx", link: "/otherLanguage/Nginx学习.md" },
           { text: "Linux基础", link: "/otherLanguage/Linux学习笔记.md" },
@@ -77,7 +78,6 @@ module.exports = {
         ],
       },
     ],
-    displayAllHeaders: true,
     sidebar: "auto", // 侧边栏配置
     sidebarDepth: 3, // 侧边栏显示3级
     lastUpdated: "最后更新时间", //最后一次更新时间 string | boolean

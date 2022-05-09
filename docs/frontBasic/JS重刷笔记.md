@@ -320,7 +320,6 @@ ECMAScript 有两类数据类型
     //默认使用了包装类String("hello")，创建了string对象
     ```
 
-    
 
 #### 变量类型的确定
 
@@ -1149,7 +1148,7 @@ obj.a=1
 console.log(obj["a"],obj.a) //1  1
 ```
 
-## 数组
+## 数组对象
 
 ### 声明数组
 
@@ -1227,12 +1226,13 @@ Array 对象方法
 | **不操作数组元素——>遍历处理结果**                            |                                                      |
 | [filter()](https://www.runoob.com/jsref/jsref-filter.html)   | 检测数值元素，并返回符合条件所有元素的数组           |
 | [map()](https://www.runoob.com/jsref/jsref-map.html)         | 通过指定函数处理数组的每个元素，并返回处理后的数组   |
-| [reduce()](https://www.runoob.com/jsref/jsref-reduce.html)   | 将数组元素计算为一个值（从左到右）                   |
-| [reduceRight()](https://www.runoob.com/jsref/jsref-reduceright.html) | 将数组元素计算为一个值（从右到左）                   |
 | [some()](https://www.runoob.com/jsref/jsref-some.html)       | 检测数组元素中是否有元素符合指定条件                 |
 | [every()](https://www.runoob.com/jsref/jsref-every.html)     | 检测数值元素的每个元素是否都符合条件                 |
+| [reduce()](https://www.runoob.com/jsref/jsref-reduce.html)   | 将数组元素计算为一个值（从左到右）                   |
+| [reduceRight()](https://www.runoob.com/jsref/jsref-reduceright.html) | 将数组元素计算为一个值（从右到左）                   |
 | **迭代器**                                                   |                                                      |
 | [keys()](https://www.runoob.com/jsref/jsref-keys.html)       | 返回数组的可迭代对象，包含原始数组的键(key)          |
+| values()                                                     | 返回数组的可迭代对象，包含原始数组的键(value)        |
 | [entries()](https://www.runoob.com/jsref/jsref-entries.html) | 返回数组的可迭代对象                                 |
 | [forEach()](https://www.runoob.com/jsref/jsref-foreach.html) | 数组每个元素都执行一次回调函数                       |
 | **其他**                                                     |                                                      |
@@ -1240,6 +1240,31 @@ Array 对象方法
 | [from()](https://www.runoob.com/jsref/jsref-from.html)       | 通过给定的对象中创建一个数组                         |
 | [toString()](https://www.runoob.com/jsref/jsref-tostring-array.html) | 把数组转换为字符串，并返回结果                       |
 | [valueOf()](https://www.runoob.com/jsref/jsref-valueof-array.html) | 返回数组对象的原始值                                 |
+
+### 补充下
+
+数组方法中出现的index参数都是可正可负，为负数时，例如：-1代表倒数第一个元素，即索引为（ length-1）
+
+### 清空数组
+
+```js
+let arr=["A","B","C"]
+
+////
+arr=[]
+//清空原理，在内存中开辟一个新的空间，放一个空数组，把arr指向它。原来的数组并未清空
+
+let new=arr
+arr=[]
+console,log(new)// ["A", "B", "C"]
+
+////
+arr.length=0
+////
+arr.splice(0,arr.length)
+////
+while(arr.pop())
+```
 
 ### 判断数组类型   
 
@@ -1249,86 +1274,85 @@ console.log(Array.isArray([]))//输出true
 console.log([] instanceof Array)//输出true
 ```
 
-### 数组的拆分与合并
-
-**均未改变数组或字符串**
-
-```js
-//拆分
-let str="abcdef"
-console.log(Array.from(str))//输出["a", "b", "c", "d", "e", "f"]
-
-
-//合并
-let arr=["a","b","c"]
-//方法一，原数组未改变
-console.log(arr.join("-"))  //输出a-b-c
-
-let arr2=["e","f","g"]
-//方法二，原数组未改变
-console.log(arr.concat(arr2))
-//方法三，原数组未改变
-console.log([..arr,...arr2]
-```
-
-### 操作数组元素——>增删（待完成）
+### 操作数组元素——>增删
 
 pop、push、shift、unshift（略）
 
-**splice**
+**splice（index[,howmany][,item1,item2,...itemX）**
 
-改变原数组，返回值是截取的部分，数组被改变，是截取后剩下的部分
+替换指定位置的元素
+
+* 参数：
+  * index 开始索引
+  * howmany 替换的元素个数，不传递默认为从index到数组最后一位
+  * item1....itemX 最后替换为这些值 （howmany给值，这些参数才能传递）
+
+* 返回值：选取元素组成的数组（数组发生变化，是替换后的新数组）
 
 ```js
 let arr=["A","B","C","D"]
-//截取
-console.log(arr.splice(0,2))//输出["A", "B"]，从标号0，向后截取2个。返回值是截掉的部分，是数组类型
-console.log(arr)//输出["C", "D"] ，arr是截取完后剩余的
+//删除
+console.log(arr.splice(0,2))//["A", "B"]
+console.log(arr)//["C", "D"]
 
 //替换
-console.log(arr.splice(0,2,"张三","李四"))//输出["A", "B"]，返回截取的部分，是数组类型
-console.log(arr)//输出 ["张三", "李四", "C", "D"],把截取的分会替换成剩下的参数
-
-//删除
-let arr2=["A","B","C","D"]
-arr2.splice(1,1)//从标号为1的位置，截取1个元素
-console.log(arr2)//输出 ["A", "C", "D"]
+console.log(arr.splice(0,2,"张三","李四"))//["A", "B"]
+console.log(arr)//["张三", "李四", "C", "D"]
 
 //增加
 let arr3=["A","B","C","D"]
-arr3.splice(1,0,"张三")//从标号为1的位置，截取0个元素，即不截取,在标号为1的位置添加张三
-console.log(arr3)//输出 ["A", "张三", "B", "C", "D"]
+console.log(arr3.splice(1,0,"张三"))//[]
+console.log(arr3)//["A", "张三", "B", "C", "D"]
 ```
 
-**copyWithin**
+**copyWithin（target[, start, end]）**
 
-copyWithin,**改变原数组** ，函数返回值也是修改后的数组
+将指定范围的元素复制后，***覆盖***到数组的其他位置（注意：复制的元素如果超出了数组长度，则只覆盖处在数组长度范围内的元素）
+
+* 参数
+  * target 目标位置索引
+  * start 复制的开始位置索引
+  * end 复制的结束位置的下一位索引
+* 返回值：覆盖后的结果（原数组发生变化和返回值相同）
 
 ```js
+//复制了b、c、d，到e的位置，b覆盖了e，剩下的c、d超出了数组范围
 let arr=["a","b","c","d","e"]
-console.log(arr.copyWithin(2,1,3))//输出["a", "b", "b", "c", "e"]
-console.log(arr)//输出["a", "b", "b", "c", "e"]
-//第一个参数是放置复制的字符串的位置的标号是2
-//第二，三参数是 从标号1到标号3之前的位置，复制下来
+console.log(arr.copyWithin(4,1,3))//[ 'a', 'b', 'c', 'd', 'b' ]
+console.log(arr)//[ 'a', 'b', 'c', 'd', 'b' ]
 ```
 
-### 操作数组元素——>顺序（待完成）
+### 操作数组元素——>顺序
 
 **reverse()**
 
 数组元素反转，返回值也是反转的数组
 
-参数：无
+* 参数：无
 
-返回值：前后反转的数组
+* 返回值：前后反转的数组（原数组发生变化和返回值相同）
 
 **sort([function(preValue,nextValue)])**
 
 排序函数，数组元素排序，返回值也是排序后的数组
 
-参数：排序规则函数
+* 参数：排序规则函数
 
-返回值：排序后的数组
+* 返回值：排序后的数组（原数组发生变化和返回值相同）
+
+```js
+let arr=[1,8,3,4]
+arr.sort((a,b)=>{ //第一轮，a=8，b=1
+    if(a>b){
+        return -1 //小于等于0，换
+    }else{
+        return 1 //大于0，不换
+    }
+})
+//arr是 [ 8, 4, 3, 1 ]
+```
+
+简写
 
 ```ts
 let arr=[1,2,3,4]
@@ -1338,8 +1362,6 @@ arr.sort(function(a,b){
 })
 console.log(arr) //输出[4,3, 2, 1]
 ```
-
-![image-20220424012023633](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220424012023633.png)
 
 **例子:**商品价格排序
 
@@ -1385,10 +1407,10 @@ console.log(arr)// 输出[1, 2, 3, 4]
 
 从index开始，从前到后，查找数组中是否有item这个元素
 
-index取值范围可正可负：
-
-* 正数：[0,array.length-1]
-* 负数：[-(length-1),-1]【为负数时，-1代表倒数第一个元素，-(length-1)是第一个元素】
+* 参数：
+  * item 目标查找元素
+  * index 查找开始位置索引
+* 返回值：布尔值
 
 ```js
 console.log(arr.includes("a"))//输出true
@@ -1402,7 +1424,7 @@ console.log(arr.includes("a",3))//输出false，从标号为3的位置向右查�
 * 参数：
 
   * item要查找的元素
-  * index：从index位置开始查找，默认0，index为正数，范围[0,array.length-1]
+  * index：从index位置开始查找
 
 * 返回值:
 
@@ -1464,13 +1486,13 @@ console.log(res) //输出d
 
 ### 不操作数组元素——>返回截取部分
 
-**slice([startIndex,endIndex])**
+**slice([start,end])**
 
 * 参数：
 
-  * startIndex，开始截取的索引 ，范围可正可负
+  * start，开始截取的索引 ，范围可正可负
 
-  * endIndex，结束截取元素的下一个索引，范围可正可负
+  * end，结束截取元素的下一个索引，范围可正可负
 
 * 返回值：
 
@@ -1483,15 +1505,37 @@ console.log(arr.slice(1))//输出["B", "C", "D"]，截取标号1到最后
 console.log(arr.slice(1,3))//输出["B", "C"]，截取：索引1——索引2
 ```
 
-### 不操作数组元素——>遍历处理结果(待完成)
+### 不操作数组元素——>返回拼接
+
+**join和concat**
+
+```js
+//拆分
+let str="abcdef"
+console.log(Array.from(str))//输出["a", "b", "c", "d", "e", "f"]
+
+
+//合并
+let arr=["a","b","c"]
+//方法一，原数组未改变
+console.log(arr.join("-"))  //输出a-b-c
+
+let arr2=["e","f","g"]
+//方法二，原数组未改变
+console.log(arr.concat(arr2))
+//方法三，原数组未改变
+console.log([..arr,...arr2]
+```
+
+### 不操作数组元素——>遍历处理结果
 
 **filter**
 
-检测数值元素，函数返回，内部返回为true的所有元素组成的数组。
+检测数值元素，函数返回一个数组。是：当内部函数返回为true时的元素组成的数组。
 
 ```js
 let arr=["a","b","c"]
-arr.filter(function(value,index,arr){
+let res=arr.filter(function(value,index,arr){
 	//value是数组元素
     //index是索引
     //arr是原数组
@@ -1501,24 +1545,7 @@ arr.filter(function(value,index,arr){
 console.log(res)//输出["b"]
 ```
 
-应用例子
-
-```js
-//能被3整除的
-let arr=[12,5,6,3,9,7]
-let result=arr.filter(item=>{
-	if(item%3==0)
-		return true//是true则返回
-	else
-		return false//false则不返回
-})
-console.log(result)
-
-//输出
-[12, 6, 3, 9]
-```
-
-简化写法
+例子
 
 ```js
 //简单写法,
@@ -1573,13 +1600,23 @@ console.log(res) //输出[60, 70, 80, 100]
 
 **map**
 
+映射。内部函数返回的值组成的数组
+
+```js
+let arr=[1,8,3,4]
+let res=arr.map((item)=>{
+    return {id:item}
+})
+console.log('res --> ',res) //res -->  [ { id: 1 }, { id: 8 }, { id: 3 }, { id: 4 } ]
+```
+
 **every**
 
-检测数值元素的每个元素是否都符合条件。全部都符合返回true，有一个不符合条件就返回false,结束函数
+检测数值元素的每个元素是否都符合条件。内部函数所有元素都返回true，最后才返回true。如果有一个返回了false，就不会继续向后遍历了，直接返回false
 
 ```js
 let arr=["a","b","c"]
-arr.every(function(value,index,arr){
+arr.every((value,index,arr)=>{
 	//value是数组元素
     //index是索引
     //arr是原数组
@@ -1613,7 +1650,7 @@ console.log(res?"全部及格":"有人未及格")
 
 ```js
 let arr=["a","b","c"]
-let res=arr.some(function(value,index,arr){
+let res=arr.some((value,index,arr)=>{
 	//value是数组元素
     //index是索引
     //arr是原数组
@@ -1625,45 +1662,263 @@ let res=arr.some(function(value,index,arr){
 console.log(res) //true
 ```
 
-应用例子
+**reduce(function(preValue, currentValue[, currentIndex, arr]), [initialValue])**
+
+数组中的每个值（从左到右）开始遍历，最终计算为一个值
+
+* 参数：
+  * preValue 是上一次循环return的值
+  * currentValue 本轮循环的数组的元素
+  * currentIndex 本轮循环数组元素的索引
+  * arr调用reduce方法的数组
+
+* 返回值：最后一轮return的值
+
+reduce只有第一个参数（函数）时，第一轮循环preValue为数组第一个元素，currentValue为第二个元素
 
 ```js
-let wordlist=["html","js","css"]
-let  str="我喜欢jsa和cssa"
-wordlist.some(word=>{//word是数组中的每一项，只有return为true时，这里的代码才会执行
-    console.log(word)
-	return str.includes(word)
+let arr=[1,2,3,4]
+let res=arr.reduce(function(pre,value,index,array){
+   console.log(pre,value)
+   return 99
 })
+//输出
+//1 2
+//99 3
+//99 4
 
-//输出html js, 解释下："html"不在str中，some返回false，所以继续执行下去，"js"在str中,返回true，函数结束
+console.log(res) //99
 ```
 
-
-
-### 清空数组
+reduce有第2个参数时，第二个参数是指定第一轮preValue的初始值，currentValue从数组的第一个元素开始
 
 ```js
-let arr=["A","B","C"]
+let arr=[1,2,3,4]
+arr.reduce(function(pre,value,index,array){
+   console.log(pre,value)
+   return 99
+},0)//reduce的第二个参数，是给第一给参数中的pre赋值
+//输出
+//0 1
+//99 2
+//99 3
+//99 4
 
-////
-arr=[]
-//清空原理，在内存中开辟一个新的空间，放一个空数组，把arr指向它。原来的数组并未清空
+console.log(res) //99
+```
 
-let new=arr
-arr=[]
-console,log(new)// ["A", "B", "C"]
+应用场景1
 
-////
-arr.length=0
-////
-arr.splice(0,arr.length)
-////
-while(arr.pop())
+```js
+//统计item在array数组中出现了几次
+function arrayCount(array,item){
+    return array.reduce(function(pre,cur){
+        if(cur==item)
+            pre=pre+1
+        return pre
+    },0)
+}
+let arr=[1,2,1,3,4,1]
+console.log(arrayCount(arr,1))//输出3，返回了pre最终的值
+```
+
+应用场景2
+
+```js
+//找最大值
+let arr=[6,2,9,4]
+let res=arr.reduce(function(pre,cur){
+   return cur>pre?cur:pre
+})
+console.log(res)
+```
+
+应用场景3
+
+```js
+//求总和
+let arr=[1,5,3,8,6]
+let res=arr.reduce(function(pre,cur){
+	return pre= pre+cur  
+})
+console.log(res)
+//输出23
+```
+
+**reduceRight**
+
+与reduce一样，只不过方向是从右向左
+
+### 迭代器
+
+**keys( )**
+
+* 参数：无
+
+* 返回值：可迭代对象
+
+```js
+let arr2=["a","b","c"]
+
+//values方法，当next没有值了，done才变成true
+let values=arr.values()
+console.log(values.next())//输出{value: "a", done: false}
+console.log(values.next())//输出{value: "b", done: false}
+console.log(values.next())//输出{value: "c", done: false}
+console.log(values.next())//输出{value: undefined, done: true}
+```
+
+遍历1
+
+```js
+for(const key of arr2.keys()){
+    console.log(key)
+}//输出 0 1 2
+```
+
+**values( ) **
+
+* 参数：无
+
+* 返回值：可迭代对象
+
+```js
+let arr=["a","b","c"]
+//keys方法，当next没有值了，done才变成true
+let keys=arr.keys()
+console.log(keys.next())//输出{value: 0, done: false}
+console.log(keys.next())//输出{value: 1, done: false}
+console.log(keys.next())//输出{value: 2, done: false}
+console.log(keys.next())//输出{value: undefined, done: true}
+```
+
+遍历1
+
+```js
+for(const value of arr2.values()){
+    console.log(value)
+}//输出 a b c
+```
+
+遍历2
+
+```js
+//使用values()循环，{value,done}=values.next()是解构赋值
+let arr2=["a","b","c"]
+let values=arr2.values()
+while(({value,done}=values.next())&&done===false){
+ console.log(value)
+}
+//输出a b c
+```
+
+**entries( )**
+
+* 参数：无
+
+* 返回值：可迭代对象
+
+```js
+let arr=["a","b","c"]
+
+let valueAndKey=arr.entries()
+console.log(valueAndKey.next())//输出{value: Array(2), done: false}
+```
+
+```js
+for(const [key,value] of arr2.entries()){//解构赋值
+    console.log(key,value)
+}//输出 
+//0 "a"   
+//1 "b"    
+//2 "c
 ```
 
 
 
-## 数组遍历
+**forEach(function(item[,index,arr]))**
+
+* 参数
+  * item 每一项数组元素
+  * index 索引
+  * arr 调用方法的数组
+* 返回值
+
+```js
+let arr=["a","b","c","d"]
+arr.forEach(function(item,index,arr){
+    console.log(item,index)
+})
+//输出
+ //a 0
+ //b 1
+ //c 2
+ //d 3
+```
+
+## 字符串对象
+
+### 数组对象的属性和方法
+
+属性
+
+| 属性                                                         | 描述                       |
+| :----------------------------------------------------------- | :------------------------- |
+| [constructor](https://www.runoob.com/jsref/jsref-constructor-string.html) | 对创建该对象的函数的引用   |
+| [length](https://www.runoob.com/jsref/jsref-length-string.html) | 字符串的长度               |
+| [prototype](https://www.runoob.com/jsref/jsref-prototype-string.html) | 允许您向对象添加属性和方法 |
+
+静态方法
+
+| 方法                                                         | 描述                    |
+| ------------------------------------------------------------ | ----------------------- |
+| [fromCharCode()](https://www.runoob.com/jsref/jsref-fromcharcode.html) | 将 Unicode 编码转为字符 |
+
+方法
+
+| 方法                                                         | 描述                                                         |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |
+| **不操作字符串**                                             |                                                              |
+| [toLowerCase()](https://www.runoob.com/jsref/jsref-tolowercase.html) | 把字符串转换为小写                                           |
+| [toUpperCase()](https://www.runoob.com/jsref/jsref-touppercase.html) | 把字符串转换为大写                                           |
+| [trim()](https://www.runoob.com/jsref/jsref-trim.html)       | 去除字符串两边的空白                                         |
+| **不操作字符串——>判断字符串是否符合**                        |                                                              |
+| [charAt()](https://www.runoob.com/jsref/jsref-charat.html)   | 返回在指定位置的字符。                                       |
+| [charCodeAt()](https://www.runoob.com/jsref/jsref-charcodeat.html) | 返回在指定的位置的字符的 Unicode 编码。                      |
+| [startsWith()](https://www.runoob.com/jsref/jsref-startswith.html) | 查看字符串是否以指定的子字符串开头。                         |
+| [endsWith()](https://www.runoob.com/jsref/jsref-endswith.html) | 判断当前字符串是否是以指定的子字符串结尾的（区分大小写）。   |
+| **不操作字符串——>返回查找**                                  |                                                              |
+| [includes()](https://www.runoob.com/jsref/jsref-string-includes.html) | 查找字符串中是否包含指定的子字符串。                         |
+| [indexOf()](https://www.runoob.com/jsref/jsref-indexof.html) | 返回某个指定的字符串值在字符串中首次出现的位置。             |
+| [lastIndexOf()](https://www.runoob.com/jsref/jsref-lastindexof.html) | 从后向前搜索字符串，并从起始位置（0）开始计算返回字符串最后出现的位置。 |
+| **不操作字符串——>返回截取部分**                              |                                                              |
+| [slice()](https://www.runoob.com/jsref/jsref-slice-string.html) | 提取字符串的片断，并在新的字符串中返回被提取的部分。         |
+| [substr()](https://www.runoob.com/jsref/jsref-substr.html)   | 从起始索引号提取字符串中指定数目的字符。                     |
+| [substring()](https://www.runoob.com/jsref/jsref-substring.html) | 提取字符串中两个指定的索引号之间的字符。                     |
+| **不操作字符串——>返回截拼接/分割**                           |                                                              |
+| [concat()](https://www.runoob.com/jsref/jsref-concat-string.html) | 连接两个或更多字符串，并返回新的字符串。                     |
+| [repeat()](https://www.runoob.com/jsref/jsref-repeat.html)   | 复制字符串指定次数，并将它们连接在一起返回。                 |
+| [split()](https://www.runoob.com/jsref/jsref-split.html)     | 把字符串分割为字符串数组。                                   |
+| **正则匹配**                                                 |                                                              |
+| [match()](https://www.runoob.com/jsref/jsref-match.html)     | 查找找到一个或多个正则表达式的匹配。                         |
+| [replace()](https://www.runoob.com/jsref/jsref-replace.html) | 在字符串中查找匹配的子串，并替换与正则表达式匹配的子串。     |
+| [replaceAll()](https://www.runoob.com/jsref/jsref-replaceall.html) | 在字符串中查找匹配的子串，并替换与正则表达式匹配的所有子串。 |
+| [search()](https://www.runoob.com/jsref/jsref-search.html)   | 查找与正则表达式相匹配的值。                                 |
+| **其他**                                                     |                                                              |
+| [valueOf()](https://www.runoob.com/jsref/jsref-valueof-string.html) | 返回某个字符串对象的原始值。                                 |
+| [toString()](https://www.runoob.com/jsref/jsref-tostring.html) | 返回一个字符串。                                             |
+
+**长度属性**
+
+JS使用的是UTF-16编码方式
+
+```
+str.length //
+```
+
+
+
+## 可迭代对象的遍历
 
 ### for
 
@@ -1691,10 +1946,6 @@ for(key in arr){//i是key
 
 遍历value
 
-不同类型的变量有区别。
-
-**原理：**arr中每一项会依次赋值给value，程序仅改变value。当arr元素为值类型value改变，arr元素不变。当arr元素是引用类型时，value和arr元素指向的是相同的内存地址
-
 ```js
 //值类型不可改变
 let arr=[1,2,3,4,5]
@@ -1702,130 +1953,9 @@ for(let value of arr){
 	value=value+10
 }
 console.log(arr) //输出 1 2 3 4 5
-
-//
-let arr=["a","b","c"]
-for(let value of arr){
-    value=value+"k"
-}
-console.log(arr) //输出 ["a", "b", "c"]
-
-//引用类型会改变
-let arr=[{name:"张三",age:20},{name:"李四",age:21}]
-for(let value of arr){
-	value.age=value.age+10
-}
-console.log(arr) 
-//输出 [{name: "张三", age: 30},{name: "李四", age: 31}]
-
-```
-
-### forEach(function)
-
-```js
-let arr=["a","b","c","d"]
-arr.forEach(function(item,index,arr){
-    //第一个参数：每一项数组元素
-    //第二个参数：索引
-    //arr数组
-    console.log(item,index)
- //输出
- //a 0
- //b 1
- //c 2
- //d 3
-})
-```
-
-### 迭代器Iterator
-
-* values( ) 
-* keys( )
-* entries( )
-
-```js
-let arr=["a","b","c"]
-
-//values方法，当next没有值了，done才变成true
-let values=arr.values()
-console.log(values.next())//输出{value: "a", done: false}
-console.log(values.next())//输出{value: "b", done: false}
-console.log(values.next())//输出{value: "c", done: false}
-console.log(values.next())//输出{value: undefined, done: true}
-
-
-//keys方法，当next没有值了，done才变成true
-let keys=arr.keys()
-console.log(keys.next())//输出{value: 0, done: false}
-console.log(keys.next())//输出{value: 1, done: false}
-console.log(keys.next())//输出{value: 2, done: false}
-console.log(keys.next())//输出{value: undefined, done: true}
-
-//entries方法
-let valueAndKey=arr.entries()
-console.log(valueAndKey.next())//输出{value: Array(2), done: false}，Array(2)中包含value:[0, "a"]和__proto__: Object，其中value是值和索引
-```
-
-使用迭**for  of**遍历
-
-```js
-//使用values()循环，{value,done}=values.next()是解构赋值
-let arr2=["a","b","c"]
-let values=arr2.values()
-while(({value,done}=values.next())&&done===false){
- console.log(value)
-}
-//输出a b c
-
-////遍历keys()
-for(const value of arr2.values()){
-    console.log(value)
-}//输出 a b c
-
-////遍历values()
-for(const key of arr2.keys()){
-    console.log(key)
-}//输出 0 1 2
-
-////遍历entries()
-for(const [key,value] of arr2.entries()){
-    //解构赋值
-    console.log(key,value)
-}//输出 
-//0 "a"   
-//1 "b"    
-//2 "c
-```
-
-## 遇到的小问题
-
-```js
-//错误的方法
-var arr = [];
-var obj = {};
-for (var i = 0; i < 10; i++) {
-    obj.id = i;
-    arr.push(obj);
-}
-console.log(arr); // arr[{id:9},{id:9}...{id:9}]
-////原因：obj是引用类型，arr中存的是obj的地址，当最后一次循环完时。obj是了{id:9}。arr中存的都是相同的地址所以就都是{id:9}
-
-
-//正确的方法
-var arr = [];
-for (var i = 0; i < 10; i++) {
-    let obj = {};//每次创建一个新的对象
-    obj.id = i;
-    arr.push(obj);
-}
-console.log(arr); // // arr[{id:0},{id:1}...{id:9}]
 ```
 
 
-
-
-
-## 集合引用类型（待补充）
 
 ## 解构赋值
 
@@ -1912,7 +2042,19 @@ let [name, site = 'hdcms'] = ['后盾人'];
 console.log(site); //hdcms
 ```
 
-### 
+### 函数中的解构
+
+可以实现类似dart中命名参数的效果
+
+```
+function func({name="jack",age=18,habit,score,classNum}){
+	
+}
+
+func({name:"tom",score:100})
+```
+
+
 
 ## 错误
 
