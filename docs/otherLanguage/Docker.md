@@ -1,5 +1,9 @@
 # Docker
 
+## 学习资源
+
+### 官方文档
+
 [docker 中文文档](http://www.dockerinfo.net/dockerfile%e4%bb%8b%e7%bb%8d)
 
 docker的镜像仓库 [docker hub](https://hub.docker.com/) 
@@ -12,7 +16,13 @@ docker所有文档 [docker doc](https://docs.docker.com/)：
 * docker网络文档 [docker network](https://docs.docker.com/engine/reference/commandline/network/)
 * docker compose文档 [docker compose](https://docs.docker.com/compose/)
 
+### 第三方中文文
+
 [Docker简明教程——中文版](https://www.simapple.com/docker-tutorial)
+
+[菜鸟教程](https://www.runoob.com/docker/docker-tutorial.html)
+
+[菜鸟教程——Docker命令大全](https://www.runoob.com/docker/docker-command-manual.html)
 
 ## Docker简介
 
@@ -124,7 +134,9 @@ Dockerfile定义了运行镜像所需的所有内容，包括操作系统和软�
 
 **上下文路径**
 
-` .` 是上下文路径，指定运行build时所在的目录为上下文路径，`docker build` 命令会将该目录下的内容打包交给 Docker 引擎以帮助构建镜像。（build命令应该用在，要被构建为镜像的项目的根目录下使用）
+` .` 是上下文路径
+
+指定运行build时所在的目录为上下文路径，`docker build` 命令会将该目录下的内容打包交给 Docker 引擎以帮助构建镜像。（build命令应该用在，要被构建为镜像的项目的根目录下使用）
 
 ```shell
 docker build -t nginx:v3 . 
@@ -152,12 +164,6 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   FROM <image>:<tag>
   ```
 
-* 指定镜像的作者名（已废弃，建议使用LABEL）
-
-  ```doc
-  MAINTAINER <name>
-  ```
-
 * 给镜像添加元数据
 
   ```dockerfile
@@ -169,8 +175,6 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   ```shell
   docker image inspect --format='' <镜像名/id>
   ```
-
-  镜像作者的信息也可以添加进去，所以`MAINTAINER`被废弃了
 
   父镜像的标签会被继承，但是如果有子镜像有相同的标签，会覆盖父镜像
 
@@ -186,40 +190,12 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
 * 创建环境变量，后续命令使用变量通过$key使用【如果value中需要有空格，需要使用` \空格`转译】
 
   ```dockerfile
-  ENV <key>=<value>  #单个键值对，可省略等于号
-  #或者 
   ENV <key1>=<value1> <key2>=<value2>
+  #或者 
+  ENV <key><value>  #单个键值对，可省略等于号
   ```
 
-* 运行镜像时，将宿主机的文件复制到容器中
-
-  指定`<src>`地址时，如果使用通配符，遵循Go语言的 [filepath.Match](https://golang.org/pkg/path/filepath#Match) 规则，注意`<src>`不能超过上文路径
-
-  指定`<dist>`时：
-
-  * 如果`<src>`是 URL 并且`<dest>`不以斜杠结尾，则从 URL 下载文件并复制到`<dest>`。如果以斜杠结尾，则从 URL 推断文件名并将文件下载到 `<dest>/<filename>`
-
-  * `<dist>`是相对路径
-
-    ```shell
-    COPY test.txt relativeDir/   #将“test.txt”添加到<WORKDIR>/relativeDir/下
-    ```
-
-    是绝对路径
-
-    ```dockerfile
-    COPY test.txt /absoluteDir/  #将“test.txt”添加到/absoluteDir/下
-    ```
-
-  * 如果`<src>`是目录，则复制目录的全部内容，包括文件系统元数据。目录本身没有被复制，只是它下面的内容
-
-  ```dockerfile
-  COPY <src> <dest> #将本地src路径下的文件，复制到容器的dest路径下
-  
-  ADD <src> <dest> #和COPY功能类似，不过src可以是网络文件下载链接或者是压缩文件，ADD会去下载和解压相应文件，然后放到容器的dest路径下
-  ```
-
-* 设置docker容器的工作路径，后续指令都会在该路径下执行。不设置，默认为`/`根目录
+* 设置docker容器的工作路径，后续指令都会在该路径下执行。不设置，默认为容器的根目录
 
   ```dockerfile
   WORKDIR /path/to/workdir
@@ -231,111 +207,143 @@ Dockerfile文件文档 [Dockerfile reference](https://docs.docker.com/engine/ref
   WORKDIR $path/a  #ENV path=/my ，最终就是/my/a
   ```
 
+* 将宿主机的文件复制到容器中
+
+  ```dockerfile
+  COPY <src> <dest> #将本地src路径下的文件，复制到容器的dest路径下
+  
+  ADD <src> <dest> #和COPY功能类似，不过src可以是网络文件下载链接或者是压缩文件，ADD会去下载和解压相应文件，然后放到容器的dest路径下
+  ```
+
+  `<src>` ：
+
+  必须是相对路径，相对于dockerfile目录的路径
+
+  指定`<src>`地址时，如果使用通配符，遵循Go语言的 [filepath.Match](https://golang.org/pkg/path/filepath#Match) 规则
+
+  如果`<src>`是目录，则复制目录下的全部内容，但是目录本身没有被复制，只是它里面的内容
+
+  `<dest>`
+
+  * 是相对路径
+
+    相对于前面设置的WORKDIR，如果没有设置，默认为容器根目录
+
+    ```dockerfile
+    COPY test.txt relativeDir/   #将“test.txt”添加到<WORKDIR>/relativeDir/下
+    ```
+
+  * 是绝对路径
+
+    ```
+    COPY test.txt /absoluteDir/  #将“test.txt”添加到/absoluteDir/下
+    ```
+
 * 执行命令
 
   **RUN**
 
   shell格式：
-  
+
   ```dockerfile
   RUN <命令行命令> # <命令行命令> 等同于，在终端操作的 shell 命令。
   ```
-  
+
   exec 格式（双引号）：
-  
+
   ```dockerfile
   RUN ["可执行文件", "参数1", "参数2"]
   # RUN ["./test.php", "dev", "offline"] 等价于 RUN ./test.php dev offline
   ```
-  
+
   **注意**：RUN命令可以有多个，但是，指令每执行一次都会在 docker 上新建一层。所以过多无意义的层，会造成镜像膨胀过大。例如：
-  
+
   ```dockerfile
   FROM centos
   RUN install
   RUN cd /app
   RUN mkdir logs
   ```
-  
+
   以上执行会创建 3 层镜像。可简化为以下格式：
-  
+
   ```dockerfile
   FROM centos
-  RUN RUN npm install && cd /app && mkdir logs
+  RUN npm install && cd /app && mkdir logs
   ```
-  
+
   如上，以 **&&** 符号连接命令，这样执行后，只会创建 1 层镜像
-  
+
   **CMD**
-  
+
   类似于 RUN 指令，用于运行程序，但二者运行的时间点不同:
-  
+
   - CMD 在docker run 时运行（运行容器）
   - RUN 是在 docker build（构建镜像）
-  
+
   CMD 指令是容器启动后执行的命令，一般用作程序的入口。CMD 指令指定的程序可被 docker run 命令行参数中指定要运行的程序所覆盖。
-  
+
   **注意**：如果 Dockerfile 中如果存在多个 CMD 指令，仅最后一个生效
-  
+
   格式：
-  
+
   ```dockerfile
   CMD <shell 命令> 
   CMD ["<可执行文件或命令>","<param1>","<param2>",...] 
   CMD ["<param1>","<param2>",...]  # 该写法是为 ENTRYPOINT 指令指定的程序提供默认参数
   ```
-  
+
   推荐使用第二种格式，执行过程比较明确。第一种格式实际上在运行的过程中也会自动转换成第二种格式运行，并且默认可执行文件是 `*.sh`文件
-  
+
   **ENTRYPOINT**
-  
+
   类似于 CMD 指令，但其不会被 **docker run** 的命令行参数指定的指令所覆盖，
-  
+
   当 ENTRYPOINT 与 CMD 同时给出时，CMD 中的内容会作为 ENTRYPOINT 定义命令的参数，最终执行容器启动的只有 ENTRYPOINT 中给出的命令
-  
+
   但是, 如果运行 docker run 时使用了 --entrypoint 选项，将覆盖 ENTRYPOINT 指令指定的程序。
-  
+
   **优点**：在执行 docker run 的时候可以指定 ENTRYPOINT 运行所需的参数。
-  
+
   **注意**：如果 Dockerfile 中如果存在多个 ENTRYPOINT 指令，仅最后一个生效。
-  
+
   只有exec格式：
-  
+
   ```dockerfile
   ENTRYPOINT ["<executeable>","<param1>","<param2>",...]
   ```
-  
+
   示例：
-  
+
   假设已通过 Dockerfile 构建了 nginx:test 镜像：
-  
+
   ```dockerfile
   FROM nginx
   
   ENTRYPOINT ["nginx", "-c"] 
   CMD ["/etc/nginx/nginx.conf"] # 参数
   ```
-  
+
   1、不传参运行
-  
+
   ```shell
   docker run  nginx:test
   ```
-  
+
   容器内会默认运行以下命令，启动主进程。
-  
+
   ```shell
   nginx -c /etc/nginx/nginx.conf
   ```
-  
+
   2、传参运行
-  
+
   ```shell
   docker run  nginx:test -c /etc/nginx/new.conf
   ```
-  
+
   容器内会默认运行以下命令，启动主进程(/etc/nginx/new.conf:假设容器内已有此文件)
-  
+
   ```shell
   nginx -c /etc/nginx/new.conf
   ```
@@ -969,6 +977,32 @@ docker pull <tag> # tag也就是上面的[镜像仓库地址/][镜像仓库的�
 # 如果直接写 镜像名 ，就是默认从官方仓库下载
 ```
 
+**进入容器内部**
+
+bash 、 bin/bash 、bin/sh 三种shell可选，关键是看容器内安装的系统支持哪个
+
+```shell
+docker exec -it 容器ID或名字 /bin/bash
+```
+
+退出容器内shell
+
+```
+exit
+```
+
+**查看容器日志**
+
+用于排查错误
+
+```shell
+docker logs 容器ID/名 
+```
+
+遇到 `exec /app/houndd: exec format error`
+
+考虑是不是使用的Shell不对
+
 **docker命令大全**
 
 ![dockerimg](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
@@ -981,6 +1015,91 @@ docker pull <tag> # tag也就是上面的[镜像仓库地址/][镜像仓库的�
 * build 是把 镜像/源码——>镜像
 
 `docker info` 查询docker的信息，Registry字段为docker的镜像源
+
+## 踩坑第一弹
+
+Dockerfile中我们常用的基础镜像，一般就是alpine，这是一个精简版的Linux系统
+
+> Alpine 的意思是“高山的”
+>
+> 特点：
+>
+> * 只支持bin/sh
+>
+> * 使用APK包管理工具
+>
+> * 轻量级，下图是各个Linxu镜像的大小
+>
+>   ![image-20220517115557559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220517115557559.png)
+>
+> 目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境
+
+Dockerfile的第一句拉取基础镜像，一般都是一个Linux系统，比如
+
+```dockerfile
+FROM golang:1.17.1-alpine  #包含golang环境的Linux
+FROM nginx:1.17.1-alpine   #包含nginx的Linux
+```
+
+然后，我们在这个系统的基础上进行一些添加操作
+
+
+
+我在实践中踩的第一个大坑就在这里，公司的部署系统远程连接Docker容器（就是使用docker exec）默认使用的是bash，但是由于alpine不支持bash，只支持bin/sh所以导致一直无法连接。
+
+解决方法有两个，其核心就是在镜像中添加bash：
+
+* 构建自己的基础镜像，这个基础镜像中就添加好bash
+
+  这个就用到【常用命令】里补充的commit命令了
+
+  ```shell
+  docker pull bash #下载bash镜像，这里面有一个
+  
+  docker images # 查看所有镜像，判断是否下载好了bash
+  
+  docker run -itd bash
+  
+  docker ps -a #找到运行起来bash镜像的容器的ID
+   
+  docker exec -it 容器ID  bash  #通过ID进入bash交互模式
+  
+  apk add xxx #安装xxx软件
+  
+  
+  docker commit 容器ID 镜像名:版本号 #把容器打包成镜像，指定镜像名和版本号
+  
+  docker images #就能找到刚刚打包的镜像了
+  ```
+
+  上传镜像到镜像仓库，参考【发布到私有镜像】章节
+
+  ```
+  给镜像打tag
+  
+  push到仓库
+  ```
+
+  
+
+  在dockerfile使用我们打包的基础镜像
+
+  ```dockerfile
+  FROM 仓库地址/命名空间/镜像名:版本号
+  ```
+
+* 在需要部署的项目根文件夹下的Dockerfile中下载bash，然后使用`docker build`基于Dockerfile文件构建镜像。我这里以一个alpine为基础镜像
+
+  ```dockerfile
+  FROM golang:1.17.1-alpine  #包含golang环境的Linux
+  RUN apk add --no-cache --upgrade bash #安装一个bash
+  ```
+
+
+
+还有一点要特别注意：
+
+我们这里是安装bash，两种方案速度相差不到，如果是安装一个特别大的软件，还是建议使用第一种方法，因为第二种方法就是容器自动去网络上下载，这样比较慢，而第一种方法，是把软件已经添加到镜像里了，我们可以把这个镜像上传到公司的镜像仓库，当dockerfile执行`FROM`时，直接在内网拉取这个镜像，这样速度就比较快了
 
 
 
