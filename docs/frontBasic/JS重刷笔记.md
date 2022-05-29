@@ -44,7 +44,7 @@ _关键字_：
 
 ## 变量
 
-### 标识符（变量名）
+### 标识符
 
 **命名规则**
 
@@ -307,21 +307,61 @@ console.log(stu); //不报错，但是修改失效，输出{name: "张三", age:
 
 ### 变量类型
 
-ECMAScript 有两类数据类型
+### 两种变量类型
+
+> 每种对象的详细信息可查询[菜鸟教程 - JS对象参考手册](https://www.runoob.com/jsref/obj-storage.html)
+
+**ECMAScript 有两大数据类型**
 
 - 基本类型（也称为原始类型）: `undefined`、`null`、`boolean`、`number`、`string`和`symbol`
 
-- 引用类型：`object`、`array`、`function`【`object`是所有引用类型的基类】等比较常见
+- 引用类型：
 
-  * 包装类型：Boolean、Number、String 。这几种包装类型我们一般不是使用，而是使用字面量创建值，当对应的基本类型的字面量，使用`.`方法调用相关属性和方法时，就在背后自动创建
+  - `Object`、`Array`、`Function`、`Set`、`Map`【`object`是所有引用类型的基类】
 
+  - 包装类型
+  
+    Boolean、Number、String 。这几种包装类型我们一般不是使用，而是使用字面量创建值，当对应的基本类型的字面量，使用`.`方法调用相关属性和方法时，就在背后自动创建
+  
     ```js
     console.log("hello".length); //5 
-    //默认使用了包装类String("hello")，创建了string对象
+    //本质：包装类String("hello")，创建了string对象
     ```
+  
+  - 内置的工具类型
+  
+    Data（时间相关）、Math（数学计算相关）、RegExp（正则相关）
+  
+  - Bom对象（浏览器）
+  
+    Window 对象、Navigator 对象、Screen 对象、History 对象、Location 对象、存储对象【由sessionStorage对象 和 localStorage对象组成】
+  
+   - Dom对象（网页文档）
+  
+   - Html对象
+  
 
+**两大数据类型的区别:**
 
-#### 变量类型的确定
+* 基本类型
+
+  * 占用空间固定，保存在**栈中**（当一个方法执行时，这个方法就会建立自己的内存栈，在这个方法内定义的变量将会逐个放入这块栈内存里，随着方法的执行结束，这个方法的内存栈也将会销毁）
+
+    
+
+  * 变量保存的是值本身
+
+* 引用类型：
+
+  * 占用空间不固定，保存在**堆中**（因为对象的创建成本通常较大，所以当程序中创建的对象将被保存到堆内存，以便反复利用。堆内存中的对象不会随方法的结束而销毁，即使方法结束后，这个对象还可能被另一个引用变量所引用，只有当一个对象没有任何引用变量引用它时，系统的**垃圾回收机制**才会在核实的时候回收它。）
+
+    
+
+  * 变量保存的是指向对象的一个指针
+
+1、基本类型的属性和方法
+
+### 变量类型的确定
 
 因为 JS 中没有类型检查，所以经常接收到某个变量时，需要判断变量类型时，如果变量是预期的类型才进行操作，常用 if 来进行流程控制
 
@@ -332,6 +372,8 @@ if (typeof a === "number") {
   //不是数字，就另一种处理方式
 }
 ```
+
+
 
 **基本类型**
 
@@ -410,21 +452,17 @@ console.log(j); //ReferenceError: a is not defined
 console.log(typeof j); //undefined
 ```
 
-#### undefined
+### 基本变量类型
+
+#### undefined类型
 
 `undefined`类型只有一个值，就是`undefined`。强调下，`undefined`是一个值，而不是报错，报错是`Error`对象
 
-**赋值**
-
-字面量赋值
+**字面量赋值**
 
 ```js
 let a = undefined;
 ```
-
-无构造函数创建的方式
-
- 因为 undefined 类型不是对象
 
 **其他情况下产生的 undefined**
 
@@ -453,25 +491,23 @@ let a = undefined;
   console.log(stu.name.firstName); //TypeError: Cannot read properties of undefined (reading 'firstName')
   ```
 
-#### null
+#### null类型
 
 `null`类型只有一个值，就是`null`。
 
-null 可以理解为一个空值，其他文章中常常将 null 理解为空对象，这是错误的，`typeof null` 的返回值是`object`，这是一个历史悠久的 bug，在 js 的最初版本中使用的是 32 位系统，为了性能考虑使用低位存储变量的类型信息，000 开头代表是对象，然而 null 表示为全零，所以将它错误的判断为 object。虽然现在的[内部类](https://so.csdn.net/so/search?q=内部类&spm=1001.2101.3001.7020)型判断代码已经改变了，但是对于这个 Bug 却是一直流传下来。
+**补充**：
+
+null 可以理解为一个空值，其他文章中常常将 null 理解为空对象，这是错误的
+
+是使用typeof判断其类型，返回值是`object`，是一个历史悠久的 bug，在 js 的最初版本中使用的是 32 位系统，为了性能考虑使用低位存储变量的类型信息，000 开头代表是对象，然而 null 表示为全零，所以将它错误的判断为 object。虽然现在的[内部类](https://so.csdn.net/so/search?q=内部类&spm=1001.2101.3001.7020)型判断代码已经改变了，但这个 Bug 却是一直流传下来。
 
 我们在声明一个对象时，一般将该对象使用初始化为`null`
 
-**赋值**
-
-字面量赋值
+**字面量赋值**
 
 ```js
 let a = null;
 ```
-
-无构造函数创建的方式
-
- 因为 null 类型不是对象
 
 **其他**
 
@@ -485,13 +521,11 @@ console.log(null === undefined); //false
 
 ￼ 所以，推荐一定要使用`===`和`!==`，因为`==`和`!=`会将等号两边做一个隐式转换，全部转换为数字，再进行比较
 
-#### boolean
+#### boolean类型
 
 `boolean`类型包含两个值：true，false
 
-**赋值**
-
-字面量赋值(常使用)
+**字面量赋值**
 
 ```js
 let a = true;
@@ -499,7 +533,9 @@ let a = true;
 let b = false;
 ```
 
-构造函数创建（构造函数创建的是类的实例，是一个对象，所以 typeof 才是 object ，我们通常不使用这种方式，所以前面讲的 typeof 判断类型的方式还是成立的）
+**构造函数创建**
+
+使用Boolean包装类创建的是一个对象，所以 typeof 是 object ，我们通常不使用这种方式
 
 ```js
 let a = new Boolean(true);
@@ -513,14 +549,9 @@ console.log(typeof a); //object
 ```javascript
 let a = true;
 if (a === true) {
-  //执行
-} else {
-}
-
-let b = false;
-if (b === false) {
-  //执行
-} else {
+  
+}else{
+  
 }
 ```
 
@@ -529,7 +560,9 @@ if (b === false) {
 ```javascript
 let a = true;
 if (a) {
+  
 } else {
+  
 }
 ```
 
@@ -545,35 +578,37 @@ if (a) {
 - `undefined`类型中的 undefined，
 - `Boolean`类型中的 false
 
-#### number
+#### number类型
 
 `number`类型包含`NaN`、0 和其他数字
 
-**赋值**
-
-字面量赋值(常使用)
+**字面量赋值**
 
 ```js
 let a = 1;
 ```
 
-构造函数创建
+Number包装类创建
 
 ```js
 let a = new Number(1);
 console.log(typeof a); //object
 ```
 
-**数字**
+**存储**
 
 由于存储浮点数需要占用较大的空间，所以 js 尽可能将浮点数存储为整数
+
+当数字很大或很小时，会转化为科学记数法存储
 
 ```javascript
 let num1 = 1; // 当成1处理
 let num2 = 10.0; // 当成10处理
 ```
 
-当数字很大或很小时，会转化为科学记数法存储
+
+
+**Infinity/-Infinity**
 
 当数字超过浏览器限制的最大/最小值后，数字就会变成 `Infinity`￼/`-Infinity￼`
 
@@ -584,25 +619,10 @@ console.log(5 / 0); // Infinity￼
 console.log(-5 / 0); // -Infinity￼
 ```
 
-无穷是可以继续运算的
+无穷是数字，所以是可以继续运算的，只不过结果也一定是无穷
 
 ```javascript
 console.log((-5 / 0) * -2); // Infinity￼
-```
-
-且转化为布尔值是真
-
-```javascript
-if (Infinity) {
-  console.log("1"); //执行
-} else {
-  console.log("2");
-}
-if (-Infinity) {
-  console.log("1"); //执行
-} else {
-  console.log("2");
-}
 ```
 
 可通过`Number.MAX_VALUE`和`Number.MIN_VALUE`获取浏览器的数字的最大和最小值
@@ -612,7 +632,7 @@ console.log(Number.MAX_VALUE);
 console.log(Number.MIN_VALUE);
 ```
 
-通过`isFinite`判断运算的结果是否超过最大和最小值，返回值为布尔值，正常范围的数字返回`true`
+通过`isFinite()`判断运算的结果是否超过最大和最小值，返回值为布尔值，正常范围的数字返回`true`
 
 ```javascript
 console.log(isFinite(2.31)); //true
@@ -622,7 +642,7 @@ console.log(isFinite(-Infinity)); //false
 console.log(isFinite(NaN)); //false
 ```
 
----
+
 
 **NaN**
 
@@ -651,22 +671,14 @@ console.log(isFinite(NaN)); //false
 `NaN`不等于包括 NaN 在内的任何值，无论是使用`==`还是`===`
 
 ```javascript
-if (NaN === NaN) {
-  console.log(true);
-} else {
-  console.log(false); //执行
-}
-
-if (NaN == NaN) {
-  console.log(true);
-} else {
-  console.log(false); //执行
-}
+console.log(NaN === NaN) //false
 ```
 
-**函数`isNaN()`**
+***isNaN()***
 
-这个函数会**先尝试将参数转化为数值**（就是使用了`Number()`，转化规则参考`变量转化为数字`表），不能转化为数字的变量都会返回`true`
+判断变量是否是NaN
+
+这个函数会使用`Number()`把参数转变为数值，其中转化为NaN的返回true
 
 因为`Number()`的缺陷，所以可以参照表格中第二列，查看哪些类型的参数会被错误的认定为数字(即，返回 false)
 
@@ -683,38 +695,49 @@ console.log(
 );
 ```
 
-**Number**
+***Number()***
 
 转化结果参照`变量转化为数字`表
 
 `Number`的缺陷是，`Number`会将各种的变量类型转化为数字，十分可能造成运算结果的错误。比如，将`true`转化为 1，将`""`转化为 0 等
 
-**parseInt**
+***parseInt()***
 
-基本与`Number`相同，只有两点与`Number`不同的地方是：
+参数不是字符串时，使用`Number()`转化为数字后，再取整数部分。
 
-1. 当参数是数字是，`parseInt`只能转化为整数，比如 `parseInt(1.5)`结果是`1`
-
-2. 当参数是字符串时，`parseInt`是按照从左到右的顺序一位一位的转换
-   - 如果遇到空格或 0，直接忽略
-   - 直到遇到负号或第一非 0 数字，才开始转化
-   - 直到遇到非数字的字符或到了字符串结尾，才停止转化，然后返回转化结果
-
-以下两种情况的例子
+当参数是字符串时，不是`Number()`转化的，而是直接按照从左到右的顺序一位一位的转换为数字
+- 如果遇到空格或 0，直接忽略
+- 直到遇到负号或第一非 0 数字，才开始转化
+- 直到遇到非数字的字符或到了字符串结尾，才停止转化，然后返回转化结果
 
 ```javascript
 //情况一：从左到右遇到非数字结束
 console.log(parseInt("11a")); //11
 console.log(parseInt("12.3")); //12
+```
 
-//情况二：Number('')返回0
+注意：以下两种情况的例子
+
+当参数是空字符串时
+
+```javascript
+Number('') //返回0
 console.log(parseInt("")); //NaN
 ```
+
+当参数是空数组
+
+```javascript
+Number([]) //0
+console.log(parseInt([])); //NaN
+```
+
+
 
 `parseInt`的缺陷大部分与`Number`相同，会将各种的变量类型转化为数字，造成计算的错误。
 再加一点是会错误的把例如`11a`这种字符串转化为数字`11`，如果运算中出现了`11a`，js 仍然不会报错，而是当成`11`继续去计算，而`Number`不会有这种问题
 
-**parseFloat**
+***parseFloat()***
 
 基本与`parseInt`相同，只是从左到右转化字符串时，遇到第一个`.`不会结束，还会继续向右转化数字
 
@@ -751,13 +774,42 @@ if(typof str===string && str!=="" && isFinite(Number(str)*2)){
 }
 ```
 
-#### string
+**toFixed**
+
+将数字转换为字符串，并保留指定位数的小数位
+
+toFixed的保留方式不是四舍五入，而是**银行家舍入规则**
+
+* 四舍
+* 六入
+* 五考虑 :
+  * 五后非零就进一
+  * 五后为零看奇偶，五前为偶应舍去，五前为奇要进一
+
+```js
+5.426.toFixed(2) //'5.43'
+```
+
+**如何实现四舍五入**
+
+Math的round是遵循四舍五入的，但是这能保留整数，所以需要做处理
+
+```js
+function myRound(num,n){ //将num保留n位
+  let multiple=Math.pow(10,n)
+  Math.round(num*multiple)/multiple
+}
+```
+
+
+
+#### string类型
 
 `String`类型包含`""`、其他字符串
 
-**赋值**
+**字面量赋值**
 
-字面量赋值(常使用) :ES 标准中对于字符串使用不同引号是没有区别的
+ES 标准中对于字符串使用不同引号是没有区别的
 
 ```js
 let str1 = "hello";
@@ -765,7 +817,7 @@ let str2 = "hello";
 let str3 = `hello`;
 ```
 
-构造函数创建
+使用`String()`包装类型
 
 ```js
 let str = new String(1);
@@ -1005,37 +1057,24 @@ for (const key in stu) {
 } //输出 name age ,可以看出来即使遍历对象的key，symbol类型的school不会显示出来
 ```
 
-#### 注意
+## 变量类型隐式转换
 
-以上的 几 种类型中，只有`symbol`是使用`symbol()`创建的，其他均是使用字面量创建的。
+发生隐式转换的场景
 
-但是，`Boolean`、`Number`、`String`、`Object`可以使用构造函数来创建，只不过创建的类型变成了`Object`类型
+```text
+情况一： 使用if判断变量时
+if(a)  //将变量转化为布尔值
 
-```js
-let a1 = true;
-console.log(typeof a1, a1); //boolean true
-let a2 = new Boolean(true);
-console.log(typeof a2, a2); //object [Boolean: true]
+情况二：进行比较时
+a===b //将左右变量都转化为布尔值
 
-let b1 = 23;
-console.log(typeof b1, b1); //number 23
-let b2 = new Number(23);
-console.log(typeof b2, b2); //object [Number: 23]
+情况三：使用&&和||运算符时，会将运算值转化为布尔值
 
-let c1 = "hi";
-console.log(typeof c1, c1); //string hi
-let c2 = new String("hi");
-console.log(typeof c2, c2); //object [String: 'hi']
 
-let d1 = { name: "hi" };
-console.log(typeof d1, d1); ///object { name: 'hi' }
-let d2 = new Object({ name: "hi" });
-console.log(typeof d2, d2); //object { name: 'hi' }
+情况四：三元表达式  a?b:c  中，a的值会转化为布尔值
 ```
 
-区别体现在以下
 
-#### 变量类型隐式转换
 
 - 变量转化为布尔值
 
@@ -1057,96 +1096,557 @@ console.log(typeof d2, d2); //object { name: 'hi' }
 
   这里注意下，`parseInt('123a')`的结果是`123`，当你不确定数据的具体形式时，这会带来很大的潜在问题。所以转换数字使用`Number()`，`Number('123a')`会直接返回`NaN`
 
-### 操作符
+## 函数
 
-#### 一元操作符
+### 函数的声明
 
-`++`和`--`
+函数也是一种类型，它使用function关键字声明
 
-这两个操作符除了可以作用于数字外，还可以作用于其他类型的变量
+* 使用标准函数声明来定义函数（命名函数，函数名是func1）
 
-```js
-//Null转化为0
-let a = null;
-console.log(++a); //0
+  ```javascript
+  function func1(){
+      //函数体
+  } 
+  func1()
+  ```
 
-//Undefined
-let a = undefined;
-console.log(++a); //NaN
+* 声明匿名函数
 
-//Boolean,true转化为1，false转化为0
-let a = true;
-console.log(++a);
+  ```javascript
+  let a=function(){
+  	//函数体
+  } 
+  a()
+  ```
 
-//String，对字符串应用toString方法
+  箭头函数：一种匿名函数的简写
+
+  ```javascript
+  function(参数){函数体} 
+  
+  //对应
+  
+  (参数)=>{函数体}
+  ```
+
+  注意：
+
+  * 如果只有一个参数，()可以省
+
+    ```javascript
+    param=>{//只有一个参数param}
+    ```
+
+  * 如果只有一行，return和{}可以省
+
+    ```js
+    (x,y)=>x+y  //当返回是一个return时，可以省略，函数体就是x+y
+    
+    //对应
+    
+    function(x,y){
+    	return x+y
+    }
+    ```
+
+* 把函数当成构造函数 **详见【new关键字】章节**
+
+  ```javascript
+  function stu(name,age){
+  	this.name=name//这里的this指向的是stu对象，不是window对象
+      this.age=age
+      this.show=function(){
+          //函数体
+      }   
+      //构造函数的返回值是对象，默认有以下这句，this表示user对象
+      //return this
+  }
+  let res=new stu()
+  ```
+
+* 对象字面量属性函数 
+
+  ```javascript
+  let user={
+      setUsername:function(name){
+          this.name=name
+      },
+      getUsername:function(){
+          return this.name
+      }
+      //简写：
+      //setUsername(name){
+      //    this.name=name
+      //},
+      //getUsername(){
+      //    return this.name
+      //}
+  }
+  user.setUsername("张三")
+  console.log(user.getUsername())//输出 张三
+  ```
+
+**函数声明存在的问题**
+
+覆盖window对象中的属性
+
+这种方式定义函数，函数会压入到window对象中，一旦window对象中有同名属性，会把window对象的该属性覆盖掉
+
+```javascript
+function func(title){
+    console.log(title)
+} 
+func("你好")//输出 你好
+window.func("你好")//输出 你好
 ```
 
-## 对象
+### 函数参数
+
+**形参与实参**
+
+JS中函数是把实参赋值给形参
+
+注意：
+
+* 如果实参是基本类型，改变形参，肯定不会影响实参
+
+  ```js
+  let a=1
+  function show(a){
+    a=a+100
+  	return a
+  }
+  show(a)//输出 101
+  console.log(a)//输出 1
+  ```
+
+* 如果实参是引用类型，形参接收到的是实参的存储地址，所以操作形参的属性，肯定会影响实参
+
+  ```js
+  function show(a){
+      a.age=20
+  }
+  let user={name:"张三"}
+  show(user)
+  console.log(user)//输出 {name: "张三", age: 20}
+  ```
+
+* 当实参个数>形参个数，多余的实参会被略去
+
+  ```js
+  function mySum(a,b){
+   return a+b
+  }
+  console.log(mySum(1,2,3)) //输出 3
+  ```
+
+**定义默认参数**
+
+```js
+//定义函数带有默认参数，传入就按传入的值，不传就按默认
+function show(a,b=5,c=7){
+	console.log(a,b,c)
+}
+
+show(1)// 输出1,5,7
+show(1,2,3)// 输出1,2,3
+```
+
+**接收多个形参**
+
+* arguments对象（不建议使用）
+
+  ```javascript
+  function func(){
+      console.log(typeof arguments)//arguments对象。里面包含着传进来的参数
+       for(let i=0;i<arguments.length;i++){//arguments对象可以使用下标取值
+          console.log(arguments[i])
+      }
+  }
+  func(1,2,3)// 输 1 2 3
+  ```
+
+* 解构赋值（详见，后面**【解构赋值】章节**）
+
+  ```javascript
+  function func2(...args){ //args就是个数组
+      console.log(args)
+  }
+  func2()//输出[1,2,3]
+  ```
+
+### 函数提升
+
+* 使用标准函数声明，会有函数提升现象
+
+  ```javascript
+  show()//输出 hi
+  
+  function show(){
+      console.log("hi")
+  } 
+  ```
+
+* 通过变量引用匿名函数，没有函数提升(与赋值变量是var或let没关系)
+
+  ```javascript
+  func()//报错，Uncaught TypeError: func is not a function
+  
+  var func=function(){
+      console.log("hi")
+  } 
+  ```
+
+* 重点理解
+
+  第一个函数函数提升到最前面，在console.log之前
+
+  ```javascript
+  console.log(hd(3)); //4
+  
+  function hd(num) {
+    return ++num;
+  }
+  
+  var hd = function() {
+    return "hd";
+  };
+  ```
+
+  第一个函数函数提升到最前面，console.log之前被第二个函数覆盖了
+
+  ```javascript
+  function hd(num) {
+    return ++num;
+  }
+  
+  var hd = function() {
+    return "hd";
+  };
+  
+  console.log(hd(3)); //hd
+  ```
+
+  函数提升和变量提升，当函数和变量同名
+
+  ```js
+  console.log(foo); 
+  var foo = 1  //变量提升
+  console.log(foo)
+  foo()
+  function foo(){ //函数提升
+     console.log('函数')
+  }
+  
+  
+  //等价于
+  function foo(){ //提到顶端
+     console.log('函数')
+  }
+  var foo  
+  console.log(foo) //输出foo这个函数，因为上面foo没有被赋值，foo还是原来的值 
+  foo = 1;  //赋值不会提升,赋值后 foo就不再是函数类型了，而是number类型
+  console.log(foo) //输出1
+  foo() //这里会报错，因为foo不是函数了
+  ```
+
+  简略的说
+
+  ```js
+  //函数提升优先级高，但是var a没有赋值，所以不会覆盖函数
+  var a
+  function a(){
+  
+  }
+  console.log(a)// 函数a
+  
+  
+  //函数提升优先级高，但是var a赋值为1，所以会覆盖函数
+  var a=1
+  function a(){
+  
+  }
+  console.log(a)// 1 
+  ```
+
+
+### new关键字
+
+用new关键字调用函数会返回一个对象，如果一个函数使用new调用，我们称为构造函数
+
+注意：
+
+* 以下涉及的this指向问题，会在**【this的指向】章节**详细介绍
+
+* 以下涉及的原型链问题，会在**【原型链】章节**详细介绍
+
+例如
+
+```js
+function fun() {  
+    this.a = 3;
+    this.b = 5;
+}
+var obj = new fun();
+console.log(obj); //
+```
+
+原理过程是：
+
+```javascript
+function fun() {  
+	//1 .在函数体开头，自动创建了一个空白对象{}
+	//2 .this指向这个空白对象
+  //3 .执行函数体中的语句
+    this.a = 3;
+    this.b = 5;
+  //4 .
+  // 情况一：函数没有return，或者"return;"、"retrun 基本类型;"，则直接忽略原本的return。返回自动创建的那个对象
+  // 情况二：如果 return 返回的是一个对象，则返回这个对象。忽略自动创建的这个对象
+  
+}
+var obj = new fun();
+console.log(obj); //{a: 3, b: 5}
+```
+
+实际使用：
+
+* 通过传入参数，返回不同对象
+* 约定函数名首字母大写
+
+```js
+function Student(name,age){
+    this.name = name;
+    this.age = age;
+}
+console.log(new Student('jack',18)) // { name: 'jack', age: 18 }
+
+console.log(new Student('tom',19)) //{ name: 'tom', age: 19 }
+```
+
+为对象添加函数
+
+* 在构造函数内添加一个函数作为对象的属性
+* 通过**原型链**（prototype）添加函数/属性
+
+```js
+function Student(name,age){
+    this.name = name;
+    this.age = age;
+    this.getName = ()=>{
+        return this.name
+    }
+}
+Student.prototype.getAge =function (){ //一定要注意，这里不能用箭头函数，否则其中的this指向了全局的window
+    return this.age
+}
+
+
+let stu1=new Student('jack',18) 
+console.log('stu1 --> ',stu1.getName(),stu1.getAge()) //stu1 -->  jack 18
+```
+
+
+
+### 立即执行函数
+
+立即执行函数`(这里放函数声明)()`
+
+立即执行函数，执行完毕后立即销毁，所以即使，使用了var关键字，仍然不会污染全局window变量
+
+```javascript
+(function (str) {
+    console.log(str);
+    var web = 'houdunren';
+})("hello"); //这里把hello传给内部的str参数
+
+console.log(web); 
+//hello
+//web is not defined
+
+```
+
+**立即执行函数与作用域的冲突**
+
+```js
+//1.js
+function show(){
+    console.log("执行1.js中的show函数")
+}
+function ab(){
+    console.log("执行1.js中的ab函数")
+}
+
+//2.js
+function show(){
+    console.log("执行2.js中的show函数")
+}
+function ab(){
+    console.log("执行2.js中的ab函数")
+}
+```
+
+在html中引用两个外部js文件
+
+```html
+<!--两个js文件中都有show()函数-->
+<script src="1.js"></script>
+<script src="2.js"></script>
+<script>
+    show()//输出 执行2.js中的show函数
+</script>
+<!--这里调用只能调用到2.js中的show()函数-->
+```
+
+解决方案一:使用模块化，ES6以后有了类的概念，提供了新的解决办法，后面会讲到
+
+解决方案二：这是一种老的解决方案，使用立即执行函数
+
+```js
+(function(){
+    console.log("执行了")
+})()//输出 执行了
+
+
+//如何调用内部的函数看下面
+//将1.js和2.js改造成这样
+(function(window){
+    function show(){
+   		console.log("执行1.js中的show函数")
+	}
+	function ab(){
+    	console.log("执行1.js中的ab函数")
+	}
+    window.js1={show,ab}
+})(window)//这里带参数把，window传递到函数中
+
+//html页面引入外部js后，调用函数
+    js1.show()//输出 执行1.js中的show函数	
+	js1.ab()//输出 执行1.js中的ab函数
+
+```
+
+方案三：这是一种老的解决方案，使用let作用域
+
+```js
+//前面提到的"函数存在的问题----覆盖window对象中的属性"中，写过全局作用域中的var变量会压入window对象中，let不会
+
+//如何调用内部的函数看下面
+//将1.js和2.js改造成这样
+{
+    let show=function(){
+        console.log("执行1.js中的show函数")
+    }
+    let ab=function(){
+        console.log("执行1.js中的ab函数")
+    }
+    window.js1={show,ab}
+}
+
+//html页面引入外部js后，调用函数
+   js1.show()//输出 执行1.js中的show函数	
+   js1.ab()//输出 执行1.js中的ab函数
+```
+
+## 对象(待完成)
 
 **赋值**
 
 字面量赋值(常使用)
 
 ```js
-let a={};
-
+let b='爱好'
 let a={
-  name:'jack'
+  name:'jack' 
+  'l-name':'tom'  //注意key为短横线的值时，必须用引号印起来
+  [b]:'唱歌'       //变量用中括号，括起来
   getDate(){
     //函数体
   }
 };
 ```
 
-构造函数创建
+存取
 
-```js
-let a = new Object({ name: "jack" });
-console.log(a.name); //jack
-```
+* 点方法
 
-**其他**
-
-`object`类是其他对象的基类，所以所有对象都是由`object`派生而来，自然也就自带`object`的方法
-
-- `constructor`：用于创建当前对象的构造函数
-
-- `hasOwnProperty(propertyName)`：用于判断当前对象实例（不是原型）上是否存在某属性(不仅一般属性可以，Symbol 属性也能判断)
+  点后跟着的是key值，不是变量
 
   ```js
-  let obj = {
-    a: "he", //key是Symbel
-    name: "jack", //key是字符串
-    1: "she", //key是数字
-  };
-  
-  console.log(obj.hasOwnProperty("a")); //true
-  console.log(obj.hasOwnProperty("name")); //true
-  console.log(obj.hasOwnProperty(1)); //true
+  let obj={name:'jacck'}
+  obj.name=1
   ```
 
-- `isPrototypeOf(object)`：用于判断当前对象是否为另一个对象的原型。（第 8 章将详细介绍原型。）
+* 中括号
 
-- ` propertyIsEnumerable(propertyName)`：用于判断给定的属性是否可以使用 for-in 语句枚举。与 hasOwnProperty()一样，属性名必须是字符串。
+  ```js
+  let obj={}
+  
+  //指定key为a
+  obj["a"]=1
+  
+  //指定key为变量
+  let b="name"
+  obj[b]
+  ```
 
-- `toLocaleString()`：返回对象的字符串表示，该字符串反映对象所在的本地化执行环境。
-
-- `toString()`：返回对象的字符串表示。
-
-- `valueOf()`：返回对象对应的字符串、数值或布尔值表示。通常与 toString()的返回值相同。
-
-**用法**
+删除
 
 ```js
-let obj={}
-
-//存储
-obj["a"]=1
-obj.a=1
-
-//取值
-console.log(obj["a"],obj.a) //1  1
+let obj={name:'jacck' ,age:19}
+delete obj.name
+console.log(obj) //{ age: 19 }
 ```
+
+### 对象的方法
+
+静态方法
+
+| 方法           | 描述                                                         |
+| -------------- | ------------------------------------------------------------ |
+| keys()         | 返回所有key组成的数组                                        |
+| values()       | 返回所有value组成的数组                                      |
+| entries()      | 返回所有[key,value]组成的数组                                |
+| assign         | 合并对象，返回合并后新的对象                                 |
+| hasOwnProperty | 判断是否存在某属性，返回布尔值                               |
+| freeze         | **冻结**一个对象。该对象不能被修改，即不能添加新的属性，不能删除已有属性，不能修改属性的值。此外，冻结一个对象后该对象的原型也不能被修改 |
+
+```js
+let obj={name:'jack',age:12}
+Object.keys(obj) //['name', 'age']
+Object.values(obj) //['jack', 12]
+Object.entries(obj) //[['name':'jack'], ['age',12]]
+```
+
+assign
+
+```js
+let res=Object.assign({},{name:"jack"},{age:18}) 
+console.log(res)//{name: 'jack', age: 18}
+```
+
+hasOwnProperty 
+
+```js
+let obj={
+    name:'jack',
+    age:19
+}
+console.log(obj.hasOwnProperty('name')) //true    //注意参数带引号
+```
+
+freeze
+
+```js
+const obj = {name:'jack'};
+
+Object.freeze(obj);
+
+obj.name = 33; // TypeError:Cannot assign to read only property 'name' of object
+```
+
+
 
 ## 数组对象
 
@@ -1200,8 +1700,9 @@ Array 对象方法
 
 | 方法                                                         | 描述                                                 |
 | ------------------------------------------------------------ | ---------------------------------------------------- |
-| **数组性质**                                                 |                                                      |
+| **静态方法**                                                 |                                                      |
 | [isArray()](https://www.runoob.com/jsref/jsref-isarray.html) | 判断对象是否为数组                                   |
+| [from()](https://www.runoob.com/jsref/jsref-from.html)       | 通过给定的对象中创建一个数组                         |
 | **操作数组元素——>增删**                                      |                                                      |
 | [pop()](https://www.runoob.com/jsref/jsref-pop.html)         | 删除数组的最后一个元素，返回删除的元素               |
 | [push()](https://www.runoob.com/jsref/jsref-push.html)       | 向数组的末尾添加一个或更多元素，返回新的长度         |
@@ -1230,16 +1731,10 @@ Array 对象方法
 | [every()](https://www.runoob.com/jsref/jsref-every.html)     | 检测数值元素的每个元素是否都符合条件                 |
 | [reduce()](https://www.runoob.com/jsref/jsref-reduce.html)   | 将数组元素计算为一个值（从左到右）                   |
 | [reduceRight()](https://www.runoob.com/jsref/jsref-reduceright.html) | 将数组元素计算为一个值（从右到左）                   |
-| **迭代器**                                                   |                                                      |
-| [keys()](https://www.runoob.com/jsref/jsref-keys.html)       | 返回数组的可迭代对象，包含原始数组的键(key)          |
-| values()                                                     | 返回数组的可迭代对象，包含原始数组的键(value)        |
-| [entries()](https://www.runoob.com/jsref/jsref-entries.html) | 返回数组的可迭代对象                                 |
-| [forEach()](https://www.runoob.com/jsref/jsref-foreach.html) | 数组每个元素都执行一次回调函数                       |
 | **其他**                                                     |                                                      |
 | [fill()](https://www.runoob.com/jsref/jsref-fill.html)       | 使用一个固定值来填充数组                             |
-| [from()](https://www.runoob.com/jsref/jsref-from.html)       | 通过给定的对象中创建一个数组                         |
-| [toString()](https://www.runoob.com/jsref/jsref-tostring-array.html) | 把数组转换为字符串，并返回结果                       |
-| [valueOf()](https://www.runoob.com/jsref/jsref-valueof-array.html) | 返回数组对象的原始值                                 |
+
+注意：js中数组的方法最为丰富，所以几乎所有类型都可以转化为数组进行处理，处理结束后再转化回去
 
 ### 补充下
 
@@ -1266,13 +1761,41 @@ arr.splice(0,arr.length)
 while(arr.pop())
 ```
 
-### 判断数组类型   
+### isArray  
 
 ```js
 console.log(Array.isArray([]))//输出true
 
 console.log([] instanceof Array)//输出true
 ```
+
+### from
+
+Array.from用来将可迭代对象转化为数组
+
+内置的字符串、数组、对象都是可迭代对象，可以使用通用的方法遍历其内部。详见【可迭代对象】章节
+
+如果观察过一些框架的内置对象的话，你会发现他们很少使用数组，而是使用一种**类数组的对象**
+
+**类数组的对象**如下，这种对象key是索引，而且有一个length属性表示长度
+
+```js
+let obj={
+    1:'jake',
+    0:'tom',
+    length:2
+}
+```
+
+我们可以把**类数组的对象**当成对象来处理，而需要使用数组方法时，又可以通过`Array.from`转化为数组
+
+转化的数组长度就是length的数值，按照key的值作为索引放置
+
+```js
+console.log(Array.from(obj)) // [ 'tom', 'jake' ]
+```
+
+
 
 ### 操作数组元素——>增删
 
@@ -1507,19 +2030,24 @@ console.log(arr.slice(1,3))//输出["B", "C"]，截取：索引1——索引2
 
 ### 不操作数组元素——>返回拼接
 
-**join和concat**
+**join**
 
 ```js
-//拆分
-let str="abcdef"
-console.log(Array.from(str))//输出["a", "b", "c", "d", "e", "f"]
-
-
-//合并
 let arr=["a","b","c"]
-//方法一，原数组未改变
 console.log(arr.join("-"))  //输出a-b-c
+```
 
+补充：字符串拆分成数组
+
+```js
+let str="abcdef"
+console.log(Array.split())//输出["a", "b", "c", "d", "e", "f"]
+```
+
+**concat**
+
+```js
+array1.concat(array2,array3,...,arrayX)
 let arr2=["e","f","g"]
 //方法二，原数组未改变
 console.log(arr.concat(arr2))
@@ -1749,113 +2277,6 @@ console.log(res)
 
 与reduce一样，只不过方向是从右向左
 
-### 迭代器
-
-**keys( )**
-
-* 参数：无
-
-* 返回值：可迭代对象
-
-```js
-let arr2=["a","b","c"]
-
-//values方法，当next没有值了，done才变成true
-let values=arr.values()
-console.log(values.next())//输出{value: "a", done: false}
-console.log(values.next())//输出{value: "b", done: false}
-console.log(values.next())//输出{value: "c", done: false}
-console.log(values.next())//输出{value: undefined, done: true}
-```
-
-遍历1
-
-```js
-for(const key of arr2.keys()){
-    console.log(key)
-}//输出 0 1 2
-```
-
-**values( ) **
-
-* 参数：无
-
-* 返回值：可迭代对象
-
-```js
-let arr=["a","b","c"]
-//keys方法，当next没有值了，done才变成true
-let keys=arr.keys()
-console.log(keys.next())//输出{value: 0, done: false}
-console.log(keys.next())//输出{value: 1, done: false}
-console.log(keys.next())//输出{value: 2, done: false}
-console.log(keys.next())//输出{value: undefined, done: true}
-```
-
-遍历1
-
-```js
-for(const value of arr2.values()){
-    console.log(value)
-}//输出 a b c
-```
-
-遍历2
-
-```js
-//使用values()循环，{value,done}=values.next()是解构赋值
-let arr2=["a","b","c"]
-let values=arr2.values()
-while(({value,done}=values.next())&&done===false){
- console.log(value)
-}
-//输出a b c
-```
-
-**entries( )**
-
-* 参数：无
-
-* 返回值：可迭代对象
-
-```js
-let arr=["a","b","c"]
-
-let valueAndKey=arr.entries()
-console.log(valueAndKey.next())//输出{value: Array(2), done: false}
-```
-
-```js
-for(const [key,value] of arr2.entries()){//解构赋值
-    console.log(key,value)
-}//输出 
-//0 "a"   
-//1 "b"    
-//2 "c
-```
-
-
-
-**forEach(function(item[,index,arr]))**
-
-* 参数
-  * item 每一项数组元素
-  * index 索引
-  * arr 调用方法的数组
-* 返回值
-
-```js
-let arr=["a","b","c","d"]
-arr.forEach(function(item,index,arr){
-    console.log(item,index)
-})
-//输出
- //a 0
- //b 1
- //c 2
- //d 3
-```
-
 ## 字符串对象
 
 ### 数组对象的属性和方法
@@ -1893,7 +2314,6 @@ arr.forEach(function(item,index,arr){
 | [lastIndexOf()](https://www.runoob.com/jsref/jsref-lastindexof.html) | 从后向前搜索字符串，并从起始位置（0）开始计算返回字符串最后出现的位置。 |
 | **不操作字符串——>返回截取部分**                              |                                                              |
 | [slice()](https://www.runoob.com/jsref/jsref-slice-string.html) | 提取字符串的片断，并在新的字符串中返回被提取的部分。         |
-| [substr()](https://www.runoob.com/jsref/jsref-substr.html)   | 从起始索引号提取字符串中指定数目的字符。                     |
 | [substring()](https://www.runoob.com/jsref/jsref-substring.html) | 提取字符串中两个指定的索引号之间的字符。                     |
 | **不操作字符串——>返回截拼接/分割**                           |                                                              |
 | [concat()](https://www.runoob.com/jsref/jsref-concat-string.html) | 连接两个或更多字符串，并返回新的字符串。                     |
@@ -1904,47 +2324,425 @@ arr.forEach(function(item,index,arr){
 | [replace()](https://www.runoob.com/jsref/jsref-replace.html) | 在字符串中查找匹配的子串，并替换与正则表达式匹配的子串。     |
 | [replaceAll()](https://www.runoob.com/jsref/jsref-replaceall.html) | 在字符串中查找匹配的子串，并替换与正则表达式匹配的所有子串。 |
 | [search()](https://www.runoob.com/jsref/jsref-search.html)   | 查找与正则表达式相匹配的值。                                 |
-| **其他**                                                     |                                                              |
-| [valueOf()](https://www.runoob.com/jsref/jsref-valueof-string.html) | 返回某个字符串对象的原始值。                                 |
-| [toString()](https://www.runoob.com/jsref/jsref-tostring.html) | 返回一个字符串。                                             |
 
 **长度属性**
 
 JS使用的是UTF-16编码方式
 
 ```
-str.length //
+str.length //显示的是码元的个数 ，
+"😊".length //2 ,因为这个表情是一个码点，但是包含两个码元
 ```
 
+解决：数组对象的 from 方法，将字符串转化为数组（按照码点）
 
+```javascript
+Array.from("😊").length //1
+```
 
-## 可迭代对象的遍历
+## 数组与字符串对比
 
-### for
+数组和字符串有很多方法十分相似，这里整理下
+
+| 相同的方法    | 描述                                                        |
+| ------------- | ----------------------------------------------------------- |
+| includes()    | 判断一个数组/字符串是否包含一个指定的值                     |
+| indexOf()     | 从前到后查找数组/字符串中的元素，返回它第一次出现位置的索引 |
+| lastIndexOf() | 从后到前查找数组/字符串中的元素，返回它第一次出现位置的索引 |
+| slice()       | 截取数组/字符串                                             |
+| concat()      | 拼接数组/字符串                                             |
+
+## Set
+
+集合类型，Set的特点是无序、自动去重
+
+### Set声明
+
+创建空集合
 
 ```js
-let arr=["a","b","c"]
-for(let i=0;i<arr.length;i++){
-	console,log(arr[i])
+let set=new Set()
+```
+
+接收可迭代对象，转化为集合
+
+```js
+let set1=new Set([1,2,1,3])
+
+let set2=new Set("abcd")
+```
+
+### Set 操作
+
+* add  
+* delete  删除指定元素，删除成功返回true，若不存在，返回false
+* size 返回元素个数
+* has 判读是否存在指定元素，存在返回true，否则返回false
+* clear() 清空数组，无返回值
+
+```js
+let s1=new Set([1,2,1,3])
+
+s1.add(4)
+console.log(s1.size) //4
+console.log(s1.has(2)) //true
+
+console.log(s1.delete(1))//true
+
+s1.clear()
+```
+
+### 类型转换 Set<-->Array
+
+```js
+// Set-->Array
+let set=new Set(["a","b","c"])
+console.log(Array.from(set))
+console.log([...set])
+
+// Set<--Array
+arr=[1,2,3]
+let set=new Set(arr)
+consle.log(set) //输出 Set(3) {1, 2, 3}
+
+
+```
+
+### 应用
+
+取出set中小于3的，把set转为array，处理完，转会set类型
+
+```js
+let set =new Set("123456")
+let set2=new Set([...set].filter(item=>{
+    return item<=3
+}))
+console.log(set2)//输出 Set(3) {"1", "2", "3"}
+```
+
+数组去重
+
+```js
+let arr=[1,2,3,4,1,4]
+let arr2=[...new Set(arr)]
+console.log(arr2) //输出 [1, 2, 3, 4]
+```
+
+并集 交集 差集的实现
+
+```js
+let a=new Set(["a","b","c"])
+let b=new Set(["b","c","d"])
+//并集
+console.log(new Set([...a,...b]))//输出 Set(4) {"a", "b", "c", "d"}
+//a-b差集
+let res=new Set([...a].filter(item=>![...b].includes(item)))
+console.log(res)//输出Set(1) {"a"}
+//交集
+let res2=new Set([...a].filter(item=>[...b].includes(item)))
+console.log(res2)//输出 Set(2) {"b", "c"}
+```
+
+### WeakSet
+
+WeakSet和Set不同的是，WeakSet的键必须是**引用类型**。
+
+* add()
+
+```js
+let set=new Set(["a","b"])
+set.add(["c","d"])
+console.log(set) //{"a", "b", Array(2)}
+```
+
+weakSet的弱引用特性
+
+```js
+let a={name:"张三"}
+let b=a //在这里b和a指向的是同一块内存地址。这个对象有一个引用计数器，现在值为2
+
+let c=new weakSet()
+c.add(a)//并不会让引用计数器加1，这就是弱引用
+
+a=null
+b=null//当两个变量都不引用了，对象的引用计数器为0，会被垃圾回收期回收。
+//注意：这时候WeakSet还在引用这个对象，只不过现在对象为null,WeakSet有可能因为别的操作变成null，因此WeakSet没有size，遍历等方法，以防止出错
+```
+
+## Map
+
+### Map的声明
+
+键名可以是字符串，函数，对象，数值
+
+```js
+let map=new Map()
+
+let map=new Map([["a",1],["b",2],["c",3]])
+console.log(map)
+//输出 Map(3) {"a" => 1, "b" => 2, "c" => 3}
+```
+
+### Map操作
+
+* set()
+* get()  通过key查找value，不存在的key返回undefined
+* delete()  删除成功返回true，若map中没有要删除的键名，则返回false
+* has()  若键名存在，返回true，否则返回false
+* clear() 清空map，没有返回值
+
+```js
+let map=new Map()
+map.set("a",1)
+map.set("b",2)
+console.log(map.get("b"))//输出2
+
+console.log(map.delete("b"))//输出true
+console.log(map)//输出 Map(1) {"a" => 1}
+
+console.log(map.has("a"))//输出true
+
+map.clear()
+console.log(map)//Map(0) {}
+```
+
+### 类型转换Map<-->Array
+
+```js
+//Map-->Array
+let map=new Map([["张三",60],["李四",70],["王五",30]])
+console.log([...map])
+//输出 [["张三", 60],["李四", 70],["王五", 30]]，注意：这个输出的是一个数组，数组元素也是数组
+
+console.log([...map.entries()])//输出[["张三", 60],["李四", 70],["王五", 30]]
+
+//所有键转化为数组
+console.log([...map.keys()])//输出 ["张三", "李四", "王五"]
+//所有值转化为数组
+console.log([...map.values()])//输出 [60, 70, 30]
+
+
+//Array-->Map
+//这种声明方式就是用Array转化为Map
+let map=new Map([["张三",60],["李四",70],["王五",30]]) 
+console.log(map)
+//输出 Map(3) {"张三" => 60, "李四" => 70, "王五" => 30}
+////注意：Array必须符合Map的格式才能转换为Map
+new Map([["张三",60]]) //符合
+new Map(["张三",60]) //不符合，报错
+let arr=[["张三",60,"男"],["李四",60,"女"]]
+console.log(new Map(arr))//不符合，但是可以用 输出 Map(2) {"张三" => 60, "李四" => 60} //张三作为key，60作为值，剩下的"男"被略掉了
+```
+
+应用，map转化为array，完成指定功能后，转换回map
+
+```js
+//map中筛选出来成绩大于等于60
+let map=new Map([["张三",60,],["李四",30],["王五",80]])
+let newArray=[]
+for(const value of [...map]){
+    //console.log(value)
+    if(value[1]>=60)
+        newArray.push(value)
 }
-//输出 a b c
+console.log(newArray)//输出 ["张三", 60] ["王五", 80]
 ```
 
-### for key in
+### 展开语法
 
-遍历key
+收集不定个数的参数，放入数组中
+
+* 应用在函数参数中
+
+  ```js
+  function show(a,b,...args){//...args只能放在最后，接收剩余变量
+  	console.log(a,b,...args)//输出 1 2 3 4 5 6
+      console.log(args)//输出 [3, 4, 5, 6]，注意这里是把接受的参数放入数组中
+  }
+  //相当于
+  show(1,2,3,4,5,6)// 1给a,2给b，剩余的3，4，5，6被放到...args中 ,args是[3,4,5,6]
+  ```
+
+* 应用在结构赋值中 **【结构赋值】中会讲到**
+
+  ```js
+  let [first,...second] = ['a','b','c']; //first是a,second是['b','c']
+  ```
+
+  
+
+展开语法，可以将任何**可迭代对象**展开（把外层不管是**[]**、**{}**，**“ ”**，**Set**，**Map**全部脱掉脱掉！）
+
+例子：展开数组
 
 ```js
-arr=["n","m","d"]
-for(key in arr){//i是key
+//1. 展开数组,用数组接收
+let arr=[1,2,3,4]
+[...arr]//
+
+//2. 展开多个数组,用数组接收（合并效果）
+arr=["h","e","r"]
+arr2=["q","w","e"]
+arr3=[...arr,...arr2]
+console.log(arr3)//输出 ["h", "e", "r", "q", "w", "e"]
+```
+
+例子展开对象
+
+```js
+// 展开多个对象,用对象接收（合并效果）
+var obj1 = {name:'hehe'}
+var obj2 = {age:20}
+var mergeObj = {...obj1,...obj2}
+console.log(mergeObj)//输出{name: "hehe", age: 20}
+```
+
+
+
+## 解构赋值
+
+结构赋值：等号后侧可以是任何**可迭代对象**解构，赋值给新的变量 
+
+解构数组
+
+```js
+//1. 只赋值部分变量:逗号分隔，留下空白，可以跳过不想接收的数据
+let [first,,third] = ['a','b','c']; //first是a，second是b
+
+//2. 只赋值部分变量:后续不用接收，可以不写
+let [first] = ['a','b','c']; //first是a
+
+//3. 使用展开语法获取多个值
+let [first,...second] = ['a','b','c']; //first是a,second是['b','c']
+```
+
+解构字符串
+
+```js
+let [a, b, c] = "abc"; // ["a", "b", "c"]
+```
+
+解构Set
+
+```js
+let [one, two, three] = new Set([1, 2, 3]);
+```
+
+解构Map
+
+```js
+let [one, two, three] = new Map([1, 2, 3]);
+```
+
+
+
+### 默认值
+
+为变量设置默认值
+
+```js
+let [first, second = '默认值'] = ['a'];
+console.log(site); //默认值
+```
+
+### 函数中的解构
+
+可以实现命名参数的效果
+
+```js
+function func({name="jack",age=18,habit,score,classNum}){
+	
+}
+
+func({name:"tom",score:100})
+```
+
+
+
+## 遍历
+
+### forEach遍历
+
+数组、Set、Map支持使用forEach遍历
+
+**forEach(function(item[,index,arr]))**
+
+* 参数
+  * item 每一项数组元素
+  * index 索引
+  * 调用forEach方法的类型
+* 返回值
+
+```js
+let arr=["a","b","c","d"]
+arr.forEach(function(item,index,arr){
+    console.log(item,index)
+})
+//输出
+ //a 0
+ //b 1
+ //c 2
+ //d 3
+
+let set=new Set(["a","b","c"])
+
+set.forEach(function(value,key,set){
+    //key和value一样，都是set内元素，set是调用forEach的
+    console.log(value,key)
+})
+
+
+
+
+let map=new Map()
+map.set("a",1)
+map.set("b",2)
+
+map.forEach(function(value,key,map){
+   console.log(value,key) 
+});
+//输出
+//1 "a"
+//2 "b"
+```
+
+### for key in遍历
+
+遍历数组的key，key就是索引
+
+```js
+let arr=["n","m","d"]
+for(key in arr){
 	console.log(key)
 }
 //输出0 1 2 
 ```
 
-### for value of
+遍历对象的key
 
-遍历value
+```js
+let stu={
+    name:"jack",
+    age:18,
+    score:20
+}
+for(let key in stu){
+    console.log(key)
+}
+// name
+// age
+// score
+```
+
+### 遍历可迭代对象
+
+**可迭代对象的遍历**
+
+数组、字符串、内置的对象、Set、Map都是**可迭代对象（Iterable）**，可迭代对象均可以使用**for value of**遍历
+
+**注意**：我们自己创建的对象不是可迭代对象，需要自己实现**Symbol.iterator**属性（后面会有详细介绍实现过程），但是内置的对象，都默认实现了，所以可以迭代
+
+例如：遍历数组的value
 
 ```js
 //值类型不可改变
@@ -1957,106 +2755,632 @@ console.log(arr) //输出 1 2 3 4 5
 
 
 
-## 解构赋值
+**什么是可迭代对象的**
 
-解构是一种更简洁的赋值特性，可以理解为分解一个数据的结构
+通过自己实现一个可迭代对象来学习，我们给对象添加`for value of`（对象不是可迭代对象）
 
-- 建设使用 `var/let/const` 声明
+* 当 `for..of` 循环时，会调用Symbol.iterator方法（如果没找到，就会报错）。这个方法返回一个 **迭代器对象（iterator）** 
+* 迭代器对象中，必须有一个`next()` 方法，其返回的结果的格式必须是 `{done: Boolean, value: any}`
+  * 当 `done=true` 时，表示循环结束
+  * 当 `done=false` 时，表示还有下一个元素，会再次返回下一个迭代器对象，`value`就是这次的数据
 
-### 基本使用
+* `for..of` 循环会自动判断done的值，遍历整个可迭代对象
 
-下面是基本使用语法
-
-```text
-//数组使用
-let [name, url] = ['后盾人', 'houdunren.com'];
-console.log(name);
-```
-
-解构赋值数组
-
-```text
-function hd() {
-	return ['houdunren', 'hdcms'];
-}
-let [a, b] = hd();
-console.log(a); //houdunren
-```
-
-剩余解构指用一个变量来接收剩余参数
-
-```text
-let [a, ...b] = ['后盾人', 'houdunren', 'hdcms'];
-console.log(b);
-```
-
-如果变量已经初始化过，就要使用`()` 定义赋值表达式，严格模式会报错所以不建议使用。
-
-```text
-let web = "后盾人";
-[web, url] = ["hdcms.com", "houdunren.com"];
-console.log(web);
-```
-
-字符串解构
-
-```text
-"use strict";
-const [...a] = "houdunren.com";
-console.log(a); //Array(13)
-```
-
-### 严格模式
-
-非严格模式可以不使用声明指令，严格模式下必须使用声明。所以建议使用 let 等声明。
-
-```text
-"use strict";
-
-[web, url] = ["hdcms.com", "houdunren.com"];
-console.log(web);
-```
-
-### 简洁定义
-
-只赋值部分变量
-
-```text
-let [,url]=['后盾人','houdunren.com'];
-console.log(url);//houdunren.com
-```
-
-使用展开语法获取多个值
-
-```text
-let [name, ...arr] = ['后盾人', 'hdcms', 'houdunren.com'];
-console.log(name, arr); //后盾人 (2) ["hdcms", "houdunren.com"]
-```
-
-### 默认值
-
-为变量设置默认值
-
-```text
-let [name, site = 'hdcms'] = ['后盾人'];
-console.log(site); //hdcms
-```
-
-### 函数中的解构
-
-可以实现类似dart中命名参数的效果
-
-```
-function func({name="jack",age=18,habit,score,classNum}){
-	
+```js
+let stu={
+    name:"jack",
+    age:18,
+    score:20
 }
 
-func({name:"tom",score:100})
+stu[Symbol.iterator]= function (){
+    return{
+        entriesList:Object.entries(this), //this指向stu对象
+        curIndex:0,
+        next(){
+            if(this.curIndex+1<=this.entriesList.length){
+                let res={done:false,value:this.entriesList[this.curIndex][1]}//this指向当前这个对象中
+                this.curIndex++
+                return res
+            }else{
+                return {done:true,value:null}
+            }
+
+        }
+    }
+}
+
+
+for(let value of stu){
+    console.log(value)
+}
+
+//jack
+//18
+//20
+```
+
+**获取可迭代对象**
+
+我们也可以获取迭代器对象后，手动调用next方法
+
+```js
+let str = "Hello";
+
+let iterator = str[Symbol.iterator](); //获取带了可迭代对象
+
+while (true) {
+  let result = iterator.next(); //其中的next方法
+  if (result.done) break;
+  console.log(result.value); // 一个接一个地输出字符
+}
+```
+
+### 获取迭代器
+
+数组、Set、Map都有这三个方法，通过这三种方式获取可迭代对象
+
+**keys( )**
+
+* 参数：无
+
+* 返回值：可迭代对象
+
+
+
+**values( ) **
+
+* 参数：无
+
+* 返回值：可迭代对象
+
+
+
+**entries( )**
+
+* 参数：无
+
+* 返回值：可迭代对象
+
+
+
+**数组**
+
+```js
+let arr=["a","b","c"]
+
+//所有键
+console.log(arr.keys())//输出 Object [Array Iterator] {}
+//所有值
+console.log(arr.values())//输出 Object [Array Iterator] {}
+//所有键和值
+console.log(arr.entries())//输出 Object [Array Iterator] {}
+
+//遍历所有键
+for(const value of arr.keys()){
+    console.log(value)
+}//输出0 1 2
+
+//遍历所有值
+for(const value of arr.values()){
+    console.log(value)
+}//输出a b c
+
+//遍历所有键和值，[value,key]是解构
+for(const [value,key] of arr.entries()){
+    console.log(value,key)
+}
+// 0 a
+// 1 b
+// 2 c
+
+```
+
+**Set**
+
+set没有键，但是为了使迭代器对所有类型统一，所以让set的键和值一样，都是set内的元素
+
+```js
+let set=new Set(["a","b","c"])
+//所有键
+console.log(set.keys())//输出 SetIterator {"a", "b", "c"}
+//所有值
+console.log(set.values())//输出 SetIterator {"a", "b", "c"}
+//所有键和值
+console.log(set.entries())//输出 SetIterator {"a" => "a", "b" => "b", "c" => "c"}
+
+
+//遍历所有键
+for(const value of set.keys()){
+    console.log(value)
+}//输出a b c
+
+//遍历所有值
+for(const value of set.values()){
+    console.log(value)
+}//输出a b c
+
+//遍历所有键和值，[value,key]是解构
+for(const [value,key] of set.entries()){
+    console.log(value)
+    console.log(key)
+}
+```
+
+**Map**
+
+```js
+let map=new Map()
+map.set("a",1)
+map.set("b",2)
+
+//所有值
+console.log(map.values())//输出 MapIterator {1, 2}
+//所有键
+console.log(map.keys())//输出 MapIterator {"a", "b"}
+//所有键和值
+console.log(map.entries())//输出 MapIterator {"a" => 1, "b" => 2}
+
+
+//遍历值
+for(const value of map.values()){
+    console.log(value)
+}//输出1 2
+
+//遍历key
+for(const key of map.keys()){
+    console.log(key)
+}//输出a b
+
+//遍历值和键，[key,value]用了解构
+for(const [key,value] of map.entries()){
+    console.log(key)
+    console.log(value)
+}//输出 a 1 b 2
+```
+
+## this的指向
+
+JS中this的指向是十分让人头秃的一个知识点，因为this的指向并不固定，不同的调用方式同一个this是不同的
+
+简单一句话概括就是：
+
+**this指向其调用者所在的上下文**
+
+| 规则编号 | 规则                    | 上下文（this指向）           |
+| -------- | ----------------------- | ---------------------------- |
+| 规则1    | 函数（）                | window                       |
+| 规则2    | new 函数（）            | 秘密创建出的那个对象         |
+| 规则3    | 对象.函数（）           | 该对象                       |
+| 规则4    | 数组[索引]（）          | 该数组                       |
+| 规则5    | 定时器                  | window                       |
+| 规则6    | Dom事件处理函数         | window                       |
+| 规则7    | IIFE                    | window                       |
+| 规则8    | call、apply、bind       | 可指定this指向               |
+| 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文 |
+
+注意：除去**规则9**以外，前面提到的函数都不是箭头函数
+
+### 例子
+
+* 全局中的this指向window对象
+
+  ```js
+  console.log(this)//输出 window对象
+  ```
+
+* 直接调用函数，函数中的this指向window 
+
+  ```js
+  function func(){
+    console.log(this)//【规则1】
+  }
+  func()
+  ```
+
+  new关键调用函数（这个函数就称为构造函数，前面【函数】章节介绍了new关键字）
+
+  ```js
+  function stu(stunum){
+      this.stunum=stunum//这里的this是指向的是创建的new关键字创建的空对象 【规则2】
+      this.show=function(){//【规则2】
+          console.log(this.stunum) //【规则3】
+          function func(){
+              console.log(this)//这里的this是指向window对象【规则1】
+          }
+          func()
+      }
+  }
+  let student=new stu("张三")
+  student.show()
+  //输出 张三 window对象
+  ```
+
+* 对象中的this
+
+  ```javascript
+  let stu={
+      stunum:120,
+      show:function(){   
+          console.log(this.stunum) //【规则3】
+    
+          function func(){
+              console.log(this)//指向window对象【规则1】
+          }
+          func()
+      }
+  } 
+  stu.show()
+  //输出 120   window对象
+  ```
+  
+* 箭头函数
+
+  箭头函数中的this对象，指向的父级作用域的this的指向
+
+  ```javascript
+  let lesson={
+      site:"hedaodao",
+      show:function(){      
+          return ()=>{
+              return this.site //【规则9】，其所在的上下文属于【规则3】，指向lesson对象
+          }
+      }
+  }
+  console.log(lesson.show()()) 
+  //输出 hedaodao
+  ```
+  
+* call apply bind
+
+  会在后面详细介绍
+
+### 箭头函数的由来
+
+属性值的函数，该函数的子函数中出现this会指向window对象，而不是对象本身。以下是解决方案
+
+* 新方法：ES6出现了箭头函数，可以很好的解决这个问题
+
+  ```javascript
+  let lesson={
+      site:"hedaodao",
+      show:function(){      
+          return ()=>{
+              return this.site
+          }
+      }
+  }
+  console.log(lesson.show()()) //输出 hedaodao
+  ```
+
+* 老方法：没有箭头函数之前，通常的做法是使用一个变量self保存下，指向对象的this
+
+  ```javascript
+  let lesson={
+      site:"hedaodao",
+      show:function(){
+          var self=this//这里的this是指向lesson对象的，赋值给self，后面子函数里，用self
+          return function(){
+              return self.site
+          }
+      }
+  }
+  console.log(lesson.show()()) //输出 hedaodao
+  ```
+  
+
+### call apply bind
+
+用于设置函数中的this的指向
+
+构造函数中this，this指向的是本身,是空白的。new新的对象后，传入参数那么，对象内部才有的`name: "张三"`
+
+```javascript
+function User(name) {
+    this.name=name
+}
+let res=new User("张三")
+console.log(res) //输出 User {name: "张三"}
+```
+
+**call**
+
+call的第一个参数：初始User对象，放入到第一个参数对象之中；
+
+call中剩下的参数给了User对象中的参数赋值。
+
+注意：这里this已经指向obj，name的赋值操作,其实把”张三“，放到了obj之中，最后改变了obj的值
+
+```javascript
+function User(name){
+   this.name=name
+}
+let obj={age:20}
+
+User.call(obj,"张三")//call和apply都是立即执行User函数，这时候this指向obj
+
+console.log(obj)//输出 {age: 20, name: "张三"}
+```
+
+**call与apply区别**
+
+相同点：两个都是立即执行
+
+不同点：传递函数参数时，apply需要把所有的参数放到数组中
+
+```js
+let lisi={
+    name:"李四"
+}
+
+function User(age,score){
+    console.log(this.name,age,score)
+}
+//注意看这里，call和apply立即执行，其中的this已经指向了lishi这个对象
+User.call(lisi,18,100) //李四 18 100
+User.apply(lisi,[18,100]) //李四 18 100
+```
+
+**bind**
+
+bind与call，apply的不同是，bind不能立即执行
+
+```js
+function show(age,score){
+    console.log(this.name,age,score)
+}
+//使用call
+show.call({name:"张三"},20,99)//输出 张三 20 99
+//使用apply
+show.apply({name:"张三"},[21,80])//输出 张三 21 80
+
+//----重点开始----
+
+//使用bind，返回值是show函数，所以在后面加()才能组成立即执行函数
+console.log(show.bind({name:"张三"},19))
+//输出
+//ƒ show(age,score){
+//    console.log(this.name,age,score)
+//}
+
+////可以直接传参数
+let res=show.bind({name:"张三"},19,95)
+res()//输出 张三 19 95
+
+////可以调用时传参数
+let res=show.bind({name:"张三"})
+res(19,95)//输出 张三 19 95gh
+
+////假如同时传参，以使用bind是传的参数优先
+let res=show.bind({name:"张三"},19,95)
+res(20,100)//输出 张三 19 95
+let res=show.bind({name:"张三"},19)
+res(20,100)//输出 张三 19 20，res调用时的20，自动略去了
+```
+
+**应用**
+
+点击按钮时，弹出包含按钮文字的提示框
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+<button>H</button>
+<button>D</button>
+    <script>
+function show(){ 
+    alert(this.innerHTML)
+}
+let buttons=document.querySelectorAll("button")
+for(let i=0;i<buttons.length;i++){
+    buttons[i].addEventListener("click",event=>{
+        show.call(event.target)//当鼠标点击按钮时，返回event对象，包含这鼠标点击的相关信息，其中event.target就是button的dom对象。点击按钮时，触发show.call,并把其总的this替换为button对象j(否则this就是window对象)，call会立即执行show方法，
+    })
+}
+
+    </script>
+</body>
+</html>
+```
+
+求数组中的最大值
+
+```js
+//js数组中未提供求最大值的方法，我们借用Math.max，参数是一串数字，不能是数组
+
+//方法一
+let arr=[1,2,3,4,5,6]
+console.log(Math.max(...arr))//输出6
+
+//方法二
+console.log(Math.max.apply(Math,arr))//输出6
+
 ```
 
 
 
-## 错误
+用在不需要立即执行的函数中，把函数中的this替换成传递的内容
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button>详细信息</button>
+    <script>
+
+document.querySelector("button").addEventListener(
+    "click",
+    function(age,score){
+        console.log(this.name,age,score)
+    }.call({name:"张三"},20,90)
+)
+    </script> 
+</body>
+</html>
+
+//点击按钮，控制台输出 张三 20 90 <button>详细信息</button>
+
+//这里如果用call和apply，不用点击按钮就会触发函数
+```
+
+每间隔1秒，网页背景变换颜色
+
+```js
+function Color(elem){
+    this.elem=elem
+    this.colors=["#33FF66","#FF9966","#00CCFF","#FFCC66"]
+    this.run=function(){
+        setInterval(function(){
+            let i=Math.floor(Math.random()*this.colors.length)
+            this.elem.style.backgroundColor=this.colors[i]
+        }.bind(this),1000)//重点在这里，this.color中的this原本应该是window对象，但是这里通过bind将Color对象传递进去。这里应该看清楚，setInterval中的this指向的是Color对象，setInterval中的function出现原本应该是window对象，这里用bind传递了下，才变成了也是Color对对象
+    }
+}
+let obj=new Color(document.body)
+obj.run()
+```
+
+## Math对象
+
+只介绍下，Math常用的（静态）方法
+
+| 函数             | 描述                        |
+| ---------------- | --------------------------- |
+| abs(x)           | 返回 x 的绝对值             |
+| ceil(x)          | 向上取整                    |
+| floor(x)         | 向下取整                    |
+| max(x,y,z,...,n) | 返回 x,y,z,...,n 中的最高值 |
+| min(x,y,z,...,n) | 返回 x,y,z,...,n中的最低值  |
+| random()         | 返回 0 ~ 1 之间的随机数     |
+| round(x)         | 四舍五入，保留整数          |
+| sqrt(x)          | 返回数的平方根              |
+| pow(x,y)         | 返回 x 的 y 次幂            |
+
+传入的参数会通过Number转化为数字后在运算，如果参数中有被转化为NaN的，则返回NaN
+
+## Data对象
+
+### Data对象
+
+创建Data对象，返回的都是当地时区的时间对象
+
+* 无参数
+
+  ```js
+  var today = new Date() //获取设备当前的时间
+  ```
+
+* 参数是数字
+
+  ```js
+  new Date(year, monthIndex [, day [, hours [, minutes [, seconds [, milliseconds]]]]]);
+  
+  //注意：
+  //1. year, monthInde两个参数是比传的，否则返回的Data对象是错误的
+  //2. 其中monthIndex=0，表示的是1月,11为12月。不传递的参数，默认为0
+  ```
+
+  ```js
+  new Date(2022,0) //Sat Jan 01 2022 00:00:00 GMT+0800 (中国标准时间)
+  ```
+
+* 参数是字符串
+
+  ```js
+  new Date(dateString);
+  
+  //'yyyy-mm-dd HH:MM:SS'
+  //'yyyy/mm/dd HH:MM:SS'
+  //注意:
+  //1. 当你使用字符串这个形式的时候, 1 表示 1 月, 12 表示 12 月
+  //2. 年月日和时分秒中间有一个空格
+  ```
+
+  ```js
+  new Date("2022-01-20 14:30:00") //Thu Jan 20 2022 14:30:00 GMT+0800 (中国标准时间)
+  
+  new Date("2022/01/20 14:30:00") //Thu Jan 20 2022 14:30:00 GMT+0800 (中国标准时间)
+  ```
+
+  
+
+### Data对象的方法
+
+| Data对象的方法    | 描述                                              |
+| ----------------- | ------------------------------------------------- |
+| getDay()          | 返回Date对象的是星期几（0～6，0是星期日）         |
+| getFullYear()     | 返回Date对象的年份（四位数，例如2022）            |
+| getMonth()        | 返回Date对象的月份 (0 ~ 11，0指的是1月，之后类推) |
+| getDate()         | 返回Date对象的日                                  |
+| getHours()        | 返回Date对象的小时 (0 ~ 23)                       |
+| getMinutes()      | 返回 Date 对象的分钟 (0 ~ 59)                     |
+| getSeconds()      | 返回 Date 对象的秒数 (0 ~ 59)                     |
+| getMilliseconds() | 返回 Date 对象的毫秒(0 ~ 999)                     |
+| **时间戳**        |                                                   |
+| getTime()         | 返回 1970 年 1 月 1 日至今的毫秒数（时间戳）      |
+
+### 时间戳 
+
+一共有3种方式
+
+```
+new Date().getTime()
+new Date()*1
+```
+
+```js
+Date.now()//直接用Date对象，返回当前时间的时间戳
+```
+
+### 实践
+
+两个时间对象比较，一般都是使用时间戳
+
+例子：计算两个日期相差的天数
+
+```js
+let now=new Date()
+let end=new Date().setFullYear(2050,11,22)//月份是从0开始的，这里是12月22日。这里end是时间戳
+
+let res=(end-now)/ (1*24*60*60*1000)
+console.log("距离时间",res)//打印当前时间到2020-11-22的天数
+```
+
+格式化时间 ：由于JS中没有提供相关的功能，所以需要自己实现
+
+```js
+//格式化时间的函数
+let date=new Date()
+function dateFormat(date,format='YYYY-MM-DD HH:mm:SS'){
+    const config={
+        YYYY:date.getFullYear(),
+        MM:date.getMonth()+1,
+        DD:date.getDate(),
+        HH:date.getHours(),
+        mm:date.getMinutes(),
+        SS:date.getSeconds()
+    };
+    for(const key in config){
+        format=format.replace(key,config[key])
+    }
+    return format
+}
+console.log(dateFormat(date,"YYYY年-MM月-DD日"))//输出 2020年-5月-11日
+```
+
+## 错误对象
 
 ### 错误类型
 
@@ -2153,9 +3477,1186 @@ function testFinally(){
 console.log(testFinally())  //3
 ```
 
+## Promise
+
+Promise包含`pending`、`fulfilled`、`rejected`三种状态
+
+- `pending` 指初始等待状态，初始化 `promise` 时的状态
+- `resolve` 指已经解决，将 `promise` 状态设置为`fulfilled`
+- `reject` 指拒绝处理，将 `promise` 状态设置为`rejected`
+
+### 基本使用
+
+**传递参数**
+
+```javascript
+let p1=new Promise((resolve,reject)=>{
+    resolve("传递给then的值")//执行成功，传递参数
+}).then(
+    value=>{//执行成功，会把值传递给第一个参数value
+        console.log(value)
+    },reason=>{////执行失败，会把值传递给第二个参数reason
+        console.log(reason)
+    }
+)
+
+//输出 传递给then的值
+```
+
+注意：
+
+Promise内部函数，只写一个参数时，默认是resolve
+
+then中只写一个函数，默认是执行成功的那个函数
+
+```javascript
+let p1=new Promise((resolve)=>{
+    resolve("传递给then的值")//执行成功，传递参数
+}).then(
+    value=>{//执行成功，会把值传递给参数value
+        console.log(value)
+)
+```
+
+如果then中只写执行失败的函数
+
+```javascript
+let p1=new Promise((resolve，reject)=>{
+    reject("传递给then的值")//执行成功，传递参数
+}).then(
+	null,////执行成功的函数不写，也得放个null占位置
+    reason=>{////执行失败，会把值传递给第二个参数reason
+        console.log(reason)
+    }
+)
+```
+
+**连续传递**
+
+默认传递的是成功。then函数执行的结果仍然是promise对象，所有仍然可以继续调用then方法
+
+```javascript
+let p1=new Promise((resolve,reject)=>{
+    resolve("传递给then的值")
+}).then(
+    value=>{
+        return value//使用return，把参数传递给下一个then，默认是resolve
+    },reason=>{
+        console.log(reason)
+    }
+).then(
+    value=>{//成功传递过来的
+        console.log(value)
+    }
+)
+```
+
+传递promise对象: 无论是resolve(p2)还是reject(p2),还是return p2，最终下一个then中处理的函数，由p2是resolve还是reject
+
+```javascript
+let p2=new Promise((resolve,reject)=>{
+    reject("传递的参数")
+})
+
+let p1=new Promise((resolve,reject)=>{
+    resolve(p2)//参数是一个promise对象
+}).then(//传递到哪个函数取决于P2是resolve还是reject
+    value=>{//传递到执行成功里面来的
+        console.log(value) //输出 传递的参数
+    },reason=>{
+        console.log(reason)
+    }
+)
+```
+
+**注意细节：**
+
+then的返回值是resolve状态的promise，如果没有return值，则不带参数
+
+```js
+let p1=new Promise((resolve,reject)=>{
+		    resolve("传递给then的值")
+		}).then(
+		    value=>{
+		        console.log(value)//这里打印，但是没写return value，但是这个then的返回值任然是resolve状态的promise，只不过没参数
+		    },reason=>{
+		        console.log(reason)
+		    }
+		).then(
+		    value=>{//
+		        console.log("看这里："+value)
+				
+				
+		    }
+		)
+
+//输出    传递给then的值     看这里：undefined
+```
+
+### then
+
+then除了上面提到的用法外，还有一个用方法
+
+```javascript
+let p1=new Promise((resolve,reject)=>{
+    resolve("传递给第一个then的值")
+}).then(
+    value=>{
+        return {
+            //这里return一个then函数
+            then(resolve,reject){
+                resolve("传递给下一个then的值")
+            }
+        } 
+    },reason=>{
+        console.log(reason)
+    }
+).then(
+    value=>{//成功传递过来的
+        console.log(value)
+    }
+)
+
+//输出 传递给下一个then的值
+```
+
+###  catch
+
+`then(null,reject){}`以捕获到reject传递过来的的参数，也可以捕获到Promise执行过程中抛出的错误。
+
+catch可以捕获到reject传递过来的的参数,也可以捕获到Promise执行过程中抛出的错误。
+
+因此建议前面所有then处理，不要写失败处理函数，将catch写在最后，前面发生的失败参数和错误会跳过所有的then，直接被传递到catch中处理
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+  reject("你好");
+})
+.then((value)=>{
+    
+})
+.catch(msg => {
+  console.log("这里是catch捕获的参数："+msg);
+});
+
+//输出 这里是catch捕获的参数：你好
+```
+
+**注意点：**
+
+catch的返回值也是resolve状态的promise，而且之前的then即使有rejected的处理函数，仍然会被忽略，直接被catch捕获
+
+```js
+let p1 = new Promise((resolve, reject) => {
+					reject("参数")
+				}).then(
+					value => {
+						console.log("第一个then中处理resolve:" + value) //这里打印，但是没写return value，但是这个then的返回值任然是resolve状态的promise，只不过没参数
+					}, reason => {
+						console.log("第一个then中处理reject:"+value)
+					}
+				).then(
+					value => { //
+						console.log("第二个then中处理resolve:" + value)
+					},reason=>{
+						console.log("第二个then中处理reject:"+value)
+					}
+				).catch(msg => {
+					console.log("这里是catch捕获的参数:" + msg);
+				}).then(
+					value => { //
+						console.log("第三个then中处理resolve:" + value)
+					},reason=>{
+						console.log("第三个then中处理reject:"+value)
+					}
+				)
+
+//这里是catch捕获的参数:ReferenceError: value is not defined
+//第三个then中处理resolve:undefined
+```
+
+then返回的resolve状态的promise，跳过了catch，把参数传递给了下一个then
+
+```js
+let p1 = new Promise((resolve, reject) => {
+					resolve("参数")
+				}).then(
+					value => {
+						console.log("第一个then中处理resolve:" + value) //这里打印，但是没写return value，但是这个then的返回值任然是resolve状态的promise，只不过没参数
+					}, reason => {
+						console.log("第一个then中处理reject:"+value)
+					}
+				).then(
+					value => { //
+						console.log("第二个then中处理resolve:" + value)
+						return "参数2"
+					},reason=>{
+						console.log("第二个then中处理reject:"+value)
+					}
+				).catch(msg => {
+					console.log("这里是catch捕获的参数:" + msg);
+				}).then(
+					value => { //
+						console.log("第三个then中处理resolve:" + value)
+					},reason=>{
+						console.log("第三个then中处理reject:"+value)
+					}
+				)
+
+//第一个then中处理resolve:参数
+//第二个then中处理resolve:undefined
+//第三个then中处理resolve:参数2
+```
+
+### finally
+
+无论状态是`resolve` 或 `reject` 都会执行此动作，`finally` 与状态无关。
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+  reject("hdcms");
+})
+.then(msg => {
+  console.log("resolve");
+})
+.catch(msg => {
+  console.log("reject");
+})
+.finally(() => {
+  console.log("resolve/reject状态都会执行");
+});
+```
+
+### 宏任务与微任务  
+
+js是单线程，程序从上到下执行
+
+* 执行到异步函数（比如：setTimeout），添加到宏任务队列中
+* 执行到resove或者reject时才会把（new Promise中的函数是同步函数，在主线程中执行），其promise后的所有then中的函数操作，按顺序添加到微任务队列中
+
+添加到宏任务/微任务队列后，程序继续向下执行。当所有程序执行完了，先执行微任务队列，然后执行宏任务队列（注意执行的优先级）
+
+**分析以下情况**
+
+程序由上到下运行
+
+* 创建p1
+
+* 打印”你好“
+* 执行到resolve后，把then中的函数加入到微任务队列。并把then返回的promise对象赋值给p2
+* 打印p1对象，因为已经resolve，所以状态是fulfilled
+* 打印p2对象，但是p2未执行
+* 主线任务结束后，开始执行微任务队列，value函数执行，打印"succeed"
+
+```javascript
+let p1=new Promise((resolve,reject)=>{
+    console.log("你好")
+    resolve("succeed")
+})
+let p2=p1.then(
+    value=>console.log(value),
+    reason=>console.log(reason)
+)
+console.log(p1)
+console.log(p2)
+```
+
+![image-20210415000628923](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415000628923.png)
+
+**分析以下情况**
+
+程序由上到下运行
+
+* 创建p1
+
+* 打印”你好“
+* 执行到resolve后，把then中的函数加入到微任务队列。并把then返回的promise对象赋值给p2
+* setTimeout是异步函数，会被加入到宏任务队列
+* 主线任务结束，开始执行微任务队列，value函数执行，打印"succeed"
+* 执行宏任务队列，打印p1和p2,这时候两个都是fulfilled状态
+
+```javascript
+let p1=new Promise((resolve,reject)=>{
+    console.log("你好")
+    resolve("succeed")
+})
+let p2=p1.then(
+    value=>console.log(value),
+    reason=>console.log(reason)
+)
+setTimeout(()=>{
+    console.log(p1)
+    console.log(p2)
+})
+```
+
+![image-20210415001615623](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415001615623.png)
+
+### 扩展接口
+
+**Promise.resolve**
+
+使用 `promise.resolve` 方法可以快速的返回一个成功的promise对象
+
+```javascript
+Promise.resolve("后盾人").then(value => {
+  console.log(value); //后盾人
+});
+```
+
+**Promise.reject**
+
+和 `Promise.resolve` 类似，`reject` 生成一个失败的promise对象
+
+```javascript
+new Promise(resolve => {
+  resolve("后盾人");
+})
+.then(v => {
+  if (v != "houdunren.com") return Promise.reject(new Error("fail"));
+})
+.catch(error => {
+  console.log(error);
+});
+```
+
+**Promise.all**
+
+使用`Promise.all` 方法可以同时执行多个并行异步操作
+
+* 所有Promise 状态都为`fulfilled`时,`Promise.all`的结果才是`fulfilled`,then按照all参数的顺序，接收所有`fulfilled`状态的Promise传递过来的参数
+
+  ```javascript
+  let p1 = new Promise((resolve, reject) => {
+    resolve("参数1");
+  });
+  let p2 = new Promise((resolve, reject) => {
+    resolve("参数2");
+  });
+  Promise.all([p2, p1]).then(
+      value=>{
+          console.log("fulfilled状态:",value)
+      },reason=>{
+          console.log("rejected状态:",reason)
+      }
+  );
+  
+  //输出 fulfilled状态:["参数2", "参数1"]
+  ```
+
+* 其中一个 Promise 状态都为`rejected`时,`Promise.all`的结果就是`rejected`，then的结果是按照all参数顺序中，接收第一个状态是`rejected`的Promise传递过来的值
+
+  ```javascript
+  let p1 = new Promise((resolve, reject) => {
+    resolve("参数1");
+  });
+  let p2 = new Promise((resolve, reject) => {
+    reject("参数2");
+  });
+  let p3 = new Promise((resolve, reject) => {
+    reject("参数3");
+  });
+  Promise.all([p1, p3,p2]).then(
+      value=>{
+          console.log(value)
+      },reason=>{
+          console.log(reason)
+      }
+  );
+  
+  //输出 参数3
+  ```
+
+**Promise.allSettled**
+
+`allSettled` 用于处理多个`promise` ，无论promise是fulfiled还是rejected，`allSettled`都是按照参数的顺序，按照`fulfilled`状态接收所有Promise传递过来的参数
+
+```javascript
+const p1 = new Promise((resolve, reject) => {
+  resolve("参数1");
+});
+const p2 = new Promise((resolve, reject) => {
+  reject("参数2");
+});
+Promise.allSettled([p1, p2])
+.then(msg => {
+  console.log(msg);
+})
+
+
+//输出  [ {status: "fulfilled", value: "参数1"}，{status: "rejected", reason: "参数2"} ]
+ 
+
+```
+
+**Promise.race**
+
+使用`Promise.race()` ，Promise无论是resolve还是reject，哪个快用哪个，按状态返回到对应的处理函数
+
+```javascript
+const hdcms = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve("第一个Promise");
+  }, 2000);
+});
+const houdunren = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    reject("第二个异步");
+  }, 1000);
+});
+Promise.race([hdcms, houdunren])
+.then(results => {
+  console.log("fulfilled状态："+results);
+})
+.catch(msg => {
+  console.log("rejected状态："+msg);
+});
+```
+
+### 任务队列
+
+https://houdunren.gitee.io/note/js/15%20Promise.html#%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97
+
+### async/await
+
+使用 `async/await` 是promise 的语法糖，可以让编写 promise 更清晰易懂，也是推荐编写promise 的方式。
+
+* async用在函数前，把return的值，放到Promise对象中，然后返回这个Promise对象。所以想要去处理Promise中的对象，需要继续用then函数
+
+  ```javascript
+  async function a() {
+    return "ni"
+  }
+  console.log(a())
+  //输出 Promise {<fulfilled>: "ni"}
+  ```
+
+* await只能出现在async函数中，await后面接Promise对象或其他异步函数
+
+  * await +Promise :等待Promise对象中resolve或者reject参数后，返回参数
+  * await +异步函数：等待异步函数结束，返回函数中return的值
+
+![image-20210418105050836](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418105050836.png)
+
+### Promise分装AJAX异步请求
+
+原版的AJAX异步请求
+
+```javascript
+function ajax(url,callback) {
+    let xhr=new XMLHttpRequest()
+    xhr.open("GET",url)
+    xhr.send()
+    xhr.onload=function(){
+        if(this.status==200){
+           callback(JSON.parse(this.response)) 
+        }else{
+            throw new Error("加载失败")
+        }
+    }
+    
+}
+```
+
+使用Promise封装
+
+```javascript
+function ajax(url) {
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest()
+        xhr.open("GET", url)
+        xhr.send()
+        xhr.onload = function () {
+            if (this.status == 200) {
+                resolve(JSON.parse(this.response))
+            } else {
+                reject("加载失败")
+            }
+        }
+
+    })
+
+}
+
+//	使用时,返回的peomise由then处理
+		ajax("网址").then(
+            value=>console.log(value),
+            reason=>console.log(reason)
+                       )
+```
+
+## 实现Promise
+
+### 实现Promise
+
+**初步实现resolve和reject方法**
+
+```javascript
+class HD {
+  static PENDING = "pending";
+  static FULFILLED = "fulfilled";
+  static REJECTED = "rejected";
+  constructor(executor) {
+    this.status = HD.PENDING;
+    this.value = null;
+    try {
+        //executor中的参数中this还是指向HD对象的
+        //但是执行到resolve和reject函数内部时，使用this，this会指向undefined(class中默认严格模式)
+        //所以使用bind，将resolve和reject函数中的this指向HD对象
+      executor(this.resolve.bind(this), this.reject.bind(this));
+    } catch (error) {
+      this.reject(error);
+    }
+  }
+  resolve(value) {
+    //promise的状态只能是从pending转换过去
+    if (this.status == HD.PENDING) {
+      this.status = HD.FULFILLED;
+      this.value = value;
+    }
+  }
+  reject(value) {
+    //promise的状态只能是从pending转换过去
+    if (this.status == HD.PENDING) {
+      this.status = HD.REJECTED;
+      this.value = value;
+    }
+  }
+	
+}
+```
+
+测试
+
+```javascript
+let a=new HD((resolve,reject)=>{
+	resolve("参数")
+})
+console.log(a) //输出  HD {status: "fulfilled", value: "你好"}
+```
+
+**添加then方法**
+
+```javascript
+then(onFulfilled, onRejected) {
+  //前两个if的作用：then的函数参数都不是必须的，所以需要设置默认值为函数，用于处理当没有传递时情况
+  //比如then(null,reject=>{ })，这种如果没有之前的两个if判断就会报错
+  if (typeof onFulfilled != "function") {
+    //将class HD中保存的传递的参数value的值，塞到onFulifilled和onRejected这两个函数中
+    onFulfilled = () => this.value;
+  }
+  if (typeof onRejected != "function") {
+    onRejected = () => this.value;
+  }
+    
+    
+  //只有promise状态改变了，才会执行then中的内容
+  if (this.status == HD.FULFILLED) {
+    try {
+      onFulfilled(this.value);
+    } catch (error) {
+      onRejected(error);
+    }
+  }
+  if (this.status == HD.REJECTED) {
+    try {
+      onRejected(this.value);
+    } catch (error) {
+      onRejected(error);
+    }
+  }
+}
+```
+
+存在的问题：HD没有异步的效果
+
+```javascript
+let a = new HD((resolve, reject) => {
+  resolve("你好")
+}).then(
+  value=>console.log("fulfilled状态:"+value),
+  reason=>console.log("rejected状态:"+reason)
+)
+console.log("他好")
+
+//输出   fulfilled状态:你好    他好
+//then先于主线任务被执行，这样是不对的
+```
+
+修改then，给then添加异步
+
+```java
+then(onFulfilled, onRejected) {
+  if (typeof onFulfilled != "function") {
+    onFulfilled = value => value;
+  }
+  if (typeof onRejected != "function") {
+    onRejected = value => value;
+  }
+  if (this.status == HD.FULFILLED) {
+      //其实就是添加了setTimeout函数之中，then中函数不会立即执行
+    setTimeout(() => {
+      try {
+        onFulfilled(this.value);
+      } catch (error) {
+        onRejected(error);
+      }
+    });
+  }
+  if (this.status == HD.REJECTED) {
+    setTimeout(() => {
+      try {
+        onRejected(this.value);
+      } catch (error) {
+        onRejected(error);
+      }
+    });
+  }
+}
+```
+
+存在的问题：resolve/reject放在定时器中，当它还未被执行时，就执行了then方法。then方法缺少对于pending状态的处理。
+
+```javascript
+let a = new HD((resolve, reject) => {
+  setTimeout(()=>{
+      resolve("你好")
+  },1000)
+}).then(
+  value=>console.log("fulfilled状态:"+value),
+  reason=>console.log("rejected状态:"+reason)
+)
+console.log("他好")
+
+//输出 他好
+//因为resolve/reject放在定时器中，当它还未被执行时，就执行了then方法。then方法缺少对于pending状态的处理。
+```
+
+修改方法
+
+```javascript
+//在HD构造函数中添加
+constructor(executor) {
+	...
+  this.callbacks = []
+  ...
+}    
+  
+//在then函数中添加pending状态，如果Promise没有被resolve或者reject（计时器计时1s之后执行），就进入then方法，会把两个函数push进HD对象中，当计时器到了时间，执行到resolve或者reject时，会在then中push进去的方法中，执行对应的方法
+then(onFulfilled, onRejected) {
+  ...
+  if (this.status == HD.PENDING) {
+    this.callbacks.push({
+      onFulfilled: value => {
+        try {
+          onFulfilled(value);
+        } catch (error) {
+          onRejected(error);
+        }
+      },
+      onRejected: value => {
+        try {
+          onRejected(value);
+        } catch (error) {
+          onRejected(error);
+        }
+      }
+    });
+  }
+  ...
+}
+  
+//修改resolve和reject函数
+resolve(value) {
+  if (this.status == HD.PENDING) {
+    this.status = HD.FULFILLED;
+    this.value = value;
+    this.callbacks.map(callback => {
+      callback.onFulfilled(value);
+    });
+  }
+}
+reject(value) {
+  if (this.status == HD.PENDING) {
+    this.status = HD.REJECTED;
+    this.value = value;
+    this.callbacks.map(callback => {
+      callback.onRejected(value);
+    });
+  }
+}
+```
+
+存在问题: 这里pending状态下是同步的，应该是先执行到`reslove(“你好”)`，将then添加到微任务，然后打印“哈哈”，然后再执行微任务，打印"你好"
+
+```javascript
+let p = new HD((resolve, reject) => {
+  setTimeout(() => {
+    resolve("你好");
+    console.log("哈哈");
+  });
+}).then(
+  value => {
+    console.log(value);
+  },
+  reason => {
+    console.log(reason);
+  }
+);
+//输出 你好 哈哈
+```
+
+修改resolve和reject函数
+
+```javascript
+resolve(value) {
+  if (this.status == HD.PENDING) {
+   	this.status = HD.FULFILLED;
+	this.value = value;
+    setTimeout(() => {
+      this.callbacks.map(callback => {
+        callback.onFulfilled(value);
+      });
+    });
+  }
+}
+reject(value) {
+  if (this.status == HD.PENDING) {
+  	this.status = HD.REJECTED;
+    this.value = value;
+    setTimeout(() => {
+      this.callbacks.map(callback => {
+        callback.onRejected(value);
+      });
+    });
+  }
+}
+```
+
+存在的问题：未实现then的链式调用
+
+* then的返回值是新的Promise
+* then中通过`return 参数`，将参数传递给下一个then，且状态是fulfilled状态
+
+继续修改：
+
+```javascript
+then(onFulfilled, onRejected) {
+  if (typeof onFulfilled != "function") {
+    onFulfilled = value => value;
+  }
+  if (typeof onRejected != "function") {
+    onRejected = value => value;
+  }
+  //返回新的Promise，这里的参数是新Promise的resolve和rejec两个函数。
+  return new HD((resolve, reject) => {
+    if (this.status == HD.PENDING) {
+      this.callbacks.push({
+        onFulfilled: value => {
+          try {
+            let result = onFulfilled(value);
+            //then中的"return 参数",返回的新Promise默认是fulfilled状态
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        },
+        onRejected: value => {
+          try {
+            let result = onRejected(value);
+            //then中的"return 参数",返回的新Promise默认是fulfilled状态
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        }
+      });
+    }
+    if (this.status == HD.FULFILLED) {
+      setTimeout(() => {
+        try {
+          let result = onFulfilled(this.value);
+          //then中的"return 参数",返回的新Promise默认是fulfilled状态
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+    if (this.status == HD.REJECTED) {
+      setTimeout(() => {
+        try {
+          let result = onRejected(this.value);
+          //then中的"return 参数",返回的新Promise默认是fulfilled状态
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+  });
+}
+```
+
+继续修改：实现then中可以return 一个Promise
+
+```javascript
+then(onFulfilled, onRejected) {
+  if (typeof onFulfilled != "function") {
+    onFulfilled = value => value;
+  }
+  if (typeof onRejected != "function") {
+    onRejected = value => value;
+  }
+  return new HD((resolve, reject) => {
+    if (this.status == HD.PENDING) {
+      this.callbacks.push({
+        onFulfilled: value => {
+          try {
+            let result = onFulfilled(value);
+            //判断下，return的是Promise对象，则用then函数执行其中的resolve或者reject函数
+            if (result instanceof HD) {
+              result.then(resolve, reject);
+            } else {//如果return的是一个参数，默认新的Promise是fulfilled状态，resolve参数即可
+              resolve(result);
+            }
+          } catch (error) {
+            reject(error);
+          }
+        },
+        onRejected: value => {
+          try {
+            let result = onRejected(value);
+            if (result instanceof HD) {
+              result.then(resolve, reject);
+            } else {
+              resolve(result);
+            }
+          } catch (error) {
+            reject(error);
+          }
+        }
+      });
+    }
+    if (this.status == HD.FULFILLED) {
+      setTimeout(() => {
+        try {
+          let result = onFulfilled(this.value);
+          if (result instanceof HD) {
+            result.then(resolve, reject);
+          } else {
+            resolve(result);
+          }
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+    if (this.status == HD.REJECTED) {
+      setTimeout(() => {
+        try {
+          let result = onRejected(this.value);
+          if (result instanceof HD) {
+            result.then(resolve, reject);
+          } else {
+            resolve(result);
+          }
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+  });
+}
+```
+
+优化then函数
+
+```javascript
+then(onFulfilled, onRejected) {
+  if (typeof onFulfilled != "function") {
+    onFulfilled = value => value;
+  }
+  if (typeof onRejected != "function") {
+    onRejected = value => value;
+  }
+  return new HD((resolve, reject) => {
+    if (this.status == HD.PENDING) {
+      this.callbacks.push({
+        onFulfilled: value => {
+          this.parse(onFulfilled(this.value), resolve, reject);
+        },
+        onRejected: value => {
+          this.parse(onRejected(this.value), resolve, reject);
+        }
+      });
+    }
+    if (this.status == HD.FULFILLED) {
+      setTimeout(() => {
+        this.parse(onFulfilled(this.value), resolve, reject);
+      });
+    }
+    if (this.status == HD.REJECTED) {
+      setTimeout(() => {
+        this.parse(onRejected(this.value), resolve, reject);
+      });
+    }
+  });
+}
+
+//把重复的操作封装
+parse(result, resolve, reject) {
+  try {
+    if (result instanceof HD) {
+      result.then(resolve, reject);
+    } else {
+      resolve(result);
+    }
+  } catch (error) {
+    reject(error);
+  }
+}
+```
+
+最后一个问题：Promise的then函数中，return可以是参数，可以是新的Promise，但是不允许是自己，会报错。而HD则不会报错
+
+```javascript
+let a=new Promise((resolve,reject)=>{
+	resolve("参数")
+})
+
+p.then(value=>{
+	return p //会报错
+})
+```
+
+修改then函数和parse函数
+
+```javascript
+then(onFulfilled, onRejected) {
+  if (typeof onFulfilled != "function") {
+    onFulfilled = value => value;
+  }
+  if (typeof onRejected != "function") {
+    onRejected = value => value;
+  }
+  let promise = new HD((resolve, reject) => {
+    if (this.status == HD.PENDING) {
+      this.callbacks.push({
+        onFulfilled: value => {
+          this.parse(promise, onFulfilled(this.value), resolve, reject);
+        },
+        onRejected: value => {
+          this.parse(promise, onRejected(this.value), resolve, reject);
+        }
+      });
+    }
+    if (this.status == HD.FULFILLED) {
+      setTimeout(() => {
+        this.parse(promise, onFulfilled(this.value), resolve, reject);
+      });
+    }
+    if (this.status == HD.REJECTED) {
+      setTimeout(() => {
+        this.parse(promise, onRejected(this.value), resolve, reject);
+      });
+    }
+  });
+  return promise;
+}
+
+//多了一个传递的参数promise，第一个参数：如果then中return的是promise对象，则是该Promise对象
+parse(promise, result, resolve, reject) {
+  //return的promise和上一个promise传递过来的参数，是否相等
+  if (promise == result) {
+    throw new TypeError("Chaining cycle detected for promise");
+  }
+  try {
+    if (result instanceof HD) {
+      result.then(resolve, reject);
+    } else {
+      resolve(result);
+    }
+  } catch (error) {
+    reject(error);
+  }
+}
+```
+
+综上最终实现的Promise对象
+
+```javascript
+class HD {
+  static PENDING = "pending";
+  static FULFILLED = "fulfilled";
+  static REJECTED = "rejected";
+
+  constructor(executor) {
+    this.callbacks = [];
+    this.status = HD.PENDING;
+    this.value = null;
+    try {
+      //executor中的参数中this还是指向HD对象的
+      //但是执行到resolve和reject函数内部时，使用this，this会指向undefined(class中默认严格模式)
+      //所以使用bind，将resolve和reject函数中的this指向HD对象
+      executor(this.resolve.bind(this), this.reject.bind(this));
+    } catch (error) {
+      this.reject(error);
+    }
+  }
+
+  //resolve函数
+  resolve(value) {
+    if (this.status == HD.PENDING) {
+      this.status = HD.FULFILLED;
+      this.value = value;
+      setTimeout(() => {
+        this.callbacks.map(callback => {
+          callback.onFulfilled(value);
+        });
+      });
+    }
+  }
+
+  //reject函数
+  reject(value) {
+    if (this.status == HD.PENDING) {
+      this.status = HD.REJECTED;
+      this.value = value;
+      setTimeout(() => {
+        this.callbacks.map(callback => {
+          callback.onRejected(value);
+        });
+      });
+    }
+  }
+
+  //then函数
+  then(onFulfilled, onRejected) {
+    if (typeof onFulfilled != "function") {
+      onFulfilled = value => value;
+    }
+    if (typeof onRejected != "function") {
+      onRejected = value => value;
+    }
+    let promise = new HD((resolve, reject) => {
+      if (this.status == HD.PENDING) {
+        this.callbacks.push({
+          onFulfilled: value => {
+            this.parse(promise, onFulfilled(this.value), resolve, reject);
+          },
+          onRejected: value => {
+            this.parse(promise, onRejected(this.value), resolve, reject);
+          }
+        });
+      }
+      if (this.status == HD.FULFILLED) {
+        setTimeout(() => {
+          this.parse(promise, onFulfilled(this.value), resolve, reject);
+        });
+      }
+      if (this.status == HD.REJECTED) {
+        setTimeout(() => {
+          this.parse(promise, onRejected(this.value), resolve, reject);
+        });
+      }
+    });
+    return promise;
+  }
+
+  //then函数中，重复的部分单独封装出的函数parse
+  parse(promise, result, resolve, reject) {
+    if (promise == result) {
+      throw new TypeError("Chaining cycle detected for promise");
+    }
+    try {
+      if (result instanceof HD) {
+        result.then(resolve, reject);
+      } else {
+        resolve(result);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  }
+
+}
+```
+
+###实现 Promise.resolve
+
+添加静态方法到HD类中
+
+```javascript
+static resolve(value) {
+  return new HD((resolve, reject) => {
+    if (value instanceof HD) {
+      value.then(resolve, reject);
+    } else {
+      resolve(value);
+    }
+  });
+}
+```
+
+### 实现 Promise.reject
+
+添加静态方法到HD类中
+
+```javascript
+static reject(reason) {
+  return new HD((_, reject) => {
+    reject(reason);
+  });
+}
+```
+
+### 实现 Promise.all
+
+添加静态方法到HD类中
+
+```javascript
+Promise.all=function(promises){
+    resolves=[]
+    return new Promise((resolve,reject)=>{
+        promises.forEach(promise => {
+            promise.then(
+                value=>{
+                    resolves.push(value)
+                    if(resolves.length==promises.length){
+                        resolve(resolves)
+                    }
+                },reason={
+                    reject(reason)
+                }
+            )
+            
+        });
+    })
+}
+```
+
+### 实现 Promise.race
+
+添加静态方法到HD类中
+
+```javascript
+static race(promises) {
+  return new HD((resolve, reject) => {
+    promises.map(promise => {
+      promise.then(value => {
+        resolve(value);
+      });
+    });
+  });
+}
+```
+
 
 
 ## 模块化规范
+
+推荐文章[前端模块化详解(完整版)](https://segmentfault.com/a/1190000017466120)
 
 JS 最初设计的目的，仅仅是为了完成一些简单的功能，但是随着前端工程化成为一种趋势，前端项目慢慢开始承载更多更复杂的功能，将单一 JS 文件划分模块的需求也愈发强烈。我们下面梳理下：
 
@@ -2837,55 +5338,57 @@ parseInt('2a')结果是 2，非常大的安全隐患
 
 ## 解惑
 
-- **关于基本类型，为什么基本类型使用字面量，会有`.`操作符**
+### 1、基本类型的属性和方法
 
-  我们常听说的两句话：1.JS 中全都是对象呢 ；2.JS 中对于基本类型，变量只存储值 ；对于引用类型，变量存储地址，实际其存储在堆中。
+**为什么基本类型，会有`.`操作符**
 
-  看完这两句，会不会有些疑惑，
+我们常听说的两句话：1.JS 中全都是对象呢 ；2.JS 中对于基本类型，变量只存储值 ；对于引用类型，变量存储地址，实际其存储在堆中。
 
-  如果 1 成立，那基本类型的变量也应该是对象，变量应该也是存储堆的地址，为什么说只存储其值
+看完这两句，会不会有些疑惑，
 
-  如果 2 成立，基本类型的变量，只存储一个值，为什么有对象中才有的属性
+如果 1 成立，那基本类型的变量也应该是对象，变量应该也是存储堆的地址，为什么说只存储其值
 
-  看下面代码，变量 a 为 int 型，是基本类型，有属性 length，有方法 toUpperCase()
+如果 2 成立，基本类型的变量，只存储一个值，为什么有对象中才有的属性
 
-  ```javascript
-  let str = "hello";
-  console.log(str.length); //5
-  console.log(str.toUpperCase()); //HELLO
-  ```
+看下面代码，变量 a 为 int 型，是基本类型，有属性 length，有方法 toUpperCase()
 
-  **答**：
+```javascript
+let str = "hello";
+console.log(str.length); //5
+console.log(str.toUpperCase()); //HELLO
+```
 
-  JS 中的数据类型分两大类，基本类型（或者说是原始类型）和引用类型。基本类型的值是保存在栈内存中的简单数据段，共有五种，按值访问，分别是**undefined**、 **null**、 **boolean**、 **number**、 **string**；而引用类型的值则是保存在堆内存中的对象，按引用访问，有 **Object** 、**Array** 、**Function**以及其他内置的类型，比如**RegExp**、**Date**、**Math**等，
+**答**：
 
-  其实 JS 中，还有三种特殊的引用类型 **Boolean**、、**Number** 、**String** ，方便我们操作与其对应的基本类型，而它们就是**基本包装类型**。当在尝试调用类的方法或属性之前，一直使用原始数据类型。如果调用类的方法或属性，JS 会在幕后为字面量值创建一个包装器对象，以便将该值视为一个对象。调用完成后，JS 即抛弃包装器对象
+JS 中的数据类型分两大类，基本类型（或者说是原始类型）和引用类型。基本类型的值是保存在栈内存中的简单数据段，共有五种，按值访问，分别是**undefined**、 **null**、 **boolean**、 **number**、 **string**；而引用类型的值则是保存在堆内存中的对象，按引用访问，有 **Object** 、**Array** 、**Function**以及其他内置的类型，比如**RegExp**、**Date**、**Math**等，
 
-  变量 str 作为一个基本类型变量是没有 length 属性的，但是它的基本包装类型 String 有啊，当调用对象的 length 属性时，会使用`new String("hello")`自动创建一个对象，然后再调用 length 属性，返回值后，销毁这个对象。调用 toUpperCase()方法同理
+其实 JS 中，还有三种特殊的引用类型 **Boolean**、、**Number** 、**String** ，方便我们操作与其对应的基本类型，而它们就是**基本包装类型**。当在尝试调用类的方法或属性之前，一直使用原始数据类型。如果调用类的方法或属性，JS 会在幕后为字面量值创建一个包装器对象，以便将该值视为一个对象。调用完成后，JS 即抛弃包装器对象
 
-  ```js
-  let str = "hello";
-  console.log(str.length); //5
-  
-  //等价于
-  var str = "string";
-  var _str = new String(str);
-  var len = _str.length;
-  _str = null;
-  console.log(len); //5
-  ```
+变量 str 作为一个基本类型变量是没有 length 属性的，但是它的基本包装类型 String 有啊，当调用对象的 length 属性时，会使用`new String("hello")`自动创建一个对象，然后再调用 length 属性，返回值后，销毁这个对象。调用 toUpperCase()方法同理
 
-  活学活用：
+```js
+let str = "hello";
+console.log(str.length); //5
 
-  ```js
-  var str = "string";
-  //给包装类创建的对象添加属性pro，然后销毁
-  str.pro = "hello";
-  //再次创建新的类，已经没有pro属性了
-  console.log(str.pro + "world"); //undefinedworld
-  ```
+//等价于
+var str = "string";
+var _str = new String(str);
+var len = _str.length;
+_str = null;
+console.log(len); //5
+```
 
-  
+活学活用：
+
+```js
+var str = "string";
+//给包装类创建的对象添加属性pro，然后销毁
+str.pro = "hello";
+//再次创建新的类，已经没有pro属性了
+console.log(str.pro + "world"); //undefinedworld
+```
+
+
 
 [解答来自此链接](https://zhidao.baidu.com/question/1242686664534046939.html)
 
@@ -3027,15 +5530,165 @@ func({longitude: '111',altitude: '222'},11,22)
 
 ### 且/或
 
-**&&**
+**&&** 和 **||**
+
+* 且/或组成的是表达式
+
+* 与其他语言不同，js中的且/或表达式，是可以作为语句的执行的
+
+  ```js
+  let a=true
+  
+  function func1(){
+      console.log("函数执行")
+      return false
+  }
+  let res=a&&func1() //函数执行
+  ```
+
+  
+
+* &&从左向右将找到的值，转化为布尔值，如果为假，则返回其原值，不再继续执行了。找不到为假的，则返回最后一个值
+
+  ```js
+  1&&2&&''&&3  //''
+  
+  1&&2&&3 //3
+  ```
+
+* ||从左向右将找到的值，转化为布尔值，如果为真，则返回其原值。找不到为真的，则返回最后一个值
+
+
+
+**空值合并运算符  ?? **
+
+上面的运算有一个潜在的问题，就是以下6个值，都会被认为是假的
 
 ```
-a&&b;
+0 、NaN 、 "" 、false  、null 、undefined
 ```
 
+`??`是`||`的升级版，`??`只认为null和undefined为假
+
+```js
+找到第一个不为null和undefined的值，返回。找不到，返回最后一个值
+```
+
+例子：如果对象result中有groupName属性，就直接恢复其为空字符串
+
+* 使用`||`，如果result["groupName"]是0，仍然会初始化
+
+  ```js
+  let result={}
+  for(value of list){
+  	result["groupName"] || (result["groupName"] ="");
+  }
+  ```
+
+* 使用`??`，只有result["groupName"]是null或者undefined，才会初始化
+
+  ```js
+  let result={}
+  for(value of list){
+  	result["groupName"] ?? (result["groupName"] ="");
+  }
+  ```
+
+### 回调和Promise风格
+
+我们有时候再查看一些文档时，时常发现文档中的某些函数往往标注着，是否支持Promise风格
+
+其实，这些函数都是异步函数，通常面对异步函数，一般就两种风格，一种是**回调函数**，一种就是**promise**
+
+如何让改造一个回调函数风格的函数，使其支持Promise呢？
+
+```js
+function getCity(cb){
+	//获取城市数据逻辑 ,cityName,cityId
+  cb(cityName,cityId)
+}
+```
+
+回调函数风格
+
+```js
+//假设函数原本的使用方式
+getCity((cityName,cityId)=>{
+  //处理
+})
+```
+
+改造为Promise风格
+
+```js
+function getCity(){
+    //获取城市数据逻辑 ,cityName,cityId
+    let cityName='北京',cityId=201
+    return new Promise((resolve,reject)=>{
+        if(cityName&&cityId){
+            resolve({cityName,cityId})
+        }else{
+            reject(new Error('"获取失败"'))
+        }
+
+    })
+}
+
+//----链式调用----
+getCity().then(res1=>{
+    console.log('res1-->',res1)
+}).catch(err1=>{
+    console.log('err1-->',err1)
+})//res1--> { cityName: '北京', cityId: 201 }
 
 
+//----await调用----
+try {
+    let res2=await getCity()
+    console.log('res2-->',res2)//res2--> { cityName: '北京', cityId: 201 }
+}catch (err2){
+    console.log('err2-->',err2)
+}
+```
 
+兼容性改造【同时支持回调和Promise风格】
+
+```js
+function getCity(cb){
+    //获取城市数据逻辑 ,cityName,cityId
+    let cityName='北京',cityId=201
+    return new Promise((resolve,reject)=>{
+        if(cityName&&cityId){
+            cb&&cb(cityName,cityId)
+            resolve({cityName,cityId})
+        }else{
+            cb&&cb(null,null)
+            reject(new Error('"获取失败"'))
+        }
+
+    })
+}
+
+getCity((cityName,cityId)=>{
+    console.log(' 回调方式结果--> ',cityName,cityId)
+})
+
+//----链式调用----
+getCity().then(res1=>{
+    console.log('res1-->',res1)
+}).catch(err1=>{
+    console.log('err1-->',err1)
+})//res1--> { cityName: '北京', cityId: 201 }
+
+
+//----await调用----
+try {
+    let res2=await getCity()
+    console.log('res2-->',res2)//res2--> { cityName: '北京', cityId: 201 }
+}catch (err2){
+    console.log('err2-->',err2)
+}
+```
 
 
 

@@ -12,7 +12,7 @@ module.exports = {
 
   //markdown的相关配置
   markdown: {
-    lineNumbers: false, // 代码块显示行号
+    lineNumbers: true, // 代码块显示行号
   },
   serviceWorker: true, // 是否开启 PWA
 
@@ -27,7 +27,7 @@ module.exports = {
         items: [
           { text: "CSS", link: "/frontBasic/CSS技术精炼.md" },
           { text: "JS重刷笔记（持续更新）", link: "/frontBasic/JS重刷笔记.md" },
-          { text: "JS笔记（旧）", link: "/dealArticle/js学习笔记.md" },
+          //{ text: "JS笔记（旧）", link: "/dealArticle/js学习笔记.md" },
           // { text: "Node", link: "/frontBasic/Nodejs学习笔记.md" },
           { text: "Vue", link: "/frontBasic/Vue学习笔记.md" },
         ],

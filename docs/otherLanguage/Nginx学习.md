@@ -252,7 +252,7 @@ BOOTPROTO=static #原来值是dhcp，就是动态获取ip的一个协议
   通过系统服务的方式启动nginx
 
   ```
-  vim usr/lib/syatemd/system/nginx.service
+  vim usr/lib/systemd/system/nginx.service
   ```
 
   ```shell
