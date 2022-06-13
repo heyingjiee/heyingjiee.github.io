@@ -1,4 +1,4 @@
-# Go学习笔记
+# dGo学习笔记
 
 ## 配置环境
 
@@ -163,19 +163,25 @@ go env
 
 交叉编译，就是产生其他平台的可执行文件 [详情请参考](https://www.liwenzhou.com/posts/Go/install_go_dev/)
 
-这里我只记录
-
-**mac平台编译Linux平台可执行文件**：
+**编译Linux平台可执行文件**：
 
 ```shell
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 ```
 
-**mac平台编译window平台可执行文件**：
+**编译window平台可执行文件**：
 
 ```shell
 CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build
 ```
+
+**编译mac平台可执行文件**：
+
+```shell
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build
+```
+
+
 
 * **CGO_ENABLED**  0为禁用CGO
 * **GOOS**  目标平台
@@ -769,39 +775,46 @@ fmt.Println(name, age)
 
 按照指定格式输入
 
-> 读取文件
+> 输出到文件
 
-**bufio.NewReader**
+***Fprint***
 
-如果输入的内容中有空白符号，使用scan系列的方法都会被忽略掉，这种情况下可以使用`bufio`包来实现。示例代码如下：
-
-***ReadString***
-
-注意这里读到换行符后结束读取，但是输入游标已经到了下一行，所以，使用for循环可以一直读取多行内容
+系列函数会将内容输出到一个`io.Writer`接口类型的变量`w`中，我们通常用这个函数往文件中写入内容。
 
 ```go
-reader := bufio.NewReader(os.Stdin)  // 从标准输入生成读对象（也是从终端输入）
-text, err := reader.ReadString('\n') // 读到换行
-if err != nil {
-	fmt.Println("读取失败")
-	return
-}
-text = strings.TrimSpace(text) //去除字符串前后空格
-fmt.Printf("%v\n", text)
+func Fprint(w io.Writer, a ...interface{}) (n int, err error)
+func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error)
+func Fprintln(w io.Writer, a ...interface{}) (n int, err error)
 ```
 
-***Read***
+举个例子：
+
+**os.Stdout** 实现了io.Writer
 
 ```go
-reader := bufio.NewReader(os.Stdin) // 从标准输入生成读对象（也是从终端输入）
-var buf [1000]byte                  //数组
-n, err := reader.Read(buf[:])       // 参数是切片,n是读取了多少byte字节
+fmt.Fprintln(os.Stdout, "向标准输出写入内容")   //输出到终端了
+```
+
+**os.File**实现了io.Writer
+
+```go
+fileObj, err := os.OpenFile("./xx.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 if err != nil {
-	fmt.Println("读取失败")
+	fmt.Println("打开文件出错，err:", err)
 	return
 }
-fmt.Printf("%v\n", string(buf[:n]))
+name := "吴彦祖"
+
+fmt.Fprintf(fileObj, "往文件中写如信息：%s", name) //写入到文件了
 ```
+
+**http.ResponseWriter**实现了
+
+```go
+详见【网络编程】-【Http服务】章节
+```
+
+注意，只要满足`io.Writer`接口的类型都支持写入。
 
 > 其他
 
@@ -1010,7 +1023,7 @@ sync包提供了基本的同步基元，如互斥锁。除了Once和WaitGroup类
 
 当然，我们也可以不使用这些并发安全的类型，而是使用对变量加锁的方式处理
 
-### os、bufio、io/ioutil
+### os、bufio、io/ioutil读写文件
 
 os包的接口规定为在所有操作系统中都是一致的，其中做常用的是读取文件的一些操作
 
@@ -1078,7 +1091,9 @@ func OpenFile(name string, flag int, perm FileMode) (*File, error) {
 | `os.O_TRUNC`  |   清空   |
 | `os.O_APPEND` |   追加   |
 
-`perm`：文件权限，一个八进制数。r（读）04，w（写）02，x（执行）01
+`perm`：文件权限，一个八进制数，用四位，第一位是0表示是一个八进制数。r（读）4，w（写）2，x（执行）1
+
+如果我们在代码中读取一个数字作为perm，比如输入777，其实这是十进制数字，如果传入这个值，权限就会有问题，所以我们可以将其当作是八进制数，然后使用strconv.ParseInt转化为十进制，然后把这个十进制数字当成perm参数传入
 
 ```go
 package main
@@ -1150,6 +1165,8 @@ n, err := Str.Read(buf[:]) //数据读入了buf中，n是读取的字节数
 }
 ```
 
+
+
 **把文件用bufio的Writer封装起来，使用Writer的WriteString写入**
 
 ```go
@@ -1210,17 +1227,47 @@ func main() {
 }
 ```
 
+### os文件夹相关补充
+
+**os.Mkdir**和**os.IsNotExist**
+
+os.Mkdir用于创建文件夹
+
+第一个参数是文件夹名
+
+* 默认在当前文件夹创建新的文件夹
+* 也可以是文件夹路径，比如`name/jack`，注意路径name必须存在，才能在其下建立jack文件夹
+* 如果文件夹已经存在，会返回fs.PathError类型的错误。可以使用**os.IsNotExist**参数为error类型，用来判断返回的错误是否是文件不存在；IsPermission用来判断是否是权限引起的错误
+
+第二个参数是权限位，在前面【os、bufio、io/ioutil读写文件】介绍过
+
+```go
+err := os.Mkdir("name/f", 0777)
+	if err != nil {
+		res := os.IsNotExist(err)
+		fmt.Printf("文件不存在：%v", res)
+	}
+```
+
+**os.MkdirAll**
+
+相对于Mkdir，有两点不同
+
+* 如果name文件夹不存在，就会建立name文件夹后，在cd进去，建立ca文件夹。所以，权限为必须是7【对文件夹有x权限，才能进入文件夹。有w权限，能创建文件夹】
+* 如果文件夹已经存在，不会返回err错误
+
+```go
+err := os.MkdirAll("./name/ca", 0777)
+if err != nil {
+	fmt.Printf("%v", err)
+}
+```
+
 ### log
 
 用于日志收集
 
-
-
-### net
-
-net包提供了可移植的网络I/O接口，包括TCP/IP、UDP、域名解析和Unix域socket。
-
-大部分使用者只需要Dial、Listen和Accept函数提供的基本接口；以及相关的Conn和Listener接口
+### net、net/http
 
 使用详见【网络编程】章节
 
@@ -1542,6 +1589,18 @@ func main() {
 }
 ```
 
+反引号中不能放置变量，只能是常量。与JS中的模版字符不通，如果想要字符串中放置变量，必须使用Sprintf
+
+**Sprintf**
+
+返回格式化后的字符串
+
+```go
+name := "jack"
+str := fmt.Sprintf("你好%v", name)
+fmt.Println(str)
+```
+
 **字符串基本使用**
 
 ```go
@@ -1573,7 +1632,7 @@ func main() {
 
 **字符串的相关方法**
 
-```shell
+```go
 package main
 
 import (
@@ -1603,6 +1662,8 @@ func main() {
 	//把切片拼接成字符串
 	fmt.Println(strings.Join(arr, "+")) //hello+world你好
 
+	//去除空行
+  fmt.Println(strings.TrimSpace("     aa  ")) //aa
 }
 ```
 
@@ -1989,7 +2050,6 @@ fmt.Println(slice1) //[100 2 3 4]
 通过 len(切片)==0 来判断，是否切片为空
 
 不能使用 切片==nil来判断
-
 ```
 
 **切片的遍历**
@@ -2024,7 +2084,7 @@ fmt.Println(slice3) //[1 2 3 4 5 6]
 
 思考：切片不存储值，永远是底层数组存储值
 
-```
+```go
 slice1 := []int{1, 2, 3, 4, 5}
 slice2 := slice1
 //更改slice2,删除2,实际上还是在底层数组[1 2 3 4 5]上操作
@@ -2116,10 +2176,7 @@ fmt.Println(m == nil) //false，开辟内存空间后就不再nil
 初始化值（默认就分配了内存空间）
 
 ```go
-m := map[string]int{
-		"姓名": 1,
-		"年龄": 10,
-}
+m := map[string]int{"姓名": 1,"年龄": 10}
 ```
 
 **添加键值对**
@@ -2340,9 +2397,9 @@ func main() {
 
 * **命名返回值**
 
-  相当于在返回值部分就已经声明了变量，初始化的值就是实参
+  相当于在返回值部分就已经声明了要返回的变量名
 
-  最后写一个return即可，就会按照返回值类表顺序，返回所有的值
+  最后写一个return即可，就会按照返回值列表顺序，返回所有的值
 
   ```go
   func f1() (x int) { //注意：括号不可省略
@@ -2356,19 +2413,33 @@ func main() {
   	y = 2
   	z = "a"
   	return
-  }
+  } //返回 2，2，a
   ```
 
-  遇到这种情况也要知道
+  遇到这种情况也要知道，用户可以在return时，手动设置返回的值
 
   ```go
-  func f1() (x int) {
+  func f1() (x,y int) {
   	x = 1
-  	return 5  //含义是 1.设置返回值为x； 2.将x赋值为5
+    y = 2
+    return 3,4 //将x赋值为3，y赋值为4
   }
   
-  f1() //5
+  f1() //返回3,4
   ```
+  
+  如果手动设置，必须将所有返回值都设置了
+  
+  ```go
+  //这种写法是错的
+  func f1() (x,y int) {
+  	x = 1
+    y = 2
+    return 3 
+  }
+  ```
+  
+  
 
 ### 立即执行函数
 
@@ -2954,7 +3025,7 @@ func main() {
 	c.Students = append(c.Students, stu)
 
 	//JSON序列化：结构化数据-->JSON格式的字符串
-	data, err := json.Marshal(c) //结构体一般使用地址，而不是值，以减少复值带来的性能损失
+	data, err := json.Marshal(c) //结构体一般使用地址，而不是值，以减少赋值带来的性能损失
 	if err != nil { 
 		fmt.Println("err")
 		return
@@ -3135,6 +3206,8 @@ func main() {
 	MakeRun(&Dog{}) //狗跑
 
 	MakeRun(&Cat{}) //猫跑
+  
+  MakeRun(Cat{}) //会报错
 }
 ```
 
@@ -3282,7 +3355,7 @@ if err != nil {
   fmt.Printf("%v\n", newErr) //这是再次封装的错误【这是一个错误】
   ```
 
-## 反射（待完善）
+## 反射
 
 需要使用flect标准库
 
@@ -3378,17 +3451,21 @@ func main() {
 
 * reflect.Value类型可与原始值之间可以互相转换，通过方法Int()、Float()等
 
-  | 方法                    | 描述                                                         |
-  | ----------------------- | ------------------------------------------------------------ |
-  | nterface() interface {} | 将值以 interface{} 类型返回，可以通过类型断言转换为指定类型  |
-  | Int() int64             | 将值以 int 类型返回，所有有符号整型均可以此方式返回          |
-  | Uint() uint64           | 将值以 uint 类型返回，所有无符号整型均可以此方式返回         |
-  | Float() float64         | 将值以双精度（float64）类型返回，所有浮点数（float32、float64）均可以此方式返回 |
-  | Bool() bool             | 将值以 bool 类型返回                                         |
-  | Bytes() []bytes         | 将值以字节数组 []bytes 类型返回                              |
-  | String() string         | 将值以字符串类型返回                                         |
+  | 方法                     | 描述                                                         |
+  | ------------------------ | ------------------------------------------------------------ |
+  | interface() interface {} | 将值以 interface{} 类型返回，可以通过类型断言转换为指定类型  |
+  | Int() int64              | 将值以 int 类型返回，所有有符号整型均可以此方式返回          |
+  | Uint() uint64            | 将值以 uint 类型返回，所有无符号整型均可以此方式返回         |
+  | Float() float64          | 将值以双精度（float64）类型返回，所有浮点数（float32、float64）均可以此方式返回 |
+  | Bool() bool              | 将值以 bool 类型返回                                         |
+  | Bytes() []bytes          | 将值以字节数组 []bytes 类型返回                              |
+  | String() string          | 将值以字符串类型返回                                         |
 
-* 方法Elem，v持有的值的分类必须是interface类型的变量，否则调用会导致panic。所以一般写成一个参数是空接口的函数
+* 方法Elem，用于获取 `reflext.Ptr`类型（通过指针类型）对应的值
+
+  v持有的值必须是指针，否则调用会导致panic
+
+  一般写成一个参数是空接口的函数，可以接收任何值
 
   ```go
   //获取到reflect.Value类型的v后
@@ -3420,7 +3497,7 @@ func main() {
   }
   ```
 
-  从描述中，我们知道如果想要调用`Set*`来转换值，必须得提前知道类型，才能使用对应的方法转换
+  如果想要调用`Set*`来转换值，必须得提前知道类型，才能使用对应的方法转换
 
   | 方法                | 描述                                                         |
   | ------------------- | ------------------------------------------------------------ |
@@ -3532,6 +3609,8 @@ type Method struct {
 读取结构体最常用的思路就是获取字段/方法个数，然后遍历，把索引传给Field、Method，获取对应值和方法
 
 **通用字段**
+
+补充下：下面t.Field(i)的tag属性，返回的是该字段的所有的tag，`field.Tag.Get(json)`只返回json后的字段
 
 ```go
 package main
@@ -4347,7 +4426,7 @@ func main() {
 
 这篇[文章](https://www.liwenzhou.com/posts/Go/15_socket/)的开篇部分，对计算机网络基础做了概述
 
-
+[代码仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/TCP)
 
 ### TCP
 
@@ -4553,9 +4632,317 @@ func main() {
 }
 ```
 
+### Http服务
+
+默认的Http服务，访问`http://localhost:8000/hi`会看到文字**"你好"**
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+  //向默认的DefaultServeMux处理器中，添加路由处理 
+	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
+	})
+  
+  //启动默认服务：监听8000端口，DefaultServeMux作为处理器
+	err := http.ListenAndServe(":8000", nil) //第二个参数为nil，表示采用包变量DefaultServeMux作为处理器
+	if err != nil {
+		fmt.Printf("监听出错:%v", err)
+	}
+}
+
+```
+
+自定义Http服务
+
+其实默认Http服务中的`http.ListenAndServe(":8000", nil)`等价于
+
+```go
+customServe := &http.Server{
+		Addr:           ":8000",
+		Handler:        nil,
+}
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+type httpServer struct {
+}
+
+func (server httpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("服务器启动")
+}
+func main() {
+	//向默认的DefaultServeMux处理器中，添加路由处理
+	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
+	})
+
+  //启动默认服务：配置信息就是下面http.Serve实例
+	customServe := &http.Server{
+		Addr:           ":8000",
+		Handler:        nil,//参数为nil，表示采用包变量DefaultServeMux作为处理器
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	err := customServe.ListenAndServe() //第二个参数为nil，表示采用包变量DefaultServeMux作为处理器
+	if err != nil {
+		fmt.Printf("监听出错:%v", err)
+	}
+}
+```
+
+**核心理解**
+
+在 http 包中
+
+所有的 HTTP 请求都需要经过HandleFunc处理，第二个参数是自定义的handler处理对应的url。其源码显示，实际调用的是DefaultServeMux（默认处理器）的HandleFunc处理
+
+```go
+func HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
+	DefaultServeMux.HandleFunc(pattern, handler)
+}
+```
+
+```go
+func (mux *ServeMux) HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
+	if handler == nil {
+		panic("http: nil handler")
+	}
+	mux.Handle(pattern, HandlerFunc(handler))
+}
+```
+
+ServeMux 实现了 Handler 接口，DefaultServeMux是默认的ServeMux实例
+
+```go
+type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+}
+```
+
+
+
+**Get请求**
+
+客户端使用Go发起Get请求
+
+```go
+package myGet
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+)
+
+func SendGetRequest(path string, m map[string]string) {
+	//添加参数
+	var data = url.Values{}
+	for key, value := range m {
+		data.Set(key, value)
+	}
+
+	//将字符串解析成url对象 ,例如http://127.0.0.1:8000/hi
+	u, err := url.ParseRequestURI(path)
+	if err != nil {
+		fmt.Printf("解析失败, err:%v\n", err)
+	}
+	//对参数进行url编码后,放入url对象的RawQuery中,结果例如：http://127.0.0.1:8000/hi?age=18&name=jack
+	u.RawQuery = data.Encode()
+	fmt.Printf("编码后 :%v\n", u.String())
+
+	//发起Get请求,参数是url字符串
+	resp, err := http.Get(u.String())
+	if err != nil {
+		fmt.Printf("请求失败, err:%v\n", err)
+		return
+	}
+	//关闭response.Body响应
+	defer resp.Body.Close()
+
+	//读取响应体，可以使用多种方式读取，这里使用的是ioutil方式，b是返回的内容
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("get resp failed, err:%v\n", err)
+		return
+	}
+	fmt.Println(string(b))
+}
+```
+
+main函数中调用
+
+```go
+//发起get请求
+param := map[string]string{"name": "jack", "age": "18"}
+myGet.SendGetRequest("http://127.0.0.1:8000/getExample", param)
+```
+
+服务端接收Get请求
+
+```go
+http.HandleFunc("/getExample", func(w http.ResponseWriter, r *http.Request) {
+		//关闭请求
+		defer r.Body.Close()
+		
+		//获取url参数
+		data := r.URL.Query()
+		fmt.Println(data.Get("name"))
+		fmt.Println(data.Get("age"))
+
+		//写入response值
+		answer := `{"status": "ok"}`
+		w.Write([]byte(answer))
+})
+```
+
+**Post请求**
+
+客户端使用Go发起Post请求
+
+```go
+package myPost
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+)
+
+func SendPostRequest(path string, contentType string, data string) {
+
+	//发送Post请求
+	resp, err := http.Post(path, contentType, strings.NewReader(data))
+	if err != nil {
+		fmt.Printf("post failed, err:%v\n", err)
+		return
+	}
+	//关闭响应
+	defer resp.Body.Close()
+
+	//读取响应体
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("get resp failed, err:%v\n", err)
+		return
+	}
+	fmt.Println(string(b))
+}
+```
+
+main函数中调用
+
+```go
+//发起post请求
+//如果是表单数据  contentType := "application/x-www-form-urlencoded" ; data := "name=jack子&age=18"
+myPost.SendPostRequest("http://127.0.0.1:8000/postExample", "application/json", `{"name":"jack","age":18}`)
+```
+
+服务端接收Post请求
+
+```go
+http.HandleFunc("/postExample", func(w http.ResponseWriter, r *http.Request) {
+		//1. 关闭请求
+		defer r.Body.Close()
+
+		//2.1 请求类型是application/x-www-form-urlencoded时解析form数据
+		r.ParseForm()
+		fmt.Println(r.PostForm) // 打印form数据
+		fmt.Printf("方式1：name:%v----age:%v\n", r.PostForm.Get("name"), r.PostForm.Get("age"))
+		//2.2 请求类型是application/json时从r.Body读取数据
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Printf("read request.Body failed, err:%v\n", err)
+			return
+		}
+		fmt.Printf("方式2：%v\n", string(b))
+		answer := `{"status": "ok"}`
+		w.Write([]byte(answer))
+})
+```
+
+
+
+
+
 ## 日志库作业
 
+实现代码，[仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/Logger)
 
+通过这个项目学习到几点简单的经验，在这里做一个简单的记录
+
+![image-20220602234740750](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/2022060300:38:55%20.png)
+
+**文件的结构**
+
+```
+myLoger文件下的文件，都属于myLoger包
+		myLoger.go 日志包的主要核心代码
+		logerConsole.go 日志输出到控制台
+		logerFile.go    日志输出到文件
+
+main.go 使用myLoger库中的功能
+```
+
+**结构体的设计**
+
+在`myLoger.go`文件中，设计了Logger结构体。设计结构体核心是把公用的属性写入结构体，每一个结构体的方法都能方便的使用
+
+```go
+// Logger  日志类型
+type Logger struct {
+	curLogLevel   LogLevel   //错误等级
+	logStartLevel LogLevel   //设置监控等级，大于这个等级的日志才会输出
+	curOutputMode outputMode //输出的方式（输出到文件、输出到控制台）
+}
+```
+
+**常量（枚举）**
+
+上面结构体中常量LogLevel类型是一个常量类型，对于一些常量定义成一个新的类型，是一种常见的手段，比如：time包中的duration
+
+```go
+const (
+	Info LogLevel = iota //数字越大越严重
+	Warning
+	Error
+)
+```
+
+**接口的使用**
+
+上面结构体中常量outputMode类型是一个接口类型，这个接口有一个output方法，用于输出日志。
+
+`logerConsole.go `、`logerFile.go `   就是定义两个结构体类型，同时都实现了output方法
+
+在`myLoger.go`中的构造方法把outputMode接口最为参数，那么就可以同时传入两种结构体，在`myLoger.go`只需要调用，参数的output方法就能实现对应的输出方式了
+
+```go
+//构造函数
+func NewLoger(logStartLevel LogLevel, outputMode outputMode) *Logger {
+	return &Logger{
+		logStartLevel: logStartLevel,
+		curOutputMode: outputMode,
+	}
+}
+```
 
 
 

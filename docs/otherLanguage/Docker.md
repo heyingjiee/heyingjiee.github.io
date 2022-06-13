@@ -869,6 +869,8 @@ Docker的默认官方远程仓库是hub.docker.com，由于网络原因，下载
 
   **注意**：
 
+  * 镜像仓库地址，不要加http或https协议
+
   * 阿里云镜像仓库中，镜像名就是仓库名，每次推送推动不同版本，都会在这个仓库中记录
 
     ![image-20220319220741225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/image-20220319220741225%20.png)
@@ -1003,6 +1005,14 @@ docker logs 容器ID/名
 
 考虑是不是使用的Shell不对
 
+**将容器打包为新的镜像**
+
+```shell
+docker commit 容器ID/名 镜像名:版本号
+```
+
+
+
 **docker命令大全**
 
 ![dockerimg](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
@@ -1024,14 +1034,27 @@ Dockerfile中我们常用的基础镜像，一般就是alpine，这是一个精�
 >
 > 特点：
 >
-> * 只支持bin/sh
->
 > * 使用APK包管理工具
 >
+>   APK下载软件有时候会很慢，可以在dockerfile中指定国内的站点
+>
+>   ```
+>   #更新Alpine的软件源为国内（清华大学）的站点，因为从默认官源拉取实在太慢了。。。
+>   RUN echo "https://mirror.tuna.tsinghua.edu.cn/alpine/v3.4/main/" > /etc/apk/repositories
+>   ```
+>
+> * 只支持bin/sh
+>
+>   在dockerfile中使用AKP下载
+>
+>   ```
+>   RUN apk add bash
+>   ```
+>   
 > * 轻量级，下图是各个Linxu镜像的大小
->
+> 
 >   ![image-20220517115557559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220517115557559.png)
->
+> 
 > 目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境
 
 Dockerfile的第一句拉取基础镜像，一般都是一个Linux系统，比如
@@ -1100,6 +1123,38 @@ FROM nginx:1.17.1-alpine   #包含nginx的Linux
 还有一点要特别注意：
 
 我们这里是安装bash，两种方案速度相差不到，如果是安装一个特别大的软件，还是建议使用第一种方法，因为第二种方法就是容器自动去网络上下载，这样比较慢，而第一种方法，是把软件已经添加到镜像里了，我们可以把这个镜像上传到公司的镜像仓库，当dockerfile执行`FROM`时，直接在内网拉取这个镜像，这样速度就比较快了
+
+
+
+## 踩坑第二弹
+
+部署一个Go项目，这个项目会自动拉取Gitlab上的项目
+
+直接执行`git clone`会要求输入密码，这个操作无法再Dockerfile中指定
+
+所以，这里我自己构建了一个镜像
+
+```shell
+docker pull alpine #拉取一个alpine作为基础镜像
+
+docker run -d -p 80:80 --name xxxx-container  alpine #启动alpine
+
+apk add git  #下载git
+
+git config --global credential.helper store #输入一次密码就保存下来，下次不会再要求输入密码
+ 
+git clone xxxx  #克隆一个公司的项目，过程中，要求输入账号密码
+```
+
+接下来，将容器打包成镜像
+
+```
+docker commit <容器ID> 镜像名:版本
+```
+
+将镜像打tag，推送到镜像仓库
+
+在Dockerfile的第一行From指定拉取这个镜像即可
 
 
 
