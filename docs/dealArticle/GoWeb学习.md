@@ -1,46 +1,11 @@
 # Go Web学习
 
-Gin框架是一个使用Go语言开发的高性能Web框架
+大体分为两个部分
 
-## Gin的简单例子
+* Go标准库实现Web开发
+* Gin框架实现Web开发
 
-新建文件夹goGin
-
-```shell
-go mod init goGin 
-
-go get -u github.com/gin-gonic/gin
-```
-
-新建main.go 文件
-
-```go
-package main
-
-import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-)
-
-func main() {
-	//1. 创建一个默认的路由引擎
-	r := gin.Default()
-
-	//2. Get请求
-	r.GET("/hi", func(context *gin.Context) {
-		//http.StatusOK是一个状态码常量，就是200
-		context.JSON(http.StatusOK, gin.H{
-			"message": "你好",
-		})
-	})
-
-	//3. 启动，默认在8080端口启动服务
-	r.Run()
-}
-
-```
-
-访问`http://127.0.0.1:8080/hi`，看到返回的结果
+# Go标准库
 
 
 
@@ -694,6 +659,56 @@ http.HandleFunc("/subA", func(w http.ResponseWriter, r *http.Request){
 {{.|safe}}
 ```
 
+Gin框架是一个使用Go语言开发的高性能Web框架
+
+
+
+# Gin框架开始
+
+
+
+## Gin的简单例子
+
+新建文件夹goGin
+
+```shell
+go mod init goGin 
+
+go get -u github.com/gin-gonic/gin
+```
+
+新建main.go 文件
+
+```go
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func main() {
+	//1. 创建一个默认的路由引擎
+	r := gin.Default()
+
+	//2. Get请求
+	r.GET("/hi", func(context *gin.Context) {
+		//http.StatusOK是一个状态码常量，就是200
+		context.JSON(http.StatusOK, gin.H{
+			"message": "你好",
+		})
+	})
+
+	//3. 启动，默认在8080端口启动服务
+	r.Run()
+}
+
+```
+
+访问`http://127.0.0.1:8080/hi`，看到返回的结果
+
+
+
 ## 返回响应数据
 
 ### Gin返回HTML
@@ -974,6 +989,8 @@ func main() {
 
 ### Post请求获取表单数据（x-www-from-urlencoded）
 
+Go语言命名中常常出现的Form相关的变量、方法都是用来处理x-www-from-urlencoded的
+
 PostForm、DefaultPostForm、GetPostForm，与Get请求中取参数的函数相同
 
 例子
@@ -1056,6 +1073,8 @@ loginSuccess.html
 ```
 
 ### Post请求获取上传文件（form-data）
+
+Go语言命名中常常出现的MultipartForm相关的变量、方法都是用来处理form-data的
 
 **上传单个文件**
 
@@ -1172,6 +1191,8 @@ html中就是多个上传的input即可
 
 ### Post请求获取JSON数据（raw）
 
+raw类型虽然可以传输很多格式的数据，但实际上一般都是传递JSON格式
+
 ```go
 r.POST("/json", func(c *gin.Context) {
 	b, _ := c.GetRawData()  // 从c.Request.Body读取请求数据
@@ -1191,6 +1212,8 @@ r.POST("/json", func(c *gin.Context) {
 ````go
 r.GET("/login/:username", func(context *gin.Context) {
 		fmt.Println(context.Param("username"))
+  	//或者通过Params属性
+    //string,ok:=context.Params.Get("id")
 })
 ````
 
@@ -1216,15 +1239,116 @@ App登录：/app/v1/user/login
 
 
 
-## 绑定数据
+## 自动绑定数据
 
 上一章节，获取数据后，需要手动的存储到变量中
 
-### ShouldBind(&s)
+这章学习自动将接收到的参数，绑定到变量上
 
-使用ShouldBind可以自动提取`queryString`、`x-www-from-urlencoded`、`raw`的数据，并把值绑定到指定的结构体对象
+### 总述
+
+Context的绑定相关的方法非常多，到底是用哪一个呢？
+
+主要取决于
+
+* 是否需要指定Binding
+* 是否需要自动写入400状态码。Context的MustBindWith方法比ShouldBindWith多了一步处理返回体状态码的操作
+
+![image-20220614142107096](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220614142107%20.png)
+
+### Context.Bind的调用流程
+
+以Context.Bind为例子，介绍下流程
+
+**Context.Bind**
+
+```go
+Context.Bind(用于存储数据的结构体obj)  
+
+1、binding.Default(c.Request.Method, c.ContentType())   //根据请求方法和Content-Type创建不同的Binding对象对象
+
+2、return c.MustBindWith(obj, b) //返回context调用
+```
+
+不同的binding对象
+
+```go
+var (
+	JSON          = jsonBinding{}
+	XML           = xmlBinding{}
+	Form          = formBinding{}
+	Query         = queryBinding{}
+	FormPost      = formPostBinding{}
+	FormMultipart = formMultipartBinding{}
+	ProtoBuf      = protobufBinding{}
+	MsgPack       = msgpackBinding{}
+	YAML          = yamlBinding{}
+	Uri           = uriBinding{}
+	Header        = headerBinding{}
+	TOML          = tomlBinding{}
+)
+```
+
+**Context.MustBindWith**
+
+```go
+.MustBindWith(用于存储数据的结构体obj, 根据上一步根据请求方法和Content-调用Binding对象)
+
+1、c.ShouldBindWith(obj, b); //调用ShouldBindWith
+
+2、c.AbortWithError(http.StatusBadRequest, err).SetType(ErrorTypeBind) //向响应体的状态码中写入400，设置错误类型
+```
+
+
+
+**Context.ShouldBindWith**
+
+```
+Context.ShouldBindWith(用于存储数据的结构体obj, 根据上一步根据请求方法和Content-Typ返回的调用Binding对象)
+
+1、b.Bind(c.Request, obj) //调用Binding对象（提醒下，这个前面请求方法和Content-Typ决定的）的Bind方法
+```
+
+
+
+**binding.Bind**
+
+这一步才到真正绑定数据到变量
+
+```
+binding.Bind(Content中的请求体, 用于存储数据的结构体obj)
+
+这个方法只能绑定 queryString、raw中是JSON数据、 x-www-from-urlencode
+```
+
+
+
+### ShouldBind/Bind
+
+使用ShouldBind/Bind可以自动提取`queryString`、`x-www-from-urlencoded`、`form-data`、`raw中的JSON数据`的数据，并把值绑定到指定的结构体对象
 
 原理：基于请求的`Content-Type`识别请求数据类型并利用反射机制自动提取请求数据到结构体中
+
+有两点注意：
+
+* ShouldBind/Bind参数是存放数据的结构体，因为要操作结构体，所以必须是指针类型
+
+* 结构体名、结构体字段首字母大写
+
+* 如果想将接收到的参数a存储到Name字段，参数 b存储到Age字段。那么就需要使用tag
+
+  ```go
+  type User struct {
+    Name string `form:a`
+  	Age  string `form:b`
+  }
+  ```
+
+* 存储数据的结构体变量，如果某个字段接收不到值，该字段默认为零值
+
+**ShouldBind例子**
+
+GET请求发送queryString
 
 ```go
 package main
@@ -1235,87 +1359,130 @@ import (
 	"net/http"
 )
 
-type User struct {
-	Name string
-	Age  string
+type Stu struct {
+	Name string `form:"name"`
+	Age  int    `form:"age"`
 }
 
 func main() {
 	r := gin.Default()
-	//返回登陆页面
-	r.GET("/hi", func(context *gin.Context) {
-		var s User
-		err := context.ShouldBind(&s)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"status":  "error",
-				"message": err,
+	r.GET("/index", func(context *gin.Context) {
+		var s Stu
+		if err := context.ShouldBind(&s); err != nil {
+			fmt.Printf("err: %v", err)
+      context.JSON(http.StatusOK, gin.H{
+				"msg": err,
 			})
-		} else {
-			fmt.Printf("绑定后的数据：%#v", s)
-			context.JSON(http.StatusOK, gin.H{
-				"status": "ok",
-			})
+			return
 		}
-	})
+		context.JSON(http.StatusOK, gin.H{
+			"msg": s,
+		})
 
-	r.Run(":9080")
+	})
+	r.Run(":9090")
+}
+
+```
+
+![image-20220614143910400](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220614143910%20.png)
+
+POST请求发送x-www-urlencoded、form-data、raw中的JSON数据
+
+```go
+//只需要将方法改成POST即可
+r.POST("/index", func(context *gin.Context){
+		//xxxx
+})
+```
+
+**Bind例子**
+
+用法与ShouldBind一模一样，唯一的区别就是返回的状态码
+
+
+
+以POST请求发送`raw类型的JSON数据`为例子，如果前端发送以下数据，name被接收到，但是绑定到Stu类型的结构体的Name字段时，由于Name是string类型，所以一定会绑定出错
+
+```go
+{
+    "name":{
+        "abc":122
+    }
+    
 }
 ```
 
-有两点注意：
 
-* ShouldBind参数是存放数据的结构体，因为要操作结构体，所以必须是指针类型
 
-* 结构体字段首字母大写
+Bind会在返回体中设置状态码为400
 
-* 如果想将接收到的参数a存储到Name字段，参数 b存储到Age字段。那么就需要使用tag
+![image-20220614104247216](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220614104247%20.png)
 
-  发送过来的参数必须要和tag对应上，或者结构体字段对应上
+ShouldBind
 
-  
-
-  如果是Get请求接收URL参数、Post请求接收JSON数据，都是使用json关键字
-
-  ```go
-  type userInfo struct {
-  		Username string `json:"a"`
-  		Age      int    `json:"b"`
-  	}
-  ```
-
-  Post请求的接收表单数据
-
-  ```go
-  type User struct {
-    Name string `form:a`
-  	Age  string `form:b`
-  }
-  ```
+![image-20220614104337103](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220614104337%20.png)
 
 
 
-### ShouldBindWith(&s, binding.xxx)
+### ShouldBindUri/BindUri
 
-如果确定了参数类型，可以显式的指定绑定的数据个格式
+用于绑定**请求路径中的参数**
 
-常用的
+BindUri比ShouldBindUri多一个绑定出错时，有400状态码返回
 
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+type Stu struct {
+	Name string `uri:"name"`
+	Age  int    `uri:"age"`
+}
+
+func main() {
+	r := gin.Default()
+	r.GET("/index/:name/:age", func(context *gin.Context) {
+		var s Stu
+		if err := context.BindUri(&s); err != nil {
+			fmt.Printf("err: %v", err)
+			context.JSON(http.StatusOK, gin.H{
+				"msg": err,
+			})
+			return
+		}
+		context.JSON(http.StatusOK, gin.H{
+			"msg": s,
+		})
+
+	})
+	r.Run(":9090")
+}
 ```
-binding.Query  ----- queryString方式
 
-binding.FormPost ----- x-www-form-urlencoded方式
-binding.Form 
-binding.FormMultipart  ----- form-data多文件上传
+![image-20220614143806725](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220614143806%20.png)
 
-binding.JSON ----- raw上传json方式
+注意这里使用uri字段作为tag
+
+```go
+type Stu struct {
+	Name string `uri:"name"`
+	Age  int    `uri:"age"`
+}
 ```
 
+其tag和路径中的名字对应上
 
-
-### ShouldBindxxx(&s)
-
-ShouldBindWith的快捷方式
+```go
+r.GET("/index/:name/:age", func(context *gin.Context) {
+  //xxxxx
+})
+```
 
 
 
@@ -1838,6 +2005,31 @@ func main() {
 结构体字段 ----> 列名
 ```
 
+### sql.DB对象 
+
+是Go标准库中的sql包提供的sql对象，用于直接操作数据库
+
+```go
+dsn := "root:HYJ=wvs1996@tcp(127.0.0.1:3306)/ToDo?charset=utf8mb4&parseTime=true&loc=Local"
+
+DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return
+	}
+
+//获取获取通用数据库对象 *sql.DB
+sqlDB, err = DB.DB()
+	if err != nil {
+		return
+}
+
+//验证数据库是否建立连接,出问题返回error对象，没出问题返回nil
+sqlDB.Ping()
+
+//关闭数据库
+sqlDB.Close()
+```
+
 
 
 ### GORM Model
@@ -2235,9 +2427,11 @@ db.Model(&StuInfo{}).First(&result)
 
 **单条记录**
 
- `First`（让主键升序排列，选第一个）、`Last`（让主键升序排列，选最后一个），如果表没有指定主键，默认以表中第一个字段，进行排序
+ `First`（让主键升序排列，选择符合条件的第一个）、`Last`（让主键升序排列，选符合条件的最后一个），如果表没有指定主键，默认以表中第一个字段，进行排序
 
 `Take`是取表中第一条记录
+
+`Find`(选择所有符合条件的纪录)
 
 将查到的数据放入s中，参数必须是指针
 
@@ -2248,7 +2442,7 @@ fmt.Printf("%#v\n", stu)
 //main.StuInfo{Name:"jack", Age:18, Hobby:"唱歌"}
 ```
 
-
+注意：当没有指定查询条件时，`Find`返回所有数据；`First`让主键升序排列，选择第一个；`Last`让主键升序排列，选择最后一个；
 
 **查询条件的内联写法**
 
@@ -2553,7 +2747,25 @@ errors.Is(result.Error, gorm.ErrRecordNotFound)
   UPDATE users SET is_del = 1 WHERE ID = 1;
   ```
 
-  
+
+### 链式调用
+
+GORM的函数在执行数据库操作之前，可以一直加条件，形成链式调用
+
+一般错误处理，都是以下这种形式。执行结果的返回值有一个Error属性，是error类型。有错误，返回这个error对象，否则返回nil
+
+```go
+//删除指定id的数据
+func DeleteTodoItemById(id int) (err error) { //注意：返回参数列表，后面直接写return就行
+	var todo ToDo
+	if err := dao.DB.Delete(&todo, id).Error; err != nil {
+		return
+	}
+	return
+}
+```
+
+
 
 ### Scope
 
@@ -2608,7 +2820,8 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 
 ```go
 项目根目录
-|- controller //控制器，路由写在这里
+|- router //路由
+|- controller //控制器，最终返回JSON/HTNML的位置
 |- logic //处理业务逻辑
 |- models //处理数据库增删改查相关
 |- dao  //（database access object） 数据库链接配置
@@ -2617,12 +2830,18 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 一般流程
 
 ```
-请求——> controller(控制器) ——> logic（逻辑层） ——> models（模型层增删改查）
+请求 ——>router路由 ——> controller(控制器) ——> logic（逻辑层） ——> models（模型层增删改查）
 ```
 
 
 
+## 待办事项例子
 
+[代办事项例子](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/TodoProject)
+
+有一点需要注意：结构体的Status字段，是布尔类型，但是存储时，会存储为0或1
+
+![image-20220618184742990](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220618184743%20.png)
 
 ## 后端安全
 
@@ -2730,4 +2949,8 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
   [Bcrypt库](https://pkg.go.dev/golang.org/x/crypto/bcrypt)
 
   
+
+## Gin源码分析
+
+
 

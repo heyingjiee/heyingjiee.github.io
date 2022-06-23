@@ -668,7 +668,7 @@ Go项目基本规则
 |      new       | 用来分配内存，主要用来分配值类型，比如int、struct。返回的是指针 |
 |      make      |   用来分配内存，主要用来分配引用类型，比如chan、map、slice   |
 |     append     |                    用来追加元素到slice中                     |
-|      copy      | 复制slice（slice存储的是引用，必须使用copy才是真正嗯的复制） |
+|      copy      |  复制slice（slice存储的是引用，必须使用copy才是真正的复制）  |
 |     delete     |                        删除map键值对                         |
 |     close      |                           关闭通道                           |
 | panic和recover |                        用来做错误处理                        |
@@ -1354,7 +1354,7 @@ var (
 )
 ```
 
-简短变量声明 （**只能在函数内使用**）
+简短变量声明 
 
 ```
 name := "jack"
@@ -2003,6 +2003,13 @@ fmt.Println(arr1[1:])           //[2 3 4 5]
 fmt.Println(arr1[:])            //[1 2 3 4 5]
 ```
 
+**从字符串截取切片**
+
+```go
+str := "123789"
+fmt.Printf("%v", str[2:])//3789
+```
+
 **从切片截取切片**
 
 注意：切片的切片，底层仍然是最初的数组，所以容量是4
@@ -2056,7 +2063,7 @@ fmt.Println(slice1) //[100 2 3 4]
 
 依然是for和for range两种
 
-**切片的追加**
+**append：切片的追加**
 
 下面的例子可以看出来，追加函数并不是改变原本的切片，而是函数返回了新的追加后的切片，这个新的切片的底层数组对应原来的底层数组，只不过进行了扩容
 
@@ -2093,9 +2100,9 @@ slice2 = append(slice2[0:1], slice2[2:]...)
 fmt.Println(slice1) //[1 3 4 5 5]
 ```
 
-**切片复制**
+**copy：切片复制**
 
-直接赋值，只是把地址赋值过去了。copy(dest，src)，返回值是覆盖的元素个数，dest切片发生改变
+直接赋值，只是把地址赋值过去了。copy(dest，src)，是将src复制值后，覆盖到dest中，返回值是覆盖的元素个数，dest切片发生改变
 
 ```go
 slice1 := []int{1, 2, 3}
@@ -2107,6 +2114,20 @@ fmt.Println(slice2)               //[1 2]
 fmt.Println(copy(slice3, slice1)) //3
 fmt.Println(slice3)               //[1 2 3 7]
 ```
+
+合并两个slice（这种用法非常常见）
+
+```go
+slice1 := []int{1, 2, 3}
+slice2 := []int{4, 5, 6}
+finalLen := len(slice1) + len(slice2)
+finalSlice := make([]int, finalLen)
+copy(finalSlice, slice1)
+copy(finalSlice[len(slice1):], slice2)
+fmt.Printf("%v\n", finalSlice)
+```
+
+
 
 **切片删除**
 
@@ -2898,46 +2919,52 @@ func main() {
 
 利用结构体的嵌套和方法，实现继承效果。结构体可直接调用 ，其内部的子结构体的属性和方法
 
+**尤其注意，有时候，我们在看别人代码时会发现，某个结构体实例调用的方法，在代码中找不到这个结构体的方法的实现，这时候，考虑下这个方法是不是其中嵌套的某个结构体实现的方法**
+
 ```go
 package main
 
 import "fmt"
 
+//父结构体 animal
 type animal struct {
 	catogory string
 }
 
 func (a animal) run() {
-	fmt.Printf("奔跑\n")
+	fmt.Printf("父结构的方法：奔跑\n")
 }
 
+//子结构体 cat
 type cat struct {
 	feetNum int
 	animal  //匿名字段
 }
 
 func (c cat) say() {
-	fmt.Printf("喵喵叫\n")
+	fmt.Printf("子结构的方法：喵喵叫\n")
 }
 func main() {
-	//实例化cat
+	//实例化父结构体cat
 	c := cat{
 		feetNum: 4,
 		animal: animal{
 			catogory: "猫科",
 		},
 	}
-	//父结构体
+	//1、父结构体,调用自己的属性
 	fmt.Printf("%v\n", c.feetNum) //4
-	c.say()
+	//2、父结构体,调用自己的方法
+	c.run() //父结构的方法：奔跑
 
-	//子结构体（使用类型名做key）
+	//3、父结构体,调用子结构体的属性（必须省略子结构体嵌入父结构体时，指定的key）
+	c.say() //子结构的方法：喵喵叫
+	//4、父结构体,调用子结构体的方法  （如果没有命名冲突可以省略key）
 	fmt.Printf("%v\n", c.animal.catogory) //猫科
-	c.animal.run()
-	//如果没有命名冲突可以省略animal
-	fmt.Printf("%v\n", c.catogory) //猫科
-	c.run()
+	fmt.Printf("%v\n", c.catogory)        //猫科
+
 }
+
 ```
 
 ### 结构体的包导出
@@ -3124,11 +3151,29 @@ type Class struct {
   }
   ```
 
-**接口的例子**
+### 结构体实现接口
 
-两个结构体都实现了***接口中全部函数类型***（这里只有一个run函数），所以两个结构体实例化都属于Runner类型
+结构体的方法中有接口中定义的所有方法，就称为结构体实现了这个接口
 
-当对于同一个业务MakeRun时，只要定义其参数是接口Runner，就可以穿入两个不同类型的实例
+**GoLand工具**
+
+GoLand中这个标志代表，这个Engine结构体实现了一些接口
+
+![image-20220619010629881](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220619010630%20.png)
+
+点击图标，出现弹窗，可以看到Engine都实现了3个接口
+
+![image-20220619010725041](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220619010725%20.png)
+
+### 实现接口的用处
+
+例如，这里的两个结构体都实现了***接口中全部函数类型***（这里只有一个run函数），所以两个结构体实例化都属于Runner类型
+
+**多个结构体实现一个接口**
+
+当对于同一个业务MakeRun时，只要定义其参数是接口Runner，就可以穿入两个不同类型的结构体实例，在MakeRun中调用run()方法，两个结构体就会按照自己的实现去做run
+
+这非常有用处，比如，一个支付业务流程中的参数就可以是一个接口，然后支付宝、微信两个结构体可以实现一个支付方法。以后如果还需要接入其他支付方法，也不需要动症个支付业务流程，只需要新实现一个方法即可
 
 ```go
 package main
@@ -3166,15 +3211,42 @@ func main() {
 
 ```
 
+**一个结构体实例可以实现多个接口**
+
+```go
+type Runer interface {
+	run()
+}
+
+type Sayer interface {
+	say()
+}
+
+type Cat struct {
+}
+
+func (c *Cat) run() {
+	fmt.Println("猫跑")
+}
+func (c *Cat) say() {
+	fmt.Println("猫叫")
+}
+```
+
+**补充**
+
+如果Cat结构体没有实现了Runer接口，编辑器就会报错，无法编译
+
+```
+var _ Runer = &Cat{}
+```
+
 ### 值接收者和指针接收者
 
-这里与结构体中不同。
+当结构体实现接口的方法时，使用：
 
-结构体中方法的接收者无论是值还是指针，实例化的结构体无论是值还是指针，都能调用方法
-
-结构体方法的是值接收者，实例化的结构体值和指针，都属于接口类型
-
-***结构体方法的是指针接收者，就要求实例化的是结构体指针，才属于接口类型***
+* 值接收者。实例化结构体实例，无论取值还是指针，都可以传入**以该接口为参数**的函数中
+* 指针接收者。实例化结构体实例，只能是指针，才可以传入**以该接口为参数**的函数中
 
 ```go
 package main
@@ -3208,28 +3280,6 @@ func main() {
 	MakeRun(&Cat{}) //猫跑
   
   MakeRun(Cat{}) //会报错
-}
-```
-
-**一个结构体实例可以实现多个接口**
-
-```go
-type Runer interface {
-	run()
-}
-
-type Sayer interface {
-	say()
-}
-
-type Cat struct {
-}
-
-func (c *Cat) run() {
-	fmt.Println("猫跑")
-}
-func (c *Cat) say() {
-	fmt.Println("猫叫")
 }
 ```
 
@@ -4946,9 +4996,61 @@ func NewLoger(logStartLevel LogLevel, outputMode outputMode) *Logger {
 
 
 
+## 积累
+
+这部分主要记录下，平时看到的一些库或者文章里代码，学习下使用Go语言的经验
+
+### 公共前缀
+
+```go
+package main
+
+import "fmt"
 
 
+func min(a, b int) int {
+	if a <= b {
+		return a
+	}
+	return b
+}
 
+func longestCommonPrefix(a, b string) int {
+  //这里其实就是个for循环
+	i := 0
+	max := min(len(a), len(b))
+	for i < max && a[i] == b[i] {
+		i++
+	}
+	return i
+}
+func main() {
+	i := longestCommonPrefix("123789", "12456")
+	fmt.Printf("%v\n", i) //2
+  fmt.Printf("%v", str1[:i]) //12
+
+}
+
+```
+
+### 切片的方法
+
+不仅仅只有struct有方法
+
+很多库都有对于切片的get方法
+
+```go
+type elementList []string
+
+func (elist elementList) get(findElement string) (result string, err error) {
+	for _, element := range elist {
+		if element == findElement {
+			return
+		}
+	}
+	return "", nil
+}
+```
 
 
 

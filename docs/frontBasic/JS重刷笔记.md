@@ -5404,10 +5404,6 @@ console.log(str.pro + "world"); //undefinedworld
 关注点放在实现思路上
 
 ```js
-/**
- * @Description:JSBridge
- */
-
 const callbackMap = {};
 
 // 全局唯一方法，提供给APP调用
@@ -5470,63 +5466,131 @@ export default JSBridge;
 接到参数返回的数据res后，一般用解构的方式取出值，想比与通过`res.*`的方式，解构的方式有几个明显的好处
 
 * 代码更加简洁
+
 * 可以设置默认值。如果使用`res.data.author`，当后台返回的data是null或者不存在(undefined)，再去取author时，就会报错 。而我们这里将userInfo的默认值设置为`{}`,所以不会报错
 
+  ```js
+  let res={
+      code:0,
+      message:'',
+      data:{
+          userInfo:{
+              // name:'jack',
+              age:18
+          },
+          author:'HDD'
+      },
+  
+  }
+  //注意：
+  //1. userInfo:{name}这部分已经解构到了userInfo对象内部了，所以并不能获取userInfo，只能获取其中的name,如果希望获取整个userInfo对象，不要再写:{name,name}就可以了
+  //2. =是为了设置默认值，当字段不存在时，会返回默认值
+  const {
+      code,
+      data:{
+          author='默认作者',
+          userInfo:{
+              name='默认名字',
+              age
+          }={}
+      }={}
+  } = res={}
+  
+  console.log('code --> ',code) //code -->  0
+  console.log('author --> ',author) //author -->  HDD
+  console.log('name --> ',name) //name -->  默认名字
+  console.log('age --> ',age)  //age -->  18
+  ```
+
+  
+
+* 解构不存在的参数，未设置默认值时，参数值为undefind
+
+  ```js
+  let obj={
+      name:"jack"
+  }
+  const {name,age}=obj
+  console.log(name,age)//jack undefined
+  ```
+
+  
+
+### 函数可选参数
+
+其实就是结构赋值的灵活运用
+
 ```js
-let res={
-    code:0,
-    message:'',
-    data:{
-        userInfo:{
-            // name:'jack',
-            age:18
-        },
-        author:'HDD'
-    },
-
+function getUserInfo(params){
+    const {name,age=100}=params //如果不传递age，给定默认值
+    console.log(`名字是${name},年龄是${age}`)
 }
-//注意：
-//1. userInfo:{name}这部分已经解构到了userInfo对象内部了，所以并不能获取userInfo，只能获取其中的name,如果希望获取整个userInfo对象，不要再写:{name,name}就可以了
-//2. =是为了设置默认值，当字段不存在时，会返回默认值
-const {
-    code,
-    data:{
-        author='默认作者',
-        userInfo:{
-            name='默认名字',
-            age
-        }={}
-    }={}
-} = res={}
+getUserInfo({name:"jack",age:19})//名字是jack,年龄是19
 
-console.log('code --> ',code) //code -->  0
-console.log('author --> ',author) //author -->  HDD
-console.log('name --> ',name) //name -->  默认名字
-console.log('age --> ',age)  //age -->  18
+getUserInfo({name:"tom"})//名字是tom,年龄是100
 ```
 
-### 回调函数
+比如，我将常遇到常见，随意找到一个微信小程序开发者文档的api，以[wx.showToast(Object object)](https://developers.weixin.qq.com/miniprogram/dev/api/ui/interaction/wx.showToast.html)为例
+
+可以看到函数showToast的参数是一个对象，这些对象的key：
+
+* 有些是必填，有些是可选 
+* 不写对应的key，还会有默认值
+* key还可以是回调函数
+
+![image-20220623123656556](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220623123656%20.png)
+
+![image-20220623123715755](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220623123715%20.png)
+
+参数 icon的可选值
+
+![image-20220623123944270](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220623123944%20.png)
+
+简单模拟下这个函数
 
 ```js
-function func(paramOption,success,fail){
-    const {longitude='',altitude=''}=paramOption
-    if(1){//成功
-        typeof success==='function'&&success({message:'成功',longitude,altitude})
-    }else{//失败
-        typeof fail==='function'&&fail({message:'失败原因'})
+class WX {
+    navigateTo(params){
+        //1、解构参数
+        const{title,icon="success",success,fail,complete}=params
+        //2、判断必填值
+        if(title===undefined){
+            throw new Error("title为必填字段")
+        }
+
+        //3、判断下icon字段是否在可选范围
+        let iconList=["success","error","loading","none"]
+        if(iconList.indexOf(icon)===-1){
+            throw new Error("icon字段填写有误")
+        }
+
+        //4、api内部逻辑忽略（微信应该的api可以看作是一个大的JSBridge，来调用原生能力）
+        if(1){//默认成功
+            this.callBackFunction(success,{msg:"成功了",data:{title,icon}})
+        }else{
+            this.callBackFunction(fail,{msg:"失败了"})
+        }
+        this.callBackFunction(fail,{msg:"最后执行的"})
+
+
+    }
+    callBackFunction(callback,params){ //判断下是不是函数，然后执行
+        if(callback!==undefined&&typeof callback==="function"){
+            callback(params)
+        }
     }
 }
 
-//正确调用
-func({longitude: '111',altitude: '222'},res=>{
-    console.log('res --> ',res)
-},err=>{
-    console.log('err --> ',err)
+const wx =new WX()
+wx.navigateTo({
+    title:"你好",
+    success(res){
+        console.log("成功的回调函数",res) //成功的回调函数 { msg: '成功了', data: { title: '你好', icon: 'success' } }
+    }
 })
-
-//故意不传入函数。因为做了typeof的检验，所以不会直接报错
-func({longitude: '111',altitude: '222'},11,22)
 ```
+
+
 
 ### 且/或
 
@@ -5594,7 +5658,7 @@ func({longitude: '111',altitude: '222'},11,22)
   }
   ```
 
-### 回调和Promise风格
+### 函数的回调与Promise风格
 
 我们有时候再查看一些文档时，时常发现文档中的某些函数往往标注着，是否支持Promise风格
 
@@ -5618,7 +5682,7 @@ getCity((cityName,cityId)=>{
 })
 ```
 
-改造为Promise风格
+将原函数改造为Promise风格
 
 ```js
 function getCity(){
@@ -5651,7 +5715,7 @@ try {
 }
 ```
 
-兼容性改造【同时支持回调和Promise风格】
+兼容性改造【将原函数改造为同时支持回调和Promise风格】
 
 ```js
 function getCity(cb){
@@ -5688,6 +5752,163 @@ try {
 }catch (err2){
     console.log('err2-->',err2)
 }
+```
+
+
+
+很多时候，我们并不能直接对支持回调的异步函数进行修改。尤其是，修改别人的代码时，很有可能会改出新的bug，所以 ，我们可以把原本的回调函数继续封装一层
+
+```
+```
+
+
+
+### async与await的一些细节
+
+```js
+function f1(params){
+    return new Promise((resolve,reject)=>{
+        if(params){
+            resolve({name:"f1",age:2})
+        }else {
+            reject({name:"f1",age:4})
+        }
+    })
+}
+function f2(params){
+    return new Promise((resolve,reject)=>{
+        if(params){
+            resolve({name:"f2",age:2})
+        }else {
+            reject({name:"f2",age:4})
+        }
+    })
+}
+function f3(params){
+    return new Promise((resolve,reject)=>{
+        if(params){
+            resolve({name:"f3",age:2})
+        }else {
+            reject({name:"f3",age:4})
+        }
+    })
+}
+
+// async function def(){
+//     const res=await f1(false).catch(err=>{
+//         console.log('err --> ',err)
+//         return
+//     })
+//     const res2=await f1(false).catch(err=>{
+//         console.log('err2 --> ',err)
+//         return
+//     })
+//
+// }
+
+//方式一： 捕获async/await的err
+async function hij(){
+    // return f1(true).then(async res=> {
+    //     //内层使用then方式，外层catch抓不到
+    //     // f2(false).then( res2=>{
+    //     //     console.log('f2 --> ',res2)
+    //     // })
+    //
+    //     //内层使用async/await方式，外层catch可以抓到错误
+    //     const res2 = await f2(false)
+    // }).catch(err=>{
+    //     console.log('err -->',err)
+    // })
+}
+// hij()
+
+
+//方式二： 捕获async/await的err，try、catch捕获到第一个err就停止了,不会再继续执行了。如果await自行catch处理，外层就抓不到了,只能抓到剩下的错误
+// async function lmn(){
+//     // try{
+//     //     const res1 = await f1(false)
+//     //     const res2 = await f2(false)
+//     // }catch (err){
+//     //     console.log("err --> ",err)
+//     // }
+//     const res1 = await f1(false)
+//     const res2 = await f2(false)
+// }
+// lmn()
+
+//方式三
+async function lmn(){
+    try{
+        const res1 = await f1(false).catch(err=>{
+                console.log("3")
+        })
+        const res2 = await f2(false)
+    }catch (err){
+        console.log("err --> ",err)
+    }
+}
+lmn()
+
+```
+
+
+
+### 链式调用
+
+```js
+// find 传入参数为原始数据（数组格式，每个元素都是对象）
+// 通过进行链式调用对数据执行操作，支持的方法有
+// where(predicate): 根据属性进行匹配筛选
+// orderBy(key, desc): 根据 key 的值进行排列，默认升序排列，当第二个参数为 true 时降序排列
+// groupBy(key): 根据 key 的值对数据元素进行分组，合并为二维数组
+// execute(): 执行所有处理并返回最终结果
+
+Array.prototype.find=function(array){
+    return this
+}
+Array.prototype.where=function(predicate){
+    let res=[]
+    for(let item of this){
+        if(item[predicate]!==undefined){
+            res.push(item)
+        }
+    }
+    return res
+}
+Array.prototype.orderBy=function(key,desc){
+    return this.sort((second,first)=>{
+        if(desc===true){ //降序：从大到小
+            if(first[key]>second[key])
+                return 1
+            else
+                return -1
+        }else{
+            if(first[key]<second[key])
+                return 1
+            else
+                return -1
+        }
+
+    })
+}
+Array.prototype.groupBy=function(key){
+    let calcArray=[]//用索引记位置
+    return this.reduce((preValue,curValue)=>{
+        let curValueGroupByKey=curValue[key]
+        let index= calcArray.indexOf(curValueGroupByKey)
+
+        if(index===-1){ //不存在这个key的值
+            calcArray.push(curValueGroupByKey)
+            preValue.push([curValue])
+        }else {//存在
+            preValue[index].push(curValue)
+        }
+        return preValue
+    },[])
+}
+console.log([{name:"jack",age:19},{name:"tom"},{name:"jack",age:30},{name:"tom",age:10}].find().where("age").groupBy("name"))
+
+
 ```
 
 
