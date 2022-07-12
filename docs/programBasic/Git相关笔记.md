@@ -6,7 +6,7 @@ categories: 版本控制
 toc: true 
 cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/gaitubao_0_png.png
 ---
-# 彻底系统的学习Git
+# 系统的学习Git
 
 ## 1.版本控制方式分类
 
@@ -61,9 +61,9 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 * 右键 TortoiseSVN  ，选择Show log ，就可以看到已有的提交记录
 
-## 3.Git
+## 3.Git的使用
 
-### 3.1 Git的使用
+
 
 非常好的文章
 
@@ -82,7 +82,7 @@ git remote --help
 git add --help
 ```
 
-#### 3.1.1 安装
+### 3.1安装
 
 * 远程仓库，一般托管在GitHub或者是Gitee上，不用下载
 
@@ -107,7 +107,7 @@ git add --help
 
   ![image-20210108095402992](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108095402992.png)
 
-#### 3.1.2 使用Git命令
+### 3.2 使用Git命令
 
 查阅更多内容[Git常用命令清单](http://www.ruanyifeng.com/blog/2015/12/git-cheat-sheet.html)
 
@@ -234,7 +234,7 @@ git add --help
     git push 
     ```
 
-#### 3.1.3 GitHub上托管流程
+### 3.3 GitHub上托管流程
 
 **情况一：GitHub新建空项目，本地没有项目，克隆到本地开发** 
 
@@ -323,7 +323,7 @@ git push --set-upstream 别名 分支名
 
 之后的每次提交直接输入`git push`就会提交到记住的 仓库和分支
 
-#### 3.1.4 分支管理
+### 3.4 分支管理
 
 默认主分支是master，创建的各个分支之间，互不影响。Git中出现的`HEAD`指的是当前的分支
 
@@ -396,13 +396,13 @@ git push --set-upstream 别名 分支名
   git branch -d 分支名
   ```
 
-#### 3.1.5 多人协作GitHub Collabrators
+### 3.5 多人协作GitHub Collabrators
 
 原本只有仓库所在的账户才能提交代码，所以要在GitHub上添加协作者，添加进来的协作者就可以在该仓库提交代码。
 
 ![image-20210108230251049](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108230251049.png)
 
-#### 3.1.6 Git工作流程
+### 3.6 Git工作流程
 
 详细内容查阅[Git工作流程](http://www.ruanyifeng.com/blog/2015/12/git-workflow.html?utm_source=tuicool&utm_medium=referral)
 
@@ -430,11 +430,9 @@ git push --set-upstream 别名 分支名
   >
   > 目前第三方代码仓库托管服务有很多，其中 Github 最火，但是如果想要托管私有项目收费比较高,而且在国内受限于网络环境影响,鲜少有公司使用。例如京东、淘宝这种级别的公司，也不太常用别的第三方的托管服务。Gitlab是一个开源的类似于Github的一个系统，且开源免费，可以部署自己的公司内容。
 
+## 4.GitHub搭建静态博客
 
-
-### 3.2 GitHub搭建静态博客
-
-#### 3.2.1 必须注意
+### 4.1 必须注意
 
 本地初始化的是**Hexo的整个项目**，但是发布的是把本地项目变成**静态页面的项目**
 
@@ -444,7 +442,7 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 每次添加新的MarkDown文章后，先推送本地的**Hexo的整个项目**，然后再**发布**
 
-#### 3.2.2 Hexo框架
+### 4.2 Hexo框架
 
 * [官网](https://hexo.io/zh-cn/)
 
@@ -528,7 +526,7 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 * 打开网页 https://heyingjiee.github.io/ ，就能显示博客了
 
-#### 3.1.3 主题
+### 4.3 主题
 
 * 官网主题https://hexo.io/themes/
 * 选择需要的主题，进入对应的主题的github页，有对应的使用说明
@@ -550,5 +548,19 @@ cover:  # 标题背景图片,直接把图片网址放上去就行
 ```
 这个插件可以每次修改完本地项目，直接刷新网页就可以看到变化
 npm install --save hexo-browsersync
+```
+
+## Git命令补充
+
+这一部分补充的是一些我用到过的非主要的Git命令
+
+### 记住密码
+
+安装Git后，直接clone一个私有仓库，就会在终端中看到Git的提示，要求输入账户和密码
+
+这个命令更改配置，使得其可以记住账号密码
+
+```shell
+git config --global credential.helper store
 ```
 

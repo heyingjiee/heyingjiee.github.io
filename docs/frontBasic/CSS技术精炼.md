@@ -3041,6 +3041,90 @@ draw();
 
 ## 小知识点 
 
+### 三角形和梯形
+
+**三角形**
+
+三角形的原理就是当一个div的宽高为0时，四边的border就会变成三角形
+
+![image-20220702160617596](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702160617%20.png)
+
+只留下底border，其他位置设置为透明
+
+```css
+.wrap {
+   width: 0px;
+   height: 0px;
+   border:200px solid transparent;
+   border-bottom-color: red;
+}
+```
+
+![image-20220702161039306](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702161039%20.png)
+
+**梯形**
+
+梯形的原理就是，设置宽高时，四边的border就是梯形
+
+![image-20220702160831488](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702160832%20.png)
+
+同理，只留底边就是梯形
+
+```css
+.wrap {
+    width: 250px;
+    height: 0px;
+    border:200px solid transparent;
+    border-bottom-color: red;
+}
+```
+
+![image-20220702161333562](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702161334%20.png)
+
+### 幽灵节点
+
+**现象**
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+
+            .wrap {
+               background-color: red;
+            }
+            span{
+                display: inline-block;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <span></span>
+        </div>
+    </body>
+</html>
+```
+
+使用chorme查看html样式，发现span的高度是0。但是，div被一种无形的东西撑起到22.5px，这个无形的节点，就是幽灵节点（官方翻译为行内元素的支柱）。幽灵节点无法查看，但是又确实存在
+
+![image-20220702163949667](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702163950%20.png)
+
+![image-20220702163606132](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702163606%20.png)
+
+**解决**
+
+设置font-size为零
+
+```css
+.wrap {
+   background-color: red;
+   font-size: 0;
+}           
+```
+
 ### 百分比
 
 CSS中使用百分比绝大部分是父元素的百分比，且横向是父元素宽的百分比，纵向的是父元素高的百分比。举个例子：
@@ -3052,7 +3136,7 @@ CSS中使用百分比绝大部分是父元素的百分比，且横向是父元�
 **注意有两个特殊的地方**
 
 * transform的translate、translateX、translateY使用百分比，指的是自己的宽高的百分比
-* padding的百分比，无论是上下左右都边距，都是自己素宽度的百分比
+* padding的百分比，无论是上下左右都边距，都是自己宽度的百分比
 
 ### 固定宽高比 
 

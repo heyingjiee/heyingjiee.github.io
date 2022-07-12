@@ -5,19 +5,17 @@
 * Go标准库实现Web开发
 * Gin框架实现Web开发
 
-# Go标准库
+有一点需要注意，Gin、GORM实际上有很多地方就是用的Go的标准库
 
-
-
-## Go标准库模版渲染
+## Go标准库之html/template
 
 > 只对一些常用的用法进行学习记录，更多用法请查看下面这篇文章
 >
 > [李文周的博客——学习Go语言标准库之http/template](https://www.liwenzhou.com/posts/Go/go_template/)
 
+html/template这个库简单来说就是实现了一个模板引擎
 
-
-Go语言内置了文本模板引擎`text/template`和用于HTML文档的`html/template`。它们的作用机制可以简单归纳如下：
+Go语言内置了文本模板引擎`text/template`和用于HTML文档的``。它们的作用机制可以简单归纳如下：
 
 ```text
 1 、模板文件通常定义为 .tmpl 和 .tpl 为后缀（也可以使用其他的后缀），必须使用 UTF8编码（Go语言使用UTF-8编码）
@@ -663,7 +661,586 @@ Gin框架是一个使用Go语言开发的高性能Web框架
 
 
 
-# Gin框架开始
+## Go标准库之database/sql
+
+database/sql这个库简单来说就是实现了SQL或类SQL数据库的泛用接口，并不提供具体的数据库驱动。使用`database/sql`包时必须注入（至少）一个数据库驱动。
+
+我们常用的数据库基本上都有完整的第三方实现好的驱动。例如：[MySQL驱动](https://github.com/go-sql-driver/mysql)
+
+后面的例子都是使用Mysql数据库
+
+```go
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+)
+
+var db *sql.DB
+
+func initDB() (err error) {
+  dsn := "root:xxxx@tcp(127.0.0.1:13306)/db1" //账号:密码@协议(地址:端口)/数据库名 
+	db, err = sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err)
+	}
+	err = db.Ping() //连接数据库失败返回err，成功返回nil
+	if err != nil {
+		fmt.Printf("连接失败")
+		return
+	}
+	db.SetMaxOpenConns(500) //连接池中与数据库建立连接的最大数目，默认为0（无限制）
+	db.SetMaxIdleConns(10)  //连接池中的最大闲置连接数，最大不能超过"最大连接数"，超过就最大闲置连接为"最大连接数"
+	db.SetConnMaxLifetime(time.Second*10) //正在使用的连接的存活时间
+	//db.SetConnMaxIdleTime() //空闲链接的存活时间
+	return
+}
+
+func main() {
+	if err := initDB(); err != nil {
+		fmt.Printf("err:%v", err)
+    return
+	}
+
+	defer db.Close() //必须确保db不为nil，才能调用Close
+}
+
+```
+
+这篇文章介绍一些关于SetMaxOpenConns、SetMaxIdleConns、SetConnMaxLifetime的信息（https://learnku.com/go/t/49809）
+
+### 新建数据库表
+
+```shell
+create table users_info
+(
+    id   int auto_increment,
+    name varchar(50) null,
+    age  int         null,
+    constraint users_info_pk
+        primary key (id)
+);
+```
+
+建议使用GoLand的数据库插件，可视化建表
+
+![image-20220625185710011](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220625185710%20.png)
+
+### SQL语句中的占位符
+
+我们后面见到的增删改查中，SQL语句中的`?` 是查询占位符，它可以防止SQL注入攻击。
+
+
+
+`database/sql`不对占位符处的文本进行任何验证；只是将**带占位符的SQL语句**和**编码后的参数**一起按原样发送到服务器，查询是在数据库服务器上进行的，所以不同的数据库使用的占位符也不同:
+
+- MySQL中使用`?`
+- PostgreSQL使用枚举的`$1`、`$2`等bindvar语法
+- SQLite中`?`和`$1`的语法都支持
+- Oracle中使用`:name`的语法
+
+
+
+对占位符一个常见误解就是将它们看成是SQL语句的拼接，其实并不是
+
+SQL语句的拼接不能防范SQL注入，而使用占位符的方式可以防范SQL注入
+
+```go
+sqlStr := "select id,name,age from users_info where id=?"
+row := db.QueryRow(sqlStr, 2)
+```
+
+同时，占位符所在的位置不能更改SQL语句的结构，例如：
+
+```go
+// ？不能用来插入表名
+db.Query("SELECT * FROM ?", "mytable")
+ 
+// ？也不能用来插入列名
+db.Query("SELECT ?, ? FROM people", "name", "location")
+```
+
+### 查询
+
+先在建好的表中插入几条数据，在查询
+
+**查询单条数据**
+
+db.QueryRow()返回的row对象，如果不执行Scan就会一直占用数据库连接，这时，如果设置最大连接数是1，同时发起两次查询，就会阻塞代码。只有执行Scan连接才会断开
+
+```go
+//定义一个结构，将查出的数据保存在这个结构里
+type user struct {
+	id   int
+	age  int
+	name string
+}
+
+func queryRow() {
+	var u user
+	sqlStr := "select id,name,age from users_info where id=?"
+	row := db.QueryRow(sqlStr, 2)
+  err:=row.Scan(&u.id, &u.name, &u.age)
+  if err != nil {
+		fmt.Printf("读取失败：%v", err)
+    return
+	}
+	fmt.Printf("查询结果：%#v\n ", u)
+}
+```
+
+在main函数中调用
+
+```go
+func main() {
+	if err := initDB(); err != nil {
+		fmt.Printf("err:%v", err)
+    return
+	}
+
+	defer db.Close() //必须确保db不为nil，才能调用Close
+  
+  queryRow() //查询结果：main.user{id:1, age:200, name:"h3"}
+}
+```
+
+为了避免忘记Scan释放连接，一般连写
+
+```go
+err := db.QueryRow(sqlStr, 2).Scan(&u.id, &u.name, &u.age)
+if err != nil {
+	fmt.Printf("读取失败：%v", err)
+}
+```
+
+**查询多行数据**
+
+为了避免循环rows数据时出现panic导致程序中断了，但是数据库连接没有被释放，所以一定要加上defer rows.Close()
+
+```go
+func queryRows() {
+	sqlStr := "select id,name,age from users_info where id in (?,?)"
+	rows, err := db.Query(sqlStr, 1, 2)
+	if err != nil {
+		fmt.Printf("查询失败：%v", err)
+		return
+	}
+	defer rows.Close() //这里很重要，有可能某行时就会触发panic
+
+	for rows.Next() { //循环读取查询结果
+		var u user
+		err := rows.Scan(&u.id, &u.name, &u.age)
+		if err != nil {
+			fmt.Printf("读取失败：%v", err)
+			continue
+		}
+		fmt.Printf("查询结果：%#v\n ", u)
+	}
+}
+```
+
+调用
+
+```go
+func main() {
+	if err := initDB(); err != nil {
+		fmt.Printf("err:%v", err)
+    return
+	}
+
+	defer db.Close() //必须确保db不为nil，才能调用Close
+  
+  queryRows() 
+  //查询结果：main.user{id:1, age:200, name:"h3"}
+  //查询结果：main.user{id:2, age:18, name:"y"}
+}
+```
+
+补充：为什么user结构体名和其中的字段可以小写，其他的一些数据库相关的第三方Go库必须大写
+
+因为Scan函数仅仅是做一个赋值操作
+
+其他的一些库，可能是将变量传入函数，在函数中操作结构体，比如通过反射进行一些处理后赋值（回忆下，使用其他包中的变量或函数时，这个变量或函数必须首字母大写）
+
+### 插入
+
+接下来的，插入、更新、删除，都需要使用Exec执行，Exec执行完后，会自动断开连接
+
+```go
+// 插入数据
+func insertRow() {
+	sqlStr := "insert into users_info(name, age) values (?,?)"
+	ret, err := db.Exec(sqlStr, "jack", 20)
+	if err != nil {
+		fmt.Printf("插入失败:%v\n", err)
+		return
+	}
+
+	theID, err := ret.LastInsertId()   // 新插入数据的id
+  if err != nil {
+		fmt.Printf("插入失败:%v\n", err)
+		return
+	}
+	lineNum, err := ret.RowsAffected() //新插入数据影响的行数
+	if err != nil {
+		fmt.Printf("插入失败:%v\n", err)
+		return
+	}
+	fmt.Printf("插入成功, id是 %d ；受影响的行数是:%v\n", theID, lineNum)
+}
+```
+
+### 更新
+
+```go
+func updateRow() {
+	sqlStr := "update users_info set age=? where name=?"
+	ret, err := db.Exec(sqlStr, 22, "tom")
+	if err != nil {
+		fmt.Printf("更新失败:%v\n", err)
+		return
+	}
+
+	lineNum, err := ret.RowsAffected() //更新数据影响的行数
+	if err != nil {
+		fmt.Printf("更新失败:%v\n", err)
+		return
+	}
+	fmt.Printf("更新成功, 受影响的行数是:%v\n", lineNum) //更新成功, 受影响的行数是:0
+
+}
+```
+
+### 删除
+
+```go
+func deleteRow() {
+	sqlStr := "delete from  users_info where id=?"
+	ret, err := db.Exec(sqlStr, 1)
+	if err != nil {
+		fmt.Printf("删除失败:%v\n", err)
+		return
+	}
+
+	lineNum, err := ret.RowsAffected() //删除数据影响的行数
+	if err != nil {
+		fmt.Printf("删除失败:%v\n", err)
+		return
+	}
+	fmt.Printf("删除失败, 受影响的行数是:%v\n", lineNum) //删除失败, 受影响的行数是:1
+
+}
+```
+
+### 预处理
+
+把SQL语句分成两部分，命令部分与数据部分。先把命令部分发送给MySQL服务端，MySQL服务端进行SQL预处理，然后把数据部分发送给MySQL服务端，MySQL服务端对SQL语句进行占位符替换后，再去查询
+
+**拼接查询字符串**
+
+用拼接后的查询字符串，去数据库执行,这种十分容易出现SQL注入的问题
+
+```go
+sqlStr := fmt.Sprintf("select id,name,age from users_info where id='%s'", "3' or 1=1#")
+rows, err := db.Query(sqlStr) //执行：select id,name,age from users_info where id='3' or 1=1#'       
+
+// #在Sql语句中时注释的含义。这句Sql语句原本是根据id查询数据，因为插入"3' or 1=1#" ，就变成了搜索整个表
+```
+
+**前面的增删改查**
+
+不会出现SQL注入的后果（以多行查询为例子）
+
+```go
+sqlStr := "select id,name,age from users_info where id=?"
+rows, err := db.Query(sqlStr, "2' or 1=1#") //执行：select id,name,age from users_info where id='3'     
+```
+
+**预处理**
+
+不会出现SQL注入的后果
+
+```go
+sqlStr := "select id,name,age from users_info where id=?"
+stmt, err := db.Prepare(sqlStr)
+if err != nil {
+	fmt.Printf("prepare failed, err:%v\n", err)
+	return
+}
+defer stmt.Close()
+//增、删、改、查都是用预处理的stmt，参数就是字符串中的参数
+rows, err := stmt.Query(1)
+
+err := stmt.QueryRow(1).Scan(&u.id, &u.name, &u.age)
+
+ret, err:=stmt.Exec(1)
+```
+
+### 事务
+
+通常事务必须满足4个条件（ACID）：原子性（Atomicity，或称不可分割性）、一致性（Consistency）、隔离性（Isolation，又称独立性）、持久性（Durability）。
+
+|  条件  |                             解释                             |
+| :----: | :----------------------------------------------------------: |
+| 原子性 | 一个事务（transaction）中的所有操作，要么全部完成，要么全部不完成，不会结束在中间某个环节。事务在执行过程中发生错误，会被回滚（Rollback）到事务开始前的状态，就像这个事务从来没有执行过一样。 |
+| 一致性 | 在事务开始之前和事务结束以后，数据库的完整性没有被破坏。这表示写入的资料必须完全符合所有的预设规则，这包含资料的精确度、串联性以及后续数据库可以自发性地完成预定的工作。 |
+| 隔离性 | 数据库允许多个并发事务同时对其数据进行读写和修改的能力，隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致。事务隔离分为不同级别，包括读未提交（Read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（Serializable）。 |
+| 持久性 | 事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失。 |
+
+事务相关的方法
+
+```go
+Begin() 
+
+Rollback()
+
+Commit() 
+```
+
+例子
+
+```go
+func transaction() {
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Printf("创建事务错误，%v\n", err)
+		return
+	}
+	//第一条SQL语句
+	res, err := tx.Exec("insert into users_info(name,age) values (?,?)", "hhh", 20)
+	if err != nil {
+		fmt.Printf("回滚事务，第一条SQL语句错误，%v\n", err)
+		tx.Rollback()
+		return
+	}
+	if firstRowNum, err := res.RowsAffected(); err != nil || firstRowNum != 1 {
+		fmt.Printf("回滚事务，第一条SQL语句错误，%v\n", err)
+		tx.Rollback()
+		return
+	}
+
+	//第二条SQL语句
+	res, err = tx.Exec("select * from users_info where id=?", 22)
+	if err != nil {
+		fmt.Printf("回滚事务，第二条SQL语句错误，%v\n", err)
+		tx.Rollback()
+		return
+	}
+	if secondRowNum, err := res.RowsAffected(); err != nil || secondRowNum != 1 {
+		fmt.Printf("回滚事务,第二条SQL语句错误，%v\n", err)
+		tx.Rollback()
+		return
+	}
+
+	//
+	fmt.Printf("提交事务")
+	tx.Commit() // 提交事务
+
+}
+```
+
+## 第三方库sqlx
+
+对database/sql是一个对数据库进行操作的第三方库
+
+### 增删改查
+
+* 查找使用Get和Select方法
+* 新增、删除、修改都是使用Exec，与原生一样
+* 如果结构体字段名和数据库表字段名不一样，要使用`db:"xxxx"`来对应表字段xxxx
+* Get、Select查询结果，需要存入的结构体实例。这个结构体的字段名首字母必须大写（结构体名其实可以不用大写，因为使用的时候是在当前包中传入 `var u User`）
+
+```go
+package main
+
+import (
+	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+)
+
+var db *sqlx.DB
+
+func initDB() (err error) {
+	dsn := "root:HYJ=wvs1996@tcp(127.0.0.1:3306)/db1?charset=utf8mb4&parseTime=True" //parseTime=True讲go中的time对象转化为数据库的时间对象
+	db, err = sqlx.Connect("mysql", dsn)                                             //MustConnect()如果出现错误，自动panic，而Connect需要自己处理err
+	if err != nil {
+		fmt.Printf("连接出错，%v\n", err)
+		panic(err)
+	}
+	db.SetMaxOpenConns(50)
+	db.SetConnMaxIdleTime(10)
+	return
+}
+
+type User struct {
+	Id   int    `db:"id"`
+	Name string `db:"name"`
+	Age  int    `db:"age"`
+}
+
+//1、查询
+func query(param interface{}) {
+	var u User
+	sqlStr := "select * from users_info where id=?"
+	if err := db.Get(&u, sqlStr, param); err != nil {
+		fmt.Printf("查询出错，%v\n", err)
+		return
+	}
+	fmt.Printf("查询结果：%#v", u)
+
+}
+
+//1、多条数据查询(传入的是slice，返回的也是slice)
+func queryRows(param1, param2 interface{}) {
+	var u []User
+	sqlStr := "select * from users_info where id in (?,?)"
+	if err := db.Select(&u, sqlStr, param1, param2); err != nil {
+		fmt.Printf("查询出错，%v\n", err)
+		return
+	}
+	fmt.Printf("查询结果：%#v", u) //[]main.User{main.User{Id:2, Name:"jack", Age:20}, main.User{Id:3, Name:"tom", Age:22}}
+
+}
+
+//2、sqlx中的删、改、查，还是使用exec方法与原生sql中的Exec使用一样
+
+func main() {
+	initDB()
+  query(2)
+	queryRows(2, 3)
+
+}
+```
+
+### 事务
+
+使用Beginx、Rollback、Commit
+
+```go
+func transactionDemo2()(err error) {
+	tx, err := db.Beginx() // 开启事务
+	if err != nil {
+		fmt.Printf("事务创建失败，%v\n", err)
+		return err
+	}
+  
+  //延迟处理panic
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p) // 重新抛出panic
+		} else if err != nil {
+			fmt.Println("rollback")
+			tx.Rollback() //回滚事务
+		} else {
+			err = tx.Commit() //提交事务
+			fmt.Println("commit")
+		}
+	}()
+  
+  //第一个SQL语句
+	sqlStr1 := "Update user set age=20 where id=?"
+
+	rs, err := tx.Exec(sqlStr1, 1)
+	if err!= nil{
+		return err
+	}
+	n, err := rs.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return errors.New("第一个SQL语句执行失败")
+	}
+  
+  //第二个SQL语句
+	sqlStr2 := "Update user set age=50 where i=?"
+	rs, err = tx.Exec(sqlStr2, 5)
+	if err!=nil{
+		return err
+	}
+	n, err = rs.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return errors.New("exec sqlStr1 failed")
+	}
+	return err
+  
+  
+}
+```
+
+## Redis(暂时略)
+
+这部分介绍go-redis这个第三方库
+
+[文档地址](https://pkg.go.dev/github.com/go-redis/redis)
+
+因为我电脑里没有安装redis
+
+```shell
+# 使用redis 5.0.7 版本的镜像，启动一个名为 redis507 的 容器，运行一个redis server
+docker run --name redis507 -p 6379:6379 -d redis:5.0.7
+
+# 启动一个 redis-cli 连接上面的 redis server
+docker run -it --network host --rm redis:5.0.7 redis-cli
+```
+
+例子
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/go-redis/redis"
+)
+
+var rdb *redis.Client
+
+func initClient() (err error) {
+	rdb = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379", //地址
+		Password: "",               // 无密码，就设置为空字符串
+		DB:       0,                // 数据库
+		PoolSize: 20,               // 连接池大小
+	})
+	_, err = rdb.Ping().Result()
+	if err != nil {
+		return
+	}
+	return
+}
+
+func getValue() {
+	str, err := rdb.Get("name").Result()
+	if err == redis.Nil {
+		fmt.Printf("不存在该键值对")
+		return
+	} else if err != nil {
+		fmt.Printf("获取值错误，%v\n", err)
+		return
+	}
+
+	fmt.Printf("获取的值:%v\n", str)
+}
+func main() {
+	err := initClient()
+	if err != nil {
+		fmt.Printf("连接redis失败，%v\n", err) //err是redis:nil
+		panic(err)
+	}
+	defer rdb.Close()
+
+	getValue()
+}
+
+```
 
 
 
@@ -2814,7 +3391,9 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 
 
 
-## 企业级项目结构划分
+## 待办事项案例
+
+**项目结构划分**
 
 一般结构
 
@@ -2833,15 +3412,1080 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 请求 ——>router路由 ——> controller(控制器) ——> logic（逻辑层） ——> models（模型层增删改查）
 ```
 
-
-
-## 待办事项例子
+**代码**
 
 [代办事项例子](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/TodoProject)
 
 有一点需要注意：结构体的Status字段，是布尔类型，但是存储时，会存储为0或1
 
 ![image-20220618184742990](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220618184743%20.png)
+
+## 日志库（zap）
+
+Go标准库log提供的能力非常有限，所以这里主要介绍的是Zap日志库
+
+### 安装
+
+```go
+go get -u go.uber.org/zap
+```
+
+### 简单例子
+
+* Zap提供了两种类型的日志记录器—`Sugared Logger`和`Logger`（对性能要求高就是用Logger，但它只支持强类型的结构化日志记录，一般用于生产）
+
+* 日志记录器的默认配置有三种方式，它们之间唯一的区别在于它将记录的信息不同
+
+  * NewProduction()  生产环境默认配置值
+  * NewDevelopment()  开发环境默认配置值
+  * New() 自定义配置
+
+* 默认情况下日志都会打印到console
+
+* 记录日志函数
+
+  这里分别写了Logger和SugaredLogger两种日志记录器
+
+  XXX表示Debug、Info、Warn、Error、Panic等方法，记录不同等级的日志
+
+  ```go
+  func (log *Logger) XXX(msg string, fields ...Field) 
+  
+  func (s *SugaredLogger) XXX(msg string, fields ...Field) 
+  ```
+
+  返回fields类型的函数，名字值得是val的类型
+
+  ```go
+  //val是string类型
+  func String(key string, val string) Field 
+  
+  //val是Int32指针
+  func Int32p(key string, val *int32) Field
+  
+  //不确定val类型,用Any(key,val)
+  
+  //val是错误对象，可以不指定key ，用Error(错误实例)
+  ```
+  
+  
+
+**Logger**
+
+```go
+package main
+
+import (
+	"go.uber.org/zap"
+	"net/http"
+)
+
+var logger *zap.Logger //日志记录器Logger、SugaredLogger，对性能要求高就是用Logger
+
+func initLogger() (err error) {
+	//zap.NewProduction() // 生产环境默认配置值
+	//zap.NewDevelopment() // 开发环境默认配置值
+	//zap.New() //自定义配置
+
+	logger, err = zap.NewProduction()
+	return
+}
+func main() {
+	initLogger()
+	defer logger.Sync() //写入磁盘
+
+	resp, err := http.Get("http://www.baidu.com")
+	if err != nil {
+		logger.Error(
+			"访问错误",
+			zap.String("url", "www.baidu.com"),
+			zap.Error(err))
+	} else {
+		logger.Info("访问成功",
+			zap.String("statusCode", resp.Status),
+			zap.String("url", "www.baidu.com"))
+		resp.Body.Close()
+	}
+	
+}
+
+```
+
+打印结果
+
+```go
+{"level":"info","ts":1657118439.748776,"caller":"zaplog/index.go:29","msg":"访问成功","statusCode":"200 OK","url":"www.baidu.com"}
+
+//level:是日志级别
+//ts:时间戳
+//caller:调用栈
+//caller:log日志方法的第一个参数
+//后面的statusCode、url的键值对是log日志方法的额外参数
+```
+
+**sugaredLogger**
+
+Logger调用Sugar方法，返回的就是sugaredLogger
+
+```go
+package main
+
+import (
+	"go.uber.org/zap"
+	"net/http"
+)
+
+var sugaredLogger *zap.SugaredLogger //日志记录器Logger、SugaredLogger，对性能要求高就是用Logger
+
+func initLogger() (err error) {
+	//zap.NewProduction() // 生产环境默认配置值
+	//zap.NewDevelopment() // 开发环境默认配置值
+	//zap.New() //自定义配置
+
+	logger, _ := zap.NewProduction()
+	sugaredLogger = logger.Sugar()
+	return
+}
+func main() {
+	initLogger()
+	defer sugaredLogger.Sync() //写入磁盘
+
+	resp, err := http.Get("http://www.baidu.com")
+	if err != nil {
+		sugaredLogger.Error(
+			"访问错误",
+			zap.String("url", "www.baidu.com"),
+			zap.Error(err))
+	} else {
+		sugaredLogger.Info("访问成功",
+			zap.String("statusCode", resp.Status),
+			zap.String("url", "www.baidu.com"))
+		resp.Body.Close()
+	}
+
+}
+```
+
+打印结果
+
+```go
+{"level":"info","ts":1657121340.018529,"caller":"zaplog/index.go:30","msg":"访问成功{statusCode 15 0 200 OK <nil>} {ur 0 www.baidu.com <nil>}"}
+```
+
+
+
+**补充**
+
+上面两个例子均使用NewProduction这个配置
+
+Logger换成NewDevelopment这个配置
+
+```json
+2022-07-07T01:10:24.785+0800    INFO    zaplog/index.go:29      访问成功        {"statusCode": "200 OK", "url": "www.baidu.com"}
+```
+
+Logger换成NewDevelopment这个配置
+
+```
+2022-07-07T01:13:22.526+0800    INFO    zaplog/index.go:30      访问成功{statusCode 15 0 200 OK <nil>} {url 15 0 www.b.com <nil>}
+```
+
+
+
+### 自定义Logger
+
+```go
+func New(core zapcore.Core, options ...Option) *Logger
+```
+
+其中的参数zapcore.Core，需要三个配置项——`Encoder`，`WriteSyncer`，`LogLevel`
+
+1、**Encoder**：日志的格式
+
+字段配置：使用预先设置的`NewProductionEncoderConfig()`、`NewDevelopmentEncoderConfig()`
+
+日志格式
+
+* JSON：`NewJSONEncoder()`
+
+  ```
+  zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+  
+  //输出格式样例
+  //{"level":"info","ts":1657126830.894248,"msg":"访问成功{statusCode 15 0 200 OK <nil>} {url 15 0 www.baidu.com <nil>}"}
+  ```
+
+* Console输出格式（字段间空格分隔）：
+
+  ```go
+  zapcore.NewConsoleEncoder(zap.NewProductionEncoderConfig())
+  
+  //输出格式样例
+  //1.6571270591036348e+09	info	访问成功{statusCode 15 0 200 OK <nil>} {url 15 0 www.baidu.com <nil>}
+  ```
+
+  
+
+2、**WriterSyncer** ：指定日志将写到哪里去
+
+使用`zapcore.AddSync()`函数并且将打开的文件句柄传进去
+
+创建新文件
+
+```go
+file, _ := os.Create("./test.log")
+writeSyncer := zapcore.AddSync(file)
+```
+
+没文件新建，有文件就追加
+
+```go
+func getLogWriter() zapcore.WriteSyncer {
+	file, err := os.OpenFile("./test.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+	return zapcore.AddSync(file)
+}
+```
+
+3、**Log Level**：哪种级别的日志将被写入
+
+```go
+DebugLevel 
+
+InfoLevel
+
+WarnLevel
+
+ErrorLevel
+	
+DPanicLevel
+	
+PanicLevel
+
+FatalLevel
+
+_minLevel 
+	
+_maxLevel 
+```
+
+**例子**
+
+以日志记录器Logger为例子，使用自定义日志记录器配置，重写initLogger函数
+
+```go
+func initLogger() {
+  //1、Encoder
+  encoder := getEncoder()
+  
+  //2、WriterSyncer
+	writeSyncer := getLogWriter()
+	
+  //3、创建zapcore.Core
+	core := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
+
+  //4、New方法自定义
+	logger := zap.New(core)
+}
+
+func getEncoder() zapcore.Encoder {
+	return zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+}
+
+func getLogWriter() zapcore.WriteSyncer {
+	file, _ := os.Create("./test.log")
+	return zapcore.AddSync(file)
+}
+```
+
+运行结果：将日志输出到文件中
+
+```log
+{"level":"info","ts":1657128015.7524219,"msg":"访问成功","statusCode":"200 OK","url":"www.baidu.com"}
+```
+
+**进一步自定义Encoder的字段**
+
+不使用`NewProductionEncoderConfig()`、`NewDevelopmentEncoderConfig()`这两种预定义的输出的格式
+
+以NewProductionEncoderConfig为例子，如果想要精细的更改字段，就需要看下的源码
+
+其只是返回了一个结构体，其实我们不使用NewProductionEncoderConfig，自己写这个结构体作为参数即可
+
+```go
+func NewProductionEncoderConfig() zapcore.EncoderConfig {
+	return zapcore.EncoderConfig{
+		TimeKey:        "ts",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		FunctionKey:    zapcore.OmitKey,
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.EpochTimeEncoder,//这个属性是时间戳
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
+}
+```
+
+修改getEncoder方法
+
+```go
+func getEncoder() zapcore.Encoder {
+	encoderConfig := zapcore.EncoderConfig{
+    //定义日志的key和value
+    LevelKey:       "等级",
+    EncodeLevel:    zapcore.LowercaseLevelEncoder,//日志等级小写，如果希望大写请使用：zapcore.CapitalLevelEncoder,
+    
+    //定义表示日志时间的key和value
+		TimeKey:        "时间",
+    EncodeTime:     zapcore.ISO8601TimeEncoder,
+    
+    //定义message的key和value，value是logger.Error等记录日志函数的第一个参数
+    MessageKey:     "提示信息",
+    
+    //定义当前生成这条日志的调用位置的key和value，只有在zap.New(core, zap.AddCaller())中添加第二个参数，才会输出这个字段
+    CallerKey:      "调用位置",
+    EncodeCaller:   zapcore.ShortCallerEncoder,//调用位置从项目根目录开始，如果希望是系统绝对路径请使用：FullCallerEncoder
+    
+		NameKey:        "logger",
+		
+		FunctionKey:    zapcore.OmitKey,
+		StacktraceKey:  "stacktrace",
+    
+    //每行以\n结尾
+		LineEnding:     zapcore.DefaultLineEnding,
+	
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		
+	}
+	return zapcore.NewJSONEncoder(encoderConfig)
+}
+```
+
+运行结果：将日志输出到文件中
+
+```json
+{"等级":"info","时间":"2022-07-07T01:24:45.491+0800","提示信息":"访问成功","statusCode":"200 OK","url":"www.baidu.com"}
+```
+
+结构体的EncodeTime字段的值
+
+```go
+EncodeTime:zapcore.EpochTimeEncoder //时间戳
+EncodeTime:zapcore.ISO8601TimeEncoder //"2022-07-07T01:24:45.491+0800"
+EncodeTime:zapcore.TimeEncoderOfLayout("2006-01-02"), //按照指定格式格式化时间,例如："2022-07-07"
+```
+
+**zap.New(core, zap.AddCaller())**
+
+增加调用字段（每条日志记录的代码位置）
+
+```go
+package main
+
+import (
+	"fmt"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"net/http"
+	"os"
+)
+
+var logger *zap.Logger //日志记录器Logger、SugaredLogger，对性能要求高就是用Logger
+
+func initLogger() {
+	//1、Encoder
+	encoder := getEncoder()
+
+	//2、WriterSyncer
+	writeSyncer := getLogWriter()
+
+	//3、创建zapcore.Core
+	core := zapcore.NewCore(encoder, writeSyncer, zapcore.DebugLevel)
+
+	//4、New方法自定义
+	logger = zap.New(core, zap.AddCaller())
+}
+
+func getEncoder() zapcore.Encoder {
+	encoderConfig := zapcore.EncoderConfig{
+		//定义日志的key和value
+		LevelKey:    "等级",
+		EncodeLevel: zapcore.LowercaseLevelEncoder, //日志等级小写，如果希望大写请使用：zapcore.CapitalLevelEncoder,
+
+		//定义表示日志时间的key和value
+		TimeKey:    "时间",
+		EncodeTime: zapcore.ISO8601TimeEncoder,
+
+		//定义message的key和value，value是logger.Error等记录日志函数的第一个参数
+		MessageKey: "提示信息",
+
+		//定义当前生成这条日志的调用位置的key和value，只有在zap.New(core, zap.AddCaller())中添加第二个参数，才会输出这个字段
+		CallerKey:    "调用位置",
+		EncodeCaller: zapcore.ShortCallerEncoder,
+
+		NameKey: "logger",
+		FunctionKey:   zapcore.OmitKey,
+		StacktraceKey: "stacktrace",
+		LineEnding:    zapcore.DefaultLineEnding,
+
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+	}
+	return zapcore.NewJSONEncoder(encoderConfig)
+}
+
+func getLogWriter() zapcore.WriteSyncer {
+	//file, _ := os.Create("./test.log")
+	//return zapcore.AddSync(file)
+	file, err := os.OpenFile("./test.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+	return zapcore.AddSync(file)
+}
+func main() {
+	initLogger()
+	defer logger.Sync() //写入磁盘
+
+	resp, err := http.Get("http://www.baidu.com")
+	if err != nil {
+		logger.Error(
+			"访问错误",
+			zap.String("url", "www.baidu.com"),
+			zap.Error(err))
+	} else {
+		logger.Info("访问成功",
+			zap.String("statusCode", resp.Status),
+			zap.String("url", "www.baidu.com"))
+		resp.Body.Close()
+	}
+
+}
+```
+
+结果：多了一个调用位置
+
+```json
+{"等级":"info","时间":"2022-07-08T00:16:56.543+0800","调用位置":"zaplog/index.go:74","提示信息":"访问成功","statusCode":"200 OK","url":"www.baidu.com"}
+```
+
+**注意**
+
+一般生成JSON格式的日志，使用filebeat来进行日志分析
+
+### 日志切割
+
+zap不支持日志切割，所以一般使用Lumberjack
+
+https://www.liwenzhou.com/posts/Go/zap/#autoid-1-3-4
+
+**安装**
+
+```go
+go get github.com/natefinch/lumberjack
+```
+
+**使用**
+
+只需要修改`WriteSyncer`部分的代码，就能在zap中加入Lumberjack支持
+
+```go
+func getLogWriter() zapcore.WriteSyncer {
+	lumberJackLogger := lumberjack.Logger{
+		Filename:   "./test.log", //日志文件的位置
+		MaxSize:    1,            //日志文件的最大大小（以MB为单位）
+		MaxBackups: 5,            //保留旧文件的最大个数
+		MaxAge:     1,            //保留旧文件的最大天数
+		Compress:   false,        //是否压缩/归档旧文件
+	}
+	return zapcore.AddSync(&lumberJackLogger)
+}
+```
+
+
+
+### 在Gin中集成zap
+
+学习Gin时候提到过
+
+```go
+gin.Default()
+```
+
+其原理就是，添加了Logger和Recovery两个中间件
+
+```go
+func Default() *Engine {
+	debugPrintWARNINGDefault()
+	engine := New()
+	engine.Use(Logger(), Recovery())
+	return engine
+}
+```
+
+如果想要集成zap日志，就要使用自己的中间件
+
+自己实现，请参考这篇博客：https://www.liwenzhou.com/posts/Go/use_zap_in_gin/
+
+使用第三方库实现的请参考：https://github.com/gin-contrib/zap
+
+## 处理配置文件（viper）
+
+### 介绍
+
+https://www.liwenzhou.com/posts/Go/viper_tutorial/
+
+项目的官方github地址（https://github.com/spf13/viper）
+
+**viper简单来说就是一个用来读取自己项目中的配置的库**
+
+* 支持显式的设置参数值，设置参数默认值
+
+* 支持读取`JSON`、`TOML`、`YAML`、`HCL`、`envfile`和`Java properties`格式的配置文件，同时支持热加载（可以监听配置文件变化）
+* 从环境变量中读取配置
+* 支持从命令行参数读取配置
+* 支持从buffer读取配置
+
+**Viper会按照下面的优先级读取（从高到低）**
+
+- 显式的设置值
+- 命令行参数
+- 环境变量
+- 配置文件（`JSON`、`TOML`、`YAML`、`HCL`、`envfile`和`Java properties`）
+- key/value存储（注意：目前Viper配置的键（Key）是大小写不敏感的）
+- 默认值
+
+### 安装
+
+```
+go get github.com/spf13/viper
+```
+
+### 设置Viper
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/spf13/viper"
+)
+
+
+func main() {
+
+	//1、读取配置文件
+	viper.SetConfigName("config") //配置文件名（不带后缀的名字）这是因为有些文件本就是不带后缀的，比如.zshrc
+	
+  //当从远程获取配置文件信息时，才会生效
+  //viper.SetConfigType("yaml")   //配置文件的后缀名
+	
+  //如果项目下，有两个多个名为config的文件，可以使用SetConfigFile同时指定带后缀的文件名
+	//viper.SetConfigFile("config.yaml")
+
+	//2、配置去哪个路径下，找配置文件（可以添加多个）
+	viper.AddConfigPath(".")        //当前项目路径
+	viper.AddConfigPath("./config") //当前项目路径的config文件夹下
+	viper.AddConfigPath("$HOME")    //参数中可包含环境变量
+
+}
+
+```
+
+### 监听配置变化
+
+```go
+viper.WatchConfig()
+viper.OnConfigChange(func(e fsnotify.Event) {
+  // 配置文件发生变更之后会调用的回调函数
+	fmt.Println("配置文件变化了:", e.Name)
+})
+```
+
+例子
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/fsnotify/fsnotify"
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"net/http"
+)
+
+
+func main() {
+	viper.SetConfigName("config") 
+	viper.SetConfigType("yaml")  
+	
+	viper.AddConfigPath(".")      
+	
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Printf("配置文件不存在")
+			return
+		} else {
+			fmt.Printf("配置文件存在,但是存在其他错误：%v\n", err)
+			return
+		}
+	}
+
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		// 配置文件发生变更之后会调用的回调函数
+		fmt.Println("配置文件变化了:", e.Name)
+	})
+
+	r := gin.Default()
+	r.GET("/config", func(context *gin.Context) {
+		value := viper.Get("userName")
+		context.String(http.StatusOK, "%v\n", value)
+	})
+	r.Run(":9000")
+}
+
+```
+
+![image-20220709175915771](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220709175916%20.png)
+
+更改配置文件，控制台就会打印
+
+```text
+配置文件变化了 /Users/yc/Documents/GO/GoProject/Gogin/goViper/config.yaml
+```
+
+### 写入配置文件
+
+**配置的默认值**
+
+```go
+viper.SetDefault("file", "123")
+```
+
+**覆盖配置的值**
+
+```go
+viper.Set("file2", "1234")
+```
+
+**别名**
+
+为配置项的key名建立映射
+
+```go
+viper.RegisterAlias("name", "UserNmae")  
+
+//下面两个覆盖效果是一样的
+viper.Set("name", "tom") 
+viper.Set("UserNmae", "tom")
+```
+
+
+
+**注意**
+
+后面的写入配置文件，还是拷贝配置文件，他们的前提都是要指明配置文件的位置，就是【设置Viper】章节提到的SetConfigName、AddConfigPath中指定配置文件的名字和路径，否则就会报错
+
+
+
+**写入配置文件**
+
+前面的配置默认值、覆盖配置都需要调用这里的方法，才能写入配置文件
+
+* WriteConfig ：如果写入的键在配置文件中存在，SetDefault不会覆盖，Set会覆盖
+* SafeWriteConfig：如果写入的键在配置文件中存在， 不会覆盖，会报错
+
+```go
+err := viper.WriteConfig()
+//err := viper.SafeWriteConfig()
+if err != nil {
+	fmt.Printf("写入配置文件失败，err：%v\n", err)
+}
+```
+
+**拷贝配置文件**
+
+参数是拷贝配置文件到目标路径
+
+* viper.WriteConfigAs 如果目标路径存在该配置文件，就会覆盖
+* SafeWriteConfigAs 如果目标路径存在该配置文件，就会覆盖，而且报错
+
+```go
+err:=viper.WriteConfigAs("./Myconfig.yaml") 
+//err:=viper.SafeWriteConfigAs("./Myconfig.yaml")
+if err != nil {
+		fmt.Printf("拷贝配置文件失败，err：%v\n", err)
+	}
+```
+
+### 读取不同源数据到Viper实例
+
+**从io.Read读取**
+
+```go
+viper.SetConfigType("yaml") 
+
+var yamlExample = []byte(`
+name: "tom"
+age: 19
+host: 
+- address: "127.0.0.1"
+- port: 9000
+`)
+
+viper.ReadConfig(bytes.NewBuffer(yamlExample))
+
+viper.Get("name") // tom
+```
+
+
+
+**从环境变量读取**
+
+`BindEnv`使用一个或两个参数
+
+* 第一个参数是键名称，第二个是环境变量的名称
+* 环境变量的名称区分大小写。
+* 没有第二个参数（没有提供ENV变量名）那么Viper将自动假设ENV变量与以下格式匹配：`前缀大写+ "_" +键名全部大写`。例如，如果只有一个参数是“home”，Viper将查找环境变量"AVA_HOME"
+* 有第二个参数时， **不会** 自动添加前缀。例如，如果第二个参数是"home"，Viper将查找环境变量"HOME"
+
+```go
+viper.SetEnvPrefix("java") //设置前缀，参数全部转换为大写
+
+viper.BindEnv("home") //参数全部转换为大写字母，如果有设置前缀，绑定为JAVA_HOME；如果
+
+//读取值
+value := viper.Get("home")
+fmt.Printf("值是：%v", value)
+```
+
+
+
+**从命令行参数读取**
+
+Viper支持[Cobra](https://github.com/spf13/cobra)库中使用的`Pflag`
+
+```go
+//设置命令行参数 flagname 
+pflag.Int("flagname", 1234, "help message for flagname")
+//读取参数
+pflag.Parse()
+//绑定参数，默认绑定命令函数参数
+viper.BindPFlags(pflag.CommandLine)
+
+//读取值
+i := viper.GetInt("flagname") // 从viper而不是从pflag检索值
+```
+
+如果想要绑定Go标准库中提供的flag库
+
+原理：通过调用pflag包提供的函数`AddGoFlagSet()`来包装flag库
+
+```go
+package main
+
+import (
+	"flag"
+	"github.com/spf13/pflag"
+)
+
+func main() {
+
+	// 使用标准库 "flag" 包
+	flag.Int("flagname", 1234, "help message for flagname")
+
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+  
+	pflag.Parse()
+	viper.BindPFlags(pflag.CommandLine)
+
+	i := viper.GetInt("flagname") // 从 viper 检索值
+
+}
+```
+
+
+
+**从配置文件读取**
+
+```go
+if err := viper.ReadInConfig(); err != nil {
+	if _, ok := err.(viper.ConfigFileNotFoundError); ok {//使用断言判断是否是配置文件不存在的错误
+		fmt.Printf("配置文件不存在")
+		return
+	} else {
+		fmt.Printf("配置文件存在,但是存在其他错误：%v\n", err)
+		return
+	}
+}
+fmt.Printf("读取成功\n")
+```
+
+
+
+### 从Viper实例获取值
+
+**例子**
+
+例如，现在有一个配置文件`config.yaml`
+
+```yaml
+userName: "hdd"
+age: 22
+
+host:
+  address: "127.0.0.1"
+  port: 9000
+
+gitConfig:
+  repoName: "Git仓库名"
+  repoUrl: "github.com/xxx/xxxx"
+  pollTime: 3600
+```
+
+main.go
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/spf13/viper"
+)
+
+func main() {
+	//读取配置文件
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+
+
+	//当前项目路径下找配置文件
+	viper.AddConfigPath(".")  
+
+	//使用断言判断是否是配置文件不存在的错误
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Printf("配置文件不存在")
+			return
+		} else {
+			fmt.Printf("配置文件存在,但是存在其他错误：%v\n", err)
+			return
+		}
+	}
+	
+  //这里来进行读取配置（*）
+}
+
+```
+
+下面读取值的代码都是在（*）这一行下面写的
+
+**根据配置项value的类型**
+
+- `GetBool(key string) : bool`
+- `GetFloat64(key string) : float64`
+- `GetInt(key string) : int`
+- `GetIntSlice(key string) : []int`
+- `GetString(key string) : string`
+- `GetStringMap(key string) : map[string]interface{}`
+- `GetStringMapString(key string) : map[string]string`
+- `GetStringSlice(key string) : []string`
+- `GetTime(key string) : time.Time`
+- `GetDuration(key string) : time.Duration`
+
+例子：
+
+```go
+value := viper.GetInt("age")
+```
+
+注意：
+
+* GetInt函数要求value是Int类型，如果age字段的值是字符串，就会返回Int类型的零值
+
+* 如果配置文件中不存在age字段，也会返回Int类型的零值
+
+* 如何判断是使用的函数不对，还是配置项的value真的是零值
+
+  `IsSet(key string) : bool`
+
+  
+
+
+
+**不区分配置项value的类型**
+
+* `Get(key string) : interface{}`
+
+注意：
+
+如果，配置文件中不存在，下面的port字段，会返回nil
+
+```go
+value := viper.Get("age")
+```
+
+
+
+**读取嵌套结构中的某个key**
+
+比如，访问配置文件中的post字段下的port
+
+```go
+value := viper.Get("host.port")
+```
+
+
+
+**读取子树**
+
+Sub函数返回值是一个Viper指针
+
+```go
+value := viper.Sub("host").Get("port")
+```
+
+
+
+**反序列化**
+
+将Viper实例中的值，转化为Go语言中的结构体（需要提前定义好结构体的结构）
+
+```go
+type config struct {
+	UserName string
+	Age      int
+}
+
+var c config
+if err := viper.Unmarshal(&c); err != nil {
+	fmt.Printf("序列化失败，err：%v\n", err)
+}
+fmt.Printf("%#v\n", c)
+```
+
+无论是哪种格式的配置文件（我们的例子里是yaml格式），tag都是`mapstructure`
+
+如果仅仅是结构体字段首字母大写，配置文件首字母小写的差异，不用添加tag，Viper也能正常读入
+
+```go
+type config struct {
+	Name string `mapstructure:"userName"`
+	Age  int
+}
+```
+
+
+
+反序列化为嵌入结构体
+
+这种是实际项目中用的最多的，一般会把配置文件读入到嵌入结构体中，然后再全局使用
+
+```go
+type config struct {
+	userName string 
+	Age  int
+	host configHost //这里嵌入了另一个结构体
+}
+type configHost struct {
+	address string
+	port    int
+}
+
+var c config
+if err := viper.Unmarshal(&c); err != nil {
+	fmt.Printf("序列化失败，err：%v\n", err)
+}
+
+var h configHost
+if err := viper.Unmarshal(&h); err != nil {
+	fmt.Printf("序列化失败，err：%v\n", err)
+}
+
+fmt.Printf("%#v\n", c) //main.config{Name:"hdd", Age:22, host:main.configHost{address:"", port:0}}
+```
+
+嵌入结构体的指针用法
+
+```go
+type config struct {
+	UserName    string
+	Age         int
+	*ConfigHost `mapstructure:"host"` //切入部分用指针
+}
+type ConfigHost struct {
+	Address string
+	Port    int
+}
+
+var C = new(config)//直接定义一个全局指针
+
+if err := viper.Unmarshal(C); err != nil {
+	fmt.Printf("序列化失败，err：%v\n", err)
+}
+```
+
+
+
+
+
+**序列化为字符串**
+
+将Viper实例中的值，并转成字符串（反序列化是转成结构体）
+
+需要安装
+
+```go
+go get "gopkg.in/yaml.v2"
+```
+
+例子
+
+```go
+import (
+	yaml "gopkg.in/yaml.v2"
+)
+c := viper.AllSettings()
+bs, err := yaml.Marshal(c)
+if err != nil {
+  fmt.Printf("转化为YAML失败，err:%v\n", err)
+}
+fmt.Printf("%#v\n", string(bs))
+```
+
+
+
+### 注意
+
+全局就一个Viper实例时，在其他包下直接引入，就可以获取Viper实例
+
+```go
+import "github.com/spf13/viper"
+
+func GetData(){
+  viper.Get(key)
+}
+```
+
+## 优雅关机和重启
+
+https://www.liwenzhou.com/posts/Go/graceful_shutdown/
+
+## 企业级脚手架
+
+将 日志（zap）、配置文件（viper）、GORM 集成到Gin框架中
+
+[项目地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/Gogin/goScaffold)
+
+
 
 ## 后端安全
 
@@ -2923,6 +4567,8 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 
   同时x-timestamp也是可信的，和当前时间对比，相差不多，就证明不是重放攻击
 
+
+
 ### 密码存储安全
 
 为了安全，后端数据库中不能存储明文密码
@@ -2950,7 +4596,7 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 
   
 
-## Gin源码分析
+
 
 
 

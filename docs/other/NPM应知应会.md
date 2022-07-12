@@ -48,6 +48,8 @@ npm init -y
 
 package.json中各个字段的含义（仅name和version是必须的）
 
+[官方文档](https://docs.npmjs.com/cli/v8/configuring-npm/package-json)对各个字段的解释
+
 ```json
 {
   //----基本信息----
@@ -73,7 +75,7 @@ package.json中各个字段的含义（仅name和version是必须的）
 	 },
   //----发布npm包相关----
   "private":true, //设置true时，该npm包不会被发布
-   publishConfig:{}
+   publishConfig:{},
   
   //----自定义脚本相关----
   "scripts": {
@@ -108,7 +110,7 @@ package.json中各个字段的含义（仅name和version是必须的）
 "private":true,
 "publishConfig":{
   "tag":"1.0.0",
-  "registry":"https://registry.npmjs.org/",
+  "registry":"https://xxxx.xxx.com/",
   "access":"public"
 }
 ```
@@ -195,7 +197,38 @@ nrm ls
 
 npm以包名作为唯一标识，不能有重名包，这就导致了自己喜欢的名字，可能已经被占用了。
 
-所以，在npm的包管理系统中，有一种scoped packages机制，用于将一些npm包以`@scope/package`的命名形式集中在一个命名空间下面，实现域级的包管理。比如我们用vue脚手架搭建的项目，里面就有`@vue/cli-plugin-babel`、`@vue/cli-plugin-eslint`等等都是在@vue下的域名包。
+所以，在npm的包管理系统中，有一种scoped packages机制，用于将一些npm包以`@scope/package`的命名形式集中在一个命名空间下面，实现域级的包管理。比如我们用vue脚手架搭建的项目，里面就有`@vue/cli-plugin-babel`、`@vue/cli-plugin-eslint`等等都是在@vue下的域名包
+
+初始化：
+
+```js
+npm init --scope=@xxx //和正常创建包一样，需要回答些问题。注意包名是：@xxx/yyy
+```
+
+安装：
+
+```js
+npm install @xxx/yyy
+```
+
+相同域级范围内的包会被安装在相同的文件路径下，比如：node_modules/@xxx下，截图是一个项目中在@vue域下的包
+
+![image-20220704101829101](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220704101829%20.png)
+
+代码中引用同域下其他包
+
+```js
+require("@xxx/zzz")
+```
+
+发布域级包：发布的包是域级包，默认为私有发布，可以指定公开发布
+
+```
+npm publish --access=public
+
+
+//或者在package.json的publishConfig字段进行配置
+```
 
 
 

@@ -1141,7 +1141,7 @@ a===b //将左右变量都转化为布尔值
   * 如果只有一行，return和{}可以省
 
     ```js
-    (x,y)=>x+y  //当返回是一个return时，可以省略，函数体就是x+y
+    (x,y)=>x+y  //当函数体只有一句，就是一个return时，可以省略return和{}，函数体就是x+y
     
     //对应
     
@@ -1389,7 +1389,7 @@ function fun() {
     this.b = 5;
 }
 var obj = new fun();
-console.log(obj); //
+console.log(obj); 
 ```
 
 原理过程是：
@@ -1551,57 +1551,495 @@ function ab(){
 
 ## 对象(待完成)
 
+### 数据属性
+
+我们最为常见的就是对象的数据属性，键值对的形式。key必须是字符串或symbol，value可以是任何类型。
+
 **赋值**
 
 字面量赋值(常使用)
 
+如果通过**中括号**语法传入的key不会被直接转化字符串
+
 ```js
-let b='爱好'
-let a={
-  name:'jack' 
-  'l-name':'tom'  //注意key为短横线的值时，必须用引号印起来
-  [b]:'唱歌'       //变量用中括号，括起来
-  getDate(){
-    //函数体
-  }
+let b="爱好"
+
+let obj= {
+    //1、key不包含空格，不以数字开头，也不包含特殊字符（允许使用 $ 和 _），默认转化为字符串。所以，一般省略引号
+    name: "jack",
+
+    //2、key不满足上述要求，这种必须用引号印起来
+    "l-name": "tom",
+
+    //3、默认key是字符串，如果希望把key当做是变量，使用方括号 
+    [b]:"tony"
+
+}
+console.log(obj) //{ name: 'jack', 'l-name': 'tom', '爱好': 'tony' }
+```
+
+**点方法**
+
+点后跟着的是key值（与字面量相同，key默认转化为字符串类型）
+
+```js
+let obj={}
+
+//1、设置：key是字符串a，value是数字1
+obj.a=1
+
+//2、读取：key为字符串a的值
+console.log(obj.a) //1
+
+//3、删除
+delete obj.a
+```
+
+**方括号**
+
+中括号中是key值（并不会像字面量中默认转化为字符串）
+
+```js
+let obj={}
+
+
+//1、设置：key是字符串a，value是数字1
+obj["a"]=1
+
+
+//2、读取：key为字符串a的值
+console.log(obj["a"]) //1
+
+
+//3、删除
+delete obj["a"]
+```
+
+补充提示
+
+```js
+let b="name"
+obj[b]=1  //设置： key是字符串name，value是数字1
+```
+
+**简写**
+
+```js
+let obj={
+  //1、key和value同名，可简写
+	name:name,
+  //简写
+  name
+  
+  //2、value是函数类型，可简写
+  getSome:function(){}
+	//简写
+	getSome(){}
+}
+```
+
+### 访问器属性
+
+也就是对象的getter与setter用法
+
+在对象字面量中，它们用 `get` 和 `set` 表示
+
+属性的setter、getter，不必全部存在
+
+**字面量设置访问器属性**
+
+```js
+let obj={
+    name:"will",
+    subName:"smith",
+  
+    // 可以看做是获取fullName属性的值（必须return一个值）
+    get fullName(){
+        return `${this.name} ${this.subName}`
+    },
+    // 可以看做是给fullName属性设置值（参数就是传入的新值）
+    set fullName(value){
+        this.name=value.split(" ")[0]
+        this.name=value.split(" ")[1]
+    }
+}
+
+//自动调用get
+console.log(obj.fullName)//will smith
+
+//自动调用set
+obj.fullName="tom cruise"
+console.log(obj.name,obj.subName)//cruise smith
+
+```
+
+用途：访问器属性中的getter可以是将其他数据属性运算后的结果的，setter可以在赋值之前做一些限制操作，符合才给数据属性赋
+
+### 属性描述符（待补充）
+
+对象的每一个属性都存在一些隐形的描述符，来描述该属性的特性。我们通过字面量方式建立的对象，所有描述符属性都是true，我们也可以使用defineProperty来手动指定
+
+**数据属性的属性描述符**
+
+（待补充）
+
+**访问器属性的属性描述符**
+
+以上一节的fullName属性为例子，其属性描述符为
+
+```
+set函数
+get函数
+enumerable:true
+configurable:true
+```
+
+手动指定属性描述符
+
+```JS
+let obj={
+    name:"will",
+    subName:"smith",
+
+}
+
+Object.defineProperty(obj,"fullName",{
+    get (){
+        return `${this.name} ${this.subName}`
+    },
+    set (value){
+        this.name=value.split(" ")[0]
+        this.name=value.split(" ")[1]
+    }
+
+})
+
+console.log(obj.fullName)//will smith
+
+obj.fullName="tom cruise"
+console.log(obj.name,obj.subName)//cruise smith
+```
+
+
+
+### 对象的原型
+
+**1、Prototype**
+
+每个对象中都有一个内部的而且是隐藏的属性`[[Prototype]]`,
+
+* 这个属性的值只能是null或者另一个对象的引用
+* 一个对象只能有一个 `[[Prototype]]`属性
+
+如果我们访问对象A中不存在的属性（方法），就会去`[[Prototype]]`属性指向的对象B中查找，如果找不到就会去对象B的`[[Prototype]]`指向的对象中查找，直到找到该属性（方法），或者找到`[[Prototype]]`为null的对象作为终点。这条查找的链条叫做原型链
+
+我们也可以说是对象A继承了原型链上其他对象的属性、方法
+
+**2、\_\_proto\_\_**
+
+因为Prototype这个属性我们不能直接访问到，所以需要借助一个访问器属性（getter/setter）去设置Prototype属性。`__proto__`的存在是出于历史的原因，现代编程语言建议我们应该使用函数 `Object.getPrototypeOf/Object.setPrototypeOf`
+
+```go
+let animal={
+    sleep:"动物睡觉"
+}
+
+let dog={
+    say:"汪汪",
+    __proto__:animal
+}
+console.log(dog.sleep) //动物睡觉
+```
+
+如果dog属性存在sleep，就不会再沿着原型链查找了
+
+```js
+let animal={
+    sleep:"动物睡觉"
+}
+
+let dog={
+    say:"汪汪",
+    sleep: "狗睡觉",
+    __proto__:animal
+}
+console.log(dog.sleep) //狗睡觉
+```
+
+**3、原型链中的this**
+
+可以参照后面的章节【this的指向】，属于其中的【规则3】的情况，`对象.函数（）`其中this指向的都是调用他的对象
+
+**形式1：**
+
+`dog.changeSleep()`，虽然dog中没有changeSleep方法，但是它可以查找到原型链上的animal中有这个方法，这时changeSleep中的this指向的应该是dog，相当于修改了dog的sleep属性
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    upgradeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    sleep: "狗睡觉",
+    __proto__:animal
+}
+
+dog.upgradeSleep()
+console.log(animal.sleep) //动物睡觉
+console.log(dog.sleep) //升级版睡眠
+```
+
+**形式2**
+
+changeSleep中的this指向的应该是dog，相当于在dog中新增了sleep属性
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    upgradeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    __proto__:animal
+}
+
+dog.upgradeSleep()
+console.log(animal.sleep) //动物睡觉
+console.log(dog.sleep) //升级版睡眠
+```
+
+**形式3**
+
+dog和cat调用eat方法，虽然也是在animal中找到，并且其中的this指向dog和cat，但是this.stomach.push并不是直接新建一个stomach属性，而是找到animal中的stomach在push
+
+```js
+let animal={
+    stomach:[],
+    eat(food) {
+        this.stomach.push(food);
+    }
+}
+
+let dog={
+    __proto__:animal
+}
+let cat={
+    __proto__:animal
+}
+
+dog.eat("苹果")
+console.log(animal.stomach) //[ '苹果' ]
+console.log(dog.stomach) //[ '苹果' ]
+```
+
+如何解决dog、cat共用一个stomach。参照前两种方式
+
+```js
+let animal={
+    stomach:[],
+    eat(food) {
+        this.stomach.push(food);
+    }
+}
+
+let dog={
+  	stomach:[],
+    __proto__:animal
+}
+let cat={
+  	stomach:[],
+    __proto__:animal
+}
+
+dog.eat("苹果")
+console.log(animal.stomach) //[ '苹果' ]
+console.log(dog.stomach) //[ '苹果' ]
+```
+
+
+
+**4、for in 遍历**
+
+`for..in` 循环也会遍历到原型链上其他对象的属性（前提是该属性的描述符enumerable必须是true）
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    changeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    say:"汪汪",
+    __proto__:animal
+}
+for(let key in dog){
+    console.log(key)
+}
+// say
+// sleep
+// changeSleep
+```
+
+如果不希望遍历其他对象的属性，可以使用hasOwnProperty
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    changeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    say:"汪汪",
+    __proto__:animal
+}
+for(let key in dog){
+    if(dog.hasOwnProperty(key)){
+        console.log(key)
+    }
+}
+// say
+```
+
+**其他对象方法**
+
+除for in外，其他的方法都是只能获取对象自身的属性
+
+例如
+
+```
+Object.keys 和 Object.values
+```
+
+**5、new一个函数**
+
+【函数】-【new关键字】这部分，已经介绍了一些内容，这里继续补充原型相关的内容
+
+**函数的prototype属性**
+
+函数的prototype属性（这就是一个数据属性，是可以直接访问的，不是`[[prototype]]`），属性值是对象，使用new关键字创建新对象时，就会自动调用`__proto__`访问器属性，进而设置新对象的`[[prototype]]`属性
+
+还有一点需要注意，函数的prototype才有这些功能，对象请使用`__proto__`
+
+```js
+let animal = {
+    eats: true
 };
+
+function Dog(name) {
+    this.name = name;
+}
+
+Dog.prototype = animal;
+
+let wang = new Dog("旺财"); //  wang.__proto__ == animal
+
+console.log( wang.eats ); // true
 ```
 
-存取
+> 注意：
+> `F.prototype` 属性仅在 `new F` 被调用时使用，它为新对象的 `[[Prototype]]` 赋值。
+>
+> 如果在创建之后，`F.prototype` 属性有了变化（`F.prototype = <another object>`），那么通过 `new F` 创建的新对象也将随之拥有新的对象作为 `[[Prototype]]`，但已经存在的对象将保持旧有的值
 
-* 点方法
+**函数默认的prototype属性**
 
-  点后跟着的是key值，不是变量
+默认的 `"prototype"` 是一个对象，这个对象只有一个属性 `constructor` ，值是自己
 
-  ```js
-  let obj={name:'jacck'}
-  obj.name=1
-  ```
-
-* 中括号
-
-  ```js
-  let obj={}
-  
-  //指定key为a
-  obj["a"]=1
-  
-  //指定key为变量
-  let b="name"
-  obj[b]
-  ```
-
-删除
+例如：
 
 ```js
-let obj={name:'jacck' ,age:19}
-delete obj.name
-console.log(obj) //{ age: 19 }
+function Rabbit() {}
+
+/* 默认 prototype
+Rabbit.prototype = { constructor: Rabbit };
+*/
 ```
 
-### 对象的方法
+所以，也就是说，new 函数创建出来的实例化对象rebbit的`[[prototype]]`就是对象 { constructor: Rabbit }
 
-静态方法
+所以，函数Rabbit的prototype属性=新对象rabbit的`[[prototype]]`/\_\_proto\_\_/原型 = { constructor: Rabbit }
+
+```js
+function Rabbit() {}
+
+rabbit=new Rabbit()
+
+//函数的默认prototype属性为{ constructor: Rabbit }
+console.log(Rabbit.prototype.constructor == Rabbit)//true
+
+//rabbit没有constructor方法，但是其原型链上有{ constructor: Rabbit }对象
+console.log(rabbit.constructor == Rabbit)//true
+```
+
+**自定义prototype**
+
+prototype就是一个属性，所以是可以覆盖的。如果被覆盖就不是默认指向`{constructor:Rabbit}`了
+
+```js
+function Rabbit() {}
+Rabbit.prototype={
+  name:"tom"
+}
+```
+
+所以，为了破坏原本原型链上的对象，我们常用的方式是直接向对象`{constructor:Rabbit}`添加新的属性
+
+```js
+function Rabbit() {}
+Rabbit.prototype.name="tom"
+```
+
+**回顾下JS的内建函数**
+
+以Object为例子
+
+**函数Object的prototype属性**
+
+```js
+{ 
+  //1、构造函数
+  constructor:Object,
+   
+  //2 、其他函数  
+  toString() {
+  	//toString的具体实现
+	}
+  
+ 	//3、其上一级原型对象就是null
+  [[prototype]]:null
+}
+```
+
+**o=new Object()**
+
+新对象的上一级原型对象就是上面的这个对象，所以能直接使用原型上的toString方法
+
+```js
+o.toString()
+```
+
+
+
+**总结**
+
+将函数A创建的对象，按照原型链一步一步捋到null
+
+![image-20220701000233640](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220701000233%20.png)
+
+或者看这个实际的图，我们应该知道JS所有的内建方法，其实都在其对应函数的prototype对象里。比如，数组的slice方法，就是在Array.prototype里
+
+![image-20220630233506414](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220630233506%20.png)
+
+### 静态方法
 
 | 方法           | 描述                                                         |
 | -------------- | ------------------------------------------------------------ |
@@ -2947,19 +3385,23 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
 
 **this指向其调用者所在的上下文**
 
-| 规则编号 | 规则                    | 上下文（this指向）           |
-| -------- | ----------------------- | ---------------------------- |
-| 规则1    | 函数（）                | window                       |
-| 规则2    | new 函数（）            | 秘密创建出的那个对象         |
-| 规则3    | 对象.函数（）           | 该对象                       |
-| 规则4    | 数组[索引]（）          | 该数组                       |
-| 规则5    | 定时器                  | window                       |
-| 规则6    | Dom事件处理函数         | window                       |
-| 规则7    | IIFE                    | window                       |
-| 规则8    | call、apply、bind       | 可指定this指向               |
-| 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文 |
+| 规则编号 | 规则                    | 当前作用域的上下文（this指向）             |
+| -------- | ----------------------- | ------------------------------------------ |
+| 规则1    | 函数（）                | window                                     |
+| 规则2    | new 函数（）            | 秘密创建出的那个对象                       |
+| 规则3    | 对象.函数（）           | 该对象                                     |
+| 规则4    | 数组[索引]（）          | 该数组                                     |
+| 规则5    | 定时器                  | window                                     |
+| 规则6    | Dom事件处理函数         | window                                     |
+| 规则7    | IIFE                    | window                                     |
+| 规则8    | call、apply、bind       | 可指定this指向                             |
+| 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文               |
+| 规则10   | class                   | 指向的是新创建出来的对象（与new 函数相同） |
+| 规则11   | 模块中                  | undefined                                  |
 
-注意：除去**规则9**以外，前面提到的函数都不是箭头函数
+注意：
+
+除去**规则9**以外，前面提到的函数都不是箭头函数
 
 ### 例子
 
@@ -3013,6 +3455,32 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
   stu.show()
   //输出 120   window对象
   ```
+  
+* 定时器
+
+  定时器函数比较特殊，他会把函数内部的this重写为window【在node环境下，会重写成 Timer对象】
+
+  ```js
+  function f(){
+      console.log(this)
+  }
+  setTimeout(f,100) //【规则5】window 
+  ```
+  
+  举个例子
+  
+  ```JS
+  let User={
+      say(){
+          console.log(this)
+      }
+  }
+  User.say() // 【规则3】 User对象
+  
+  setTimeout(User.say,100) //【规则5】window 
+  ```
+  
+  
   
 * 箭头函数
 
@@ -3382,35 +3850,13 @@ console.log(dateFormat(date,"YYYY年-MM月-DD日"))//输出 2020年-5月-11日
 
 ## 错误对象
 
-### 错误类型
+### 错误对象
 
-ECMA-262定义了8中错误类型
+**JS内建的错误对象**
 
 * **Error**
 
-  Error是错误的基类型，其他错误类型继承自该类型 。一般是开发者抛出
-
-* **InternalError**
-
-  JS引擎发生异常时，例如栈溢出
-
-* **EvalError**
-
-  eval函数的错误使用触发的异常
-
-  ```js
-  new eval()  //抛出EvalError
-  ```
-
-* **RangeError**
-
-  使用Array构造数组时,传入负数或者Number.MAX_VALUE
-
-  ```js
-  let a=new Array(-120) //RangeError: Invalid array length
-  
-  let a=new Array(Number.MAX_VALUE) //RangeError: Invalid array length
-  ```
+  Error是错误的**基类型**，其他错误类型继承自该类型 。一般是开发者抛出
 
 * **ReferenceError**
 
@@ -3436,6 +3882,28 @@ ECMA-262定义了8中错误类型
   console.log(undefined.a)//TypeError: Cannot read property 'a' of null
   ```
 
+* **InternalError**
+
+  JS引擎发生异常时，例如栈溢出
+
+* **EvalError**
+
+  eval函数的错误使用触发的异常
+
+  ```js
+  new eval()  //抛出EvalError
+  ```
+
+* **RangeError**
+
+  使用Array构造数组时,传入负数或者Number.MAX_VALUE
+
+  ```js
+  let a=new Array(-120) //RangeError: Invalid array length
+  
+  let a=new Array(Number.MAX_VALUE) //RangeError: Invalid array length
+  ```
+
 * **URIError**
 
   只出现在encodeURI()和decodeURI()，传入错误参数，这两个函数非常健壮，极特殊情况下的参数才会报错
@@ -3444,40 +3912,227 @@ ECMA-262定义了8中错误类型
   console.log(encodeURI('\uD800')) //URIError: URI malformed
   ```
 
-  
 
-  
+### 错误对象
 
-### 错误处理
+使用new关键字，可以创建错误实例
+
+**错误实例的结构**
+
+对于所有内建的错误定向，都具有两个主要属性：
+
+- `name`
+
+  错误名称。例如，Error对象的name是"Error"，ReferenceError对象的name就是"ReferenceError"
+
+- `message`
+
+  关于该错误的详细文字描述
+
+还有其他非标准的属性（虽然不是官方规范，但是在大多数环境中可用），例如：
+
+- `stack`
+
+  当前的调用栈：用于调试目的的一个字符串，其中包含有关导致 error 的嵌套调用序列的信息
+
+**错误类的伪代码**
+
+JS自身定义的内建的 Error 类的“伪代码”
+
+```js
+class Error {
+  constructor(message) {
+    this.message = message;
+    this.name = "Error"; // (不同的内建 error 类有不同的名字)
+    this.stack = <call stack>; // 非标准的，但大多数环境都支持它
+  }
+}
+```
+
+**例子**
+
+```js
+let error = new Error(message);
+
+let syntaxError = new SyntaxError(message);	
+```
+
+错误`name` 属性刚好就是构造器的名字，`message` 则来自于参数。
+
+### 捕获错误对象
+
+**基本语法**
+
+可以使用try...catch语法捕获错误实例。如果发生了错误，但是没有捕获到该错误实例，那JS代码就会终止执行，然后再控制台打印出错误
 
 ```js
 try{
   //可能会出错的代码
 }catch(err){
-  //即使不使用错误对象也必须定义名称 
-  //错误对象的值，不同环境存在差异，但是基本上都会有err.message属性
+  //err就是try中抛出的错误实例
+  
 }finall{
   //最终一定会执行
 }
 ```
 
-catch和finally，这两者必须至少存在一个。并且，finally存在时，try和catch中的return都会被忽略
+**try中错误的来源**
+
+* 代码中自动抛出的错误实例，一般是各种语法错误。比如，这个TypeError就是代码自动抛出的错误
+
+  ```js
+  try{
+      console.log(null.a)
+  }catch (err){
+      console.log(err) //TypeError: Cannot read property 'a' of null
+  }
+  //name:TypeError ,  message: Cannot read property 'a' of null
+  ```
+
+* 开发者根据业务主动抛出错误实例。使用JS内建的错误构造器，构造出错误实例，通过throw抛出（省略new关键字）
+
+  JS允许将 `throw` 与任何参数一起使用，比如抛出一个字符串，catch中的参数就是这个字符串，一般还是建议throw一个错误对象
+  
+  ```js
+  try{
+      throw TypeError("这里是TypeError的message") // name:TypeError ,  message: 传入的参数
+  }catch (err){
+      console.log(err) //TypeError: 这里是TypeError的message
+  }
+  ```
+
+**如何在catch中处错误**
+
+我们应该在catch中进行判断，明确哪些错误是需要进行处理的，哪些错误是不处理，对不处理的错误要再次抛出
+
+切记：
+
+不能在catch中捕获所有的错误后，不做区分，对所有错误都不再次抛出。这样有可能掩盖真正的代码错误（比如语法错误），使得程序问题难以排查
+
+流程：
+
+* 使用instanceof对错误进行判断（或者使用err.name进行判断）
+* 使用throw再次抛出未处理的错误
+
+例如：
+
+要求外部输入的JSON字段必须有name属性，否则不符合业务要求。
+
+```js
+//假设json是外部用户输入的数据
+let json = '{ "age": 30 }'; 
+
+try {
+
+    let user = JSON.parse(json);
+
+    if (!user.name) {
+        throw new SyntaxError("缺少name字段");
+    }
+
+} catch (err) {
+
+    if (err instanceof SyntaxError) {
+        console.log(err);//可以在这里加一个弹窗，提示用户
+    } else {
+        throw err; // 再次抛出 
+    }
+}
+```
+
+**try语法补充**
+
+`finally` 子句适用于 `try...catch` 的 **任何** 出口。这包括 `return`
 
 ```js
 function testFinally(){
-	try {
-		return 1;
-	} catch(err){
-		return 2;
-	}finally{
-		return 3;
-	}
+    try {
+        return 1;//执行到这里就结束了，下一句错误的语句不会被执行，所有也没有错误被catch捕获
+        null.a
+    } catch(err){
+        console.log("catch到错误",err)
+    }finally{
+        return 3;//一定会执行
+    }
 }
-	
+
 console.log(testFinally())  //3
+
 ```
 
+### 自定义错误类
+
+JS内置的错误类，可能并不能满足我们的业务要求，我们需要特定的错误对象来描述具体的业务错误
+
+**上一节【部或错误对象】中出现的例子**：
+
+要求外部输入的JSON字段必须有name属性，否则不符合业务要求
+
+在代码里面，我们抛出的是JS内置的语法错误，但其实JSON必须要有name属性，是我们的业务要求，其并不是一个JS的语法错误，所以，为了和真正的JS语法错误区分开，我们需要定义自己的错误对象
+
+```js
+//假设json是外部用户输入的数据
+let json = '{ "age": 30 }'; 
+
+try {
+
+    let user = JSON.parse(json);
+
+    if (!user.name) {
+        throw new SyntaxError("缺少name字段");
+    }
+
+} catch (err) {
+
+    if (err instanceof SyntaxError) {
+        console.log(err);//可以在这里加一个弹窗，提示用户
+    } else {
+        throw err; // 再次抛出 
+    }
+}
+```
+
+**自定义错误**
+
+可以根据自己的需要，在下面的基础上添加更多的字段记录需要的错误信息
+
+```js
+class ValidationError extends Error {
+  constructor(message) {
+    super(message); 
+    this.name = "ValidationError"; 
+  }
+}
+```
+
+如果不希望手动设置name字段
+
+```js
+class ValidationError extends Error {
+  constructor(message) {
+    super(message); 
+    this.name = this.constructor.name; //自动以类名作为错误对象的name字段
+  }
+}
+```
+
+**错误类的体系结构**
+
+通过继承来构建一整个错误体系
+
+![image-20220703171209534](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220703171209%20.png)
+
+
+
+
+
 ## Promise
+
+### Promise介绍
+
+Promise是用来处理异步函数的利器，相较于传统的回调函数的弊端（回调地狱）
+
+Promise会在在内部是同步的，只有then、catch、finally才会加入微任务队列，等待异步返回后才会执行
 
 Promise包含`pending`、`fulfilled`、`rejected`三种状态
 
@@ -3487,7 +4142,7 @@ Promise包含`pending`、`fulfilled`、`rejected`三种状态
 
 ### 基本使用
 
-**传递参数**
+创建一个Promise，其参数是一个回调函数
 
 ```javascript
 let p1=new Promise((resolve,reject)=>{
@@ -3531,40 +4186,44 @@ let p1=new Promise((resolve，reject)=>{
 )
 ```
 
-**连续传递**
+### then
 
-默认传递的是成功。then函数执行的结果仍然是promise对象，所有仍然可以继续调用then方法
+then可以链式传递Promise 。then函数执行返回的结果得是promise对象，才可以继续调用then方法
+
+1、默认传递的是成功
 
 ```javascript
-let p1=new Promise((resolve,reject)=>{
+let p=new Promise((resolve,reject)=>{
     resolve("传递给then的值")
 }).then(
     value=>{
-        return value//使用return，把参数传递给下一个then，默认是resolve
-    },reason=>{
-        console.log(reason)
+        return "成功"
     }
 ).then(
-    value=>{//成功传递过来的
-        console.log(value)
+    value=>{
+        console.log("fulfilled状态",value)//fulfilled状态 成功
+    },
+    reason => {
+        console.log("rejected状态",reason)
     }
 )
 ```
 
-传递promise对象: 无论是resolve(p2)还是reject(p2),还是return p2，最终下一个then中处理的函数，由p2是resolve还是reject
+2、传递失败状态
 
-```javascript
-let p2=new Promise((resolve,reject)=>{
-    reject("传递的参数")
-})
-
-let p1=new Promise((resolve,reject)=>{
-    resolve(p2)//参数是一个promise对象
-}).then(//传递到哪个函数取决于P2是resolve还是reject
-    value=>{//传递到执行成功里面来的
-        console.log(value) //输出 传递的参数
-    },reason=>{
-        console.log(reason)
+```js
+let p=new Promise((resolve,reject)=>{
+    resolve("传递给then的值")
+}).then(
+    value=>{
+        return Promise.reject("失败")
+    }
+).then(
+    value=>{
+        console.log("fulfilled状态",value)
+    },
+    reason => {
+        console.log("rejected状态",reason) //rejected状态 失败
     }
 )
 ```
@@ -3574,75 +4233,63 @@ let p1=new Promise((resolve,reject)=>{
 then的返回值是resolve状态的promise，如果没有return值，则不带参数
 
 ```js
-let p1=new Promise((resolve,reject)=>{
-		    resolve("传递给then的值")
-		}).then(
-		    value=>{
-		        console.log(value)//这里打印，但是没写return value，但是这个then的返回值任然是resolve状态的promise，只不过没参数
-		    },reason=>{
-		        console.log(reason)
-		    }
-		).then(
-		    value=>{//
-		        console.log("看这里："+value)
-				
-				
-		    }
-		)
-
-//输出    传递给then的值     看这里：undefined
-```
-
-### then
-
-then除了上面提到的用法外，还有一个用方法
-
-```javascript
-let p1=new Promise((resolve,reject)=>{
-    resolve("传递给第一个then的值")
+let p=new Promise((resolve,reject)=>{
+    resolve("传递给then的值")
 }).then(
     value=>{
-        return {
-            //这里return一个then函数
-            then(resolve,reject){
-                resolve("传递给下一个then的值")
-            }
-        } 
+        console.log(value)//这里打印，但是没写return value，但是这个then的返回值任然是resolve状态的promise，只不过没参数
     },reason=>{
         console.log(reason)
     }
 ).then(
-    value=>{//成功传递过来的
-        console.log(value)
+    value=>{//
+        console.log("看这里："+value)
     }
 )
 
-//输出 传递给下一个then的值
+//输出    传递给then的值     看这里：undefined
 ```
 
 ###  catch
 
-`then(null,reject){}`以捕获到reject传递过来的的参数，也可以捕获到Promise执行过程中抛出的错误。
+【1】then的第二个回调函数可以捕获到rejected状态的Promise和Error对象
 
-catch可以捕获到reject传递过来的的参数,也可以捕获到Promise执行过程中抛出的错误。
+【2】catch也可以捕获到rejected状态的Promise和Error对象
 
-因此建议前面所有then处理，不要写失败处理函数，将catch写在最后，前面发生的失败参数和错误会跳过所有的then，直接被传递到catch中处理
+【3】未捕获到的rejected状态的Promise和Error对象，都会造成代码终止执行，在控制台会打印错误
+
+一般规律是：出现rejected状态的Promise或抛出错误对象，会被**后面最近【1】或【2】捕获到**，且被捕获后除非重新抛出rejected状态的Promise 或者 重新抛出错误对象，否则就不能被捕获到了
+
+```js
+let p=new Promise((resolve,reject)=>{
+    reject("2222")//执行成功，传递参数
+}).then(
+    null,
+    reason=>{
+        console.log("then中被捕获",reason) //then中被捕获 2222
+    }
+).catch(err=>{
+    console.log("catch中被捕获：",err)
+})
+```
+
+常见的写法是：不在then中写处理失败的回调函数，而是将catch写到调用链的最后，前面发生的失败参数和错误会跳过所有的then，直接被传递到catch中处理
 
 ```javascript
 const promise = new Promise((resolve, reject) => {
-  reject("你好");
+    reject("你好");
 })
-.then((value)=>{
-    
-})
-.catch(msg => {
-  console.log("这里是catch捕获的参数："+msg);
-});
+    .then((value)=>{
+        console.log("then中打印") //注意：这里被跳过了，直接跳到了最近的错误处理部分
+    })
+    .catch(msg => {
+        console.log("这里是catch捕获的参数："+msg);
+    });
 
 //输出 这里是catch捕获的参数：你好
 ```
 
-**注意点：**
+**注意细节：**
 
 catch的返回值也是resolve状态的promise，而且之前的then即使有rejected的处理函数，仍然会被忽略，直接被catch捕获
 
@@ -3731,12 +4378,47 @@ const promise = new Promise((resolve, reject) => {
 
 js是单线程，程序从上到下执行
 
-* 执行到异步函数（比如：setTimeout），添加到宏任务队列中
-* 执行到resove或者reject时才会把（new Promise中的函数是同步函数，在主线程中执行），其promise后的所有then中的函数操作，按顺序添加到微任务队列中
+执行到异步函数（比如：setTimeout），就添加到微任务队列中，其他的添加到宏任务队列中
 
-添加到宏任务/微任务队列后，程序继续向下执行。当所有程序执行完了，先执行微任务队列，然后执行宏任务队列（注意执行的优先级）
+只有宏任务队列中的任务执行完毕后，才会开始执行微任务队列中的任务
 
-**分析以下情况**
+
+
+**Promise中的同步与异步**
+
+执行到resove或者reject时才会把（new Promise中的函数是同步函数，在主线程中执行），其promise后的所有then中的函数操作，按顺序添加到微任务队列中
+
+注意：
+
+* Promise内部是同步的
+* then、catch、finally才是异步的，会被加入异步队列
+
+```js
+let p=new Promise((resolve,reject)=>{
+    console.log("1")
+    reject("2")
+    console.log("3")
+}).then(
+    null,
+    reason=>{
+        console.log(reason)
+        return Promise.reject("错误")
+    }
+).catch(()=>{
+    console.log("5")
+})
+console.log("6")
+
+// 1
+// 3
+// 6
+// 2
+// 5 
+```
+
+
+
+**例题1**
 
 程序由上到下运行
 
@@ -3763,7 +4445,7 @@ console.log(p2)
 
 ![image-20210415000628923](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415000628923.png)
 
-**分析以下情况**
+**例题2**
 
 程序由上到下运行
 
@@ -3792,7 +4474,7 @@ setTimeout(()=>{
 
 ![image-20210415001615623](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415001615623.png)
 
-### 扩展接口
+### Promise API
 
 **Promise.resolve**
 
@@ -3810,10 +4492,10 @@ Promise.resolve("后盾人").then(value => {
 
 ```javascript
 new Promise(resolve => {
-  resolve("后盾人");
+  resolve("成功");
 })
 .then(v => {
-  if (v != "houdunren.com") return Promise.reject(new Error("fail"));
+    return Promise.reject(new Error("失败原因"));
 })
 .catch(error => {
   console.log(error);
@@ -3822,9 +4504,15 @@ new Promise(resolve => {
 
 **Promise.all**
 
-使用`Promise.all` 方法可以同时执行多个并行异步操作
+使用`Promise.all` 方法可以同时执行多个并行异步操作，参数是Promise组成的数组
 
-* 所有Promise 状态都为`fulfilled`时,`Promise.all`的结果才是`fulfilled`,then按照all参数的顺序，接收所有`fulfilled`状态的Promise传递过来的参数
+`Promise.all`适合用在我们需要 **所有** 结果都成功时做成功处理，如果一个失败就做失败处理的场景下
+
+以下是不同情况下的例子：
+
+* 所有Promise 状态都为`fulfilled`时,`Promise.all`的结果才是`fulfilled`
+
+  then按照all参数的顺序，接收所有`fulfilled`状态的Promise传递过来的参数
 
   ```javascript
   let p1 = new Promise((resolve, reject) => {
@@ -3835,41 +4523,61 @@ new Promise(resolve => {
   });
   Promise.all([p2, p1]).then(
       value=>{
-          console.log("fulfilled状态:",value)
+          console.log("fulfilled状态:",value)// fulfilled状态:["参数2", "参数1"]
       },reason=>{
           console.log("rejected状态:",reason)
       }
   );
-  
-  //输出 fulfilled状态:["参数2", "参数1"]
   ```
 
-* 其中一个 Promise 状态都为`rejected`时,`Promise.all`的结果就是`rejected`，then的结果是按照all参数顺序中，接收第一个状态是`rejected`的Promise传递过来的值
+* 其中一个 Promise 状态都为`rejected`时,`Promise.all`就会立即返回`rejected`的结果
 
+  then的结果是按照all参数顺序中，接收第一个状态是`rejected`的Promise传递过来的值
+  
+  注意：只是忽略其他 promise的结果，但是并没有取消其他Promise（因为 promise 中没有“取消”的概念），其中的异步操作还是会执行下去
+  
   ```javascript
   let p1 = new Promise((resolve, reject) => {
-    resolve("参数1");
+      resolve("参数1");
   });
   let p2 = new Promise((resolve, reject) => {
-    reject("参数2");
+      reject("参数2");
   });
   let p3 = new Promise((resolve, reject) => {
-    reject("参数3");
+      reject("参数3");
   });
-  Promise.all([p1, p3,p2]).then(
+  Promise.all([p1,p2,p3]).then(
       value=>{
           console.log(value)
       },reason=>{
-          console.log(reason)
+          console.log(reason)//参数2
       }
   );
-  
-  //输出 参数3
   ```
+
+* 参数数组的元素，不是Promise就会原样返回
+
+  ```js
+  Promise.all([
+    new Promise((resolve, reject) => {
+      setTimeout(() => resolve(1), 1000)
+    }),
+    2,
+    3
+  ]).then(alert); // 1, 2, 3
+  ```
+
+
+
+
 
 **Promise.allSettled**
 
-`allSettled` 用于处理多个`promise` ，无论promise是fulfiled还是rejected，`allSettled`都是按照参数的顺序，按照`fulfilled`状态接收所有Promise传递过来的参数
+`allSettled` 也适用于处理多个`promise` ，无论promise是fulfiled还是rejected，`allSettled`都是按照参数的顺序返回结果
+
+`Promise.allSettled`适合用在我们需要获取所有结果（无论成功，还是失败）的场景下
+
+注意，then的第二个回调函数和catch都不能捕获到失败的结果，只能在then的第一个结果中被捕获
 
 ```javascript
 const p1 = new Promise((resolve, reject) => {
@@ -3881,17 +4589,17 @@ const p2 = new Promise((resolve, reject) => {
 Promise.allSettled([p1, p2])
 .then(msg => {
   console.log(msg);
+  //[ {status: "fulfilled", value: "参数1"}，{status: "rejected", reason: "参数2"} ]
 })
-
-
-//输出  [ {status: "fulfilled", value: "参数1"}，{status: "rejected", reason: "参数2"} ]
- 
-
 ```
+
+
 
 **Promise.race**
 
 使用`Promise.race()` ，Promise无论是resolve还是reject，哪个快用哪个，按状态返回到对应的处理函数
+
+与all函数相同，Promise中没有取消的概念，所有只是或忽略了返回慢的Promise的结果，但是并没有取消其异步操作
 
 ```javascript
 const hdcms = new Promise((resolve, reject) => {
@@ -3913,9 +4621,7 @@ Promise.race([hdcms, houdunren])
 });
 ```
 
-### 任务队列
 
-https://houdunren.gitee.io/note/js/15%20Promise.html#%E4%BB%BB%E5%8A%A1%E9%98%9F%E5%88%97
 
 ### async/await
 
@@ -5592,7 +6298,7 @@ wx.navigateTo({
 
 
 
-### 且/或
+### 且、或以及其他高级用法
 
 **&&** 和 **||**
 
@@ -5624,7 +6330,7 @@ wx.navigateTo({
 
 
 
-**空值合并运算符  ?? **
+**||的升级版本=>空值合并运算符  ?? **
 
 上面的运算有一个潜在的问题，就是以下6个值，都会被认为是假的
 
@@ -5638,7 +6344,15 @@ wx.navigateTo({
 找到第一个不为null和undefined的值，返回。找不到，返回最后一个值
 ```
 
-例子：如果对象result中有groupName属性，就直接恢复其为空字符串
+常见用法例子：||最常见的用法就是赋值
+
+```js
+height=height||170   //第二个height是接口返回的值，如果接收到数据中没有这个字段，其值就为undefind。这种写法第一个height最终值就是170。可是如果height接收到的值是0，那第一个height也会被赋值为170
+
+height=height??170 //就能有效避免非null、非undefined的隐式转换的问题
+```
+
+升级用法例子：如果对象result中有groupName属性，就直接恢复其为空字符串
 
 * 使用`||`，如果result["groupName"]是0，仍然会初始化
 
@@ -5657,6 +6371,36 @@ wx.navigateTo({
   	result["groupName"] ?? (result["groupName"] ="");
   }
   ```
+
+**&&的升级版=>可选链?.**
+
+如果可选链 `?.` 前面的值为 `undefined` 或者 `null`，它会停止运算并返回 `undefined`。
+
+换句话说，例如 `value?.prop`：
+
+- 如果 `value` 存在，则结果与 `value.prop` 相同，
+- 否则（当 `value` 为 `undefined/null` 时）则返回 `undefined`
+
+常见用法例子1
+
+假设，后端一定返回res，res中也一定包含data，但是data可能为null且address是否存在是不确定的（有些数据有地址，有些则没有）
+
+```js
+if(res&&res.data&&res.data.address){
+		//需要取name字段，就需要一步一步判断下来。否则如果data就是undefined时，再取name字段，就会报错
+}
+```
+
+使用可选链（不可滥用可选链，res一定是存在的，如果不存在就证明返回出错了，如果使用res?.data就会掩盖这个的错误）
+
+```js
+if (res.data?.address === undefined) {//有效避免data是null的情况
+   return
+}
+const { data } = res.data
+```
+
+
 
 ### 函数的回调与Promise风格
 
@@ -5756,9 +6500,22 @@ try {
 
 
 
-很多时候，我们并不能直接对支持回调的异步函数进行修改。尤其是，修改别人的代码时，很有可能会改出新的bug，所以 ，我们可以把原本的回调函数继续封装一层
+很多时候，我们并不能直接对支持回调的异步函数进行修改。尤其是，修改别人的代码时，很有可能会改出新的bug，所以 ，我们可以把原本的回调函数继续封装一层，让这个新函数支持Promise
 
-```
+```js
+//核心：在回调函数外面加一层Promise，在回调函数成功拿到数据后，resolve数据
+NewGetCity(){
+  return new Promise((resolve,reject)=>{
+    getCity((cityName,cityId)=>{
+      if(cityName&&cityId){ //这里判断的也许不太严谨，主要含义还是说，区分出来Promise的成功和失败状态
+         resolve({cityName,cityId})
+      }else{
+        reject("失败了")
+      }
+		})
+  })
+}
+
 ```
 
 
@@ -5915,7 +6672,7 @@ console.log([{name:"jack",age:19},{name:"tom"},{name:"jack",age:30},{name:"tom",
 
 ## 参考
 
+- [现代 JavaScript 教程](https://zh.javascript.info/)——我心中排名第一的JS教程
 - 红宝书
 - 阮一峰的《ECMAScript 6 入门》：https://es6.ruanyifeng.com/
-- http://jsrun.net/t/cZKKp
 - ES6 视频教程：http://t.kuick.cn/RaR3

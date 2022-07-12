@@ -1,4 +1,4 @@
-# dGo学习笔记
+# Go学习笔记
 
 ## 配置环境
 
@@ -261,7 +261,7 @@ func UseAdd(x, y int) {
 
 ***subtract.go***
 
-需要使用import导入项目下的cacl包，才能调用
+在main包中使用import导入项目下的cacl包，才能调用其中的方法
 
 ```go
 package main // 声明 main 包
@@ -281,7 +281,20 @@ func main() { // main函数，是程序执行的入口
 
 ```
 
+在main中使用calc包中的函数Myadd，如果用变量作为参数传入，该变量大小写都可以
+
+如果要传入结构体参数，结构体的字段必须大写，因为其他包内部需要处理结构体字段，必须大写才能访问到
+
+```go
+type user struct{
+	Name string
+  Age int
+}
+```
+
 ***结论***：不同包文件，一个包使用另一个包的函数/变量，需要导出（首字母大写）、导入包，才能调用
+
+
 
 **补充下**：import导入语法
 
@@ -392,8 +405,11 @@ require github.com/q1mi/hello v0.1.1 // indirect
 ![image-20220509223554243](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220509223554243.png)
 
 ```shell
-# 默认拉取GitHub最新的代码
+# 默认拉取GitHub主分支最新的代码
 go get -u github.com/q1mi/hello
+
+# 拉去指定分支最新的代码
+go get -u github.com/q1mi/hello@master
 
 # 也可以指定版本,如果没有发布过版本，默认拉取最新代码
 go get -u github.com/q1mi/hello@v0.1.0
@@ -402,7 +418,7 @@ go get -u github.com/q1mi/hello@v0.1.0
 go get github.com/q1mi/hello@2ccfadd
 ```
 
-`-u`参数，强制更新现有依赖
+`-u`参数，如果依赖发布了新的版本，就会强制本地更新依赖
 
 其实get这个命令主要分成两部分执行：
 
@@ -1719,7 +1735,7 @@ import "fmt"
 
 func main() {
 
-	if age := 18; age <= 18 {
+	if age := 18; age <= 18 { //注意这种写法，只有if内部能访问到该age变量
 		fmt.Println //青年
 	} else if age < 60 {
 		fmt.Println
@@ -2320,6 +2336,8 @@ m := map[string][]string{ //第一层花括号是初始化map的，元素用逗�
 	"性别": {"男", "男"},//这一层花括号是初始化切片的，元素用逗号分隔
 }
 ```
+
+
 
 ## 函数类型
 
@@ -3326,14 +3344,74 @@ fmt.Print(a == nil)//true
 
 ![image-20220511232331687](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220511232331687.png)
 
-**使用断言判断空接口类型的变量是什么类型**
+### 断言判断接口类型
 
 ```
-value:ok=空接口类型的变量.(类型)
+value:ok=接口类型的变量.(类型)
 
 //如果猜的类型和实际类型一样，ok为true，value为其值
+ 
+//如果猜的类型和实际类型不一样，ok为false，value为空字符串
+```
 
-//如果猜的类型和实际类型一样，ok为false，value为空字符串
+例子
+
+```go
+package main
+
+import "fmt"
+
+type Runer interface {
+	run()
+}
+
+type Dog struct {
+}
+
+func (d Dog) run() {
+	fmt.Println("狗跑")
+}
+
+func MakeRun(r Runer) {
+	value, ok := r.(Runer)
+	if ok {
+		fmt.Printf("是runner接口类型：%v", value)
+		r.run()
+	}
+
+}
+func main() {
+	MakeRun(Dog{}) //是runner接口类型：{}狗跑
+}
+```
+
+**必须搭配switch的用法**
+
+```go
+类型=接口类型的变量.(type)
+```
+
+ 例子
+
+```go
+package main
+
+import "fmt"
+
+func getInterfaceType(n interface{}) {
+
+	switch n.(type) {
+	case int:
+		fmt.Println("int")
+	case string:
+		fmt.Println("string")
+	default:
+		fmt.Println(n)
+	}
+}
+func main() {
+	getInterfaceType(1)//int
+}
 ```
 
 ### 错误接口
@@ -3405,9 +3483,26 @@ if err != nil {
   fmt.Printf("%v\n", newErr) //这是再次封装的错误【这是一个错误】
   ```
 
+**错误的判断**
+
+我们已经知道了错误其实就是一个接口
+
+所以，在程序中出现错误，我们也可以通过断言来判断是否是某种错误，然后做出处理
+
+例子是Viper库中定义的一个错误
+
+```go
+if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		//fmt.Printf("找不到配置文件，err:%v\n", err.Error())
+		return
+} 
+```
+
+
+
 ## 反射
 
-需要使用flect标准库
+需要使用reflect标准库
 
 ### 基本使用
 
@@ -5042,7 +5137,7 @@ func main() {
 ```go
 type elementList []string
 
-func (elist elementList) get(findElement string) (result string, err error) {
+func (elist elementList) Get(findElement string) (result string, err error) {
 	for _, element := range elist {
 		if element == findElement {
 			return
@@ -5050,6 +5145,44 @@ func (elist elementList) get(findElement string) (result string, err error) {
 	}
 	return "", nil
 }
+```
+
+自己写一个更复杂一点的例子
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+type userInfo map[string]interface{}
+
+type userCollect []userInfo
+
+func (u userCollect) Get(key string) (findUserInfo userInfo, err error) {
+	for _, value := range u {
+		if value["name"] == key {
+			return value, nil
+		}
+	}
+	return nil, errors.New("获取出错")
+}
+
+func main() {
+	users := userCollect{
+		{"name": "tom", "age": 18},
+		{"name": "jack", "age": 22},
+	}
+	value, err := users.Get("jack")
+	if err != nil {
+		fmt.Printf("err:%v\n", err)
+		return
+	}
+	fmt.Printf("value:%v\n", value)//fmt.Printf("err:%v",err)
+}
+
 ```
 
 
