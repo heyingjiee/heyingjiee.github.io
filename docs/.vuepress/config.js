@@ -37,7 +37,8 @@ module.exports = {
         text: "编程基础",
         items: [
           { text: "Git", link: "/programBasic/Git相关笔记.md" },
-          { text: "HTTPS", link: "/programBasic/HTTPS的原理.md" },
+          { text: "HTTPS原理", link: "/programBasic/HTTPS原理.md" },
+          { text: "Leetcode学习", link: "/programBasic/leetcode刷题记录.md.md" },
           { text: "常用服务端口", link: "/programBasic/常用服务端口.md" },
         ],
       },
@@ -64,7 +65,8 @@ module.exports = {
         text: "前端工程化",
         items: [
           { text: "前端项目配置", link: "/frontEngineering/项目配置.md" },
-
+          { text: "NPM应知应会", link: "/frontEngineering/NPM应知应会.md" },
+          { text: "Gulp自动化神器", link: "/frontEngineering/Gulp自动化神器.md" },
         ],
       },
       {
