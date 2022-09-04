@@ -3041,6 +3041,132 @@ draw();
 
 ## 小知识点 
 
+### 被撑起来的高度
+
+当高度是被子元素撑起来的，子元素设置高度100%是不生效的
+
+情景：父元素不设置高度，子元素A有不固定的高度（比如由内部文字撑开，具体多高不一定），要求子元素B会根据父元素高度自适应
+
+![image-20220801142013118](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220801142013%20.png)
+
+
+
+```
+B的高度设置为auto，就能感知父元素的高度了
+```
+
+### 被撑起来的宽度
+
+当宽度是被子元素撑起来的，子元素设置高度100%是不生效的
+
+情景1：
+
+![image-20220801142806872](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220801142807%20.png)
+
+
+
+要求车款超长后显示`...`
+
+可是，左右两个flex子元素并没有设置宽度，都是通过设置flex-grow实现自动占据空余空间的
+
+```
+左flex子元素设置width:1
+```
+
+情景2：
+
+微信小程序组件默认会占满父组件宽度，子组件的最外层div设置宽度设置为50%，并不生效。也就是子组件不能感知所在父组件的父级元素的宽度
+
+父组件：
+
+```html
+<view style="width:50vw;">
+  <commit-list-v2></commit-list-v2> 
+</view>
+```
+
+子组件
+
+```html
+<view style="50%">111</view>
+```
+
+
+
+### 子元素的宽度
+
+**父元素是行内元素**
+
+* 子元素是块级元素（不能这么写）
+
+* 子元素是行内元素（只能是非img、input的行内元素）
+
+  不可设置宽高属性，由其自身的内容撑起来
+
+  
+
+**父元素是块级元素**
+
+* 子元素是块级元素
+
+  子元素宽度默认为父元素宽度的100%（准确说是，子元素宽度=父元素content部分的宽度）
+
+  ![image-20220801154354870](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220801154355%20.png)
+
+  ```html
+  <div style="border:red solid 1px;">
+      <div style="background-color: yellow;">询价按钮</div>
+  </div>
+  ```
+
+* 子元素是行内元素
+
+  * 可替换元素（只有img和input两种）
+
+    以img为例子，默认按照图片实际大小展示，不受外部div影响。设置img宽度（高度），其会按照图片宽高比例自动设置高度（宽度）。
+
+    一般习惯上设置img宽高均为100%，这样就会填充父级div
+
+    ```html
+    <div style="width:200px; height:100px;border:red solid 1px;">
+        <img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E5%8D%9A%E5%AE%A2%E5%A4%B4%E5%83%8F/avatar.png">
+    </div>
+    ```
+
+    
+
+  * 不可替换元素（span、p等等）
+
+    不可设置宽高属性，由其自身的内容撑起来
+
+
+
+**父、子都是块级元素，子元素脱离文档流**
+
+relative时，子元素继承父元素宽度（准确说是，子元素宽度=父元素content部分的宽度）
+
+![image-20220801172029272](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220801172029%20.png)
+
+```html
+<div style="width:200px;height:200px;border:red solid 1px;">
+    <div style="background-color:red; position: relative">子元素</div>
+</div>
+```
+
+absolute、fixed时，由其内部撑起来
+
+![image-20220801172052296](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220801172052%20.png)
+
+```html
+<div style="width:200px;height:200px;border:red solid 1px;">
+    <div style="background-color:red; position: absolute">子元素</div>
+</div>
+```
+
+**父、子都是块级元素，父元素脱离文档流**
+
+没影响，positon值是哪个，子元素都会继承父元素宽度
+
 ### 三角形和梯形
 
 **三角形**
@@ -3862,3 +3988,4 @@ flex-direction:row;
 ## 适配相关知识
 
 ![1857BE33-B6AC-4D8C-8CE6-FDCC8C7CF397](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/1857BE33-B6AC-4D8C-8CE6-FDCC8C7CF397%20.png)
+

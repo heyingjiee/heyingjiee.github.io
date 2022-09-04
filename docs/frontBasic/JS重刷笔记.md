@@ -2497,7 +2497,7 @@ console.log([..arr,...arr2]
 
 **filter**
 
-检测数值元素，函数返回一个数组。是：当内部函数返回为true时的元素组成的数组。
+检测数值元素，函数返回一个数组。是：当内部函数返回为true时的元素组成的数组。找不到返回空数组
 
 ```js
 let arr=["a","b","c"]
@@ -3814,9 +3814,9 @@ Date.now()//直接用Date对象，返回当前时间的时间戳
 
 ### 实践
 
-两个时间对象比较，一般都是使用时间戳
+**注**：两个时间对象比较，一般都是使用时间戳
 
-例子：计算两个日期相差的天数
+**计算两个日期相差的天数**
 
 ```js
 let now=new Date()
@@ -3825,6 +3825,27 @@ let end=new Date().setFullYear(2050,11,22)//月份是从0开始的，这里是12
 let res=(end-now)/ (1*24*60*60*1000)
 console.log("距离时间",res)//打印当前时间到2020-11-22的天数
 ```
+
+**计算今天是指定的某一天**
+
+通常的思路是分别获取两个时间的年、月、日，然后分别比较，都是一样的就是同一天
+
+其实这个也可以用时间戳
+
+```js
+function isToday(dataStr){
+  todayDateStamp=new Date().setHours(0,0,0,0) //返回的是当天0时0分0秒0毫秒（参数分别是 时、分、秒、毫秒，必须都写0）
+	if(new Date(dataStr).setHours(0,0,0,0)===todayDateStamp){
+		console.log("同一天")
+    return true
+	}
+  return false
+}
+
+isToday('2022-08-03')
+```
+
+
 
 格式化时间 ：由于JS中没有提供相关的功能，所以需要自己实现
 
@@ -5360,11 +5381,13 @@ static race(promises) {
 
 
 
+
+
+
+
+
+
 ## 模块化规范
-
-推荐文章[前端模块化详解(完整版)](https://segmentfault.com/a/1190000017466120)
-
-JS 最初设计的目的，仅仅是为了完成一些简单的功能，但是随着前端工程化成为一种趋势，前端项目慢慢开始承载更多更复杂的功能，将单一 JS 文件划分模块的需求也愈发强烈。我们下面梳理下：
 
 ### 模块化的最佳实现
 
@@ -5967,6 +5990,8 @@ export { age } from "./module2.js";
 
 - 语法上面，CommonJS 模块使用 require()和 module.exports，ES6 模块使用 import 和 export
 
+- 可以使用import的方式引入exports导出的模块，即ESM方式导入CommonJS的包，反之不行
+
 ### 参考
 
 [Module 的加载实现](https://blog.csdn.net/weixin_46151381/article/details/122195535)
@@ -6518,6 +6543,45 @@ NewGetCity(){
 
 ```
 
+### Promise的一些细节
+
+resolve和reject并不会结束函数
+
+```js
+function getCity(){
+    return new Promise((resolve,reject)=>{
+        if(1){
+            resolve(1)
+            console.log(1)
+        }else{
+            reject(new Error('失败'))
+            console.log(2)
+        }
+    })
+}
+getCity() //1
+```
+
+终止当前函数要用return
+
+```js
+function getCity(){
+    return new Promise((resolve,reject)=>{
+        if(1){
+            resolve(1)
+          	return
+            console.log(1)
+        }else{
+            reject(new Error('失败'))
+            console.log(2)
+        }
+    })
+}
+getCity() //无打印
+```
+
+throw抛出错误，会向上终止每一层函数，直到被捕获（如果自己没有捕获整个程序就会结束）
+
 
 
 ### async与await的一些细节
@@ -6560,7 +6624,6 @@ function f3(params){
 //         console.log('err2 --> ',err)
 //         return
 //     })
-//
 // }
 
 //方式一： 捕获async/await的err
@@ -6580,18 +6643,8 @@ async function hij(){
 // hij()
 
 
-//方式二： 捕获async/await的err，try、catch捕获到第一个err就停止了,不会再继续执行了。如果await自行catch处理，外层就抓不到了,只能抓到剩下的错误
-// async function lmn(){
-//     // try{
-//     //     const res1 = await f1(false)
-//     //     const res2 = await f2(false)
-//     // }catch (err){
-//     //     console.log("err --> ",err)
-//     // }
-//     const res1 = await f1(false)
-//     const res2 = await f2(false)
-// }
-// lmn()
+
+
 
 //方式三
 async function lmn(){
@@ -6606,6 +6659,62 @@ async function lmn(){
 }
 lmn()
 
+```
+
+
+
+try...catch不仅可以捕获Error对象，可以捕获rejected状态的Promise
+
+* 第一个await返回的了reject，就会立即进入catch处理，后面的代码不会在执行了
+
+  ```js
+  async function lmn(){
+      try{
+          const res1 = await f1(false)
+          const res2 = await f2(false)
+      }catch (err){
+          console.log("err --> ",err)
+      }
+  }
+  lmn() // err -->  { name: 'f1', age: 4 }
+  ```
+
+* 如果第一个await紧接着被后面的catch处理了，就会继续执行后面的代码。而且因为错误已经被处理了，外部的try...catch就不能捕获到这个错误了
+
+  ```js
+  async function lmn(){
+      try{
+          const res1 = await f1(false).catch(err=>{
+              console.log("f1错误",err)
+          })
+          const res2 = await f2(false)
+      }catch (err){
+          console.log("err --> ",err)
+      }
+  }
+  lmn() 
+  //f1错误 { name: 'f1', age: 4 }
+  //err -->  { name: 'f2', age: 4 }
+  ```
+
+* 所以，我们可以在await后直接catch处理已知的错误，不能识别的错误，直接throw再次抛出，最后在全局try...catch错误做一错误的兜底逻辑
+
+  
+
+  
+
+嵌套时，外层catch无法捕获内层错误
+
+```js
+function lmn(){
+    f1(true).then(resf1=>{
+        f2(false).then()
+    }).catch(err=>{
+        console.log("外层捕获",err)
+    })
+
+}
+lmn()
 ```
 
 
@@ -6667,6 +6776,416 @@ console.log([{name:"jack",age:19},{name:"tom"},{name:"jack",age:30},{name:"tom",
 
 
 ```
+
+
+
+### 关于业务编码上的一点反思
+
+编写业务代码，要达成两个核心目标：
+
+* 业务需求会随着项目不断迭代而发生变化，代码应该充分解耦，避免一处改动对其他逻辑造成影响
+* 避免函数内部直接使用、更改外部变量，应该将外部变量当做参数传入，将处理结果返回。对于流程类函数（不做数据的处理，只是调用其他函数完成业务流程，例如后面场景模拟2中的submitChain函数），应当返回流程最终状态（提交最后是否成功）
+
+**场景模拟1**
+
+接口函数：getAuditStatus，参数为车型Id，返回Promise，返回参数是布尔值，表示该车型是否被用户认证
+
+业务场景：
+
+* 认证表单第一项切换车款，需要在切换时，提醒用户该车型是否认证过车主
+
+* 认证表单提交，需要判断用户是否认证过该车型
+
+常见错误写法：
+
+```js
+//引入一个封装成Promise的请求
+const { getAuditStatus } =require("../api")
+
+function getAuditStatus(serialId){
+  getAuditStatus({ serialId }).then((res)=>{
+  	//使用一个全局变量区分两种情况，将两种情况耦合在一起
+	})
+}
+```
+
+评价：多条业务逻辑耦合在一个getAuditStatus函数中
+
+
+
+改进写法：
+
+```js
+const { getAuditStatus } =require("../api")
+
+//业务一：表单第一项切换车款
+async function changeSerial(serialId){
+  let res=await getAuditStatus({serialId})
+  //继续切换车款逻辑处理
+}
+
+//业务二：认证表单提交
+async function submit(serialId){
+  let res=await getAuditStatus({serialId})
+  //继续提交逻辑处理
+}
+```
+
+评价：分离业务逻辑，避免同一个函数处理多个不同的逻辑链
+
+
+
+**场景模拟2**
+
+提交按钮被点击时，逻辑链流程：订阅 -> 校验 -> 执行提交 -> 成功弹窗 
+
+常见错误写法：
+
+```js
+function A(){
+  //订阅逻辑
+	this.B()
+}
+function B(){
+	//校验逻辑
+  this.C()
+}
+function C(){
+	//提交逻辑
+  this.D()
+}
+function D(){
+	//打开成功弹窗 
+}
+
+A()
+```
+
+点评：
+
+* 业务逻辑高度耦合，调用A就会引起连锁调用
+
+  ![image-20220714141528497](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220714141529%20.png)
+
+
+
+* 如果再同时出现**场景模拟1**的情况，即调用链条上的某一点在其他情境中也被调用，就会进一步加剧代码的复杂度。
+
+  假设应用场景仅需要E->B，但是因为连锁调用C与D也会一起被调用，这不符合预期
+
+  假设图中共有 ： A->B->C->D 、E->B->C->D、F->C->D，三条逻辑链
+
+  ![image-20220714141117313](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220714141117%20.png)
+
+  但是现在需求变更，仅要求在A->B->C->D这条逻辑的B->C之间加入G，如果直接加入这条逻辑，必然会影响到原本E->B->C->D这条逻辑链
+
+  ![image-20220714142206229](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220714142206%20.png)
+
+改进写法1：（引入新名词，逻辑链函数）
+
+```js
+function A(){
+  //订阅逻辑
+}
+function B(){
+	//校验逻辑，调用校验用户是否提交过的接口。未提交返回true，否则false
+}
+async function C(){
+	//调用提交接口。提交成功返回true，否则false
+}
+function D(){
+	//提交成功才打开成功弹窗 
+}
+
+
+//抽象出来提交逻辑，在其中完成一整条逻辑链，我称这种函数为"逻辑链函数"
+function submitChain(){
+  A()
+  let isSubmited=await B()
+  if(isSubmited){
+    let submitRes= await C()
+    if(submitRes) D()
+  }
+}
+```
+
+改进写法2：
+
+逻辑链可能会在某节点分叉，例如下图（但是注意一定要保证其是一个拓扑图，即单项流动，不能出现后面的状态改变前面的状态）
+
+他们之间的A、B是共用的，我们必须将后面的代码分离成两条逻辑链。业务流程中可能会存在很多分叉，分叉的末端还会有分叉，所以需要自己权衡，如果是否需要引入新的逻辑链函数，还是直接在主逻辑链中处理
+
+![image-20220714171059811](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220714171100%20.png)
+
+```js
+//抽象出来提交逻辑，在其中完成一整条逻辑链，我称这种函数为"逻辑链函数"
+function submitChain(){
+  A()
+  let isSubmited=await B()
+  if(isSubmited){
+    let submitRes= await C()
+    if(submitRes){
+      dealSubmitSuccessChain()
+    }else{
+      dealSubmitFailChain()
+    }
+  }else{
+    //已提交的处理逻辑
+    return
+  }
+}
+
+function dealSubmitSuccessChain(){
+  D()
+  I()
+}
+function dealSubmitFailChain(){
+  H()
+  J()
+}
+```
+
+同时，需要注意，前端的特殊性，用户的页面操作可以改变逻辑链的流向。用户逻辑链执行的过程中，触发一个弹出，弹窗的不同按钮就会导致走向不同的逻辑链，这种情景就脱离主逻辑链，例如提交流程中，提交成功后弹出提示框，其中有确定、重新编辑两个按钮。主逻辑链只到打开弹窗就结束了。剩下的由用户去触发两个按钮对应的逻辑链
+
+```js
+//弹窗的返回方法
+function backTo(cb){
+  cb("pre")
+}
+//弹窗的继续提交方法
+function continueSubmit(cb){
+  cb("continue")
+}
+//主流程逻辑链
+function submitChain(){
+  A()
+  let isSubmited=await B()
+  if(isSubmited){
+    let submitRes= await C()
+    if(submitRes){
+      D(cb)//打开弹窗
+      cb()
+      //其他操作
+    }
+  }else{
+    //已提交的处理逻辑
+    return
+  }
+}
+```
+
+
+
+
+
+改进3
+
+可以根据自己需求使用`.catch`来针对某些步骤进行错误的处理，也可以使用try...catch全局进行处理
+
+```js
+function submitChain(){
+  A()
+  let isSubmited=await B().catch(err=>{
+            //单独对这一步的错误处理
+  })
+  if(isSubmited){
+    let submitRes= await C()
+    if(submitRes){
+      dealSubmitSuccessChain()
+    }else{
+      dealSubmitFailChain()
+    }
+  }else{
+    //已提交的处理逻辑
+    return
+  }
+}
+
+function dealSubmitSuccessChain(){
+  D()
+  I()
+}
+function dealSubmitFailChain(){
+  H()
+  J()
+}
+```
+
+
+
+点评：这种写法不仅可以实现不同逻辑链解耦，还可以更好的错误的捕获取处理。
+
+
+
+**场景模拟3**
+
+函数应以入参，返参数的方式使用
+
+* 通过入参的方式，明确函数中使用的外部变量的状态，尽力避免在函数中直接对外部变量直接读写
+
+  常见错误写法：
+
+  在复杂业务场景中，多个函数都在内部更改了a，等到新加入的逻辑E、F使用变量a，很难判断当前的a的状态在哪条逻辑链中被更改
+
+  ```js
+  function A(){
+    this.globalData.a=1
+  }
+  function B(){
+    this.globalData.a=2
+  }
+  function C(){
+    this.globalData.a=3
+  }
+  
+  
+  function E(){
+    //处理过程中用到了a变量
+  }
+  
+  function F(){
+    //处理过程中用到了a变量
+  }
+  ```
+
+  改进写法
+
+  ```js
+  function A(a){
+    return 1
+  }
+  function B(a){
+    return 2
+  }
+  function C(a){
+    return 3
+  }
+  
+  function E(a){
+    //处理过程中用到了a变量
+  }
+  
+  function F(a){
+    //处理过程中用到了a变量
+  }
+  ```
+
+* 如果入参是对象，一般在函数内改变，只返回改变的结果。例如成功true，失false
+
+* 对于一些流程类函数，例如在submitChain这条逻辑链上的函数A、B、C、D都必须有返回值，例如B、C并不是返回数据，而是调用其流程的最终结果
+
+  注意：逻辑链函数也要有返回值，例如【场景模拟2中的改进写法2】其中分叉的两条逻辑链属于主逻辑链的子节点
+
+  ```js
+  function A(){
+    //订阅逻辑
+  }
+  function B(){
+  	//校验逻辑，调用校验用户是否提交过的接口。未提交返回true，否则false
+  }
+  async function C(){
+  	//调用提交接口。提交成功返回true，否则false
+  }
+  function D(){
+  	//提交成功才打开成功弹窗 
+  }
+  
+  
+  //抽象出来提交逻辑，在其中完成一整条逻辑链，我称这种函数为"逻辑链函数"
+  function submitChain(){
+    A()
+    let isSubmited=await B()
+    if(isSubmited){
+      let submitRes= await C()
+      if(submitRes) D()
+    }
+  }
+  ```
+
+  
+
+
+
+**场景模拟4**
+
+对于填写表单数据，是一个非常常见的需求。
+
+目前有一个非常复杂的表单，需要实现几套逻辑
+
+* 首次填写并提交
+* 表单被驳回，重新编辑（表单回显成上一次提交的状态）并提交
+
+实现框架
+
+* getFormData获取当前表单输入的数据（不同逻辑链提交表单，同样都需要表单数据）
+* setFormData设置表单数据（回显数据）
+* dealFormDataWithXXChain、dealFormDataWithYYChain，不同的数据处理函数，接收表单数据，返回处理结果
+
+
+
+### Promise与回调函数的另一种结合
+
+下面的函数可以让，其他开发者在callback中处理数据
+
+* 处理完了就return数据，然后再then中继续使用
+* 处理的过程中发现错误，就throw出来，在catch中处理
+
+```js
+function testCallBack(cb){
+    return new Promise((resolve,reject)=> {
+        try {
+            resolve(cb())
+        } catch (err){
+            console.log("函数内部，捕获到Error对象",err)
+            reject(err)
+        }
+    })
+}
+
+
+
+
+let res=testCallBack(()=>{
+    if(1){
+        throw new Error() //throw会终止回调函数，但是在testCallBack内部的Promise中被try...catch捕获，所以不会终止整个程序。捕获后reject这个err，就能被.catch接收到
+    }
+    return 1
+}).catch(err=>{
+    console.log("外部调用Promise，捕获到Error对象",err)
+})
+
+```
+
+### JS细节易混淆
+
+迭代器索引居然是string类型的
+
+```js
+let arr=[1,2]
+for(let index in arr){
+	console.log(index,typeof index) //索引是String类型
+  console.log(arr[index],typeof arr[index]) //number类型
+} 
+```
+
+```js
+let obj={
+  1:"第一个",
+  2:"第二个"
+}
+for(let index in obj){
+	console.log(index,typeof index) //key是String类型
+  console.log(obj[index],typeof obj[index]) //String类型
+} 
+```
+
+
+
+
+
+
+
+
 
 
 

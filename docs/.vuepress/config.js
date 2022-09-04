@@ -44,7 +44,7 @@ module.exports = {
       {
         text: "其他语言",
         items: [
-          { text: "Go语言（持续更新）", link: "/dealArticle/Go学习笔记.md" },
+          { text: "Go语言", link: "/dealArticle/Go学习笔记.md" },
           { text: "Go Web（持续更新）", link: "/dealArticle/GoWeb学习.md" },
           { text: "Flutter（持续更新）", link: "/otherLanguage/Flutter.md" },
           { text: "Docker", link: "/otherLanguage/Docker.md" },
@@ -58,24 +58,25 @@ module.exports = {
             text: "C/C++基础",
             link: "/otherLanguage/c++使用学习笔记.md",
           },
-          // { text: "Kubenetes", link: "/otherLanguage/Kubenetes.md" },
         ],
       },
       {
-        text: "其他文章",
+        text: "前端工程化",
         items: [
-          { text: "前端工程化", link: "/other/前端工程化.md" },
-          { text: "WebStorm", link: "/other/WebStorm.md" },
-          { text: "Charles", link: "/other/charles的学习笔记.md" },
+          { text: "前端项目配置", link: "/frontEngineering/项目配置.md" },
+
+        ],
+      },
+      {
+        text: "工具",
+        items: [
+          { text: "WebStorm", link: "/programTool/WebStorm.md" },
+          { text: "Charles", link: "/programTool/charles的学习笔记.md" },
           {
             text: "Mac使用经验",
-            link: "/other/Mac使用经验.md",
+            link: "/programTool/Mac使用经验.md",
           },
           // { text: "VSCode", link: "/other/VSCode使用指南.md" },
-          // {
-          //   text: "chrome extension",
-          //   link: "/other/chrome extension开发.md",
-          // },
         ],
       },
     ],

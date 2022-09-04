@@ -581,21 +581,23 @@ computed: {
 
 计算属性默认只有 getter，不过在需要时你也可以提供一个 setter：
 
-```js
-computed: {
-  fullName: {
-    // getter
-    get: function () {
-      return this.firstName + ' ' + this.lastName
-    },
-    // setter
-    set: function (newValue) {//newValue是fullName变化后的新值
-      var names = newValue.split(' ')
-      this.firstName = names[0]
-      this.lastName = names[names.length - 1]
+```vue
+<template>
+	<t-input v-model="includePath" clearable />
+</template>
+<script>
+export default{
+  computed: {
+    includePath: {
+      get() {
+        return this.$store.state.siderFilter.includePath;
+      },
+      set(v) {
+        this.$store.commit("addIncluedPath", v);
+      },
     }
-  }
 }
+</script>
 ```
 
 助记: getter是函数内部变量变化触发,fullName得到return的值.setter是fullName变化触发,内部执行操作
@@ -2102,9 +2104,74 @@ emit用法查看[这里](#子组件向父组件传递数据)
 
 你通常不会用到这些，但是当你需要在一个组件实例上手动侦听事件时，它们是派得上用场的。
 
+## 3.6 组件
+
+Vue组件的生命周期挺有意思
+
+一般情况下在一个页面中使用组件，页面的加载完毕后，组建的created生命周期也会被执行
+
+### 动态组件
+
+![image-20220810141811735](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220810141812%20.png)
+
+页面中使用
+
+```vue
+<component :is="curComponent"></component>
+```
+
+变量curComponent是组件名（组件的name字段）
+
+我们只需在在页面中控制curComponent的值，就可以切换多个组件。
+
+有一点文档中未提及，就是页面虽然只是使用了组件名，但是仍然需要引入对应组件，并在components字段中引用
+
+只有切换到对应的组件其created才会执行
+
+```vue
+<script>
+import TodayTaskList from '@/components/TodayTaskList'
+import CompletedTaskList from '@/components/CompletedTaskList'
+export default {
+  name: 'Task',
+  components: {
+    TodayTaskList, CompletedTaskList
+  },
+  data () {
+    return {
+      curTabIndex: 0
+    }
+  },
+  computed: {
+    curComponent () {
+      if (this.curTabIndex === 0) {
+        return 'TodayTaskList'
+      } else if (this.curTabIndex === 1) {
+        return 'CompletedTaskList'
+      } else {
+        return 'TodayTaskList'
+      }
+    }
+  },
+  methods: {
+    changeTabIndex (index) {
+      this.curTabIndex = index
+    }
+  }
+
+}
+</script>
+```
+
+
+
+
+
+
+
 # 4.过渡和动画(待补充)
 
-## 列表过度
+## 列表过渡
 
 ## 动画过渡
 

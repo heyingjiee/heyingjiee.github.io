@@ -564,3 +564,29 @@ npm install --save hexo-browsersync
 git config --global credential.helper store
 ```
 
+### 克隆深度
+
+可以阅读这篇文章：https://blog.csdn.net/qq_43827595/article/details/104833980
+
+```
+git clone --depth 1  仓库地址 [克隆到指定文件夹]
+```
+
+### 等待研究
+
+```shell
+git rev-parse --is-inside-work-tree # timeout=10
+git config remote.origin.url xxxx.git # timeout=10
+git fetch --tags --progress xxx.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ git rev-parse origin/master^{commit} # timeout=10
+ git config core.sparsecheckout # timeout=10
+ git checkout -f 4c19199584aeb46bd7f69cd51a9c176c6868f316 # timeout=10
+  git rev-list --no-walk ea7fb01329a95aac9fe151c7b030a4e4bdd3a98f # timeout=10
+```
+
+日志
+
+```shell
+git log --all --after="2022-06-23 00:00:00" --before=="2022-06-23 23:30:00" --pretty=tformat: --numstat ':(exclude,glob)package-lock.json' ':(exclude,glob)**/package-lock.json' ':(exclude,glob)yarn.lock' ':(exclude,glob)**/yarn.lock' ':(exclude,glob)assets/**/*' ':(exclude,glob)**/assets/*' | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "%s,%s,%s", add, subs, loc }'
+```
+

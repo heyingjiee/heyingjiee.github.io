@@ -1041,140 +1041,6 @@ func transaction() {
 }
 ```
 
-## 第三方库sqlx
-
-对database/sql是一个对数据库进行操作的第三方库
-
-### 增删改查
-
-* 查找使用Get和Select方法
-* 新增、删除、修改都是使用Exec，与原生一样
-* 如果结构体字段名和数据库表字段名不一样，要使用`db:"xxxx"`来对应表字段xxxx
-* Get、Select查询结果，需要存入的结构体实例。这个结构体的字段名首字母必须大写（结构体名其实可以不用大写，因为使用的时候是在当前包中传入 `var u User`）
-
-```go
-package main
-
-import (
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-)
-
-var db *sqlx.DB
-
-func initDB() (err error) {
-	dsn := "root:HYJ=wvs1996@tcp(127.0.0.1:3306)/db1?charset=utf8mb4&parseTime=True" //parseTime=True讲go中的time对象转化为数据库的时间对象
-	db, err = sqlx.Connect("mysql", dsn)                                             //MustConnect()如果出现错误，自动panic，而Connect需要自己处理err
-	if err != nil {
-		fmt.Printf("连接出错，%v\n", err)
-		panic(err)
-	}
-	db.SetMaxOpenConns(50)
-	db.SetConnMaxIdleTime(10)
-	return
-}
-
-type User struct {
-	Id   int    `db:"id"`
-	Name string `db:"name"`
-	Age  int    `db:"age"`
-}
-
-//1、查询
-func query(param interface{}) {
-	var u User
-	sqlStr := "select * from users_info where id=?"
-	if err := db.Get(&u, sqlStr, param); err != nil {
-		fmt.Printf("查询出错，%v\n", err)
-		return
-	}
-	fmt.Printf("查询结果：%#v", u)
-
-}
-
-//1、多条数据查询(传入的是slice，返回的也是slice)
-func queryRows(param1, param2 interface{}) {
-	var u []User
-	sqlStr := "select * from users_info where id in (?,?)"
-	if err := db.Select(&u, sqlStr, param1, param2); err != nil {
-		fmt.Printf("查询出错，%v\n", err)
-		return
-	}
-	fmt.Printf("查询结果：%#v", u) //[]main.User{main.User{Id:2, Name:"jack", Age:20}, main.User{Id:3, Name:"tom", Age:22}}
-
-}
-
-//2、sqlx中的删、改、查，还是使用exec方法与原生sql中的Exec使用一样
-
-func main() {
-	initDB()
-  query(2)
-	queryRows(2, 3)
-
-}
-```
-
-### 事务
-
-使用Beginx、Rollback、Commit
-
-```go
-func transactionDemo2()(err error) {
-	tx, err := db.Beginx() // 开启事务
-	if err != nil {
-		fmt.Printf("事务创建失败，%v\n", err)
-		return err
-	}
-  
-  //延迟处理panic
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p) // 重新抛出panic
-		} else if err != nil {
-			fmt.Println("rollback")
-			tx.Rollback() //回滚事务
-		} else {
-			err = tx.Commit() //提交事务
-			fmt.Println("commit")
-		}
-	}()
-  
-  //第一个SQL语句
-	sqlStr1 := "Update user set age=20 where id=?"
-
-	rs, err := tx.Exec(sqlStr1, 1)
-	if err!= nil{
-		return err
-	}
-	n, err := rs.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if n != 1 {
-		return errors.New("第一个SQL语句执行失败")
-	}
-  
-  //第二个SQL语句
-	sqlStr2 := "Update user set age=50 where i=?"
-	rs, err = tx.Exec(sqlStr2, 5)
-	if err!=nil{
-		return err
-	}
-	n, err = rs.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if n != 1 {
-		return errors.New("exec sqlStr1 failed")
-	}
-	return err
-  
-  
-}
-```
-
 ## Redis(暂时略)
 
 这部分介绍go-redis这个第三方库
@@ -1242,7 +1108,13 @@ func main() {
 
 ```
 
+## Gin介绍
 
+**Gin** 是一个 Go (Golang) 编写的轻量级 http web 框架，最擅长的就是 Api 接口的高并发，运行速度非常快，如果你是性能和高效的追求者，推荐使用 Gin 框架。 
+
+当某个接口的性能遭到较大挑战的时候，这个还是可以考虑使用 Gin 重写接口
+
+[Gin官网](https://gin-gonic.com/zh-cn/)
 
 ## Gin的简单例子
 
@@ -1286,7 +1158,7 @@ func main() {
 
 
 
-## 返回响应数据
+## Gin返回响应数据
 
 ### Gin返回HTML
 
@@ -1332,7 +1204,7 @@ func main() {
   r.Static("html中静态文件地址", "文件的实际位置")
   ```
 
-  比如：打开玩网页，可以在控制台看到，访问了/static/*等一系列静态资源。这些资源我们放在项目根目录下的static目录
+  比如：打开网页，可以在控制台看到，访问了/static/*等一系列静态资源。这些资源我们放在项目根目录下的static目录
   
   ![image-20220612164251706](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220612164252%20.png)
   
@@ -1447,7 +1319,7 @@ code大于等于0，msg字段为`ok`
 
 
 
-## 获取请求数据
+## Gin获取请求数据
 
 ### 请求基础
 
@@ -1766,17 +1638,33 @@ html中就是多个上传的input即可
 
 
 
-### Post请求获取JSON数据（raw）
+### Post请求raw数据（raw）
 
-raw类型虽然可以传输很多格式的数据，但实际上一般都是传递JSON格式
+raw类型虽然可以传输很多格式的数据，但实际上一般都是传递JSON格式，下面以JSON为例子
+
+如果发送以下数据
+
+```
+{
+	"name":"jack",
+	"age":20
+}
+```
+
+定义的结构需要使用json这个tag
 
 ```go
+type m struct{
+  Name string `joson:"name"`
+  Age int `json:"age"`
+}
+
 r.POST("/json", func(c *gin.Context) {
 	b, _ := c.GetRawData()  // 从c.Request.Body读取请求数据
 	// 定义map或结构体
 	var m map[string]interface{}
 	// 反序列化
-	_ = json.Unmarshal(b, &m)
+	_ = json.Unmarshal(b, &m) //m是对应的GO语言的数据结构
 
 	c.JSON(http.StatusOK, m)
 })
@@ -1793,6 +1681,18 @@ r.GET("/login/:username", func(context *gin.Context) {
     //string,ok:=context.Params.Get("id")
 })
 ````
+
+### 注意参数类型
+
+只有raw类型的JSON格式，其中传递的数字，在后端接收到是数字
+
+```
+{
+	"age":10
+
+```
+
+其他发送方式，**接收到的参数都是字符串格式 **
 
 ### 接口设计规范
 
@@ -2061,6 +1961,33 @@ r.GET("/index/:name/:age", func(context *gin.Context) {
 })
 ```
 
+### 快捷方式
+
+以BindJSON为例子，接收以raw的json格式的参数
+
+```go
+type ParamSignUp struct {
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+}
+p := new(models.ParamSignUp)
+if err := c.BindJSON(p); err != nil { //只有在前端传过来的字段类型与绑定的结构体字段类型不符时，才会报错
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  err.Error(),
+			"data": nil,
+		})
+		return
+}
+c.JSON(http.StatusOK, gin.H{
+	"code": 0,
+	"msg":  "ok",
+	"data": nil,
+})
+```
+
+
+
 
 
 ## 重定向
@@ -2095,6 +2022,8 @@ r.GET("./b", func(context *gin.Context) {
 ```
 
 ## Gin路由
+
+### 路由基础
 
 复习下
 
@@ -2213,7 +2142,7 @@ musicGroup := r.Group("/music")
 	})
   
   //嵌套路由组
-	newMusicGroup := r.Group("v2")
+	newMusicGroup := r.Group("/v2")
 	{
     //注意：地址是 /v2/index ，不是 /music/v2/index
 		newMusicGroup.GET("/index", func(context *gin.Context) {
@@ -2225,6 +2154,59 @@ musicGroup := r.Group("/music")
 
 }
 ```
+
+### 路由文件
+
+当项目很大时，不可能把所有路由写在一个文件中，一般会把路由分配到多个文件中
+
+router文件夹下，建立两个路由文件
+
+**路由A文件**
+
+```go
+package routes 
+import "github.com/gin-gonic/gin" 
+func ARoutesInit(router *gin.Engine) 
+{ 
+  defaultRoute := router.Group("/") { 
+    defaultRoute.GET("/", func(c *gin.Context) { 
+      c.String(200, "首页") 
+    }) 
+  } 
+}
+```
+
+**路由B文件**
+
+```go
+package routes 
+import "github.com/gin-gonic/gin" 
+func BRoutesInit(router *gin.Engine) 
+{ 
+  defaultRoute := router.Group("/") { 
+    defaultRoute.GET("/", func(c *gin.Context) { 
+      c.String(200, "首页") 
+    }) 
+  } 
+}
+```
+
+**main文件**
+
+```go
+func main() { 
+  r := gin.Default() 
+  //从main函数中引用路由文件中的函数，把路由实例传入
+  routes.AdminRoutesInit(r) 
+  routes.ApiRoutesInit(r) 
+  routes.DefaultRoutesInit(r) 
+  r.Run(":8080") 
+}
+```
+
+
+
+
 
 
 
@@ -2449,8 +2431,6 @@ tom
 
 
 
-
-
 ### 默认中间件
 
 前面，一直使用的
@@ -2476,9 +2456,22 @@ r:=gin.New() //新建一个没有任何默认中间件的路由。
 
 当在中间件（HandlerFunc）中启动新的`goroutine`时，**不能使用**原始的上下文（c *gin.Context）作为goroutine函数的参数，必须使用其只读副本`c.Copy()`
 
+```go
+r.GET("/", func(c *gin.Context) { 
+  cCp := c.Copy() 
+  go func() { 
+    // 睡眠5s
+    time.Sleep(5 * time.Second) 
+    // 这里使用你创建的副本 
+    fmt.Println("Done! in path " + cCp.Request.URL.Path) 
+  }() 
+  c.String(200, "首页")
+})  
+```
 
 
-## GORM
+
+## GORM（新版V2）
 
 简单来说就是Go语言的一个工具，直接使用工具提供的函数，来完成SQL操作（不用使用SQL语句）
 
@@ -2486,11 +2479,9 @@ r:=gin.New() //新建一个没有任何默认中间件的路由。
 
 [GORM 2.0 中文官网](https://gorm.io/zh_CN/docs/v2_release_note.html)
 
+### 数据库
 
-
-### 增删改查简单例子
-
-以Mysql为例子，自行安装MySql
+以下都是以Mysql为例子，自行安装MySql
 
 如果使用mysql命令提示找不到，记得配置环境变量
 
@@ -2510,130 +2501,334 @@ source .zshrc
 mysql -uroot -p  #-u后是用户名 ，-p是密码。执行后，会要求输入密码
 ```
 
-创建一个新的数据库
+创建一个新的数据库（有的也叫schema）
 
 ```
 mysql create database 数据库名
 ```
 
-连接数据库，增删改查
+查看所有数据库
 
-* 结构体名、字段名需要首字母大写
-* 转换后的 数据库 **表名**、**字段名**按照默认约定，详见【GORM的默认约定】
+```shell
+show databases;
+```
+
+### GORM的约定
+
+默认约定的规则，基本上都是可以用tag指定修改的，tag这部分放在后面讲解
+
+* 默认表名和表字段名
+
+  **默认**：GORM 使用结构体名的**蛇形命名**的复数形式作为表名，使用结构体字段名的**蛇形命名**作为表字段
+
+  什么是蛇形命名？
+
+  * 对于字段名 `UserInfo`，其表字段名为 `user_infos` (大写部分小写，并用下划线分隔)
+  * 对于结构体名`ID` ，其表字段名为`id`（连续大写的部分，直接转成小写，不用短下划线分隔）
+
+  **自定义**：
+
+  表名的命名规则：下面一部分讲的open的第二个参数可以修改表名的命名默认规则
+
+  表字段名的命名规则：通过GORM提供的tag指定结构体字段创建的表名
+
+  ```go
+  type StuInfo struct {
+  	gorm.Model
+  	Name  string `gorm:"column:my_name"`
+  	Age   int
+  	Hobby string
+  }
+  ```
+
+* 默认使用 `ID` 作为主键
+
+  **默认**：GORM 会默认将结构体中名为 `ID`的字段， 设置为表的主键，且自增
+
+  ```go
+  type User struct {
+    ID   string // 默认情况下，名为 `ID` 的字段会作为表的主键
+    Name string
+  }
+  ```
+
+  **自定义**：也可以通过 `gorm:"primaryKey"` 将其它字段设为主键
+
+  ```go
+  // 将 `UUID` 设为主键
+  type Animal struct {
+    ID     int64
+    UUID   string `gorm:"primaryKey"`
+    Name   string
+    Age    int64
+  }
+  ```
+
+* 默认情况下，整型 `PrioritizedPrimaryField` 启用了 `AutoIncrement`，要禁用它，您需要为整型字段关闭 `autoIncrement`：
+
+  ```go
+  type Product struct {
+    CategoryID uint64 `gorm:"primaryKey;autoIncrement:false"`
+    TypeID     uint64 `gorm:"primaryKey;autoIncrement:false"`
+  }
+  ```
+
+* 时间戳追踪
+
+  如果定义的结构体中也出现了`CreatedAt `、`UpdatedAt`字段
+
+  **默认**：GORM会自动更新每一条记录的创建时间、更新时间
+
+  **自定义**：通过tag指定字段关闭更新
+
+  ```go
+  type User struct {
+    CreatedAt time.Time `gorm:"autoCreateTime:false"`
+  
+    UpdatedAt time.Time `gorm:"autoUpdateTime:false"`
+  }
+  ```
+
+
+
+
+### 配置GORM连接
+
+前提：已经创建了名为gorm_class的数据库
+
+结果：返回一个DB对象，通过操作这对象进行增删改查
 
 ```go
 package main
 
 import (
-	"fmt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+)
+
+func main() {
+  //1、写连接字符串，格式：用户名:密码@(ip:端口)/数据库名？
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	
+  //2、open函数创建数据库对象，有两个参数，
+	//  -第一个是mysql驱动配置，详情参见https://github.com/go-gorm/mysql
+	//  -第二个是gorm的配置，详情参见https://gorm.io/zh_CN/docs/gorm_config.html
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+    //默认为false，即开启事务。会在后面【事务】部分讲解
+		SkipDefaultTransaction: false,
+    //数据库表名命名规则
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "hdd_", //表名加hdd_前缀
+			SingularTable: false,  //表名是否结尾加s
+      //这里表名就是hdd_users（注意结构体叫User）
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+  
+  //3、错误判断
+	if err != nil {
+		panic(err)
+	}
+  
+}  
+```
+
+### 配置连接池
+
+gorm使用Go原生的database/sql维护连接池
+
+通过DB方法获取`*sql.db`，可操作通过`*sql.db`设置数据库连接池的一些配置信息
+
+```go
+mysqlDB, err := db.DB() 
+//最大连接数
+mysqlDB.SetMaxOpenConns(500)
+//最大空闲连接数
+mysqlDB.SetMaxIdleConns(10)
+//最大生命周期
+mysqlDB.SetConnMaxLifetime(time.Hour)
+//关闭数据库（对的，关闭数据库需要获取`*sql.db`，调用它的Close才能关闭）
+mysqlDB.Close()
+```
+
+### 数据库迁移
+
+其实就是根据Go中定义的数据结构，创建对应的表结构
+
+中文档地址：https://gorm.io/zh_CN/docs/migration.html
+如果数据库已存在迁移指定的表：User结构某字段改名，表中会添加该新字段，原字段对应的表字段不会删除；结构体删除字段，表也不会删除该字段；
+
+**创建一个表**
+
+定义一个User结构体，下面用AutoMigrate、Migrator分别创建表（结构体字段必须大写）
+
+```go
+type User struct {
+	Name  string
+	Age   int
+	Score int
+}
+```
+
+**AutoMigrate自动创建数据库表**
+
+使用前面链接数据库返回的db对象（gorm.Open返回的），在这个数据库中，创建一个User结构体对应的数据库表结构
+
+```go
+//自动创建表
+db.AutoMigrate(&User{})
+```
+
+根据约定会自动创建一个名为users的表（gorm.Open的第二个参数会影响默认约定的表名）
+
+```text
+表字段：
+name - longtext
+age - bigint
+score - bigint
+```
+
+也可以在建立表结构体时，通过方法指定表名
+
+```go
+package main
+
+import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type StuInfo struct {
-	Name  string
-	Age   int
-	Hobby string
+type User struct {
+	Name string
+}
+
+func (u User) TableName() string {
+	return "new_table" //指定表名 new_table
 }
 
 func main() {
-	//格式 username:password@protocol(address)/dbname?param=value
-	dsn := "root:xxxx@tcp(127.0.0.1:3306)/db1?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-
-	//创建表，将结构体类型与数据库的表建立映射（结构体名为StuInfo，默认表名为stu_infos）
-	err = db.AutoMigrate(&StuInfo{})
-	 if err != nil {
-		fmt.Printf("创建失败,err:%v", err)
-   }
-
-	//---插入数据，数据库的字段小写name、age、hobby
-	student := &StuInfo{
-		Name:  "jack",
-		Age:   18,
-		Hobby: "唱歌",
-	}
-	db.Create(&student)
-
-	//---查看第一条记录,将数据放入s中，参数必须是指针
-	var s StuInfo
-	db.First(&s)
-	fmt.Printf("查询首行，data：%#v", s) //查询首行，data：main.StuInfo{Name:"jack", Age:18, Hobby:"唱歌"}
-
-	//---更新
-	db.Model(&StuInfo{}).Where("name", "jack").Update("hobby", "跳舞")
-
-  //---删除
-	db.Where("name", "jack").Delete(&s)
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	DB, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	DB.AutoMigrate(&User{})
 }
-
 ```
 
-最后注意下述关系：
+**Migrator手动创建数据库表**
 
-```text
-结构体  ---->  表
-
-结构体实例 ----> 一行记录
-
-结构体字段 ----> 列名
-```
-
-### sql.DB对象 
-
-是Go标准库中的sql包提供的sql对象，用于直接操作数据库
+想要配置迁移细节，使用Migrator函数，返回一个Migrator接口
 
 ```go
-dsn := "root:HYJ=wvs1996@tcp(127.0.0.1:3306)/ToDo?charset=utf8mb4&parseTime=true&loc=Local"
-
-DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return
-	}
-
-//获取获取通用数据库对象 *sql.DB
-sqlDB, err = DB.DB()
-	if err != nil {
-		return
-}
-
-//验证数据库是否建立连接,出问题返回error对象，没出问题返回nil
-sqlDB.Ping()
-
-//关闭数据库
-sqlDB.Close()
+m := db.Migrator()
 ```
 
+可在GoLand中查看源码Migrator接口中提供的函数，用这些函数我们可以手动创建表（或者其他表操作）
 
+```go
+type Migrator interface {
+	// AutoMigrate
+	AutoMigrate(dst ...interface{}) error
+
+	// Database
+	CurrentDatabase() string
+	FullDataTypeOf(*schema.Field) clause.Expr
+
+	// Tables
+	CreateTable(dst ...interface{}) error
+	DropTable(dst ...interface{}) error
+	HasTable(dst interface{}) bool
+	RenameTable(oldName, newName interface{}) error
+	GetTables() (tableList []string, err error)
+
+	// Columns
+	AddColumn(dst interface{}, field string) error
+	DropColumn(dst interface{}, field string) error
+	AlterColumn(dst interface{}, field string) error
+	MigrateColumn(dst interface{}, field *schema.Field, columnType ColumnType) error
+	HasColumn(dst interface{}, field string) bool
+	RenameColumn(dst interface{}, oldName, field string) error
+	ColumnTypes(dst interface{}) ([]ColumnType, error)
+
+	// Views
+	CreateView(name string, option ViewOption) error
+	DropView(name string) error
+
+	// Constraints
+	CreateConstraint(dst interface{}, name string) error
+	DropConstraint(dst interface{}, name string) error
+	HasConstraint(dst interface{}, name string) bool
+
+	// Indexes
+	CreateIndex(dst interface{}, name string) error
+	DropIndex(dst interface{}, name string) error
+	HasIndex(dst interface{}, name string) bool
+	RenameIndex(dst interface{}, oldName, newName string) error
+}
+```
+
+例子：如果存在表就删除，如果不存在表就创建
+
+```go
+m := db.Migrator()
+//含义：
+if m.HasTable(&User{}) {
+  //m.DropTable(&User{})这个函数是删除表
+	m.RenameTable(&User{}, &UserV2{}) //将表重命名为第二个字段。可以是字符串直接指定表名，但是Go就失去了对这个表的控制了，所以一般指定一个新的结构体，新结构体UserV2就对应了数据库里的那张表
+} else {
+	m.CreateTable(&User{})
+}
+```
 
 ### GORM Model
 
-查看下`gorm.Model`类型
+GORM把一些常用的字段单独抽出来，定义了一个结构体`gorm.Model`，它最大的好处是GORM的钩子会自动维护这几个字段，不用开发者处理，就会自动创建ID、记录创建时间、记录更新时间、记录删除时间
 
 ```go
 type Model struct {
 	ID        uint `gorm:"primarykey"`  //字段名是ID，默认做为主键，且自增
 	CreatedAt time.Time   //创建时间
 	UpdatedAt time.Time   //更新时间
-	DeletedAt DeletedAt `gorm:"index"` //删除时间,类型是一个
+	DeletedAt DeletedAt `gorm:"index"` //删除时间,类型比较特殊，下面会补充
 }
 ```
 
-我们可以将`gorm.Model`嵌入到自己的结构体里
+我们可以将`gorm.Model`嵌入到自己的结构体里（注意需要匿名嵌入。如果用命名嵌入，自动迁移时，就被当成另一个表了）
 
 ```go
 type StuInfo struct {
-	gorm.Model
-	Name  string `gorm:"column:my_name"`
+	gorm.Model//匿名嵌入
+	Name  string 
 	Age   int
 	Hobby string
 }
 ```
 
-补充下
+`gorm.Model`默认ID做为主键，也可以通过tag（ `gorm:"primaryKey"` ）将其它字段设为主键
+
+```go
+// 将 `UUID` 设为主键
+type Animal struct {
+  ID     int64
+  UUID   string `gorm:"primaryKey"`
+  Name   string
+  Age    int64
+}
+```
+
+默认自动填充Model里的所有字段，如果不使用自动填充的Model字段，手动指定（字段名是Model）
+
+```go
+s:=StuInfo{
+  Model:gorm.Model{
+    ID:1
+  },
+  Name:"jack",
+  Age:1,
+  Hobby:"football",
+}
+```
+
+**补充下**
 
 DeletedAt字段是一个DeletedAt类型，也就是sql.NullTime类型
 
@@ -2650,9 +2845,322 @@ type NullTime struct {
 }
 ```
 
+### Go类型与数据库类型
+
+```go
+type Node struct {
+		gorm.Model
+		Bool    bool
+		Int     int
+		Uint    uint
+		Int8    int8
+		Uint8   uint8
+		Byte    byte
+		Int32   int32
+		Uint32  uint32
+		Int64   int64
+		Uint64  uint64
+		Float32 float32
+		Float64 float64
+		String  string
+  	Rune    rune
+}
+```
+
+对应的数据库表类型
+
+```go
+`id` bigint unsigned AUTO_INCREMENT,
+`created_at` datetime(3) NULL,
+`updated_at` datetime(3) NULL,
+`deleted_at` datetime(3) NULL,
+`bool` boolean,
+`int` bigint,
+`uint` bigint unsigned,
+`int8` tinyint,
+`uint8` tinyint unsigned,
+`byte` tinyint unsigned,
+`int32` int,
+`uint32` int unsigned,
+`int64` bigint,
+`uint64` bigint unsigned,
+`float32` float,
+`float64` double,
+`string` longtext
+`rune` int,
+```
+
+### 增删改查
+
+```go
+package main
+
+import (
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+	"time"
+)
+
+type User struct {
+	Name  string
+	Age   int
+	Score int
+	gorm.Model
+}
+
+//
+//type UserV2 struct {
+//	Name string
+//}
+
+func main() {
+	//1、前提：安装了数据库+有gorm_class这个schema。
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	//open函数有两个参数，
+	//  -第一个是mysql驱动配置，详情参见https://github.com/go-gorm/mysql
+	//  -第二个是gorm的配置，详情参见https://gorm.io/zh_CN/docs/gorm_config.html
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "hdd_", // table name prefix, table for `User` would be `t_users`
+			SingularTable: false,  // use singular table name, table for `User` would be `user` with this option enabled
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	//2、连接池。gorm使用Go原生的database/sql维护连接池
+	mysqlDB, err := db.DB() //通过DB方法获取*sql.db
+	mysqlDB.SetMaxOpenConns(500)
+	mysqlDB.SetMaxIdleConns(10)
+	mysqlDB.SetConnMaxLifetime(time.Hour)
+	defer mysqlDB.Close()
+
+	//3、将Go数据结构迁移到数据库中（创建一个表,将表和结构体建立映射）
+	//文档地址：https://gorm.io/zh_CN/docs/migration.html
+	//如果已存在数据库表规则：User结构某字段改名，表中会添加该新字段，原字段对应的表字段不会删除；结构体删除字段，表也不会删除该字段；
+	//AutoMigrate自动创建创建
+	db.AutoMigrate(&User{})
+
+	//想要配置迁移细节，使用Migrator,返回一个Migrator接口。可查看源码Migrator接口中提供的函数签名
+	//m := db.Migrator()
+
+	//含义：如果存在就删除，如果不存在就创建
+	//if m.HasTable(&User{}) {
+	//	//m.DropTable(&User{})删除表
+	//	m.RenameTable(&User{}, &UserV2{}) //将表重命名为第二个字段。可以是字符串直接指定表名，但是Go就失去了对这个表的控制了，所以一般指定一个新的结构体
+	//} else {
+	//	m.CreateTable(&User{})
+	//}
+
+	//4、插入数据
+	//4-1 插入一条数据，使用结构体指针
+	//if err := db.Create(&User{
+	//	Name: "jack",
+	//	Age:  20,
+	//}).Error; err != nil {
+	//	fmt.Printf("插入数据出错%v\n", err)
+	//}
+	//4-2 插入多条数据,使用切片
+	//if err := db.Create(&[]User{
+	//	{Name: "jhon", Age: 20},
+	//	{Name: "tom", Age: 21},
+	//}).Error; err != nil {
+	//	fmt.Printf("插入数据出错%v\n", err)
+	//}
+	//4-3 Select指定传入Create的数据字段哪些需要插入 ；Omit指定传入Create的数据字段哪些需要忽略
+	//if err := db.Select("Name").Create(&User{
+	//	Name: "jackv2",
+	//	Age:  20,
+	//}).Error; err != nil {
+	//	fmt.Printf("插入数据出错%v\n", err)
+	//}
+	//5、查询 (First、Last、Take如果查不到数据就是错误，即ErrRecordNotFound，而Find找不到也不会报错)
+	//查询会将结果放入查询函数（First、Last、Take、Find）的参数中（一个结构体指针），这里有一个隐藏的知识点，查询函数会在schema中找到参数这个空结构体对应的表。如果找不到就需要先用Model指定下是哪个表
+	//5-1 First、Last，按照主键排序（没有主键，则按照第一个字段进行排序），然后查询第一个、最后一个数据。
+	// 只有在目标 struct 是指针或者通过 db.Model() 指定 model 时，该方法才有效。Model指定了当前查询的是User这个模型，即其对应的数据库表
+	//var u User
+	//if err := db.Model(&User{}).Where("name=?", "jack3").First(&u).Error; err != nil {
+	//	if errors.Is(err, gorm.ErrRecordNotFound) {
+	//		fmt.Println("查找不到")
+	//		return
+	//	} else {
+	//		fmt.Println("查询错误，err：", err)
+	//		return
+	//	}
+	//}
+	//fmt.Printf("查询的数据：%#v\n", u)
+
+	//5-2 Take 查表内的第一条数据（不必排序）
+	//var u User
+	//db.Take(&u)
+	//fmt.Printf("查询的数据：%#v\n", u)
+
+	//5-3 Find查询多条数据(不设置查询条件，就把整个表格查出来了)
+	//var uList []User
+	//db.Find(&uList)
+	//fmt.Printf("查询的数据：%#v\n", uList)
+
+	//5-4 查询条件（以First例子，添加查询条件）
+	//5-4-1 Where函数——字符串参数
+	//var u User
+	//db.Where("name=?", "tom").First(&u)
+	//fmt.Printf("查询的数据：%#v\n", u)
+	//5-4-2 Where函数——结构体参数
+	//var u User
+	//db.Where(User{Name: "tom"}).First(&u)
+	//fmt.Printf("查询的数据：%#v\n", u)
+	//5-4-3 Where函数——map参数
+	//var u User
+	//db.Where(map[string]interface{}{
+	//	"name": "tom",
+	//}).First(&u)
+	//fmt.Printf("查询的数据：%#v\n", u)
+	//5-4-4 内联查询，即不使用Where函数，可以直接将字符串、结构体、map作为参数传入
+	//var u User
+	//db.First(&u, "name=?", "tom")
+	//fmt.Printf("查询的数据：%#v\n", u)
+  //5-4-4 内联查询还有一个用法，查询主键值是1的记录
+  //db.First(&u, 1)
+
+	//5-5 Or查询条件，参数与Where相同包括：字符串、结构体、map
+
+	//5-6 Not查询条件，参数包括：字符串、结构体、map，还可以是切片
+	//var u User
+	//db.Not([]int64{1, 2, 3}).First(&u) //主键不在{1、2、3}的集合里
+	//fmt.Printf("查询的数据：%#v\n", u)
+
+	//5-7 Order查询条件.desc从大到小，aesc从小到大，默认aesc
+	//var u []User
+	//db.Order("age desc,score").Find(&u) //如果多个字段排序，就用逗号分隔
+	//fmt.Printf("查询的数据：%#v\n", u)
+	//5-8 Limit限制返回几条数据，Offset表示查询结果跳过几条数据
+	//var u []User
+	//db.Limit(3).Find(&u)
+	//fmt.Printf("查询的数据：%#v\n", u)
+	//db.Offset(3).Find(&u)
+	//fmt.Printf("查询的数据：%#v\n", u)
+	//5-9 Select指定查询结果的某些字段，Omit忽略查询结果中的某些字段
+
+	//5-10 智能查询（如果多次查询，每次都使用Select指定要哪些字段，有些臃肿）
+	//type newUser struct {
+	//	Name string
+	//	Age  int
+	//}
+	//var nu []newUser
+	//db.Model(&User{}).Find(&nu)   //必须使Model指定查询的表，否则就回去查找new_users这个表了（我这个例子，设置了TablePrefix:"hdd_"这个配置，所以会去找hdd_new_users这个表）
+	//fmt.Printf("查询的数据：%#v\n", nu) //查询的数据：main.newUser{Name:"jack", Age:20}
+
+	//6、更新 (要么先查询后，更新查询的结果；要么必须指定where条件才能更新符合条件的数据)
+	//6-1、save更新数据（无论如何都会更新，即使是零值也会更新到数据库中）
+	//var uList []User
+	//res := db.Find(&uList)
+	//
+	//for key := range uList {
+	//	uList[key].Age = 0
+	//}
+	//res.Save(&uList)
+
+	//6-2、updates
+	//6-2-1 参数为结构体(如果某字段是该类型的零值，则不更新该字段)
+	//var uList []User
+	//db.First(&uList).Updates(User{
+	//	Name: "",
+	//	Age:  0,
+	//})
+	//6-2-2 参数为Map（可以更新零值）
+	//var uList []User
+	//db.First(&uList).Updates(map[string]interface{}{
+	//	"name": "", //map的key可以是结构体字段名Name，也可以是数据库字段名name，没影响
+	//	"age":  0,
+	//})
+
+	//6-3、update 只更新选择的字段
+	//var uList []User
+	//db.First(&uList).Update("name", "jack")
+
+	//7、删除（要么先查询后，再删除查询的结果；要么必须指定where条件才能删除其中符合条件的数据）
+	//7-1、删除(删除是软删除;删除的数据不会放在uList中，这里的uList只是指代删除的结构)
+	//var uList []User //这里使用var uList User也可以的
+	//db.Where("name=?", "jhon").Delete(&uList)
+	//7-2、物理删除
+	//var uList []User
+	//db.Unscoped().Where("name=?", "").Delete(&uList)
+
+	//8、原生SQL语句，Raw参数是sql语句，Scan执行
+	//var uList []User //这里使用var uList User也可以的
+	//db.Raw("select * from hdd_users where name=?", "jhon").Scan(&uList)
+	//fmt.Printf("%v\n", uList)
+
+}
+
+```
+
+**where**
+
+where的占位符形式。第一个参数中的问号就是占位符，后面的参数就是占位符的值（类似于printf的用法）
+
+```go
+//等于
+Where("name = ?", "h1")
+
+//不等于
+Where("name <> ?", "h1")
+
+//大于
+Where("updated_at > ?", lastWeek)
+
+//小于
+Where("updated_at < ?", lastWeek)
+
+//为null和不为空
+Where("name IS NULL")
+Where("name IS NOT NULL")
+
+//范围name=h1或name=h2
+Where("name IN ?", []string{"h1", "h2"})
+
+//模糊匹配 %代表零个或多个
+Where("name LIKE ?", "%王%")
+
+//且
+Where("name = ? AND age >= ?", "h1", "22")
+//或
+Where("name = ? OR age = ?", "h1", "22")
+
+//between and
+Where("created_at BETWEEN ? AND ?", lastWeek, today)
+//not between and
+Where("created_at NOT BETWEEN ? AND ?", lastWeek, today)
+```
+
+**定义删除字段**
+
+自定义一个删除时会使用软删除的字段
+
+使用 `1` / `0` 作为 delete flag
+
+```go
+type User struct {
+  ID    uint
+  Name  string
+  IsDel soft_delete.DeletedAt `gorm:"softDelete:flag"`
+}
+
+// 查询
+SELECT * FROM users WHERE is_del = 0;
+
+// 删除
+UPDATE users SET is_del = 1 WHERE ID = 1;
+```
 
 
-### tag
+
+
+
+### GORM Tag（后续补充）
 
 **表字段属性相关tag**
 
@@ -2709,9 +3217,797 @@ type User struct {
 |    ASSOCIATION_SAVE_REFERENCE    | 是否自动完成引用的 save 的相关操作 |
 |             PRELOAD              |    是否自动完成预加载的相关操作    |
 
-**零值的问题**
+### 数据库实关系
 
-GORM会忽略零值
+数据库实体关系分为**一对一关系**、**一对多关系**、**多对多关系**
+
+可以参考下面的这篇文章，了解关系以及如何从ER图（概念模型）转化为逻辑模型
+
+https://blog.csdn.net/m0_67316550/article/details/124288116
+
+### 一对一关系
+
+数据库实体关系中的**一对一关系**，可以将关系的属性归属到两个实体的任意一个上。
+
+所以，GORM中把一对一关系中，两个实体结构体的关系，分成了 `belongs to` 和`has one`两种
+
+下面以**学校与校长**的关系来举例子：
+
+![image-20220731224859022](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220731224859%20.png)
+
+一对一关系可以将一方主键、两个实体关系都归到另一方
+
+这里把学校属性ID和关系属性，分配给校长作为例子：
+
+* 校长表是参照表，有外键学校
+
+* 学校表是被参照表
+
+**其表结构为**：
+
+使用belongs to和has one 创建的表相同，两种方式都是使用一个结构体创建两个有关联关系的表（两个表以school_id作为外键联系起来）
+
+![image-20220731225911632](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220731225911%20.png)
+
+![image-20220731230015899](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220731230016%20.png)
+
+**belongs to**
+
+* 学校结构体只保留自己的字段（被参照表）
+* 校长结构体中需要加入外键SchoolID，还有School两个字段（参照表）
+
+创建数据时，只需要**校长实体**即可创建两个表
+
+```go
+package main
+
+import (
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+)
+
+type School struct {
+	gorm.Model
+	Name string
+}
+type HeadMaster struct {
+	gorm.Model
+	Name     string
+	SchoolID uint //名字必须 <对方实体的结构体名字+其主键名>
+	School   School //必须使用命名方式，匿名方式就直接把School的字段合并到HeadMaster中了
+}
+
+func main() {
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "relative_", 
+			SingularTable: false,      
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	//迁移时，只迁移HeadMaster就会同时创建两个表
+	db.AutoMigrate(&HeadMaster{}) //参照表
+
+  //创建实例的时候，不用手动处理校长表中学校外键，GORM会自动填写这个外键值
+	school := School{
+		Model: gorm.Model{
+			ID: 2,
+		},
+		Name: "希望小学",
+	}
+	master := HeadMaster{
+		Model: gorm.Model{
+			ID: 1,
+		},
+		Name:   "校长一号",
+		School: school,
+	}
+	//校长结构中是两个表的全量数据
+	db.Create(&master)
+}
+
+```
+
+**has one**
+
+* 学校结构体中需要加入HeadMaster（被参照表）
+* 校长结构体中需要加入外键SchoolID（参照表）
+
+创建数据时，只需要**学校实体**即可创建两个表
+
+```go
+package main
+
+import (
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+)
+
+type School struct {
+	gorm.Model
+	Name       string
+	HeadMaster HeadMaster
+}
+type HeadMaster struct {
+	gorm.Model
+	Name     string
+	SchoolID uint //名字必须 <对方实体的结构体名字+其主键名>
+}
+
+func main() {
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "relative_", 
+			SingularTable: false,      
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	//迁移时，必须指定School、HeadMaster两个表
+	db.AutoMigrate(&School{}, &HeadMaster{})
+
+  //创建实例的时候，不用手动处理校长表中学校外键，GORM会自动添加这个外键
+	master := HeadMaster{
+		Model: gorm.Model{
+			ID: 1,
+		},
+		Name: "校长一号",
+	}
+
+	school := School{
+		Model: gorm.Model{
+			ID: 2,
+		},
+		Name:       "希望小学",
+		HeadMaster: master,
+	}
+	
+  //学校结构中是两个表的全量数据
+	db.Create(&school)
+}
+```
+
+**手动维护两个表的一对一关系**
+
+中文文档：https://gorm.io/zh_CN/docs/associations.html
+
+前面的两种情况都是GORM自动的创建两个有外键关系的表，我们也可以自己手动去维护两个表的关系
+
+***belongs to***
+
+主体是校长，Model创建一个模型，Association关联（取出）一个字段名，就是追加学校表到这个关联的字段中
+
+```go
+package main
+
+import (
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+)
+
+type School struct {
+	gorm.Model
+	Name string
+}
+type HeadMaster struct {
+	gorm.Model
+	Name     string
+	SchoolID uint   //名字必须 <对方实体的结构体名字+其主键名>
+	School   School //必须使用命名方式，匿名方式就直接把School的字段合并到HeadMaster中了
+}
+
+func main() {
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "relative_",
+			SingularTable: false,       
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	//迁移时，只迁移HeadMaster就会同时创建两个表
+	db.AutoMigrate(&HeadMaster{})
+
+  
+	school := School{
+		Model: gorm.Model{
+			ID: 2,
+		},
+	}
+  newSchool := School{
+		Model: gorm.Model{
+			ID: 3,
+		},
+	}
+	master := HeadMaster{
+		Model: gorm.Model{
+			ID: 1,
+		},
+	}
+  
+  //Model创建一个校长模型，Association关联（取出）校长模型的School字段的内容，就是追加学校表到这个关联的School字段中
+  
+	//指定校长表ID为1的这条数据的School这个字段，设置为学校表ID为2的这条数据的某个字段（由校长结构体的SchoolID指定了外键为学校表的ID字段） 
+  //注意即使学校表里不存在ID为2的数据，school_id字段也会设置为2
+	db.Model(&master).Association("School").Append(&school) //【school_id字段为2】
+  
+  //更换校长表ID为1的这条数据的的School这个字段为newSchool这条记录
+  db.Model(&master).Association("School").Replace(&school, &newSchool)//【school_id字段为3】
+  
+  //清除校长表ID为1的这条数据的School这个字段（清除外键的数据）
+  db.Model(&master).Association("School").Clear()//【school_id字段为2】
+}
+
+```
+
+**has to**
+
+主体是学校
+
+```go
+db.Model(&school).Association("HeadMaster").Append(&master)
+
+db.Model(&school).Association("HeadMaster").Replace(&master, &newMaster)//【school_id字段为3】
+
+db.Model(&school).Association("HeadMaster").Clear()//【school_id字段为2】
+```
+
+
+
+### 多对一关系
+
+一个学校有多个学生，一个学生属于一个学校
+
+![image-20220801004614649](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220801004615%20.png)
+
+**方式一**:
+
+GORM称为has many，其实就是has one的学校结构体的HeadMaster字段变为了切片
+
+```go
+//学校
+type School struct {
+	gorm.Model
+	Name       string
+	Student []Student //has many 只有这里变成了切片
+}
+
+//学生
+type Student struct {
+	gorm.Model
+	Name     string
+	SchoolID uint //名字必须 <对方实体的结构体名字+其主键名>
+}
+
+
+db.AutoMigrate(&School{}, &Student{})
+```
+
+**方式二**：（我更习惯使用这种方式）
+
+```go
+//学校
+type School struct {
+	gorm.Model
+	Name string
+}
+
+//学生
+type Student struct {
+	gorm.Model
+	Name     string
+	SchoolID uint //名字必须 <对方实体的结构体名字+其主键名>
+	School   School
+}
+
+
+db.AutoMigrate(&Student{})
+```
+
+生成的表结构中，students表中包含了外键school_id
+
+**指定外键名**
+
+```go
+//学校
+type School struct {
+	gorm.Model
+	Name    string
+	Student []Student `gorm:"foreignKey:FrID"`
+}
+
+//学生
+type Student struct {
+	gorm.Model
+	Name   string
+	FrID   uint   //名字必须 <对方实体的结构体名字+其主键名>
+}
+```
+
+```go
+//学校
+type School struct {
+	gorm.Model
+	Name string
+}
+
+//学生
+type Student struct {
+	gorm.Model
+	Name     string
+	FrID uint //名字不想用 <对方实体的结构体名字+其主键名>，可以通过tag指定
+	School   School `gorm:"foreignKey:FrID"`
+}
+```
+
+生成的表结构中，students表中包含了外键fr_id
+
+**两种方式的区别**
+
+当做多表查询时
+
+* 方式一查询School表结构时，可以使用预加载查询出相关的Student结构
+* 方式二查询Student表结构时，可以使用预加载查询出相关的School结构
+
+### 预加载
+
+中文文：https://gorm.io/zh_CN/docs/preload.html
+
+还是之前的例子（has many）
+
+```go
+type School struct {
+	gorm.Model
+	Name        string
+	HeadMasters []HeadMaster
+}
+type HeadMaster struct {
+	gorm.Model
+	Name     string
+	SchoolID uint
+}
+```
+
+查询School中ID为2的数据，实际查询结构是查出来HeadMasters字段中的子字段都是零值
+
+```go
+db.First(&school, 2)
+```
+
+这时候就要使用预加载（Preload），参数传入字符串HeadMasters，就能把关联的HeadMasters字段信息一起查出来
+
+**例子**
+
+预加载
+
+```go
+var school School
+db.Preload("HeadMasters").First(&school, 2)
+fmt.Printf("%#v\n", school)
+```
+
+查询带条件的预加载（限制预加载的HeadMasters字段的条件为name是校长2的数据）
+
+```go
+var school School
+db.Preload("HeadMasters", "name=?", "校长2").First(&school, 2)
+fmt.Printf("%#v\n", school)
+```
+
+自定义预加载
+
+```go
+var school School
+db.Preload("HeadMasters", func(db *gorm.DB) *gorm.DB {
+	return db.Where("name=?", "校长2") //在函数中继续删选条件，参数db指得是HeadMasters这层里的数据
+}).First(&school, 2)
+fmt.Printf("%#v\n", school)
+```
+
+嵌套的预加载
+
+再增加一个关系，即校长和书的关系。一个学校有多个校长，一个校长有多本书。
+
+多个Preload函数没有先后顺序
+
+如果Preload有条件时，只能筛选自己Preload这个层级的数据，然后再结构中继续筛选下一个Preload层级的数据
+
+```go
+type School struct {
+	gorm.Model
+	Name        string
+	HeadMasters []HeadMaster
+}
+type HeadMaster struct {
+	gorm.Model
+	Name     string
+	SchoolID uint
+	Books    []Book
+}
+type Book struct {
+	gorm.Model
+	Name         string
+	HeadMasterID uint
+}
+
+var school School
+db.Preload("HeadMasters").Preload("HeadMasters.Books").First(&school, 2)
+fmt.Printf("%#v\n", school) //查询的数据包含三个表的数据
+```
+
+**join预加载**
+
+还有一个预加载的关键字是join，这个关键字只能适用于一对一的关系，例如： `has one`, `belongs to`
+
+join不能添加筛选条件，可以继续使用Where、Order等函数操作数据
+
+### 多对对关系
+
+**AutoMigrate生成表**
+
+```go
+package main
+
+import (
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+)
+
+type Teacher struct {
+	gorm.Model
+	Name     string
+	Students []Student `gorm:"many2many:teacher_student"`
+}
+
+type Student struct {
+	gorm.Model
+	Name     string
+	Teachers []Teacher `gorm:"many2many:teacher_student"`
+}
+
+func main() {
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "m2m_",
+			SingularTable: false,
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	//迁移时，只迁移Teacher、Student、关系表
+	db.AutoMigrate(&Teacher{}, &Student{})
+
+}
+```
+
+生成的表
+
+![image-20220802005212664](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220802005213%20.png)
+
+**自动维护多对多数据**
+
+插入数据，会自动处理`m2m_teacher_student`关系表的数据
+
+```go
+s1 := Student{
+	Model: gorm.Model{
+		ID: 1,
+	},
+	Name: "学生1",
+}
+s2 := Student{
+	Model: gorm.Model{
+		ID: 2,
+	},
+	Name: "学生2",
+}
+t1 := Teacher{
+	Model: gorm.Model{
+		ID: 1,
+	},
+	Name: "教师1",
+	Students: []Student{  //自动维护数据的关键在这里，这里可表明两个表的关系
+		s1, s2,
+	},
+}
+db.Create(&t1)
+```
+
+表数据
+
+![教师表m2m_teacher](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220802005531%20.png)
+
+![学生表m2m_student](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220802005515%20.png)
+
+![关系表m2m_teacher_student](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220802005547%20.png)
+
+**手动维护多对多数据**
+
+```go
+s1 := Student{
+	Model: gorm.Model{
+		ID: 1,
+	},
+	Name: "学生1",
+}
+s2 := Student{
+	Model: gorm.Model{
+		ID: 2,
+	},
+	Name: "学生2",
+}
+t1 := Teacher{
+	Model: gorm.Model{
+		ID: 1,
+	},
+	Name: "教师1",
+}
+
+//选取ID为1的教师生成模型，取Students字段，在这个字段中追加s1,s2关系
+db.Model(&t1).Association("Students").Append(&s1, &s2) 
+```
+
+结果m2m_teacher_student表，执行后，就会填写好**教师学生关系表**
+
+![image-20220802012554949](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220802012555%20.png)
+
+
+
+```go
+//选取ID为1的教师生成模型，取Students字段，清空所有t1的关系,然后再加上s1这个关系
+db.Model(&t1).Association("Students").Replace(&s1)
+```
+
+
+
+```go
+//选取ID为1的教师生成模型，取Students字段，清空所有t1的关系
+db.Model(&t1).Association("Students").Clear()
+
+
+//仅清除t1与s1的关联关系
+db.Model(&t1).Association("Students").Delete(&s1)
+```
+
+
+
+
+
+**查询多对多的关联数据**
+
+使用预加载，取出所有数据
+
+```go
+var t Teacher
+db.Preload("Students").Find(&t, 1)
+fmt.Printf("%#v\n", t)
+
+//使用预加载，查询的ID为1的教师数据中，还携带关联的两个学生数据
+
+//main.Teacher{Model:gorm.Model{ID:0x1, CreatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 400000000, time.Local), UpdatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 400000000, time.Local), DeletedAt:gorm.DeletedAt{Time:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), Valid:false}}, Name:"教师1", Students:[]main.Student{main.Student{Model:gorm.Model{ID:0x1, CreatedAt:time.Date(2022, time.Augt, 2, 0, 53, 27, 403000000, time.Local), UpdatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 403000000, time.Local), DeletedAt:gorm.DeletedAt{Time:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), Valid:false}}, Name:"学生1", Teachers:[]main.Teacher(nil)}, main.Student{Model:gorm.Model{ID:0x2, CreatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 403000000, time.Local), UpdatedAt:time.Date(2022time.August, 2, 0, 53, 27, 403000000, time.Local), DeletedAt:gorm.DeletedAt{Time:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), Valid:false}}, Name:"学生2", Teachers:[]main.Teacher(nil)}}}
+
+```
+
+使用Association，只取出来学生数据
+
+```go
+var s []Student
+//指定模型为ID为1的教师，取Students字段数据，Find就是在这个字段中的数据中搜索
+db.Model(&Teacher{Model: gorm.Model{ID: 1}}).Association("Students").Find(&s)
+fmt.Printf("%#v\n", s)
+
+
+//[]main.Student{main.Student{Model:gorm.Model{ID:0x1, CreatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 403000000, time.Local), UpdatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 403000000, time.Local), DeletedAt:gorm.DeletedAt{Time:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), Valid:false}}, Name:"学生1", Teachers:[]main.Teacher(nil)}, main.Student{Model:gorm.Model{ID:0x2, CreatedAt:ti.Date(2022, time.August, 2, 0, 53, 27, 403000000, time.Local), UpdatedAt:time.Date(2022, time.August, 2, 0, 53, 27, 403000000, time.Local), DeletedAt:gorm.DeletedAt{Time:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), Valid:false}}, Name:"学生2", Teachers:[]main.Teacher(nil)}}
+
+```
+
+### 事务
+
+官方中文文档：https://gorm.io/zh_CN/docs/transactions.html
+
+这部分官方文档很清楚，暂时略过了
+
+### 自定义类型
+
+官方中文文档：https://gorm.io/zh_CN/docs/data_types.html
+
+为自定义的字段定义Value、Scan方法。
+
+**例子1**
+
+将一个结构体以JSON的格式写入数据库，读出时放到对应的结构体中
+
+```go
+package main
+
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+)
+
+type CUser struct {
+	gorm.Model
+	Name string
+	Info CInfo
+}
+type CInfo struct {
+	Score int
+	Age   int
+}
+
+//Value 写入自定义类型到数据库.u是Go中类型，driver.Value是将Go中的类型转化为后的值，并写入数据
+func (c CInfo) Value() (driver.Value, error) {
+	str, err := json.Marshal(c)
+	if err != nil {
+		return nil, errors.New("不匹配的数据类型")
+	}
+	return str, nil
+}
+
+//Scan 读取数据库字段，转化为Go中的类型.将value转化为Go中的结构后，并写入u
+func (c *CInfo) Scan(value interface{}) error {
+	str, ok := value.([]byte)
+	if !ok {
+		return nil
+	}
+	json.Unmarshal(str, c)
+	return nil
+}
+func main() {
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "test_",
+			SingularTable: false,
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	db.AutoMigrate(&CUser{})
+  
+  //1、创建
+	//db.Create(&CUser{
+	//	Name: "frist",
+	//	Info: CInfo{
+	//		Score: 100,
+	//		Age:   18,
+	//	},
+	//})
+  
+  //2、查询
+	var c CUser
+	db.First(&c)
+	fmt.Printf("%#v\n", c)
+
+}
+
+```
+
+
+
+![image-20220807174800363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220807174800%20.png)
+
+**例子2**
+
+将一个切片以逗号连接的字符串格式写入数据库，读出时放到对应的切片变量中
+
+![image-20220807182853098](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220807182853%20.png)
+
+```go
+package main
+
+import (
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+	"strings"
+)
+
+type CUser struct {
+	gorm.Model
+	Name string
+	Info Args
+}
+type Args []string
+
+//Value 写入自定义类型到数据库.u是Go中类型，driver.Value是将Go中的类型转化为后的值，并写入数据
+func (a Args) Value() (driver.Value, error) {
+	if len(a) > 0 {
+		resStr := a[0]
+		for _, value := range a[1:] {
+			resStr += "," + value
+		}
+		return resStr, nil
+	}
+	return "", nil
+}
+
+//Scan 读取数据库字段，转化为Go中的类型.将value转化为Go中的结构后，并写入u
+func (a *Args) Scan(value interface{}) error {
+	str, ok := value.([]byte)
+	if !ok {
+		return errors.New("不匹配的数据类型")
+	}
+	*a = strings.Split(string(str), ",") //注意这里的*用法，a已经是指针类型了，在加星号就是该内存地址中的值，这个值是[]string类型。注意这里就不是Args类型了
+	return nil
+}
+func main() {
+	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: false,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   "test_",
+			SingularTable: false,
+		},
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	//迁移时，只迁移HeadMaster就会同时创建两个表
+	db.AutoMigrate(&CUser{})
+	//db.Create(&CUser{
+	//	Name: "frist",
+	//	Info: Args{
+	//		"1",
+	//		"2",
+	//	},
+	//})
+	var c CUser
+	db.First(&c)
+	fmt.Printf("%#v\n", c.Info) //main.Args{"1", "2"}
+}
+```
+
+
+
+**已经实现的value/Scan**
+
+下面的【GORM忽略零值】就是使用已经实现的value/Scan
+
+![image-20220807190023274](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220807190023%20.png)
+
+
+
+### GORM忽略零值
 
 ***1.插入时***
 
@@ -2743,37 +4039,18 @@ student := &StuInfo{
 db.Create(&student)
 ```
 
-* 方式一：
+使用Scann/Value，将Name定义为`sql.NullString`类型
 
-  使用指针，将Name定义为`*string`类型
-
-  ```go
-  type StuInfo struct {
-  	Name *string `gorm:"default:未知"`
-  	Age  int
-  }
-  
-  student := &StuInfo{
-  	Name: new(string),
-  	Age:  18,
-  }
-  db.Create(&student)
-  ```
-
-* 方式二（**常用**）：
-
-  使用Scanner/Valuer，将Name定义为`sql.NullString`类型
-
-  ```go
-  type StuInfo struct {
-  	Name sql.NullString `gorm:"default:未知"`
-  	Age  int
-  }
-  student := &StuInfo{
-  		Name: sql.NullString{String: "", Valid: true},//Valid为true，则代表String字段的值不是Null，插入String字段的值。如果是false，则插入Null
-  		Age:  18,
-  }
-  ```
+```go
+type StuInfo struct {
+	Name sql.NullString `gorm:"default:未知"`
+	Age  int
+}
+student := &StuInfo{
+		Name: sql.NullString{String: "", Valid: true},//Valid为true，则代表String字段的值不是Null，插入String字段的值。如果是false，则插入Null
+		Age:  18,
+}
+```
 
 ***2.查询、更新、删除***
 
@@ -2791,558 +4068,6 @@ type StuInfo struct {
 	Age  sql.NullInt64
 }
 ```
-
-
-
-### GORM的默认约定
-
-[文档地址](https://gorm.io/zh_CN/docs/conventions.html)
-
-* 默认使用 `ID` 作为主键
-
-  **默认**：GORM 会默认将结构体中名为 `ID`的字段， 设置为表的主键，且自增
-
-  ```go
-  type User struct {
-    ID   string // 默认情况下，名为 `ID` 的字段会作为表的主键
-    Name string
-  }
-  ```
-
-  **自定义**：也可以通过 `gorm:"primaryKey"` 将其它字段设为主键
-
-  ```go
-  // 将 `UUID` 设为主键
-  type Animal struct {
-    ID     int64
-    UUID   string `gorm:"primaryKey"`
-    Name   string
-    Age    int64
-  }
-  ```
-
-* 默认情况下，整型 `PrioritizedPrimaryField` 启用了 `AutoIncrement`，要禁用它，您需要为整型字段关闭 `autoIncrement`：
-
-  ```go
-  type Product struct {
-    CategoryID uint64 `gorm:"primaryKey;autoIncrement:false"`
-    TypeID     uint64 `gorm:"primaryKey;autoIncrement:false"`
-  }
-  ```
-
-* 默认数据库表名
-
-  **默认**：将结构体名字，转化为小写+短下划线拼接+最后以s结尾
-
-  例如：StuInfo默认对应的表名为stu_infos ， User默认对应的表名为users
-
-  **自定义**：
-
-  ```go
-  db.Table("abc").AutoMigrate(&StuInfo{})
-  ```
-
-* 默认数据库字段名
-
-  **默认**：将结构体字段名字，转化为小写+短下划线拼接
-
-  例如：字段createDate，默认对应表字段名为create_date
-
-  例外：如果字段名为ID，则默认对应表字段名为id
-
-  **自定义**：
-
-  通过给结构体添加tag来指定名字
-
-  ```go
-  type StuInfo struct {
-  	gorm.Model
-  	Name  string `gorm:"column:my_name"`
-  	Age   int
-  	Hobby string
-  }
-  ```
-
-* 时间戳追踪
-
-  如果定义的结构体中也出现了`CreatedAt `、`UpdatedAt`字段
-
-  **默认**：GORM会自动更新每一条记录的创建时间、更新时间
-
-  **自定义**：通过tag指定字段关闭更新
-
-  ```go
-  type User struct {
-    CreatedAt time.Time `gorm:"autoCreateTime:false"`
-  
-    UpdatedAt time.Time `gorm:"autoUpdateTime:false"`
-  }
-  ```
-
-### Debug
-
-执行增删改查前，加入Debug方法，可以将执行的SQL语句打印在控制台
-
-```go
-db.Debug().First(&s)  //
-```
-
-### Where
-
-where是用来在增删改查中添加条件的
-
-* 字符串条件
-
-  第一个参数中的问号就是占位符，后面的参数就是占位符的值（类似于printf的用法）
-
-  ```go
-  //等于
-  Where("name = ?", "h1")
-  
-  //不等于
-  Where("name <> ?", "h1")
-  
-  //大于
-  Where("updated_at > ?", lastWeek)
-  
-  //范围name=h1或name=h2
-  Where("name IN ?", []string{"h1", "h2"})
-  
-  //模糊匹配 %代表零个或多个
-  Where("name LIKE ?", "%jin%")
-  
-  //且
-  Where("name = ? AND age >= ?", "h1", "22")
-  
-  //between and
-  Where("created_at BETWEEN ? AND ?", lastWeek, today)
-  ```
-
-* Struct 条件
-
-  ```go
-  db.Where(&StuInfo{
-  		Name: sql.NullString{String: "y", Valid: true},
-  	}).Find(&stu)
-  ```
-
-* Map条件
-
-  map的key是数据库字段名，所以是小写的name
-
-  ```go
-  db.Where(map[string]interface{}{
-  		"name": "y",
-  	}).Find(&stu)
-  ```
-
-* slice条件
-  默认就是用来限制**主键**的范围
-
-  ```go
-  db.Where([]int64{20, 21, 22}).Find(&stu)
-  
-  //等价于
-  Where("主键名 IN ?", []int64{20, 21, 22})
-  ```
-
-### Not
-
-与where一样，支持4种类型的条件
-
-```go
-db.Not("name = ?", "jinzhu").First(&user)
-```
-
-### Or
-
-只支持前3种条件，不支持slice
-
-
-
-### 插入
-
-```go
-//单条数据
-var user := StuInfo{Name: "Jinzhu", Age: 18, Birthday: time.Now()}
-
-
-//多条数据
-var users = []StuInfo{{Name: "jinzhu1"}, {Name: "jinzhu2"}, {Name: "jinzhu3"}}
-
-
-//插入（通过数据的指针来创建）
-result := db.Create(&user) 
-```
-
-### 查询
-
-**查找函数的参数**
-
-如果是一个结构体指针类型，可直接存储一条查询结果数据
-
-```go
-var stu StuInfo
-db.First(&stu)
-```
-
-如果查询结果是多条记录，使用slice存储
-
-```go
-var stuList []StuInfo
-db.Find(&stuList)  //所有数据
-```
-
-如果是map结构存储查询结果数据，必须指定Model
-
-```go
-result := map[string]interface{}{}
-db.Model(&StuInfo{}).First(&result)
-```
-
-
-
-**单条记录**
-
- `First`（让主键升序排列，选择符合条件的第一个）、`Last`（让主键升序排列，选符合条件的最后一个），如果表没有指定主键，默认以表中第一个字段，进行排序
-
-`Take`是取表中第一条记录
-
-`Find`(选择所有符合条件的纪录)
-
-将查到的数据放入s中，参数必须是指针
-
-```go
-var stu StuInfo
-db.First(&stu)
-fmt.Printf("%#v\n", stu) 
-//main.StuInfo{Name:"jack", Age:18, Hobby:"唱歌"}
-```
-
-注意：当没有指定查询条件时，`Find`返回所有数据；`First`让主键升序排列，选择第一个；`Last`让主键升序排列，选择最后一个；
-
-**查询条件的内联写法**
-
-如果主键是数字类型，可以使用内联写法。第二个参数就是主键的值
-
-```go
-db.First(&user, 10)
-
-db.First(&user, "10")
-
-db.Find(&users, []int{1,2,3}) //主键是1、2、3的
-```
-
-主键是字符串，或者非主键字段，需要指定键和值
-
-```go
-db.First(&user, "id = ?", "aaabbb")
-// SELECT * FROM user_infos WHERE 主键名 = "aaabbb";
-```
-
-结构体
-
-```go
-db.Find(&users, StuInfo{Age: 20}) 
-```
-
-Map
-
-```go
-db.Find(&users, map[string]interface{}{"age": 20})
-```
-
-也可以在存储查询结果的结构体中指定
-
-```go
-var user = User{ID: 10}
-db.First(&user)
-// SELECT * FROM users WHERE id = 10;
-
-var result User
-db.Model(User{ID: 10}).First(&result)
-// SELECT * FROM users WHERE id = 10;
-```
-
-
-
-**Select**
-
-选择查询结果的特定字段
-
-```go
-db.Select("name", "age").Find(&stu) //只返回记录的name、age字段
-
-db.Select([]string{"name", "age"}).Find(&stu) 
-```
-
-select支持聚集函数和别名
-
-```go
-db.Select("date(created_at) as date, sum(amount) as total")
-```
-
-
-
-**Order**
-
-asc 按升序排列 ，默认是asc
-
-desc 按降序排列
-
-```go
-db.Order("age desc, name").Find(&stu) //一次定义多个
-
-db.Order("age desc").Order("name").Find(&stu) //多次排序 
-```
-
-
-
-**Limit与Offset**
-
-Limit限制查询数据返回最大记录条数
-
-Offset指定查询的全部结果中，间隔几个取一条，直到达到Limit限制的个数
-
-```go
-db.Limit(3).Offset(2).Find(&stu) 
-```
-
-
-
-**查找错误处理**
-
-result是查找函数的返回值
-
-```go
-result.RowsAffected // 返回找到的记录数
-result.Error        // 没找到返回 gorm.ErrRecordNotFound 
-
-// 检查 ErrRecordNotFound 错误
-errors.Is(result.Error, gorm.ErrRecordNotFound)
-```
-
-
-
-
-
-### 更新
-
-* **Save** ：将查询出来的数据更改，在保存到数据库
-
-  ```go
-  s.Name = sql.NullString{String: "h1", Valid: true} //Name字段是sql.NullString类型的
-  db.Debug().Save(&s)
-  ```
-
-* **Model**
-
-  StuInfo是一个空结构体实例的指针，代表整个users表。做的更新是全局更新，必须指定where
-
-  ```go
-  db.Model(&StuInfo{})
-  ```
-
-  stu 一般是查询操作，查出来的结构体实例，代表数据库中的这一行记录
-
-  ```go
-  db.Model(&stu)
-  ```
-
-* **Update **
-
-  用于更新单个字段，第一个参数指定数据库字段名，第二个参数指定修改的值
-
-  对整个表做全局更新操作，必须通过where指定需要修改的记录符合的条件，否则不会执行，且返回值的Error属性不为nil
-
-  ```go
-  db.Model(&StuInfo{}).Where("name", "h2").Update("name", "h3")
-  ```
-
-  对指定的记录更新就没必要加where了
-
-  ```go
-  db.Model(&stu).Update("name", "h4")
-  ```
-
-  如果确定想更新整个表，两种方法
-
-  ```go
-  //直接执行sql语句
-  db.Exec("UPDATE stu_infos SET name = ?", "h1")
-  
-  
-  //启用 AllowGlobalUpdate 模式
-  db.Session(&gorm.Session{AllowGlobalUpdate: true}).Model(&UseInfo{}).Update("name", "h1")
-  ```
-
-  
-
-* **Updates**
-
-  用于更新多个字段，参数是：
-
-  ***结构体***
-
-  ```go
-  db.Model(&stu).Updates(&StuInfo{
-  		Name: sql.NullString{String: "h5", Valid: true},
-  		Age:  sql.NullInt64{Int64: 20, Valid: true},
-  })
-  ```
-
-  ***map[string]interface{}***
-
-  map的key是数据库字段，所以是小写的name、age
-
-  ```go
-  db.Model(&stu).Updates(map[string]interface{}{
-  		"name": sql.NullString{String: "h6", Valid: true},
-  		"age":  sql.NullInt64{Int64: 30, Valid: true},
-  })
-  ```
-
-  可能传入的多个字段中，我们只需要一部分字段更新：
-
-  ***Select***
-
-  Updates参数是map，所以Select参数是数据库字段名，即小写的age
-
-  如果Updates参数是结构体，Select参数是结构体字段名，即Age
-
-  ```go
-  db.Model(&stu).Select("age").Updates(map[string]interface{}{
-  		"name": sql.NullString{String: "h7", Valid: true},
-  		"age":  sql.NullInt64{Int64: 50, Valid: true},
-  })
-  //只有age字段更新了
-  ```
-
-  
-
-  ***Omit***
-
-  与Select同理，只不过是指定忽略更新的字段
-
-* **UpdateColumn**与**UpdateColumns**
-
-  Updates、Updates除了会更新指定的数据库字段，如果结构体有UpdatedAt字段（gorm.model中的字段）还会自动更新该字段UpdateColumn与UpdateColumns只更新指定字段
-
-* **返回值**
-
-  Updates、Update的返回值，中有以下字段
-
-  ```go
-  RowsAffected // 更新的记录数
-  Error        // 更新的错误
-  ```
-
-* **sql表达式**
-
-  更新字段的值不一定是常数，可以是表达式`gorm.Expr`
-
-  将原本的年龄乘2加100
-
-  ```go
-  db.Model(&stu).Update("age", gorm.Expr("age * ? + ?", 2, 100))
-  ```
-
-* 子查询
-
-  更新字段的值也可以是查询的结果
-
-  ```go
-  db.Model(&stu).Update("name", db.Model(&Other{}).Select("name").Where("name =jack"))
-  ```
-
-  
-
-### 删除
-
-* 删除按照给定的主键的值，在数据库中删除一条记录
-
-  与更新相同
-
-  ```go
-  //全局删除，必须指定where，设置删除条件，否则不会删除
-  db.Delete(&StuInfo{})
-  
-  //&stu是一个实例，代表某一行数据。但是这个数据中必须指定主键，才能删除对应的记录
-  db.Delete(&stu)
-  ```
-
-  内联写法，不需要知道主键名，只需要指定主键值即可删除
-
-  ```go
-  db.Delete(&StuInfo{}, 10)
-  // DELETE FROM stu_infos WHERE 主键 = 10;
-  
-  db.Delete(&StuInfo{}, "10")
-  // DELETE FROM stu_infos WHERE 主键 = 10;
-  
-  db.Delete(&stu, []int{1,2,3})
-  // DELETE FROM stu_infos WHERE 主键 IN (1,2,3);
-  ```
-
-  
-
-* GORM中的删除，如果结构体有`gorm.deletedat` 类型的字段（gorm.model中有）就是软删除，并不是真正的将数据删除
-
-  被删除的记录delete_at字段会记录时间，未被删除的是null
-
-  ![image-20220612141807161](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220612141807%20.png)
-
-  删除后的记录正常是不会再被查询到的，如果想要查到需要使用**Unscoped**
-
-  ```go
-  db.Unscoped().Where("name=?", "h3").Find(&stu)
-  ```
-
-  物理删除
-
-  ```go
-  db.Unscoped().Delete(&stu)
-  ```
-
-* 自定义一个删除时会使用软删除的字段
-
-  使用 `1` / `0` 作为 delete flag
-
-  ```go
-  import "gorm.io/plugin/soft_delete"
-  
-  type User struct {
-    ID    uint
-    Name  string
-    IsDel soft_delete.DeletedAt `gorm:"softDelete:flag"`
-  }
-  
-  // 查询
-  SELECT * FROM users WHERE is_del = 0;
-  
-  // 删除
-  UPDATE users SET is_del = 1 WHERE ID = 1;
-  ```
-
-
-### 链式调用
-
-GORM的函数在执行数据库操作之前，可以一直加条件，形成链式调用
-
-一般错误处理，都是以下这种形式。执行结果的返回值有一个Error属性，是error类型。有错误，返回这个error对象，否则返回nil
-
-```go
-//删除指定id的数据
-func DeleteTodoItemById(id int) (err error) { //注意：返回参数列表，后面直接写return就行
-	var todo ToDo
-	if err := dao.DB.Delete(&todo, id).Error; err != nil {
-		return
-	}
-	return
-}
-```
-
-
 
 ### Scope
 
@@ -3379,8 +4104,6 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 // 查找所有金额大于1000 的已付款或已发货订单
 ```
 
-
-
 ### Hooks
 
 更新、删除等操作触发前会触发的钩子函数
@@ -3388,6 +4111,43 @@ db.Scopes(AmountGreaterThan1000, OrderStatus([]string{"paid", "shipped"})).Find(
 场景：
 
 用户插入密码、修改密码时，需要触发钩子函数来进行加密存储
+
+### 其他
+
+**Debug**
+
+执行增删改查前，加入Debug方法，可以将执行的SQL语句打印在控制台
+
+```go
+db.Debug().First(&s)  //
+```
+
+**查找错误处理**
+
+result是查找函数的返回值
+
+```go
+result.RowsAffected // 返回找到的记录数
+result.Error        // 没找到返回 gorm.ErrRecordNotFound 
+
+// 检查 ErrRecordNotFound 错误
+errors.Is(result.Error, gorm.ErrRecordNotFound)
+```
+
+GORM的函数在执行数据库操作之前，可以一直加条件，形成链式调用
+
+一般错误处理，都是以下这种形式。执行结果的返回值有一个Error属性，是error类型。有错误，返回这个error对象，否则返回nil
+
+```go
+//删除指定id的数据
+func DeleteTodoItemById(id int) (err error) { //注意：返回参数列表，后面直接写return就行
+	var todo ToDo
+	if err := dao.DB.Delete(&todo, id).Error; err != nil {
+		return
+	}
+	return
+}
+```
 
 
 
@@ -4479,6 +5239,651 @@ func GetData(){
 
 https://www.liwenzhou.com/posts/Go/graceful_shutdown/
 
+## 分布式ID生成器
+
+用户表
+
+```sql
+CREATE TABLE `user` (
+ `id` bigint(20) NOT NULL AUTO_INCREMENT,
+ `user_id` bigint(20) NOT NULL,
+ `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+ `password` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+ `email` varchar(64) COLLATE utf8mb4_general_ci,
+ `gender` tinyint(4) NOT NULL DEFAULT '0',
+ `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+ `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE
+CURRENT_TIMESTAMP,
+ PRIMARY KEY (`id`),
+ UNIQUE KEY `idx_username` (`username`) USING BTREE,
+ UNIQUE KEY `idx_user_id` (`user_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
+
+### 分布式**ID**的特点
+
+* 全局唯⼀性：不能出现有重复的ID标识，这是基本要求
+
+* 递增性：确保⽣成ID对于⽤户或业务是递增的
+
+* ⾼可⽤性：确保任何时候都能⽣成正确的ID
+
+* ⾼性能性：在⾼并发的环境下依然表现良好
+
+### snowflake算法介绍
+
+雪花算法，它是Twitter开源的由64位整数组成分布式ID，性能较⾼，并且在单机上递增
+
+![image-20220714011047015](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220714011047%20.png)
+
+* 第⼀位 占⽤1bit，其值始终是0，没有实际作⽤
+* 时间戳 占⽤41bit，单位为毫秒，总共可以容纳约69年的时间。这⾥的时间戳只是相对于某个时间的增量，⽐如我们的系统上线是2020-07-01，那么我们完全可以把这个timestamp当作是从 2020-07-01 00:00:00.000 的偏移量
+* ⼯作机器**id** 占⽤10bit，其中⾼位5bit是数据中⼼ID，低位5bit是⼯作节点ID，最多可以容纳1024个节点
+* 序列号 占⽤12bit，⽤来记录同毫秒内产⽣的不同id，同⼀毫秒⼀共可以产⽣4096个ID【（2^12）个】
+
+### 第三方库实现
+
+```go
+go get "github.com/bwmarrin/snowflake"
+```
+
+例子
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/bwmarrin/snowflake"
+	"time"
+)
+
+var node *snowflake.Node
+
+func Init(startTime string, machineID int64) (err error) {
+	var st time.Time
+	st, err = time.Parse("2006-01-02", startTime)
+	if err != nil {
+		return
+	}
+	snowflake.Epoch = st.UnixNano() / 1000000 //纳秒除1000000是毫秒
+	node, err = snowflake.NewNode(machineID)
+	return
+}
+func GenID() int64 {
+	return node.Generate().Int64()
+}
+func main() {
+	if err := Init("2020-07-01", 1); err != nil {
+		fmt.Printf("init failed, err:%v\n", err)
+		return
+	}
+	id := GenID()
+	fmt.Println(id)
+}
+```
+
+## 校验请求数据
+
+`validator`库用于校验接收的请求参数，仓库地址：https://github.com/go-playground/validator
+
+gin框架使用支持validator库，只需要在定义结构体时使用 `binding` tag，不同的tag值表示不同的校验规则(可以查看[validator文档](https://godoc.org/github.com/go-playground/validator#hdr-Baked_In_Validators_and_Tags)查看支持的所有 tag)
+
+**例子**
+
+不使用binding这个tag，默认情况只有字段类型和ParamSignUp字段类型不同才会报错
+
+使用`binding:required`表示该字段必须存在，字段缺失BindJSON也会报错
+
+```go
+type ParamSignUp struct {
+	Username   string `json:"username" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	RePassword string `json:"re_password" binding:"required"`
+}
+
+func main(){
+  r:=gin.Default()
+	r.POST("/signup",func SignUpHandler(c *gin.Context) {
+	p := new(ParamSignUp)
+  
+  //定义的tag是binding，这里就会按照binding字段的要求校验，不符合返回err
+	if err := c.BindJSON(p); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": -1,
+			"msg":  err.Error(),
+			"data": nil,
+		})
+		return
+	}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "ok",
+			"data": nil,
+		})
+	})
+	r.Run(":9000")
+}
+
+```
+
+调用接口，不传递结构体的RePassword字段返回
+
+```json
+{"code":-1,"data":null,"msg":"Key: 'ParamSignUp.RePassword' Error:Field validation for 'RePassword' failed on the 'required' tag"}
+```
+
+**改进1**
+
+Gin框架的validator默认返回的err是英文的，我们可以自定义一个翻译器，注册到Gin框架的validator上
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding" //gin框架的binding库
+	"net/http"
+
+	//语言包
+	"github.com/go-playground/locales/en"
+	"github.com/go-playground/locales/zh"
+	//翻译器
+	ut "github.com/go-playground/universal-translator"
+	//校验器
+	"github.com/go-playground/validator/v10"
+	enTranslations "github.com/go-playground/validator/v10/translations/en"
+	zhTranslations "github.com/go-playground/validator/v10/translations/zh"
+)
+
+// 定义一个全局翻译器T
+var trans ut.Translator
+
+// InitTrans 初始化翻译器
+func InitTrans(locale string) (err error) {
+	// 修改gin框架中的Validator引擎属性，实现自定制
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+
+		zhT := zh.New() // 中文字典
+		enT := en.New() // 英文字典
+
+		// 装载字典，第一个参数是备用的语言环境，后面的参数是应该支持的语言环境（支持多个）
+		uni := ut.New(enT, zhT, enT)
+		var ok bool
+		// 创建翻译器
+		//locale 通常取决于 http 请求头的 'Accept-Language'，也可以使用 uni.FindTranslator(...) 传入多个locale进行查找
+		trans, ok = uni.GetTranslator(locale)
+		if !ok {
+			return fmt.Errorf("uni.GetTranslator(%s) failed", locale)
+		}
+
+		// 将翻译器注册到gin框架的Validator引擎上
+		switch locale {
+		case "en":
+			err = enTranslations.RegisterDefaultTranslations(v, trans)
+		case "zh":
+			err = zhTranslations.RegisterDefaultTranslations(v, trans)
+		default:
+			err = enTranslations.RegisterDefaultTranslations(v, trans)
+		}
+		return
+	}
+	return
+}
+
+type ParamSignUp struct {
+	Username   string `json:"username" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	RePassword string `json:"re_password" binding:"required"`
+}
+
+func main() {
+	InitTrans("zh")
+	p := new(ParamSignUp)
+	r := gin.Default()
+	r.POST("/signup", func(c *gin.Context) {
+		if err := c.BindJSON(p); err != nil {
+      //使用validator
+			if errs, ok := err.(validator.ValidationErrors); !ok {
+				c.JSON(http.StatusOK, gin.H{
+					"code": -1,
+					"msg":  err.Error(),
+					"data": nil,
+				})
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"code": -1,
+					"msg":  errs.Translate(trans),
+					"data": nil,
+				})
+			}
+
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "ok",
+			"data": nil,
+		})
+	})
+	r.Run(":9898")
+}
+```
+
+调用接口，不传递结构体的RePassword字段返回
+
+```json
+{"code":-1,"data":null,"msg":{"ParamSignUp.RePassword":"RePassword为必填字段"}}
+```
+
+**改进2**
+
+自定义返回msg中的提示信息`{"ParamSignUp.RePassword":"RePassword为必填字段"}`的value值中的RePassword是结构体字段名，一般应该提示前端请求的字段名
+
+`RePassword为必填字段`变成`re_password为必填字段`
+
+其实就是在 InitTrans函数中，添加下面代码
+
+```go
+v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+})
+```
+
+InitTrans全部代码
+
+```go
+func InitTrans(locale string) (err error) {
+	// 修改gin框架中的Validator引擎属性，实现自定制
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		// 注册一个获取json tag的自定义方法
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
+
+		zhT := zh.New() // 中文字典
+		enT := en.New() // 英文字典
+
+		// 装载字典，第一个参数是备用的语言环境，后面的参数是应该支持的语言环境（支持多个）
+		uni := ut.New(enT, zhT, enT)
+		var ok bool
+		// 创建翻译器
+		//locale 通常取决于 http 请求头的 'Accept-Language'，也可以使用 uni.FindTranslator(...) 传入多个locale进行查找
+		trans, ok = uni.GetTranslator(locale)
+		if !ok {
+			return fmt.Errorf("uni.GetTranslator(%s) failed", locale)
+		}
+
+		// 将翻译器注册到gin框架的Validator引擎上
+		switch locale {
+		case "en":
+			err = enTranslations.RegisterDefaultTranslations(v, trans)
+		case "zh":
+			err = zhTranslations.RegisterDefaultTranslations(v, trans)
+		default:
+			err = enTranslations.RegisterDefaultTranslations(v, trans)
+		}
+		return
+	}
+	return
+}
+```
+
+结果
+
+```json
+{"code":-1,"data":null,"msg":{"ParamSignUp.re_password":"re_password为必填字段"}}
+```
+
+
+
+**改进3**
+
+自定义返回msg中的提示信息`{"ParamSignUp.RePassword":"RePassword为必填字段"}`的key
+
+增加新函数
+
+```go
+func removeTopStruct(fields map[string]string) map[string]string {
+	res := map[string]string{}
+	for field, err := range fields {
+		res[field[strings.Index(field, ".")+1:]] = err
+	}
+	return res
+}
+```
+
+使用
+
+```go
+r.POST("/signup", func(c *gin.Context) {
+		if err := c.BindJSON(p); err != nil {
+			if errs, ok := err.(validator.ValidationErrors); !ok {
+				c.JSON(http.StatusOK, gin.H{
+					"code": -1,
+					"msg":  err.Error(),
+					"data": nil,
+				})
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"code": -1,
+					"msg":  removeTopStruct(errs.Translate(trans)),//这里做的处理
+					"data": nil,
+				})
+			}
+
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "ok",
+			"data": nil,
+		})
+})
+```
+
+结果
+
+```json
+{"code":-1,"data":null,"msg":{"re_password":"re_password为必填字段"}}
+```
+
+## 登录方案
+
+分为Session和JWT两种方案，这里只介绍JWT方式
+
+### JWT(待补充)
+
+```shell
+go get github.com/golang-jwt/jwt/v4
+```
+
+**业务场景1**
+
+refreshToken+accessToken方法
+
+https://www.liwenzhou.com/posts/Go/json-web-token/#autoid-0-5-0
+
+**业务场景2**
+
+同一时刻，同一个账号只能登录一个设备
+
+第一次登录将user_id和token的键值对存在redis中，第二次登录解析出token中的user_id后，在redis存储中查找是否存在键值对，如果存在且redis中的token和当前接收的token不一致，即可判定为多人登录
+
+![image-20220724020016866](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220724020017%20.png)
+
+## Makefile
+
+`make`是一个构建自动化工具，会在当前目录下寻找`Makefile`或`makefile`文件。如果存在相应的文件，它就会依据其中定义好的规则完成构建任务。借助`Makefile`我们在编译过程中不再需要每次手动输入编译的命令和编译的参数，可以极大简化项目编译过程。
+
+[makefile详细学习](http://c.biancheng.net/view/7097.html)
+
+Makefile的基本格式
+
+```makefile
+targets : [prerequisites][; command]
+    command
+```
+
+* targets：目标
+* prerequisites：生成 targets 所需要的文件或者是目标
+* command：命令。以有多条命令，每一条命令占一行
+
+Makefile示例
+
+```makefile
+#.PHONY关键字，用来定义伪目标
+.PHONY: all build run gotool clean help 
+
+#BINARY关键字，用来定义变量bluebell，使用${bluebell}获取变量
+BINARY="bluebell" 
+
+
+#下面都是定义的命令，终端输入make xxxx执行
+all: gotool build #终端输入make时，自动执行的命令
+
+build:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o ./bin/${BINARY}
+
+run:
+	@go run ./main.go #命令前加@符号，执行时不会在终端输出当前执行的命令
+
+gotool:
+	go fmt ./
+	go vet ./
+
+clean:
+	@if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
+
+help:
+	@echo "make - 格式化 Go 代码, 并编译生成二进制文件"
+	@echo "make build - 编译 Go 代码, 生成二进制文件"
+	@echo "make run - 直接运行 Go 代码"
+	@echo "make clean - 移除二进制文件和 vim swap files"
+	@echo "make gotool - 运行 Go 工具 'fmt' and 'vet'"
+```
+
+## 热加载
+
+Air 是为 Go 应用开发设计的另外一个热重载的命令行工具
+
+[Air官方Github地址](https://github.com/cosmtrek/air/blob/master/README-zh_cn.md)
+
+**安装**
+
+Air是个全局的工具，并不需要在项目中引入
+
+```shell
+go install github.com/cosmtrek/air
+```
+
+**shell配置**
+
+把`alias air='~/.air'`加到你的`.bashrc`或`.zshrc`中
+
+**项目配置**
+
+* 项目下新建`.air.conf`配置文件
+
+* 配置模板
+
+  ```ini
+  # 设置root是项目的根目录，tmp_dir是存放air日志的目录
+  # 使用 . 或绝对路径，请注意 `tmp_dir` 目录必须在 `root` 目录下
+  root = "."
+  tmp_dir = "tmp"
+  
+  [build]
+  
+  # 只需要写你平常编译使用的shell命令。你也可以使用 `make`
+  # Windows平台示例: cmd = "go build -o tmp\main.exe ."
+  cmd = "go build -o ./tmp/main"
+  
+  # 指定存放由`cmd`命令得到的二进制文件的路径和文件名
+  # Windows平台示例：bin = "tmp\main.exe"
+  bin = "tmp/main"
+  
+  # 自定义执行程序的命令，当项目重启时执行bin字段配置的路径下的可执行文件（可以添加额外的变量标识例如添加 GIN_MODE=release）
+  # Windows平台示例：full_bin = "tmp\main.exe"
+  # 指定变量示例：full_bin = "APP_ENV=dev APP_USER=air ./tmp/main"
+  full_bin = "./tmp/main ./conf/config.yaml"
+  
+  # 监听以下文件扩展名的文件.
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  # 忽略这些文件扩展名或目录
+  exclude_dir = ["assets", "tmp", "vendor", "frontend/node_modules"]
+  # 监听以下指定目录的文件
+  include_dir = []
+  # 排除以下文件
+  exclude_file = []
+  
+  # 如果文件更改过于频繁，则没有必要在每次更改时都触发构建。可以设置触发构建的延迟时间
+  delay = 1000 # ms
+  
+  # 发生构建错误时，停止运行旧的二进制文件。
+  stop_on_error = true
+  
+  # air的日志文件名，该日志文件放置在你的`tmp_dir`中
+  log = "air_errors.log"
+  
+  [log]
+  # 显示日志时间
+  time = true
+  
+  [color]
+  # 自定义每个部分显示的颜色。如果找不到颜色，使用原始的应用程序日志。
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+  
+  [misc]
+  # 退出时删除tmp目录
+  clean_on_exit = true
+  ```
+
+* 补充
+
+  启动Air时，会执行`cmd`字段指定的命令，将该命令输出的二进制文件保存到`bin`字段指定的目录（没有就会自动创建）
+
+  每次修改监听的文件后，都会重新执行`full_bin`字段指定的命令
+
+  结束Air（control+c）时，会自动删除`bin`字段指定的目录
+
+* 应用
+
+  仅用在启动测试环境进行开发时使用Air实现热加载
+
+## 自动生成接口文档
+
+gin-swager是一个自动成RESTful API文档的gin中间件
+
+* [gin-swager的github地址](https://github.com/swaggo/gin-swagger)
+* [gin-swager中文文档](https://github.com/swaggo/swag/blob/master/README_zh-CN.md)
+
+**安装全局工具**
+
+```go
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+***通用API注释*** ：在main函数前添加
+
+```go
+// @title 管理后台接口文档
+// @version 1.0.0
+// @description 管理后台相关接口
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name 何叨叨
+// @contact.url http://heyingjiee.github.io
+// @contact.email 1270433876@qq.com
+
+// @host localhost:8686
+// @BasePath /api/v1
+```
+
+***API注释*** ：在controller层，在每个Handler处理函数上添加对应的注释
+
+```go
+// LoginHandler  登录处理Handler
+// @Summary      用户登录接口
+// @Description  详细描述
+// @Tags         用户相关
+// @Accept       json
+// @Produce      json
+// @Param        object body models.ParamLogin true "用户名和密码"
+// @Success      200  {object}  controller._ResponseLogin
+// @Router       /login [post]
+func LoginHandler(c *gin.Context) {}
+```
+
+字段含义在**中文文档**中有介绍，这里主要提示下
+
+* @Param 中的字段如果是个结构体，就写成object
+
+  就是我们定义的接收参数的结构体吗，如果我这里的登录接口接收数据的结构体
+
+  在这个结构体后加注释，就会被写入swagger文档字段的注释
+
+  example这个tag指定了这个接口的一个入参例子
+
+  ```go
+  type ParamLogin struct {
+  	Username string `json:"username"  binding:"required" example:"rosetest"` //用户名
+  	Password string `json:"password"  binding:"required" example:"123"`      //密码
+  }
+  ```
+
+* @Success 中`{object}`
+
+  就是返回的结构样式，一般定义统一的返回结构，但是每一个接口返回的data字段是不一样的
+
+  就需要一个个定义下
+
+  在controller包下建一个`docs_models.go`文件专门存放，返回的结构体结构
+
+  ```go
+  package controller
+  
+  //这里定义的结构体仅仅为了在swagger文档中展示返回数据的格式,
+  //为了和项目中用到的其他结构体区分，统一添加短横线前缀
+  
+  type _ResponseLogin struct {
+  	Code    utils.ResCode `json:"code"`    // 业务响应状态码
+  	Message string        `json:"message"` // 提示信息
+  	Data    struct {
+  		Token string `json:"token"`
+  	} `json:"data"` // 业务响应数据
+  }
+  ```
+
+**生成doc文档**
+
+使用全局工具生成文档
+
+```go
+swag init
+```
+
+![image-20220726003613839](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220726003614%20.png)
+
+***将生成的文档，添加到gin***
+
+```go
+go get -u github.com/swaggo/gin-swagger
+go get -u github.com/swaggo/files
+```
+
+添加新的路由，重启项目，访问`http://localhost:8686/swagger/index.html`
+
+```go
+import (
+  _ "bluebell/docs" //这里将生成的swagger文档引入
+	swaggerfiles "github.com/swaggo/files" //swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" //gin-swagger middleware
+)
+
+r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+```
+
+**生成的文档**
+
+![image-20220726011655247](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220726011655%20.png)
+
+展开登录接口的文档
+
+![image-20220726011450759](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220726011451%20.png)
+
 ## 企业级脚手架
 
 将 日志（zap）、配置文件（viper）、GORM 集成到Gin框架中
@@ -4595,6 +6000,98 @@ https://www.liwenzhou.com/posts/Go/graceful_shutdown/
   [Bcrypt库](https://pkg.go.dev/golang.org/x/crypto/bcrypt)
 
   
+
+## 单元测试（待补充）
+
+项目中，以`*_test.go`命名的源代码文件都是测试文件，这些文件不会被`go build`编译到最终的可执行文件中
+
+在`*_test.go`文件中有三种类型的函数：
+
+|   类型   |         格式          |              作用              |
+| :------: | :-------------------: | :----------------------------: |
+| 测试函数 |   函数名前缀为Test    | 测试程序的一些逻辑行为是否正确 |
+| 基准函数 | 函数名前缀为Benchmark |         测试函数的性能         |
+| 示例函数 |  函数名前缀为Example  |       为文档提供示例文档       |
+
+## HTTP压测
+
+HTTP压测可以用来评估当前系统的性能水平
+
+### 压测基础
+
+**性能指标**
+
+- 响应时间(RT) ：指系统对请求作出响应的时间.
+- 吞吐量(Throughput) ：指系统在单位时间内处理请求的数量
+- QPS每秒查询率(Query Per Second) ：“每秒查询率”，是一台服务器每秒能够响应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准。
+- TPS(TransactionPerSecond)：每秒钟系统能够处理的交易或事务的数量
+- 并发连接数：某个时刻服务器所接受的请求总数
+
+**压测工具wrk**
+
+wrk是一个现代的HTTP基准测试工具，通过模拟请求，并统计接收响应的时间，来测试性能
+
+[github仓库地址](https://github.com/wg/wrk)
+
+安装
+
+推荐使用brew安装
+
+```
+brew install wrk
+```
+
+使用方式
+
+```
+wrk [flag] 接口地址
+```
+
+参数含义
+
+```
+-c, --connections: 模拟的总请求数，
+                   每个进程的请求数 = connections/threads
+
+-t, --threads:     压力测试使用的进程数
+
+-d, --duration:    压力测试持续时间, 例如： 2s, 2m, 2h
+
+-s, --script:      指定使用的Lua脚本
+
+-H, --header:      添加HTTP请求头, 例如： "User-Agent: wrk"
+
+    --latency:     打印详细的延迟统计信息
+
+    --timeout:     设置超时时间，从发出模拟请求到接收响应之间的时间超出timeout，即视为超时
+```
+
+### 使用wrk
+
+**简单压测**
+
+对于一般的Get请求，进行简单压测，直接使用wrk命令并指定一些需要的参数即可
+
+![image-20220903180102339](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220903180102%20.png)
+
+**复杂压测**
+
+* 有些接口需要post参数或者token等才能访问
+* 我们像自定义测试的结果形式
+
+如何实现？wrk支持使用Lua脚本（[官网的Lua脚本例子](https://github.com/wg/wrk/tree/master/scripts)）
+
+具体使用参考：https://www.jianshu.com/p/81136edd6333
+
+
+
+
+
+
+
+
+
+
 
 
 

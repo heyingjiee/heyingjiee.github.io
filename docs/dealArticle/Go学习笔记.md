@@ -122,7 +122,7 @@ go env
   ![image-20220509145153825](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220509145153825.png)
 
   ```shell
-  go build -o hello //指定生产可执行文件名
+  go build -o hello //指定产生的可执行文件的文件名
   ```
 
   根据自己的平台，生成的文件类型也有所不不同：win下为`*.exe` ; mac/Linux下为`*.exec`
@@ -385,6 +385,14 @@ func main() {
 
 初始化项目为一个module，生成`go.mod`文件记录了整个项目的依赖关系
 
+例如：
+
+```
+go mod init xxx
+```
+
+生成的`go.mod`的一般格式，注意：indirect表示项目中没有直接用到这个依赖包，即间接依赖
+
 ```go
 //项目名
 module xxx 
@@ -435,9 +443,11 @@ go get github.com/q1mi/hello@2ccfadd
 
   下载的放置的位置是 GOPATH/mod/网站域名/（默认GOPATH是~/go）
 
-* go install 编译源代码，并将生成的代码放置到 GOPATH下
-
   与其他语言不同，Go语言使用依赖并非是把依赖安装到自己的项目下，而是放到了GOPATH下
+
+  ![image-20220724150247458](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220724150248%20.png)
+
+* 编译源代码，并添加到环境变量中（与go install不同，go install会将编译的可执行文件保存在GOPATH/bin目录下）
 
 * go.mod 文件
 
@@ -474,6 +484,14 @@ func main(){
   hello.SayHi() // 调用hello包的SayHi函数
 }
 ```
+
+**go install**
+
+go install 编译源代码，并将生成的可执行文件放置到 GOPATH/bin下，以及添加到环境变量中
+
+![image-20220724150351100](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220724150351%20.png)
+
+
 
 ### 发布模块
 
@@ -1245,7 +1263,7 @@ func main() {
 
 ### os文件夹相关补充
 
-**os.Mkdir**和**os.IsNotExist**
+**os.Mkdir**
 
 os.Mkdir用于创建文件夹
 
@@ -1259,10 +1277,10 @@ os.Mkdir用于创建文件夹
 
 ```go
 err := os.Mkdir("name/f", 0777)
-	if err != nil {
+if err != nil {
 		res := os.IsNotExist(err)
 		fmt.Printf("文件不存在：%v", res)
-	}
+}
 ```
 
 **os.MkdirAll**
@@ -1279,6 +1297,201 @@ if err != nil {
 }
 ```
 
+**例子**
+
+判断文件夹是否存在，不存在则创建该文件夹（Stat也能判断文件是否存在，但是MkdirAll只能创建文件夹）
+
+```go
+if _, err := os.Stat("data/b"); err != nil {
+	if err := os.MkdirAll("data/b", os.ModePerm); err != nil { //os.ModePerm就是0777
+		fmt.Printf("创建文件夹出错%v\n", err)
+	}
+}
+```
+
+### os/exec
+
+官方文档：https://studygolang.com/pkgdoc
+
+exec包可以用来执行外部命令
+
+下面这个例子是用来克隆Git仓库的（电脑上必须装好Git）
+
+```go
+func Clone(dir, url string) (string, error) {
+ 	//分隔传入的路径，filepath.Split将最后一级路径和前面的部分分开。
+  //本例中，par=/Users/yc/Documents ; rep=goProjec
+	par, rep := filepath.Split(dir)
+  
+  //Command中写入执行的命令。“git clone --depth 1 仓库地址 克隆下来的代码存放的文件夹名”
+	cmd := exec.Command(
+		"git",
+		"clone",
+		"--depth", "1",
+		url,
+		rep)
+  
+  //Dir指定命令的工作目录。如为空字符串，会在调用者的进程当前目录下执行
+	cmd.Dir = par
+  
+  //执行命令并返回标准输出和错误输出合并的切片。out是执行命令返回的值，err是错误对象
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("Failed to clone %s, see output below\n%sContinuing...", url, out)
+		return "", err
+	}
+}
+
+Clone("/Users/yc/Documents/goProject","git地址")
+```
+
+### os/filepath
+
+官方文档：https://studygolang.com/pkgdoc
+
+处理路径的包。众所周知，Win和Mac、Linux的路径格式不同，但是为了能代码能在不同平台通用，所以要使用filepath中的函数，其会自动根据平台系统处理路径
+
+**IsAbs**
+
+IsAbs判断是否是绝对路径，返回布尔值
+
+```go
+fmt.Printf("%v\n", filepath.IsAbs("a/b"))  //false
+
+fmt.Printf("%v\n", filepath.IsAbs("/a/b")) //true
+```
+
+**Abs**
+
+Abs将参数拼接为绝对路径
+
+```go
+str, err := filepath.Abs("a/b")
+if err != nil {
+	fmt.Printf("%v\n", err)
+}
+fmt.Printf("%v\n", str) //转化的绝对路径是：/Users/yc/Documents/GO/Gotest/a/b
+```
+
+如果原本就是绝对路径，就原样返回
+
+**Dir**
+
+去掉路径的最后一级和它前面的斜杠
+
+```go
+fmt.Println(filepath.Dir("/foo/bar/baz.js")) //路径：/foo/bar
+fmt.Println(filepath.Dir("/foo/bar/baz")) //路径：foo/bar
+```
+
+特殊情况，最后一级没有目录或文件名
+
+```go
+fmt.Println(filepath.Dir("/foo/bar/baz/")) //路径：/foo/bar/baz
+fmt.Println(filepath.Dir("/dirty//path///")) //路径：/dirty/path
+```
+
+特殊情况，相对路径
+
+```go
+fmt.Println(filepath.Dir("dev.txt")) //路径：.
+fmt.Println(filepath.Dir("../todo.txt")) //路径：..
+fmt.Println(filepath.Dir("..")) //路径：.
+fmt.Println(filepath.Dir(".")) //路径：.
+```
+
+特殊情况，绝对路径
+
+```go
+fmt.Println(filepath.Dir("/")) //路径：/
+```
+
+特殊情况，空字符串
+
+```go
+fmt.Println(filepath.Dir("")) //路径：.
+```
+
+**Join**
+
+拼接路径，返回的都是相对路径
+
+* 出一个参数外，上下的参数 `b`、`/b`、`b/`、`/b/`是一样的，都是在原来路径的下一级
+
+  ```go
+  fmt.Println(filepath.Join( "a" , "b" , "c" ))  //输出： a/b/c
+  
+  fmt.Println(filepath.Join( "a" , "b" , "/c" ))  //输出： a/b/c
+  
+  fmt.Println(filepath.Join("a", "b", "c/")) //输出： a/b/c
+  
+  fmt.Println(filepath.Join("a", "b", "/c/")) //输出： a/b/c
+  ```
+
+  ```go
+  fmt.Println(filepath.Join( "a" , "b/c" )) 	//输出： a/b/c
+  fmt.Println(filepath.Join( "a" , "/b/c" )) 	//输出： a/b/c
+  fmt.Println(filepath.Join( "a" , "b/c/" )) 	//输出： a/b/c
+  fmt.Println(filepath.Join( "a" , "/b/c/" )) 	//输出： a/b/c
+  ```
+
+* 第一个参数，决定了 返回的是不是绝对路径
+
+  ```go
+  fmt.Println(filepath.Join( "a" , "b" , "c" ))  //输出： a/b/c
+  
+  fmt.Println(filepath.Join( "/a" , "b" , "c" ))  //输出： /a/b/c
+  ```
+
+* `../../b`，是在原来路径的上上级
+
+  记住一个技巧，有几个点`..`就把前面的路径去掉几个
+
+  ```go
+  fmt.Println(filepath.Join( "a/b" , "../../../xyz" ))  //输出： ../xyz
+  
+  fmt.Println(filepath.Join("a/b", "../xyz")) //输出：a/xyz
+  ```
+
+**glob**
+
+返回glob匹配的文件，类型是切片
+
+![image-20220826000010724](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220826000037%20.png)
+
+```go
+strSlice, err := filepath.Glob("data/**/*.txt")
+if err != nil {
+	fmt.Printf("%v\n", err)
+}
+fmt.Printf("%v\n", strSlice) //[data/B/b.txt data/B/c.txt]
+```
+
+
+
+**Split**
+
+```go
+filepath.Split(dir)
+```
+
+**例子**
+
+```go
+import "path/filepath"
+
+if !filepath.IsAbs(c.DbPath) {
+		path, err := filepath.Abs(
+			filepath.Join(filepath.Dir(filename), c.DbPath))
+		if err != nil {
+			return err
+		}
+		c.DbPath = path
+}
+```
+
+
+
 ### log
 
 用于日志收集
@@ -1294,6 +1507,51 @@ if err != nil {
 ### reflect
 
 详见【反射】章节
+
+### crypto/md5
+
+这个库用来进md5加密的
+
+**加密一条数据**
+
+```go
+package main
+
+import (
+	"crypto/md5"
+	"fmt"
+)
+
+
+func main() {
+  data := []byte("go语言学习笔记")
+	return fmt.Sprintf("%x", md5.Sum(data))
+	fmt.Println(s) //08aae6d0d841eff8ba8772ddf8551157
+}
+```
+
+**加密多条数据**
+
+```go
+package main
+
+import (
+	"crypto/md5"
+	"fmt"
+	"io"
+)
+
+func main() {
+	h := md5.New()
+	io.WriteString(h, "go语言学习笔记") //把第二个内容写入第一个Hash实例里
+	s := fmt.Sprintf("%x", h.Sum(nil))
+	fmt.Printf("%v\n", s) // //08aae6d0d841eff8ba8772ddf8551157
+}
+```
+
+
+
+
 
 ## 标识符
 
@@ -1431,7 +1689,7 @@ const (
 * iota常量 
 
   ```go
-  //iota在const中第一次出现的一行，初始化为0
+  //iota=在const中第一次出现的行数-1
   //随后的每行iota的值加1
   const (
   	n1 = 10   //10
@@ -1774,10 +2032,10 @@ func main() {
 Go语言中可以使用`for range`遍历数组、切片、字符串、map 、通道（channel）
 
 * 数组、切片、字符串返回`索引`、`值`。
-
 * map返回`键`、`值`。
-
 * 通道只返回通道内的`值`
+
+遍历字符串
 
 ```go
 package main
@@ -1794,6 +2052,37 @@ func main() {
 	//4-e
 }
 ```
+
+遍历切片
+
+```go
+//两个变量接收
+s := []int{5, 2, 3}
+for index, value := range s {
+	fmt.Printf("%v:%v\n", index, value)
+}
+
+
+//一个变量接收，就是索引
+s := []int{5, 2, 3}
+for k := range s {
+	fmt.Printf("%v\n", k) //0 1 2
+}
+```
+
+遍历map
+
+```go
+m := map[string]interface{}{
+	"name": "tom",
+	"age":  18,
+}
+for key, value := range m {
+	fmt.Printf("%v:%v\n", key, value)
+}
+```
+
+
 
 break、continue : 与其他语言相同，不再赘述
 
@@ -2201,22 +2490,40 @@ var a map[string]int //key是string，value是int类型的map
 fmt.Println(a == nil) //true
 ```
 
+想要在map中保存数据，必须初始化
+
 **初始化map类型变量**
 
-初始化内存空间
+初始化内存空间两种方式
+
+指定容量
 
 ```go
 m := make(map[string]int, 8) //容量是8个键值对，可以省略第二个参数
 fmt.Println(m == nil) //false，开辟内存空间后就不再nil
 ```
 
+不指定容量
+
+```js
+m := make(map[string]int)
+fmt.Println(m == nil) //false，开辟内存空间后就不再nil
+```
+
 初始化值（默认就分配了内存空间）
 
 ```go
-m := map[string]int{"姓名": 1,"年龄": 10}
+//初始化为空map
+m := map[string]string{}
+m["name"] = "jack"
+
+//初始化的时候map中已经有了键值对
+m2:= map[string]int{"姓名": 1,"年龄": 10}
 ```
 
 **添加键值对**
+
+初始化后，就可以向map中添加键值对了
 
 * 必须初始化空间才能存储
 * 空间不足，会自动扩容
@@ -2225,7 +2532,7 @@ m := map[string]int{"姓名": 1,"年龄": 10}
 m["年龄"] = 12
 ```
 
-扩容到3个键值对
+自动扩容
 
 ```go
 m := make(map[string]int, 1)
@@ -2674,7 +2981,16 @@ res := Stu{
   	Address //这里是混用匿名字段
   }
   
-  //赋值
+  //键值对赋值
+  res := Stu{
+    name:"jack",
+    age:18,
+    Address:Address{ //把类型名当做键名
+  		"中国",
+  		"北京",
+  	,
+  }
+  //列表赋值
   res := Stu{
   		"jack",
   		18,
@@ -2682,7 +2998,7 @@ res := Stu{
   			"中国",
   			"北京",
   		},
-  	}
+  }
   
   
   // 使用类型名Address作为字段名 ，访问子结构体内部的属性
@@ -2727,7 +3043,7 @@ res := Stu{
   fmt.Println(res.Address.city) //北京
   ```
 
-### 结构体实例化
+### 结构体实例
 
 * 两种实例化方法，最后一个字段都必须加逗号
 * 两种方式，不能混合使用
@@ -2761,6 +3077,27 @@ p := Stu{}
 fmt.Printf("%+v\n", p) //{name: age:0}
 ```
 
+**访问结构体实例**
+
+```go
+p := Stu{
+		name: "jack",
+		age:  14,
+}
+fmt.Printf("%v\n", p.name) //jack
+```
+
+**更改实例字段**
+
+```js
+p := Stu{
+		name: "jack",
+		age:  14,
+}
+p.name="tom"
+fmt.Printf("%v\n", p.name) //tom
+```
+
 ### 结构体指针
 
 使用new关键字，为结构体开辟内存空间
@@ -2784,7 +3121,7 @@ func main() {
 
 使用`&`返回指针
 
-```
+```go
 p := &Stu{
 		"jack",
 		14,
@@ -3130,6 +3467,14 @@ type Class struct {
 type Class struct {
 	Title    string     `json:"title" xml:"xml_title"`
 	Students []*Student `json:"students_list"`
+}
+```
+
+一个特殊的例子
+
+```go
+type Class struct {
+	ID    int     `json:"id,string"` //id是指在json中取id字段的值。string是指该字段还可以接收string类型
 }
 ```
 
@@ -3485,6 +3830,8 @@ if err != nil {
 
 **错误的判断**
 
+1、使用断言
+
 我们已经知道了错误其实就是一个接口
 
 所以，在程序中出现错误，我们也可以通过断言来判断是否是某种错误，然后做出处理
@@ -3496,6 +3843,123 @@ if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 		//fmt.Printf("找不到配置文件，err:%v\n", err.Error())
 		return
 } 
+```
+
+2、Is方法
+
+判断err是否是target类型的错误
+
+```go
+func Is(err, target error) bool
+```
+
+```go
+if ok:=errors.Is(err,targetError);ok{
+   //处理该错误
+}
+```
+
+注意：err属于ErrorUser的子集，Is也会返回true
+
+```go
+var (
+	ErrorUser       = errors.New("用户错误")
+	ErrorUserUnAuth = fmt.Errorf("%w：用户权限错误", ErrorUser)
+)
+
+err := ErrorUserUnAuth
+fmt.Printf("%v\n", errors.Is(err, ErrorUser))
+fmt.Printf("%v\n", errors.Is(err, ErrorUserUnAuth))
+```
+
+
+
+## 类型声明总结
+
+主要记忆下：
+
+* 切片、map类型的变量是nil，需要在使用时，通过make创建
+* struct类型的变量就是一个空结构体实例
+
+```go
+package main
+
+import "fmt"
+
+type Stu struct {
+	name string
+	age  int
+}
+
+func main() {
+	//结构体实例、空结构体实例、结构体类型的变量(空结构体实例)、new创建指针变量（相当于空结构体实例的指针）
+	p1 := Stu{
+		name: "jack",
+		age:  14,
+	}
+	p2 := Stu{}
+	var p3 Stu
+	p4 := new(Stu)
+	fmt.Printf("p1是%#v\n", p1) //p1是main.Stu{name:"jack", age:14}
+	fmt.Printf("p2是%#v\n", p2) //p2是main.Stu{name:"", age:0}
+	fmt.Printf("p3是%#v\n", p3) //p3是main.Stu{name:"", age:0}
+	fmt.Printf("p4是%#v\n", p4) //p4是&main.Stu{name:"", age:0}
+
+	//切片实例、空切片实例、切片类型的变量（等于nil）、new创建指针变量（空切片实例的指针）
+	s1 := []int{1, 2, 3}
+	s2 := []int{}
+	var s3 []int
+	s4 := make([]int, 5, 10)
+	s5 := new([]int)
+	fmt.Printf("s1是%v\n", s1)               //s1是[1 2 3]
+	fmt.Printf("s2是%v\n", s2)               //s2是[]
+	fmt.Printf("s3是%v，%v\n", s3, s3 == nil) //s3是[]，true
+	fmt.Printf("s4是%v\n", s4)               //s4是[0 0 0 0 0]
+	fmt.Printf("s5是%v\n", s5)               //s5是&[]
+
+	//map实例、map实例、map类型的变量（等于nil）、new创建指针变量（空map实例指针）
+	m1 := map[string]string{
+		"name": "tom",
+	}
+	m2 := map[string]string{}
+	var m3 map[string]string
+	m4 := make([]int, 5)
+	m5 := new(map[string]string)
+	fmt.Printf("m1是%v\n", m1)               //m1是map[name:tom]
+	fmt.Printf("m2是%v\n", m2)               //m2是map[]
+	fmt.Printf("m3是%v，%v\n", m3, m3 == nil) //m3是map[]，true
+	fmt.Printf("m4是%v\n", m4)               //m4是[0 0 0 0 0]
+	fmt.Printf("m5是%v\n", m5)               //m5是&map[]
+
+}
+```
+
+另外，函数的入参、反参中的指针类型变量是nil，必须通过上面的方式之一指定
+
+```go
+package main
+
+import "fmt"
+
+type User struct {
+	Name string
+	Age  int
+}
+
+func getRes2() (u *User) {
+	//u = new(User) //需要初始化才能有User的结构
+	getRes1(u)
+	return
+}
+func getRes1(u *User) {
+	fmt.Printf("%#v\n", u)
+}
+
+
+func main() {
+	getRes2() //(*main.User)(nil)
+
+}
 ```
 
 
