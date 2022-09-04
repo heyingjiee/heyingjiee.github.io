@@ -38,7 +38,7 @@ module.exports = {
         items: [
           { text: "Git", link: "/programBasic/Git相关笔记.md" },
           { text: "HTTPS原理", link: "/programBasic/HTTPS原理.md" },
-          { text: "Leetcode学习", link: "/programBasic/leetcode刷题记录.md.md" },
+          { text: "Leetcode学习", link: "/programBasic/leetcode刷题记录.md" },
           { text: "常用服务端口", link: "/programBasic/常用服务端口.md" },
         ],
       },
