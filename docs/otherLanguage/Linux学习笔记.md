@@ -681,7 +681,7 @@ Systemd 可以管理所有系统资源。不同的资源统称为 Unit（单位�
 $ systemctl status
 
 # 显示单个 Unit 的状态
-$ sysystemctl status <服务名>
+$ systemctl status <服务名>
 
 # 立即启动一个服务
 $ systemctl start <服务名>

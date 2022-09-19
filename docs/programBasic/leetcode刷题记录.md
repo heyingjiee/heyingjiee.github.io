@@ -439,5 +439,183 @@ var coinChange = function(coins, amount) {
 ```js
 ```
 
+## 贪心算法
+
+### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+```js
+var maxProfit = function(prices){
+    let maxProfit=0
+    for(let i=1;i<prices.length;i++){
+        maxProfit=maxProfit+Math.max(0,prices[i]-prices[i-1])
+    }
+    return maxProfit
+};
+```
+
+有动态规划解法
+
+
+
+### [455. 分发饼干](https://leetcode.cn/problems/assign-cookies/)
+
+优先用尺寸大的饼干，来满足大胃口的孩子
+
+```js
+var findContentChildren = function(g, s) {
+    //从小到大
+    g=g.sort((a,b)=>a-b)
+    s=s.sort((a,b)=>a-b)
+
+    //
+    let j=s.length-1
+    let res=0
+    for(let i=g.length;i>=0;i--){
+        if(s[j]>=g[i]&&j>=0){
+            res++
+            j--
+        }
+    }
+    return res
+
+};
+```
+
+### [435. 无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
+
+只考虑右端是否能和下一个元素的左端重叠，不重叠就更新最新的右侧端点，并计数1次，表示无重叠区间个数
+
+![image-20220907001938814](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220907001939%20.png)
+
+```js
+var eraseOverlapIntervals = function(intervals) {
+    //根据每个区间右侧端点元素，从小到大
+    intervals=intervals.sort((a,b)=>a[1]-b[1])
+    
+    let right=intervals[0][1] 
+    let res=1 //不重叠的区间个数
+    for(let i=1;i<intervals.length;i++){
+        if(right<=intervals[i][0]){ //无重叠
+            right=intervals[i][1]
+            res++
+        }
+    }
+    return intervals.length-res
+    
+};
+```
+
+有动态规划解法
+
+### [55. 跳跃游戏](https://leetcode.cn/problems/jump-game/)
+
+**动态规划解法**
+
+dp[i]表示：索引为i的位置是否可达的
+
+```js
+var canJump = function(nums) {
+    let dp=new Array(nums.length).fill(false)
+    dp[0]=true //只有一个值得时候一定是可达的
+    for(let i=0;i<nums.length;i++){
+        for(let j=0;j<i;j++){
+            if(dp[j]===true&&j+nums[j]>=i){
+                dp[i]=true
+                break
+            }
+        }  
+    }
+    return dp[nums.length-1]
+};
+```
+
+**贪心解法**
+
+只考虑每个分段，合成的区间是否能覆盖到全部 
+
+![image-20220907001653278](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220907001653%20.png)
+
+```js
+var canJump = function(nums) {
+    let right=0
+    for(let i=0;i<nums.length;i++){
+        if(right>=i){ //只有最右侧索引覆盖到num[i]，才表示num[i]是可达的，否则这里都到不了
+            right=Math.max(nums[i]+i,right)
+        } 
+    }
+    return right>=nums.length-1 //能覆盖的右侧索引>=数组最大索引，才能跳到最后一位
+};
+```
+
+### [881. 救生艇](https://leetcode.cn/problems/boats-to-save-people/)
+
+按体重从小到大排序(题目显示所以人体重小于等于limit)
+
+* 体重最大的 = limit ，则他自己乘坐一艘船
+* 体重最大的 < limit ， 体重最小的+体重最大的<=limit则两人乘坐一艘船
+
+![image-20220912165813208](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220912165813%20.png)
+
+```JS
+var numRescueBoats = function(people, limit) {
+    people=people.sort((a,b)=>{
+        return a-b
+    })
+
+    let left=0
+    let right=people.length-1
+    let res=0
+    while(left<=right){
+        if(people[left]+people[right]>limit&&people[right]<=limit){
+            right--
+            res++
+        }else if(people[left]+people[right]<=limit){
+            left++
+            right--
+            res++
+        }
+
+    }
+    return res
+
+};
+```
+
+### [452. 用最少数量的箭引爆气球](https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/)
+
+这个题和[leetcode题号435](https://leetcode.cn/problems/non-overlapping-intervals/)思路一样，基本上就是确定重叠区间
+
+这种情况可以考虑下，是需要两只箭的
+
+![image-20220912182503675](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220912182503%20.png)
+
+```js
+var findMinArrowShots = function(points) {
+  points=points.sort((a,b)=>a[1]-b[1])
+
+  let right=points[0][1]
+  let resCount =1
+  for(let i=1;i<points.length;i++){
+      if(right<points[i][0]){ //不重叠
+          resCount++
+          right=points[i][1]
+      } 
+  }
+  return resCount
+};
+```
+
+### [134. 加油站（跳过）](https://leetcode.cn/problems/gas-station/)
+
+
+
+
+
+
+
+
+
+
+
 
 

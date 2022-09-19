@@ -2717,7 +2717,7 @@ console.log(res)
 
 ## 字符串对象
 
-### 数组对象的属性和方法
+### 数组对象的属性
 
 属性
 
@@ -2726,6 +2726,8 @@ console.log(res)
 | [constructor](https://www.runoob.com/jsref/jsref-constructor-string.html) | 对创建该对象的函数的引用   |
 | [length](https://www.runoob.com/jsref/jsref-length-string.html) | 字符串的长度               |
 | [prototype](https://www.runoob.com/jsref/jsref-prototype-string.html) | 允许您向对象添加属性和方法 |
+
+### 数组对象的方法
 
 静态方法
 
@@ -2763,6 +2765,10 @@ console.log(res)
 | [replaceAll()](https://www.runoob.com/jsref/jsref-replaceall.html) | 在字符串中查找匹配的子串，并替换与正则表达式匹配的所有子串。 |
 | [search()](https://www.runoob.com/jsref/jsref-search.html)   | 查找与正则表达式相匹配的值。                                 |
 
+**正则相关的方法**详见【正则对象】章节
+
+
+
 **长度属性**
 
 JS使用的是UTF-16编码方式
@@ -2777,6 +2783,8 @@ str.length //显示的是码元的个数 ，
 ```javascript
 Array.from("😊").length //1
 ```
+
+
 
 ## 数组与字符串对比
 
@@ -3868,6 +3876,161 @@ function dateFormat(date,format='YYYY-MM-DD HH:mm:SS'){
 }
 console.log(dateFormat(date,"YYYY年-MM月-DD日"))//输出 2020年-5月-11日
 ```
+
+## 正则对象
+
+### 正则对象介绍
+
+构造函数方式：
+
+```js
+var patt=new RegExp(pattern,modifiers)
+```
+
+字面量方式：
+
+```js
+var patt=/pattern/modifiers;
+```
+
+注意：
+
+* `pattern`是正则表达式串
+
+* `modifiers`是修饰符，用于指定全局匹配、区分大小写的匹配和多行匹配等规则
+
+  修饰符可以连用，比如`/xxxx/gmi`
+
+  | 修饰符 | 描述                                                         |
+  | :----- | :----------------------------------------------------------- |
+  | i      | 执行对大小写不敏感的匹配                                     |
+  | g      | 执行全局匹配（查找所有匹配，不用这个修饰符默认找到第一个匹配后停止） |
+  | m      | 多行匹配 （https://zh.javascript.info/regexp-multiline-mode） |
+  | s      | 启用 “dotall” 模式，允许点 `.` 匹配换行符 `\n`               |
+  | u      | 开启完整的 Unicode 支持。该修饰符能够正确处理代理对 （https://zh.javascript.info/regexp-unicode） |
+  | y      | 粘滞模式，在文本中的确切位置搜索 （https://zh.javascript.info/regexp-sticky） |
+
+### 正则对象属性
+
+| 属性        | 描述                                               |
+| :---------- | :------------------------------------------------- |
+| constructor | 返回一个函数，该函数是一个创建 RegExp 对象的原型。 |
+| global      | 返回布尔值，判断是否设置了 "g" 修饰符              |
+| ignoreCase  | 返回布尔值，判断是否设置了 "i" 修饰符              |
+| multiline   | 返回布尔值，判断是否设置了 "m" 修饰符              |
+| source      | 返回正则表达式字符串                               |
+| lastIndex   | 用于规定下次匹配的起始位置                         |
+
+例子
+
+```js
+console.log(/\w+/g.global)  //true
+
+console.log(/\w+/i).ignoreCase  //true
+
+console.log(/\w/i).source // '\\w+'
+```
+
+lastIndex的例子
+
+```js
+// 该属性只有设置标志 g 才能使用
+// 该属性是可读可写的。RegExp.exec() 和 RegExp.test()都以 lastIndex 属性所指的位置作为本次检索的终点
+// 找不到可以匹配的文本时，RegExp.exec() 和 RegExp.test()会自动把 lastIndex 属性重置为 0
+
+var str="The rain in Spain stays mainly in the plain";
+var patt1=/ain/g;
+ 
+while (patt1.test(str)==true) 
+{
+    document.write(`ain lastIndex at: ${patt1.lastIndex}`)
+    document.write("<br>");
+}
+
+'ain' lastIndex at: 8
+'ain' lastIndex at: 17
+'ain' lastIndex at: 28
+'ain' lastIndex: 43
+```
+
+
+
+### 正则对象方法
+
+| 方法     | 描述                                               |
+| :------- | :------------------------------------------------- |
+| exec     | 检索字符串中指定的值。返回找到的值，并确定其位置。 |
+| test     | 检索字符串中指定的值。返回 true 或 false。         |
+| toString | 返回正则表达式的字符串。                           |
+
+**exec**
+
+返回正则表达式匹配到的值
+
+参数：
+
+* 待检索的字符串
+
+返回值：
+
+* 如果字符串中有匹配的值返回该匹配值，否则返回 null。
+
+```js
+/Hello/g.exec("Hello world! Helloo")  //输出：Hello
+```
+
+
+
+**test**
+
+判断字符串中是否有正则表达式能匹配的值
+
+参数：
+
+* 待检索的字符串
+
+返回值：
+
+* 布尔值
+
+```js
+/a/.test("ab cde") //true
+```
+
+
+
+**toString**
+
+与source属性一样
+
+```js
+console.log(/\w+/i).source //输出： /\w+/i
+console.log(/\w+/i.toString())   //输出 /\w+/i
+```
+
+
+
+
+
+## 字符串对象的正则方法
+
+| 方法                                                    | 描述                                                         |
+| :------------------------------------------------------ | :----------------------------------------------------------- |
+| [search](https://www.runoob.com/js/jsref-search.html)   | 检索字符串中指定的子字符串，或检索与正则表达式相匹配的子字符串 |
+| [match](https://www.runoob.com/js/jsref-match.html)     | 找到一个或多个正则表达式的匹配                               |
+| [replace](https://www.runoob.com/js/jsref-replace.html) | 替换与正则表达式匹配的子串                                   |
+| [split](https://www.runoob.com/js/jsref-split.html)     | 把字符串分割为字符串数组                                     |
+
+
+
+**search**
+
+```js
+```
+
+
+
+
 
 ## 错误对象
 
@@ -6006,40 +6169,6 @@ export { age } from "./module2.js";
 
 ## 疑惑
 
-Array 怎么不在 js 类型中
-
----
-
-能判断 7 种类型了
-
-- 当变量是数组，怎么区分空数组与有值数组
-- 当变量是对象，怎么区分 null，空对象与有值对象
-- 当变量是数字，怎么区分 NaN、0、其他数字
-
----
-
-对象中取某个键，有几种可能
-
-- 不存在该键，undefined
-- 存在该键
-  - null
-  - 其他的类型
-- 如果 obj.name.firstName ,如果 name 不存在，undefined.firstname 就会报错
-
----
-
-null 与 undefined：
-
-这两个作为 js 中十分特殊的类型，他们有很多不能用的方法：
-
-- \*.toString()
-
----
-
-new Object()的过程？
-
----
-
 奇怪：
 
 false 和 null 均有这个问题
@@ -6060,12 +6189,6 @@ let a = "hi"; //
 
 console.log("hi".length); //2
 ```
-
----
-
----
-
-parseInt('2a')结果是 2，非常大的安全隐患
 
 ## 解惑
 

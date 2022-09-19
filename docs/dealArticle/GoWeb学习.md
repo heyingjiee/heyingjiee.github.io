@@ -7,6 +7,69 @@
 
 有一点需要注意，Gin、GORM实际上有很多地方就是用的Go的标准库
 
+## Go标准库之http
+
+http包提供了HTTP客户端和服务端的实现
+
+[标准库文档](https://studygolang.com/pkgdoc)
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+  //接口地址/,处理函数hello
+	http.HandleFunc("/", hello)
+  
+  //定义服务器配置
+	server := &http.Server{
+		Addr: ":8888", //8888端口
+	}
+  
+  //根据上面的配置启动监听
+	if err := server.ListenAndServe(); err != nil {
+		fmt.Printf("启动失败，%v\n", err)
+	}
+}
+
+func hello(w http.ResponseWriter, _ *http.Request) {
+	w.Write([]byte("你好"))
+}
+```
+
+这里是Server配置结构体
+
+```go
+type Server struct {
+    Addr           string        // 监听的TCP地址，如果为空字符串会使用":http"
+    Handler        Handler       // 调用的处理器，如为nil会调用http.DefaultServeMux
+    ReadTimeout    time.Duration // 请求的读取操作在超时前的最大持续时间
+    WriteTimeout   time.Duration // 回复的写入操作在超时前的最大持续时间
+    MaxHeaderBytes int           // 请求的头域最大长度，如为0则用DefaultMaxHeaderBytes
+    TLSConfig      *tls.Config   // 可选的TLS配置，用于ListenAndServeTLS方法
+    // TLSNextProto（可选地）指定一个函数来在一个NPN型协议升级出现时接管TLS连接的所有权。
+    // 映射的键为商谈的协议名；映射的值为函数，该函数的Handler参数应处理HTTP请求，
+    // 并且初始化Handler.ServeHTTP的*Request参数的TLS和RemoteAddr字段（如果未设置）。
+    // 连接在函数返回时会自动关闭。
+    TLSNextProto map[string]func(*Server, *tls.Conn, Handler)
+    // ConnState字段指定一个可选的回调函数，该函数会在一个与客户端的连接改变状态时被调用。
+    // 参见ConnState类型和相关常数获取细节。
+    ConnState func(net.Conn, ConnState)
+    // ErrorLog指定一个可选的日志记录器，用于记录接收连接时的错误和处理器不正常的行为。
+    // 如果本字段为nil，日志会通过log包的标准日志记录器写入os.Stderr。
+    ErrorLog *log.Logger
+    // 内含隐藏或非导出字段
+}
+```
+
+
+
+
+
 ## Go标准库之html/template
 
 > 只对一些常用的用法进行学习记录，更多用法请查看下面这篇文章
@@ -6082,6 +6145,126 @@ wrk [flag] 接口地址
 如何实现？wrk支持使用Lua脚本（[官网的Lua脚本例子](https://github.com/wg/wrk/tree/master/scripts)）
 
 具体使用参考：https://www.jianshu.com/p/81136edd6333
+
+
+
+## 部署
+
+这里部署一个简单地Gin框架项目
+
+初始化项目
+
+```shell
+go mod init DockerBuild
+```
+
+新建文件main.go
+
+```go
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func main() {
+	r := gin.Default()
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"msg": "ok",
+		})
+	})
+	r.Run(":8888")
+
+}
+```
+
+### Docker部署
+
+```dockerfile
+FROM golang
+
+# 为镜像设置必要的环境变量(Go编译时需要)
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+# 容器内，移动到`/build`内
+WORKDIR /build
+
+# 将本地文件 复制 到容器内（第一个点是执行docker build命令所在的目录，第二个点是容器内的路径，即在/build目录下）
+COPY . .
+
+# 将代码编译成二进制可执行文件（文件名为app），这个点是容器内的/build目录下
+RUN go build -o app .
+
+# 声明服务端口
+EXPOSE 8888
+
+
+# 启动容器时运行的命令（点是容器内路径/build目录，即运行/build/app文件）
+CMD ["./app"]
+```
+
+注意，From中指定的`golang:alpine`镜像仅仅是编译Go源代码才需要，编译后的可执行程序并不依赖任何环境 ，就可以直接运行，所以有了多阶段构建技术
+
+**多阶段构建**
+
+```dockerfile
+###################
+# 1、指定一个builder名为go-builder 
+###################
+FROM golang As go-builder
+
+# 为我们的镜像设置必要的环境变量
+ENV  CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+# 移动到工作目录：/build
+WORKDIR /build
+
+# 将代码复制到容器中
+COPY . .
+
+# 将我们的代码编译成二进制可执行文件app
+RUN go mod tidy && go build -o app .
+
+
+###################
+# 2、--from=go-builder引用该builder
+###################
+FROM alpine
+COPY --from=go-builder /build .  #复制go-builder的/build目录复制到容器的根目录
+# 声明服务端口
+EXPOSE 8888
+
+# 启动容器时运行的命令
+CMD ["./app"]
+```
+
+两种方式打包的镜像，大小差异：
+
+![image-20220918021109805](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/20220918021110%20.png)
+
+后端项目部署不仅仅是部署代码，相关的mysql、redis等服务也要部署后端代码部署到一个容器中，mysql、redis也要分别部署到不同容器中，所以有了关联容器的方案
+
+**关联容器**
+
+
+
+### 独立部署
+
+使用nohup、supervisor来运行Go编译后的可执行文件，使其作为后台守护进程运行
+
+参见这篇文章：https://www.liwenzhou.com/posts/Go/deploy_go_app/
+
+这种方式大多用来部署一些小型的项目
+
+对于大型项目或者正式的商业化项目来说，更多的还是使用下面的方式部署
+
+### Nginx部署
 
 
 

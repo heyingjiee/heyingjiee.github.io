@@ -122,7 +122,9 @@ go env
   ![image-20220509145153825](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220509145153825.png)
 
   ```shell
-  go build -o hello //指定产生的可执行文件的文件名
+  go build -o hello //指定输出的可执行文件名为hello
+  
+  go build -o ./dist/hello //指定输出可执行文件到dist目录下，文件名为hello
   ```
 
   根据自己的平台，生成的文件类型也有所不不同：win下为`*.exe` ; mac/Linux下为`*.exec`
@@ -1299,7 +1301,7 @@ if err != nil {
 
 **例子**
 
-判断文件夹是否存在，不存在则创建该文件夹（Stat也能判断文件是否存在，但是MkdirAll只能创建文件夹）
+判断文件夹是否存在，不存在则创建该文件夹（Stat能判断文件、文件夹是否存在，但是MkdirAll只能创建文件夹）
 
 ```go
 if _, err := os.Stat("data/b"); err != nil {
@@ -1488,6 +1490,70 @@ if !filepath.IsAbs(c.DbPath) {
 		}
 		c.DbPath = path
 }
+```
+
+### os/signal
+
+**接收信号**
+
+用一个容量是1的通道接收信号量
+
+Notify
+
+* 第一个参数为通道，将后面参数指定的信号量转发到该通道
+* 第二个、三个、四个...指定可被转发的信号量（如果接收到的是这里指定的信号量，才能被转发到通道）
+
+```go
+func registerShutdownSignal() <-chan os.Signal {
+	shutdownCh := make(chan os.Signal, 1)
+	signal.Notify(shutdownCh, gracefulShutdownSignal) //gracefulShutdownSignal就是syscall.SIGTERM 
+	return shutdownCh
+}
+```
+
+**处理信号**
+
+```go
+func handleShutdown(shutdownCh <-chan os.Signal, searchers map[string]*searcher.Searcher) {
+  
+	go func() {
+		<-shutdownCh
+		info_log.Printf("Graceful shutdown requested...")
+    
+    //在这里要把项目的多线程任务全部结束
+		//for _, s := range searchers {
+		//	s.Stop()
+		//}
+
+		os.Exit(0)
+	}()
+}
+```
+
+### runtime
+
+获取go运行时环境的相关信息
+
+**GOMAXPROCS**
+
+设置并发的最大线程数，并返回先前的设置。 若 n < 1，它就不会更改当前设置。
+
+NumCPU 可查询本地机器的逻辑CPU数
+
+```go
+runtime.GOMAXPROCS(runtime.NumCPU()) //根据当前cup个数，将goroutine跑在多个系统线程上
+```
+
+**Caller**
+
+Caller报告当前go程调用栈所执行的函数的文件和行号信息。可用于用户记录日志时，记录当前位置的信息
+
+参数：skip为上溯的栈帧数，skip=0表示Caller的调用者（Caller所在的调用栈）
+
+返回值：调用栈标识符、文件名、该调用在文件中的行号。如果无法获得信息，ok会被设为false
+
+```go
+func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 ```
 
 
@@ -4566,7 +4632,23 @@ channel容量确定后不可更改
 
 ```go
 ch:=make(chan int，10) //第二个参数是通道容量
+
+ch:=make(chan int)  //不传第二个参数，则默认为0
 ```
+
+**无缓冲区的channel**
+
+容量为0的channel比较特殊，需要先读取通道，才能写入
+
+下面的代码会阻塞
+
+```go
+ch := make(chan int)
+ch <- 1  // 由于消费者还没执行到，这里会一直阻塞住
+<-ch
+```
+
+
 
 **造成死锁**
 
@@ -4575,13 +4657,13 @@ ch:=make(chan int，10) //第二个参数是通道容量
 
 
 
-所以一个典型的错误就是，初始化通道时，未指定容量。同时有一个goroutine想要读取和一个goroutine想要写入，两个goroutine都会被阻塞，所以会触发死锁
+所以一个典型的错误就是，初始化通道时，未指定容量（channel是nil）。同时有一个goroutine想要读取和一个goroutine想要写入，两个goroutine都会被阻塞，所以会触发死锁
 
 
 
 所以，channel能够限制两个goroutine执行的顺序
 
-![image-20220513222034807](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220513222034807.png)
+![image-20220909143620761](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220909143621%20.png)
 
 **写**
 
@@ -4612,10 +4694,9 @@ close(ch)
 
 关闭后的通道有以下特点：
 
-1. 对一个关闭的通道再发送值就会导致 panic。
-2. 对一个关闭的通道进行接收会一直获取值直到通道为空。
-3. 对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
-4. 关闭一个已经关闭的通道会导致 panic。【注意：目前Go语言中并没有提供一个不对通道进行读取操作就能判断通道是否被关闭的方法】
+1. 发送：对一个关闭的通道再发送值就会导致 panic。
+2. 接收：对一个关闭的通道，进行接收会一直获取值直到通道为空，继续执行接收操作会得到对应类型的零值。
+4. 关闭：关闭一个已经关闭的通道会导致 panic。【注意：目前Go语言中并没有提供一个不对通道进行读取操作就能判断通道是否被关闭的方法】
 
 **遍历通道**
 
