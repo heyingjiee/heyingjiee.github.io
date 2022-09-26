@@ -274,19 +274,41 @@ BOOTPROTO=static #原来值是dhcp，就是动态获取ip的一个协议
   WantedBy=multi-user.target  # 多用户
   ```
 
+## Nginx代理
+
+**正向代理**
+
+正向代理可以理解为「客户端」的代理
+
+![image-20220919121907145](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Nginx/20220919121907%20.png)
+
+**反向代理**
+
+反向代理可以理解为「服务器」的代理
+
+![image-20220919122008649](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Nginx/20220919122008%20.png)
+
 ## Nginx 目录
+
+Nginx一般安装在`/usr/local/nginx`目录下（安装时--prefix可指定安装目录）
+
+![image-20220919122708336](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Nginx/20220919122708%20.png)
 
 ```text
 conf #配置文件
 	｜-nginx.conf # 主配置文件
-	｜-其他配置文件，都被引入到了nginx.conf
+	｜-其他配置文件 # 可通过那个include关键字，引入到了nginx.conf生效
+	
 html #静态页面
+
 logs
 	｜-access.log #访问日志(每次访问都会记录)
 	｜-error.log #错误日志
 	｜-nginx.pid #进程号
+	
 sbin
 	｜-nginx #主进程文件
+	
 *_temp #运行时，生成临时文件
 ```
 

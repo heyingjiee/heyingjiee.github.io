@@ -90,7 +90,7 @@
 
 偏好设置——>编辑器——>实时模版，也可以使用快捷键 `command`+`,`，就可以进入实时模版的设置界面
 
-![image-20220409111617658](/Users/yc/Library/Application Support/typora-user-images/image-20220409111617658.png)
+![image-20220409111617658](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay20220920014159%20.png)
 
 可以看出WebStorm根据语言区分了不同组，这里称作**实时模版组**
 

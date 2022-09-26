@@ -6840,6 +6840,136 @@ function lmn(){
 lmn()
 ```
 
+for循环中使用await
+
+* await结果是reject，会中断整个for循环
+
+  从结果看出第二次循环，到await处直接被结束了
+
+  ```js
+  function f(params){
+      return new Promise((resolve,reject)=>{
+          if(params){
+              resolve({name:"f"})
+          }else {
+              reject({name:"f"})
+          }
+      })
+  }
+  async function test(){
+      let temp=[true,false,true]
+      for(let index in temp){
+          console.log(index)
+          await f(temp[index])
+          console.log(index)
+      }
+  }
+  test()
+  
+  // 0
+  // 0
+  // 1
+  
+  ```
+
+  
+
+* catch能够捕获当前错误，这样for就不会直接中断了
+
+  ```js
+  function f(params){
+      return new Promise((resolve,reject)=>{
+          if(params){
+              resolve({name:"f"})
+          }else {
+              reject({name:"f"})
+          }
+      })
+  }
+  
+  async function test(){
+      let temp=[true,false,true]
+      for(let index in temp){
+          console.log(index)
+          await f(temp[index]).catch(err=>{
+              console.log('err -->',err)
+          })
+          console.log(index)
+      }
+  }
+  test()
+  
+  // 0
+  // 0
+  // 1
+  // err --> { name: 'f' }
+  // 1
+  // 2
+  // 2
+  ```
+
+  
+
+* 如果只想结束当前循
+
+  下面的写法是有语法错误的
+
+  ```js
+  async function test(){
+      let temp=[true,false,true]
+      for(let index in temp){
+          console.log(index)
+          let res=await f(temp[index]).catch(err=>{
+              console.log(err)
+              continue  //这里错误了，因为continue必须在for循环的作用域内
+          })
+          console.log(index)
+      }
+  }
+  test()
+  ```
+
+  正确的写法是
+
+  ```js
+  async function test(){
+      let temp=[true,false,true]
+      for(let index in temp){
+          console.log(index)
+          let res=await f(temp[index]).catch(err=>{
+              console.log(err)
+              return false
+          })
+          if(res===false){
+              continue
+          }
+          console.log(index)
+      }
+  }
+  test()
+  
+  // 0
+  // 0
+  // 1
+  // err --> { name: 'f' }
+  // 2
+  // 2
+  ```
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
 
 
 ### 链式调用

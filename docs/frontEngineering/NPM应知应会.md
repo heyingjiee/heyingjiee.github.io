@@ -10,7 +10,7 @@ npm分为两个部分：
 
 - npm的官方网站（https://www.npmjs.com/）
 
-  ![image-20220621234539590](/Users/yc/Library/Application Support/typora-user-images/image-20220621234539590.png)
+  ![image-20220621234539590](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/NPM20220920014054%20.png)
 
   
 

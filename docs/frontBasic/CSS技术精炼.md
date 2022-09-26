@@ -1970,7 +1970,31 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 
 * **结构伪类选择器**
 
-  `E:伪类选择器`，前的E可有可无，加上不过多了，只能选中E这个限定
+  `E:伪类选择器`，前的E可有可无，加上不过多了，只能选中E这个限
+
+  例如：
+
+  ```vue
+  <template>
+  	<div class="score-box">
+    	<div class="item">项目1</div>
+    	<span>备注</span>
+    	<div class="item">项目2</div>
+    	<div class="item">项目3</div>
+  	<div>
+  </template>
+  
+  <style>
+    /*不指定元素，就选中.score-box下第二个子元素，即span标签*/
+  	.score-box :nth-of-type(2) {
+    	color:red
+  	}
+    /*就选中.score-box下的div元素，且是第二个div，即`项目2`*/
+    .score-box div:nth-of-type(2) {
+    	color:green
+  	}
+  </style>  
+  ```
 
   **首位位置选择**
 

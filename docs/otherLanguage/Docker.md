@@ -388,9 +388,10 @@ docker commit [容器名/容器id][新的镜像名:版本号]
 * 本地登录到阿里私有镜像仓库 
 
   ```shell
-  docker login -u=<阿里镜像仓库用户名> <镜像服务地址>
+  docker login <镜像服务地址>
   
   #我这里的<镜像服务地址>是：registry.cn-hangzhou.aliyuncs.com
+  #然后按照提示，输入用户名和密码
   ```
 
   ![image-20220319205503019](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Linux/image-20220319205503019%20.png)
@@ -983,9 +984,9 @@ Docker-Compose[中文文档](https://www.runoob.com/docker/docker-compose.html)
 
 Docker-Compose读取配置文件`docker-compose.yml`或`docker-compose.yaml`，来组织起多个容器。
 
+[Docker-Compose指令](https://www.runoob.com/docker/docker-compose.html)
 
-
-项目根目录下新建`docker-compose.yml`文件
+项目根目录下新建`docker-compose.yml`文件，这里对部分指令含义进行介绍
 
 ```yaml
 # 一、docker-compose版本号
@@ -1025,6 +1026,10 @@ volumes:
 
 **注意**：容器默认时间不是北京时间，增加 TZ=Asia/Shanghai 可以改为北京时间
 
+
+
+**Docker-compose相关命令**
+
 ```shell
 # 项目根目录下
 docker-compose up -d # 执行docker-compose配置，-d是后台运行的含义
@@ -1040,7 +1045,7 @@ docker-compose exec service-name sh # 进入容器指定服务的命令行
 docker-compose logs [service-name] # 查看容器运行log
 ```
 
-condition: service_started
+
 
 ## 备份和迁移数据
 
