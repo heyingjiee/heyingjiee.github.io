@@ -23,5 +23,12 @@ CREATE TABLE chihiro_code_count (
 )comment='代码统计数据表';
 ```
 
+推荐使用时间戳（无论在哪个时区，时间戳是一样的，避免Mysql、容器、Node环境下个各个依赖，采用不同时区带来的问题）
+
+```sql
+`create_time` datetime not null DEFAULT CURRENT_TIMESTAMP comment '行插入时间',  
+`update_time` datetime not null DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '行修改时间',
+```
+
 
 

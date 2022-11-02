@@ -18,7 +18,7 @@ cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/下载.
 
 * 本地安装虚拟机Vmware、Virtualbox、Parallls
 
-  我这里只找到了mac版本的[vmware-fusion](https://macwk.com/soft/vmware-fusion)，所以就使用这个版本了
+  我这里只找到了mac版本的[vmware-fusion](https://appstorrent.ru/342-vmware-fusion.html)，所以就使用这个版本了
 
 * 系统CentOS 7.4【Linux有众多发行版，我这里采用服务器中最常用的CentOS7.x系统】
 

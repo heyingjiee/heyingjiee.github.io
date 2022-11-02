@@ -676,10 +676,10 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
   FROM nginx
   
   ENTRYPOINT ["nginx", "-c"] 
-  CMD ["/etc/nginx/nginx.conf"] # 参数
+  CMD ["/etc/nginx/nginx.conf"] # CMD作为默认的参数
   ```
 
-  不传参运行
+  不传参运行，使用CMD作为默认参数
 
   ```shell
   docker run  nginx:test
@@ -687,12 +687,12 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
   # 容器内会默认运行以下命令 ：nginx -c /etc/nginx/nginx.conf
   ```
 
-  传参运行
+  传参运行，使用传递的参数（不使用⌘ 作为参数）
 
   ```shell
-  docker run  nginx:test -c /etc/nginx/new.conf
+  docker run  nginx:test  /etc/nginx/new.conf
   
-  # 容器内会默认运行以下命令 ：nginx -c nginx -c /etc/nginx/new.conf
+  # 容器内会默认运行以下命令 ：nginx -c /etc/nginx/new.conf
   ```
 
   
@@ -775,6 +775,38 @@ EXPOSE 8888
 CMD ["./app"]
 ```
 
+### 忽略文件
+
+build命令用于根据dockerfile指定的任务构建镜像
+
+```
+docker build -t 镜像名:版本号 .
+```
+
+其中的参数`.`，是指该命令执行的上下文路径，整个路径下的文件都会被发送给docker引擎用于构建镜像，如果其中有大量无用内容就使得镜像构建的速度很慢
+
+
+
+实际例子：
+
+下面是个前端Node项目的dockerfile（放置在项目根目录下），其中先使用COPY复制整个项目，然后在docker容器内部还会再安装依赖。我们必须在复制时就排除掉node_modules
+
+```dockerfile
+FROM node:16
+RUN mkdir /app
+WORKDIR /app
+COPY . /app 
+RUN  npm install -g cnpm --registry=https://registry.npm.taobao.org&&cnpm install&&cnpm install -g nodemon  #nodemon是用来启动node项目的
+EXPOSE 9091
+CMD ["nodemon","app.js"] 
+```
+
+方案：在项目下新建`.dockerignore`，写入下面内容就会忽略node_modules目录，COPY指令的执行速度会大大加快
+
+```
+node_modules
+```
+
 ## Docker容器
 
 容器中运行着指定的镜像，容器之间彼此相互隔离，容器与宿主机也相互隔离
@@ -849,11 +881,17 @@ docker logs 容器ID/名  # 查看容器内终端输出
 
 一个项目不是独立运行，可能会依赖多个软件，比如：一个web项目需要mysql数据库、redis等，这就需要多容器之间相互通信
 
-容器之间独立，但是容器之间可以直接使用IP互相访问
+容器之间独立，但是每个容器都可以直接访问其他容器的IP。原理如图：
+
+![image-20220927150314301](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/20220927150314%20.png)
+
+图中的三个容器可以相互ping通是因为有Docker0存在（Docker0相当于一个路由器或者网关），三个容器并不是直接容器ping通容器，而是以Docker0为中介。每新建一个容器就会出现一个成对存在的网卡，新建容器如果没有指定网络那么默认会在docker0下
+
+> Veth：可以简单理解成虚拟网卡，新容器后其总是成对出现，一端发送数据，另一端就能接收
+
+
 
 **link方式**
-
-link相当于给
 
 ```shell
 # nginx容器
@@ -891,7 +929,7 @@ cat /etc/hosts
 
 **创建网络**
 
-每个容器之间相互独立，但是往往一个项目不是独立运行，可能会依赖多个软件，比如：一个web项目需要mysql数据库、redis等，这就需要多容器之间相互通信。创建docker网络，将两个容器运行在同一个网络中
+每个容器之间相互独立，但是往往一个项目不是独立运行，可能会依赖多个软件，比如：一个web项目需要mysql数据库、redis等，这就需要多容器之间相互通信。创建docker网络，将两个容器运行在同一个网络中(不指定网络，就默认在Docker0下)
 
 docker容器网络文档： [docker network](https://docs.docker.com/engine/reference/commandline/network/)
 
@@ -1148,10 +1186,15 @@ docker-compose logs [service-name] # 查看容器运行log
 **构建镜像(images)**
 
 ```shell
-docker build -t 镜像名:版本号 Dockerfile的路径
+docker build -t 镜像名:版本号  -f Dockerfile的路径 发给Docker引擎的目录
 
 # -t指定构建镜像的名字和版本号
-# 如果执行该命令的目录，就是Dockerfile所在的目录，路径一般写`.`，代表当前路径 
+# 如果执行该命令的目录，就是Dockerfile所在的目录，路径一般写`.`，代表当前路径，即把当前路径发送给Docker引擎
+# -f Dockerfile的路径。项目中为了区分生产测试环境的Dockerfile,一般会命名为Dockerfile.prod、Dockerfile.dev等，这时候就需要使用-f指定路径
+
+docker build  -t 镜像名:版本号  -f ./Dockerfile.prod Dockerfile的路径
+# -f 有时候项目下的构建镜像的文件可能不叫dockerfile，可以用-f指定构建文件所在的位置
+# 一般的命名风格 Dockerfile.qa 、 Dockerfile.dev
 ```
 
 **创建容器，运行指定镜像**
@@ -1184,36 +1227,63 @@ docker network ls # 查看网络列表
 
 `docker info` 查询docker的信息，Registry字段为docker的镜像源
 
+## 常用的基础镜像
+
+### Alpine
+
+精简版的Linux系统
+
+特点：
+
+* 使用APK包管理工具
+
+  APK下载软件有时候会很慢，可以在dockerfile中指定国内的站点
+
+  ```shell
+  #更新Alpine的软件源为国内（清华大学）的站点，因为从默认官源拉取实在太慢了。。。
+  RUN echo "https://mirror.tuna.tsinghua.edu.cn/alpine/v3.4/main/" > /etc/apk/repositories
+  ```
+
+* 只支持bin/sh
+
+  如果需要支持bash，可以在dockerfile中使用AKP下载
+
+  ```
+  RUN apk add bash
+  ```
+
+* 轻量级，下图是各个Linxu镜像的大小
+
+  ![image-20220517115557559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220517115557559.png)
+
+目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境
+
+### Node镜像
+
+安装了node环境的Linux系统，但是不同镜像基于的系统不同
+
+```text
+node:<version>
+
+基于Debian,官方默认镜像。当你不确定你需要什么的时候选择这个就对了。这个被设计成可以丢弃的镜像，也就是可以用作构建源码使用（分阶段构建），体积挺大。
+
+
+node:<version>-slim
+基于Debian， 删除了很多默认公共的软件包，只有node运行的最小环境。除非你有空间限制，否则推荐使用默认镜像。
+
+node:<version>-alpine
+基于alpine, 比Debian小的多。如果想要最小的镜像，可以选择这个做为base。需要注意的是，alpine使用musl代替glibc。一些c环境的软件可能不兼容。但大部分没问题。
+```
+
+### Go镜像
+
+golang镜像比较大，一般作为分阶段构建的第一步用来编译Go源码。编译后结果直接使用alpine镜像运行即可
+
+
+
 ## 踩坑第一弹
 
 Dockerfile中我们常用的基础镜像，一般就是alpine，这是一个精简版的Linux系统
-
-> Alpine 的意思是“高山的”
->
-> 特点：
->
-> * 使用APK包管理工具
->
->   APK下载软件有时候会很慢，可以在dockerfile中指定国内的站点
->
->   ```
->   #更新Alpine的软件源为国内（清华大学）的站点，因为从默认官源拉取实在太慢了。。。
->   RUN echo "https://mirror.tuna.tsinghua.edu.cn/alpine/v3.4/main/" > /etc/apk/repositories
->   ```
->
-> * 只支持bin/sh
->
->   在dockerfile中使用AKP下载
->
->   ```
->   RUN apk add bash
->   ```
->   
-> * 轻量级，下图是各个Linxu镜像的大小
-> 
->   ![image-20220517115557559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220517115557559.png)
-> 
-> 目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境
 
 Dockerfile的第一句拉取基础镜像，一般都是一个Linux系统，比如
 
@@ -1313,6 +1383,54 @@ docker commit <容器ID> 镜像名:版本
 将镜像打tag，推送到镜像仓库
 
 在Dockerfile的第一行From指定拉取这个镜像即可
+
+## 踩坑第三弹：容器时间
+
+本地开发使用的北京时间（东八区时间），但是容器内使用的是UTC时间。导致容器的设置的定时任务无法按时执行
+
+定时任务使用的是`node-schedule`这个库
+
+```js
+const schedule = require("node-schedule");
+schedule.scheduleJob('0 0 8 * * *', ()=>{
+     console.log("北京时间8点执行")
+});
+```
+
+我希望定时脚本能在北京时间8点执行，但是实际上会在北京时间16点执行。
+
+因为node-schedule设置的时间，是按照当前时区设置的，而容器内是UTC时间
+
+**解决方案**：
+
+更改容器内部系统的时区，通过
+
+```
+docker exec -it 容器id
+```
+
+登录容器内部系统，输入`apt`、`apk`，能正常输出相关命令，就能判断系统使用了哪个包管理器
+
+```dockerfile
+#环境变量先设置
+ENV TZ=Asia/Shanghai
+
+#使用apk的用下面的（基于Alpine镜像的都自带apk)
+RUN apk update \
+    && apk add tzdata \
+    && echo "${TZ}" > /etc/timezone \
+    && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && rm /var/cache/apk/*
+
+#使用apt的用下面的
+RUN echo "${TZ}" > /etc/timezone \
+    && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && apt update \
+    && apt install -y tzdata \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+
 
 
 

@@ -1263,6 +1263,30 @@ func main() {
 }
 ```
 
+**使用`io/ioutil`读取字符串**
+
+```go
+package main
+s
+import (
+	"fmt"
+	"io/ioutil"
+	"strings"
+)
+
+func main() {
+	r := strings.NewReader("Go是一种通用语言，设计时考虑到了系统编程")
+	data, err := ioutil.ReadAll(r) //参数是io.Rreader类型，返回值是[]byte类型
+	if err != nil {
+		fmt.Println("read from file failed")
+		return
+	}
+	fmt.Printf("%v\n", string(data))
+}
+```
+
+
+
 ### os文件夹相关补充
 
 **os.Mkdir**
@@ -4657,7 +4681,7 @@ ch <- 1  // 由于消费者还没执行到，这里会一直阻塞住
 
 
 
-所以一个典型的错误就是，初始化通道时，未指定容量（channel是nil）。同时有一个goroutine想要读取和一个goroutine想要写入，两个goroutine都会被阻塞，所以会触发死锁
+所以一个典型的错误就是，声明通道，但是未初始化通道时（channel是nil）。同时有一个goroutine想要读取和一个goroutine想要写入，两个goroutine都会被阻塞，所以会触发死锁
 
 
 
@@ -4802,6 +4826,8 @@ func f2(ch1 <-chan int, ch2 chan int){
 现在有3个goroutine处理任务，在每个任务里循环的去读ch1处理(for range在发现管道了没有数据了，就停了。实际上ch1没有了)
 ```
 
+使用WaitGroup实现
+
 ```go
 package main
 
@@ -4838,11 +4864,18 @@ func main() {
 }
 ```
 
+使用多路复用实现（下面会讲到）
+
+```go
+```
+
 
 
 **多路复用**
 
 如果多个 case 同时满足，select 会**随机**选择一个执行。全不满足，则走默认
+
+select可以用来同时等待多个通道操作
 
 ```go
 select {
@@ -4869,17 +4902,49 @@ select {
 我们就需要使用select来控制，3个通道哪个有数据就读哪个，如果3个通道中都有数据，就随机选择一个读取数据
 ```
 
+具体例子
+
 ```go
-select {
-  case data:=<-ch1: //ch1	可读取
-	//操作
-	case data := <-ch2: //ch2	可读取
-	//操作
-  case data:=<-ch3: //ch3	可读取
-	//操作
-	default:
-	//默认操作
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	// 在我们的例子中，我们将从两个通道中选择。
+	c1 := make(chan string, 1)
+	c2 := make(chan string, 1)
+
+	go func() {
+		time.Sleep(time.Second * 1)
+		c1 <- "one"
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		c2 <- "two"
+	}()
+
+	//我们使用 `select` 关键字来同时等待这两个值，并打印各自接收到的值。
+	for i := 0; i < 2; i++ {
+		select {
+		case c1 <- "1":
+			fmt.Println("received case1")
+		case c2 <- "2":
+			fmt.Println("received case2")
+		default:
+			fmt.Println("No data received")
+		}
+	}
+
 }
+
+
+//输出的先后顺序不一定
+//received case1
+//received case2
 ```
 
 
@@ -5619,6 +5684,13 @@ const (
 **接口的使用**
 
 上面结构体中常量outputMode类型是一个接口类型，这个接口有一个output方法，用于输出日志。
+
+```go
+// outputMode 定义一个输出接口，输出到文件和输出到控制台两个结构体都会实现这个接口的output方法
+type outputMode interface {
+	output(logger *Logger, curTime string, file string, line int)
+}
+```
 
 `logerConsole.go `、`logerFile.go `   就是定义两个结构体类型，同时都实现了output方法
 

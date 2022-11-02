@@ -2994,7 +2994,17 @@ translateX(100px); /*参数正数：水平右移；负数：水平左移*/
 | [animation-play-state](http://css.doyoe.com/properties/animation/animation-play-state.htm) | CSS3 |   无   |         检索或设置对象动画的状态         |
 | [animation-fill-mode](http://css.doyoe.com/properties/animation/animation-fill-mode.htm) | CSS3 |   无   |     检索或设置对象动画时间之外的状态     |
 
-一个动画的例子
+**注意**
+
+animation是多个属性的缩写属性。其他属性值，没有先后顺序，
+
+只需要注意，如果设置时间：
+
+`1s`，则作为定义了animation-duration
+
+`1s 2s`，则第一个时间为animation-duration、第二个时间为animation-delay
+
+**元素上划动画的例子**
 
 ```html
 <!DOCTYPE html>
@@ -3038,6 +3048,106 @@ translateX(100px); /*参数正数：水平右移；负数：水平左移*/
 
 ![image-20220315103542379](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220315103542379%20.png)
 
+
+
+**跳动动画**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<style>
+    .globe {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: red;
+        animation: beat 2s linear infinite;
+    }
+
+    @keyframes beat {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.4);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+
+</style>
+<body>
+<div class="globe"></div>
+</body>
+</html>
+
+```
+
+
+
+
+
+**loading动画**
+
+![image-20221023145927157](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221023145927%20.png)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<style>
+    .toast {
+        width: 100px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border-radius: 8px;
+        padding: 10px 15px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    .cricle {
+        width: 15px;
+        height: 15px;
+        margin-right: 10px;
+        border: dotted 3px white;
+        border-radius: 100%;
+        animation: tr 2s linear infinite;
+    }
+
+    @keyframes tr {
+        from {
+            transform: rotate(0);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+
+</style>
+<body>
+	<div class="toast">
+    <div class="cricle"></div>
+    加载中...
+	</div>
+</body>
+</html>
+
+```
+
 ## canvas
 
 [学习 HTML5 Canvas 这一篇文章就够了](https://www.runoob.com/w3cnote/html5-canvas-intro.html)
@@ -3075,9 +3185,75 @@ draw();
 
 
 
+例如：
+
+![image-20220929181242762](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220929181243%20.png)
+
+实现(微信小程序使用view标签):
+
+注意`height: auto`和`align-items: stretch;`的使用
+
+```html
+<view class="container">
+  <view class="left-right-box">
+    <view class="left-part">
+      <view class="left-part__title">广汽丰田致炫劲速版车型上市 售9.13-10.13万元</view>
+      <view class="left-part__extra-info">旭子说车 <span>#Giulia</span></view>
+    </view>
+    <view class="right-part"></view>
+  </view>
+</view>
 ```
-B的高度设置为auto，就能感知父元素的高度了
+
+```css
+.container{
+  padding:32rpx 40rpx;
+}
+.left-right-box{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+}
+.left-part{
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.left-part__title{
+  font-family: PingFangSC-Regular;
+  font-size: 34rpx;
+  color: #222222;
+  line-height: 44rpx;
+  font-weight: 400;
+}
+.left-part__extra-info{
+  font-family: PingFangSC-Regular;
+  font-size: 24rpx;
+  color: #999999;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+.left-part__extra-info span{
+  font-family: PingFangSC-Regular;
+  font-size: 24rpx;
+  color: #646464;
+  letter-spacing: 0;
+  font-weight: 400;
+  margin-left: 16rpx;
+}
+.right-part{
+  flex-shrink: 0;
+  width:240rpx;
+  height:160rpx;
+  background-color: #eee;
+}
 ```
+
+
 
 ### 被撑起来的宽度
 
@@ -3085,17 +3261,142 @@ B的高度设置为auto，就能感知父元素的高度了
 
 情景1：
 
-![image-20220801142806872](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220801142807%20.png)
+![image-20221012181546119](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221012181546%20.png)
 
 
 
-要求车款超长后显示`...`
+要求底部区域的社区超出显示`...`
 
-可是，左右两个flex子元素并没有设置宽度，都是通过设置flex-grow实现自动占据空余空间的
+可是，左测flex子元素并没有设置宽度，都是通过设置flex-grow实现自动占据空余空间的
+
+可以设置通过下面的方式解决
 
 ```
-左flex子元素设置width:1
+左flex子元素设置width:1px;
 ```
+
+例子：
+
+view是小程序的标签与div一样
+
+```html
+<view class="container">
+    <view s-if="{{isDaily}}" class="left-right-box">
+        <view class="left-part">
+            <view class="left-part__title">{{title}}</view>
+            <view class="extra-info">
+                <view class="left-part__extra-info--first">{{作者}} <span>#{{社区名}}</span></view>
+                <view class="left-part__extra-info--second">
+                    <image src="https://xxxxxx.png"/>
+                    <span>{{2000}}</span>
+                </view>
+            </view>
+        </view>
+        <view class="right-part">
+            <image src="xxxx" />
+        </view>
+    </view>   
+</view>
+
+```
+
+```css
+.container{
+  margin:0 40rpx;
+  padding:32rpx 0;
+  border-bottom: 1rpx solid #f6f6f6;
+}
+.left-right-box{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+}
+.left-part{
+  height: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.left-part__title{
+  font-family: PingFangSC-Regular;
+  font-size: 34rpx;
+  color: #222222;
+  line-height: 44rpx;
+  font-weight: 400;
+
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/*底部的区域*/
+.extra-info{ 
+  width: 100%;
+  font-family: PingFangSC-Regular;
+  font-size: 24rpx;
+  color: #999999;
+  letter-spacing: 0;
+  font-weight: 400;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+/*左侧，这里这里的方式*/
+.left-part__extra-info--first{ 
+  flex-shrink: 0;
+  flex-grow: 1;
+  width: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: PingFangSC-Regular;
+  font-size: 24rpx;
+  color: #646464;
+  letter-spacing: 0;
+  font-weight: 400;
+
+}
+.left-part__extra-info--first span{
+  margin-left: 16rpx;
+}
+/*右侧*/
+.left-part__extra-info--second{
+  flex-shrink: 0;
+  flex-grow:0;
+  font-family: PingFangSC-Regular;
+  font-size: 12px;
+  color: #222222;
+  font-weight: 400;
+}
+.left-part__extra-info--second image{
+  width:32rpx;
+  height: 32rpx;
+  margin-right: 8rpx;
+  vertical-align: bottom;
+}
+.right-part{
+  flex-shrink: 0;
+  width:240rpx;
+  height:160rpx;
+  background-color: #eee;
+  border-radius: 10rpx;
+  margin-left: 24rpx;
+  overflow: hidden;
+}
+.right-part image{
+  width: 100%;
+  height: 100%;
+}
+```
+
+
 
 情景2：
 

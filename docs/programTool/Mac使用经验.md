@@ -83,8 +83,19 @@ killall Finder
 export PATH=～/Documents/test/flutter/flutter/bin:$PATH
 ```
 
-
 ## Mac推荐软件
+
+### 免费下载网站
+
+Xclient https://xclient.info/
+
+![image-20221102161153728](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221102161154%20.png)
+
+
+
+XXMac https://www.xxmac.com/
+
+![image-20221102161248433](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221102161248%20.png)
 
 ### 截图软件Xnip
 
@@ -102,6 +113,14 @@ export PATH=～/Documents/test/flutter/flutter/bin:$PATH
 
 ![image-20220130171114360](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Mac/image-20220130171114360%20.png)
 
-### Termius (最好用的SSH连接客户端) 
+### SSH连接客户端Termius 
+
+号称Mac上最好用的SSH连接客户端
 
 ![image-20220501020122614](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Nginx/image-20220501020122614.png)
+
+### 防止Mac休眠
+
+[下载地址](https://xclient.info/s/caffeinated.html#versions)
+
+![image-20221102161600023](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221102161600%20.png)

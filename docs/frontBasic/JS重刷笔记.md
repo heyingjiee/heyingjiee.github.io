@@ -2798,6 +2798,57 @@ Array.from("😊").length //1
 | slice()       | 截取数组/字符串                                             |
 | concat()      | 拼接数组/字符串                                             |
 
+## 展开语法
+
+收集不定个数的参数，放入数组中
+
+* 应用在函数参数中
+
+  ```js
+  function show(a,b,...args){//...args只能放在最后，接收剩余变量
+  	console.log(a,b,...args)//输出 1 2 3 4 5 6
+      console.log(args)//输出 [3, 4, 5, 6]，注意这里是把接受的参数放入数组中
+  }
+  //相当于
+  show(1,2,3,4,5,6)// 1给a,2给b，剩余的3，4，5，6被放到...args中 ,args是[3,4,5,6]
+  ```
+
+* 应用在结构赋值中 **【结构赋值】中会讲到**
+
+  ```js
+  let [first,...second] = ['a','b','c']; //first是a,second是['b','c']
+  ```
+
+  
+
+展开语法，可以将任何**可迭代对象**展开（把外层不管是**[]**、**{}**，**“ ”**，**Set**，**Map**全部脱掉脱掉！）
+
+例子：展开数组
+
+```js
+//1. 展开数组,用数组接收
+let arr=[1,2,3,4]
+[...arr]//
+
+//2. 展开多个数组,用数组接收（合并效果）
+arr=["h","e","r"]
+arr2=["q","w","e"]
+arr3=[...arr,...arr2]
+console.log(arr3)//输出 ["h", "e", "r", "q", "w", "e"]
+```
+
+例子展开对象
+
+```js
+// 展开多个对象,用对象接收（合并效果）
+var obj1 = {name:'hehe'}
+var obj2 = {age:20}
+var mergeObj = {...obj1,...obj2}
+console.log(mergeObj)//输出{name: "hehe", age: 20}
+```
+
+
+
 ## Set
 
 集合类型，Set的特点是无序、自动去重
@@ -2929,6 +2980,16 @@ console.log(map)
 //输出 Map(3) {"a" => 1, "b" => 2, "c" => 3}
 ```
 
+且键名唯一，同名后面的覆盖前面的
+
+```js
+let m=new Map([["a",1],["a",2]])
+console.log(m)
+//输出 Map(1) {"a" => 2}
+```
+
+
+
 ### Map操作
 
 * set()
@@ -2993,57 +3054,6 @@ for(const value of [...map]){
 }
 console.log(newArray)//输出 ["张三", 60] ["王五", 80]
 ```
-
-### 展开语法
-
-收集不定个数的参数，放入数组中
-
-* 应用在函数参数中
-
-  ```js
-  function show(a,b,...args){//...args只能放在最后，接收剩余变量
-  	console.log(a,b,...args)//输出 1 2 3 4 5 6
-      console.log(args)//输出 [3, 4, 5, 6]，注意这里是把接受的参数放入数组中
-  }
-  //相当于
-  show(1,2,3,4,5,6)// 1给a,2给b，剩余的3，4，5，6被放到...args中 ,args是[3,4,5,6]
-  ```
-
-* 应用在结构赋值中 **【结构赋值】中会讲到**
-
-  ```js
-  let [first,...second] = ['a','b','c']; //first是a,second是['b','c']
-  ```
-
-  
-
-展开语法，可以将任何**可迭代对象**展开（把外层不管是**[]**、**{}**，**“ ”**，**Set**，**Map**全部脱掉脱掉！）
-
-例子：展开数组
-
-```js
-//1. 展开数组,用数组接收
-let arr=[1,2,3,4]
-[...arr]//
-
-//2. 展开多个数组,用数组接收（合并效果）
-arr=["h","e","r"]
-arr2=["q","w","e"]
-arr3=[...arr,...arr2]
-console.log(arr3)//输出 ["h", "e", "r", "q", "w", "e"]
-```
-
-例子展开对象
-
-```js
-// 展开多个对象,用对象接收（合并效果）
-var obj1 = {name:'hehe'}
-var obj2 = {age:20}
-var mergeObj = {...obj1,...obj2}
-console.log(mergeObj)//输出{name: "hehe", age: 20}
-```
-
-
 
 ## 解构赋值
 
@@ -3383,6 +3393,11 @@ for(const [key,value] of map.entries()){
     console.log(key)
     console.log(value)
 }//输出 a 1 b 2
+
+//也可直接遍历
+for(let [key,value] of m){
+    console.log(key,value)
+}
 ```
 
 ## this的指向
@@ -3393,19 +3408,19 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
 
 **this指向其调用者所在的上下文**
 
-| 规则编号 | 规则                    | 当前作用域的上下文（this指向）             |
-| -------- | ----------------------- | ------------------------------------------ |
-| 规则1    | 函数（）                | window                                     |
-| 规则2    | new 函数（）            | 秘密创建出的那个对象                       |
-| 规则3    | 对象.函数（）           | 该对象                                     |
-| 规则4    | 数组[索引]（）          | 该数组                                     |
-| 规则5    | 定时器                  | window                                     |
-| 规则6    | Dom事件处理函数         | window                                     |
-| 规则7    | IIFE                    | window                                     |
-| 规则8    | call、apply、bind       | 可指定this指向                             |
-| 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文               |
-| 规则10   | class                   | 指向的是新创建出来的对象（与new 函数相同） |
-| 规则11   | 模块中                  | undefined                                  |
+| 规则编号 | 规则                    | 当前作用域的上下文（this指向）                               |
+| -------- | ----------------------- | ------------------------------------------------------------ |
+| 规则1    | 函数（）                | window                                                       |
+| 规则2    | new 函数（）            | 秘密创建出的那个对象                                         |
+| 规则3    | 对象.函数（）           | 该对象                                                       |
+| 规则4    | 数组[索引]（）          | 该数组                                                       |
+| 规则5    | 定时器                  | window                                                       |
+| 规则6    | Dom事件处理函数         | window                                                       |
+| 规则7    | IIFE                    | window                                                       |
+| 规则8    | call、apply、bind       | 可指定this指向                                               |
+| 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文（注意前面提到的所以函数，都不是箭头函数） |
+| 规则10   | class                   | 指向的是新创建出来的对象（与new 函数相同）                   |
+| 规则11   | 模块中                  | undefined                                                    |
 
 注意：
 
@@ -3746,11 +3761,11 @@ obj.run()
 
 传入的参数会通过Number转化为数字后在运算，如果参数中有被转化为NaN的，则返回NaN
 
-## Data对象
+## Date对象
 
-### Data对象
+### Date对象
 
-创建Data对象，返回的都是当地时区的时间对象
+创建Date对象，返回的都是当地时区的时间对象
 
 * 无参数
 
@@ -3764,7 +3779,7 @@ obj.run()
   new Date(year, monthIndex [, day [, hours [, minutes [, seconds [, milliseconds]]]]]);
   
   //注意：
-  //1. year, monthInde两个参数是比传的，否则返回的Data对象是错误的
+  //1. year, monthInde两个参数必传的，否则返回的Data对象是错误的
   //2. 其中monthIndex=0，表示的是1月,11为12月。不传递的参数，默认为0
   ```
 
@@ -3792,7 +3807,7 @@ obj.run()
 
   
 
-### Data对象的方法
+### Date对象的方法
 
 | Data对象的方法    | 描述                                              |
 | ----------------- | ------------------------------------------------- |
@@ -6163,9 +6178,482 @@ export { age } from "./module2.js";
 
 [学习 UMD](https://www.cnblogs.com/wenbinjiang/p/11429368.html)
 
-## 网络请求
+## JS二进制
 
-## 
+
+
+
+
+## 网络请求相关
+
+### 请求基础
+
+最开始为了安全，跨源请求是被禁止的
+
+后来，跨源请求被允许了，但是任何新功能都需要服务器明确允许，以特殊的 header 表述。请求被分为了
+
+* 安全的请求
+
+  请求方法为：GET，POST 或 HEAD
+
+  请求header为：
+
+  - `Accept`
+  - `Accept-Language`
+  - `Content-Language`
+  - `Content-Type` 的值为 `application/x-www-form-urlencoded`，`multipart/form-data` 或 `text/plain`
+
+* 非安全的请求
+
+  请求方法或请求header不符合上面的
+
+  对于非安全的请求***浏览器***会向服务器先发起一个预检请求（preflight），通过header中的字段告知服务器该请求的新功能，服务器通过返回的header字段告知***浏览器***是否同意，同意才会真正发起请求
+
+  
+
+注意***浏览器***作为一个绝对被信任者参与其中，负责上面的流程
+
+```
+https://zh.javascript.info/fetch-crossorigin
+```
+
+### URL
+
+一般使用字符串，使用`qs`这个库（https://www.npmjs.com/package/qs），或者当成字符串处理，但是使用URL对象会更加简单
+
+
+
+**URL对象**
+
+* `protocol` 以冒号字符 `:` 结尾
+* `search` 以问号 `?` 开头的一串参数
+* `hash` 以哈希字符 `#` 开头
+* 如果存在 HTTP 身份验证，则这里可能还会有 `user` 和 `password` 属性：`http://login:password@site.com`（图片上没有，很少被用到）
+
+![image-20221016150655259](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221016150655%20.png)
+
+```js
+const url=new URL('user/login','https://www.baidu.com') 
+
+console.log(url.href) // https://www.baidu.com/user/login
+console.log(url.protocol) // https:
+console.log(url.port) //空字符串
+```
+
+
+
+**SearchParams：URL的参数对象**
+
+- **`append(name, value)`** —— 按照 `name` 添加参数
+- **`delete(name)`** —— 按照 `name` 移除参数
+- **`get(name)`** —— 按照 `name` 获取参数（存在有个相同的name，只获取第一个）
+- **`getAll(name)`** —— 获取相同 `name` 的所有参数（这是可行的，例如 `?user=jack&user=tom`），
+- **`has(name)`** —— 按照 `name` 检查参数是否存在
+- **`set(name, value)`** —— set/replace 参数（如果name已存在，则覆盖）
+- **`sort()`** —— 按 name 对参数进行排序（字典排序）
+
+```js
+const url=new URL('user/login','https://www.baidu.com')
+
+
+let searchParams=url.searchParams
+searchParams.set('a','1')
+searchParams.set('b','2')
+searchParams.set('b','3') //重复的后面会覆盖前面的
+
+console.log(url.href) // https://www.baidu.com/user/login?a=1&b=3
+```
+
+
+
+**URL编码**
+
+URL中不被允许的字符必须被编码，例如非拉丁字母和空格 —— 用其 UTF-8 代码代替，并加上前缀 `%`。例如 空格会被编码为`%20`（由于历史原因，空格也可以用 `+` 编码，但这是一个例外）
+
+URL对象会自动进行URL编码
+
+
+
+### XMLHttpRequest
+
+XMLHttpRequest是一个内建的浏览器对象，只能在浏览器环境使用，它允许使用 JavaScript 发送 HTTP 请求
+
+fetch是更新的方法，在浏览器和Node环境中均可以使用，但是fetch无法完成上传进度的跟踪，这里我们主要看下XMLHttpRequest如何实现上传进度的跟踪
+
+```js
+//创建对象
+let xhr = new XMLHttpRequest()
+
+//配置请求信息
+xhr.open('GET','') //xhr.open(method, URL, [async, user, password]) async默认为true表示同步请求，user和password字段在需要HTTP基本身份验证（如果有的话）的请求中使用
+xhr.timeout = 2000 //指定超时时间，超时请求就会被取消，并且触发 timeout 事件
+xhr.responseType = 'json' //设置服务器响应格式，text字符串，arraybuffer二进制数据，blob二进制数据，json
+
+//设置header
+//使用setRequestHeader设置header不会覆盖；xhr.setRequestHeader('X-Auth', '123');xhr.setRequestHeader('X-Auth', '456'); 最后的结果是X-Auth: 123, 456
+xhr.setRequestHeader('Content-Type', 'application/json'); //注意：一些header字段是浏览器控制，不允许js设置，前面提到过
+
+//发送请求，参数是请求体，不写则不传递
+xhr.send()
+
+//xhr.abort()  //终止XHR请求
+
+//xhr的监听事件
+xhr.onload = function () {//当请求完成（即使 HTTP 状态为 400 或 500 等），并且响应已完全下载
+    //status状态码；statusText状态消息，例如状态码200对应ok，404对应Not Found，403对应Forbidden
+    //请求就会被取消，并且触发 timeout 事件
+    if (xhr.status != 200) { // 分析响应的 HTTP 状态
+        console.log(`Error ${xhr.status}: ${xhr.statusText}`); // 例如 404: Not Found
+    } else { // 显示结果
+        console.log(`Done, got ${xhr.response.length} bytes`); // response 是服务器响应
+    }
+};
+
+xhr.onerror = function () { // 非 HTTP 错误，断网、URL不存在
+    console.log(`网络错误`);
+};
+
+//下载的监听事件
+xhr.onprogress = function (event) { // 定期触发
+    // event.loaded —— 已经下载了多少字节
+    // 当服务器发送了 Content-Length header 时，event.lengthComputable = true
+    // event.total —— 总字节数（如果 lengthComputable 为 true）
+
+    if (event.lengthComputable) {
+        console.log(`Received ${event.loaded} of ${event.total} bytes`);
+    } else {
+        console.log(`Received ${event.loaded} bytes`); // 没有 Content-Length
+    }
+};
+
+//上传的监听事件 xhr.upload
+xhr.upload.onload = function () { //上传成功完成
+    console.log(`Upload finished successfully.`);
+};
+
+xhr.upload.onerror = function () { //非 HTTP 错误，断网、URL不存在
+    console.log(`Error during the upload: ${xhr.status}`);
+};
+xhr.upload.onprogress = function (event) {//上传期间定期触发
+    // event.loaded —— 已经上传了多少字节
+    // event.total —— 总字节数
+    console.log(`Uploaded ${event.loaded} of ${event.total} bytes`);
+};
+//大文件恢复上传。需要服务器记录接收字节数，前端通过另一个接口拿到，然后使用slice处理完成文件
+//xhr.send(file.slice(startByte));
+
+```
+
+XHR实际上还有很多事件：
+
+- `loadstart` —— 请求开始。
+- `progress` —— 一个响应数据包到达，此时整个 response body 都在 `response` 中。
+- `abort` —— 调用 `xhr.abort()` 取消了请求。
+- `error` —— 发生连接错误，例如，域错误。不会发生诸如 404 这类的 HTTP 错误。
+- `load` —— 请求成功完成。
+- `timeout` —— 由于请求超时而取消了该请求（仅发生在设置了 timeout 的情况下）。
+- `loadend` —— 在 `load`，`error`，`timeout` 或 `abort` 之后触发。
+
+`error`，`abort`，`timeout` 和 `load` 事件是互斥的。其中只有一种可能发生
+
+
+
+### fetch
+
+**发起请求**
+
+fetch法是一个异步方法用来发起网络请求
+
+参数：
+
+* 第一个是url
+* 第二个是个对象，用来指定请求时的配置 （更多参数详见：https://zh.javascript.info/fetch-api）
+
+返回值：请求的结果，是一个Promise对象
+
+注意：如果 fetch 无法建立一个 HTTP 请求，例如网络问题，亦或是请求的网址不存在，那么 promise 才会 reject。异常的 HTTP 状态，例如 404 或 500，不会导致出现 error
+
+```js
+fetch(url,{
+     method:'POST',//fetch默认为Get请求。但是可以在第二个参数中使用method字段指定为其他方式
+     headers:{
+         //注意：为了保证了 HTTP 的正确性和安全性，有些属性仅由浏览器控制。详见（https://fetch.spec.whatwg.org/#forbidden-header-name）
+     },
+     body:'你好' //请求体发送内容。注意：如果值是字符串，则 Content-Type 会默认设置为text/plain;charset=UTF-8；所以，当这里发送json字符串时，记得要设置为application/json
+    });
+    let url = 'https://api.github.com/repos/javascript-tutorial/en.javascript.info/commits?per_page=100';
+    let response = await fetch(url);
+```
+
+
+
+**解析请求结果**
+
+fetch返回的响应对象，有很多成员，下面一一介绍
+
+* response.ok和response.status
+
+  ```js
+  let url = 'https://api.github.com/repos/javascript-tutorial/en.javascript.info/commits?per_page=100';
+  let response = await fetch(url);
+  // 1、response.ok => 如果 HTTP 状态码为 200-299，则为 true
+  if (response.ok) { 
+      let json = await response.json();
+      console.log(json)
+  } else {
+      alert("HTTP-Error: " + response.status);
+  }
+  ```
+
+* response.headers
+
+  response.headers =>headers不是map对象，但是其有map方法
+
+  ```js
+  //get方法
+  console.log('response --> ',response.headers.get('Content-Type'))
+  
+  //遍历header
+  for (let [key,value] of response.headers){
+    console.log('header --> ',key, value)
+  }
+  ```
+
+  
+
+* response.body
+
+  body是一个[ReadableStream对象](https://streams.spec.whatwg.org/#rs-class)，不能直接读取。可以通过以下的异步函数读取其内容
+
+  ```
+  response.text() —— 读取 response，并以文本形式返回response
+  
+  response.json() —— 将 response 解析为 JSON 格式
+  
+  response.formData() —— 以 FormData 对象的形式返回response
+  
+  response.blob() —— 以 Blob（具有类型的二进制数据）形式返回response
+  
+  response.arrayBuffer() —— 以 ArrayBuffer（低级别的二进制数据）形式返回 response
+  
+  response.body.getReader() —— 获取一个流读取器，可以使用它的read方法来逐块读取body数据（response.body是一个流对象）
+  ```
+
+  例子：将response解析为
+
+  ```js
+  let json =await response.json()
+  console.log('response json --> ',json)
+  ```
+
+  例子：通过流读取器读取数据，存储在chunks数组中（每个元素是一个字节类型的数据块）
+
+  ```js
+  const reader=response.body.getReader()
+  const totalLength=response.headers.get('Content-Length') //注意：Content-Length字段不一定存在，我们应该检查循环中的 receivedLength，一旦达到一定的限制就将其中断。这样 chunks 就不会溢出内存了。
+  let receiveLength=0
+  let chunks = [] //数据
+  while (true){//在循环中接收响应块（response chunk）
+      const {done,value}=await reader.read() //done为true接收结束，value是接收的字节化块数据，value.length就是当前块数据的长度(单位是字节)
+      if (done){
+          break;
+      }
+      receiveLength+=value.length
+      console.log(`接收了${receiveLength}bytes/${totalLength}bytes`); //获取下载进度（fetch 方法无法跟踪 上传 进度）
+      chunks.push(value)
+  }
+  ```
+
+  将字节类型的数据块转化为需要的类型
+
+  ```js
+  // 如果我们需要的是二进制内容 let blob = new Blob(chunks);
+  //
+  // 如果我们需要的是字符串呢
+  // 由于没有单个方法可以将每一个块数据串联起来，所以这里需要通过遍历数据按照顺序拼接放置在Uint8Array中
+  let chunksAll=new Uint8Array(receiveLength)
+  let position=0
+  for (let chunk of chunks){
+      chunksAll.set(chunk,position)
+      position+=chunk.length
+  }
+  let res=new TextDecoder('utf-8').decode(chunksAll) //解析字节数据，返回值是文本
+  console.log(JSON.parse(res)) //转为json数据
+  ```
+
+  注意：我们只能选择一种读取 body 的方法，例如：我们已经使用了 response.text() 方法来获取 response，那么如果再用 `response.json()`，则会提未捕获的rejected错误
+
+  ```js
+  TypeError: Failed to execute 'text' on 'Response': body stream already read
+  ```
+
+  
+
+  **终止网络请求**
+
+  亦可以用来终止Promise操作，Promise原本没有终止的概念
+
+  AbortController对象，有abort()方法和signal属性。调用后有abort()后signal属性就变成了true
+
+  
+
+  1、有fetch结合，fetch内部做了处理，当它的第二个配置对象中配置了signal的值后，就会监听这个值。为假就会终止请求
+
+  ```js
+  let controller=new AbortController()
+  let url = 'https://api.github.com/repos/javascript-tutorial/en.javascript.info/commits?per_page=100';
+  
+  let response = await fetch(url,{
+      signal:controller.signal
+  }).catch(err =>{
+      console.log('err --> ',err)
+  })
+  controller.abort()
+  ```
+
+  2、一般的Promise异步操作，也可以使用
+
+  ```js
+  let controller=new AbortController()
+  function f(signal){
+      return  new Promise((resolve,reject)=>{
+          signal.throwIfAborted() //如果signal是终止状态，就会抛出异常。后面就不执行了
+          setTimeout(()=>{
+              resolve('执行完毕')
+          },1000)
+          controller.abort()
+          signal.addEventListener('abort',()=>{
+              reject()
+          })
+      })
+  }
+  controller.abort()
+  let res= await f(controller.signal).catch(err =>{
+     console.log('err --> ',err)
+  })
+  console.log(res)
+  ```
+
+  3、Node中的一些异步函数也类似于fetch函数。例如fs.readFile，fs.writeFile，http.request，https.request 和 timers 以及新版本支持的 Fetch API
+
+  ```js
+  const fs = require('fs');
+  
+  const ac = new AbortController();
+  const { signal } = ac;
+  
+  fs.readFile('data.json', { signal, encoding: 'utf8' }, (err, data) => {
+      if (err) {
+          console.error(err);
+          return;
+      }
+      console.log(data);
+  });
+  
+  ac.abort();
+  ```
+
+
+
+### 长轮询
+
+Long polling，每个一段时间就向服务器发送一个请求，获取最新状态
+
+这种方式，对于服务器是一种负担，所以要注意服务器架构是否能同时在有很多连接的情况下正常工作
+
+```js
+async function subscribe() {
+  let response = await fetch("/subscribe");
+
+  if (response.status == 502) {
+    // 状态 502 是连接超时错误，
+    // 连接挂起时间过长时可能会发生，
+    // 远程服务器或代理会关闭它
+    // 让我们重新连接
+    await subscribe();
+  } else if (response.status != 200) {
+    // 一个 error —— 让我们显示它
+    showMessage(response.statusText);
+    // 一秒后重新连接
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await subscribe();
+  } else {
+    // 获取并显示消息
+    let message = await response.text();
+    showMessage(message);
+    // 再次调用 subscribe() 以获取下一条消息
+    await subscribe();
+  }
+}
+
+subscribe().catch(err=>{
+	console.log('网络错误',err)
+})
+```
+
+
+
+### WebSocket
+
+WebSocke可以是客户端和服务端直接建立一条持久化的连接，双方都可以主动发送消息
+
+注意，要打开一个 WebSocket 连接，需要使用特殊的协议 `ws` 创建 `new WebSocket`（ `wss://` 是加密的协议）
+
+
+
+express框架使用WebSocket
+
+```js
+var express = require("express");
+var expressWs = require("express-ws");
+var app = express();
+expressWs(app);  //将 express 实例上绑定 websock 的一些方法
+app.ws("/socketTest", function (ws, req) {
+    ws.send("你连接成功了");
+    ws.on("message", function (msg) {
+        ws.send(`这是第二次发送信息，接收到:${msg}`);
+    });
+});
+app.listen(3000);
+console.log("Listening on port 3000...");
+```
+
+浏览器
+
+```html
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+</head>
+<script type="module">
+    let socket = new WebSocket('ws://localhost:9091/socketTest')
+
+    socket.onopen=function (e){ //连接已建立
+        console.log('连接已经建立',e)
+        socket.send('这里是客户端')
+    }
+    socket.onmessage = function (e) {//接收到消息
+        let message = e.data;
+        console.log('onmessage事件：',message)
+    }
+    socket.onerror=function (e){ //出错
+        console.log('onerror事件：',e)
+    }
+    socket.onclose=function (e){ //关闭websocket
+        console.log('onclose事件：',e)
+    }
+
+</script>
+<body>
+<div style="height:200px;border:red solid 1px;position: relative">
+    <div style="background-color:red; ">子元素</div>
+</div>
+</body>
+</html>
+```
+
+
 
 ## 疑惑
 
@@ -6317,6 +6805,8 @@ export default JSBridge;
 
 ### 解构赋值
 
+**取值**
+
 接到参数返回的数据res后，一般用解构的方式取出值，想比与通过`res.*`的方式，解构的方式有几个明显的好处
 
 * 代码更加简洁
@@ -6368,9 +6858,8 @@ export default JSBridge;
   console.log(name,age)//jack undefined
   ```
 
-  
 
-### 函数可选参数
+**函数可选参数**
 
 其实就是结构赋值的灵活运用
 
@@ -6556,7 +7045,7 @@ const { data } = res.data
 
 其实，这些函数都是异步函数，通常面对异步函数，一般就两种风格，一种是**回调函数**，一种就是**promise**
 
-如何让改造一个回调函数风格的函数，使其支持Promise呢？
+如何让改造一个回调函数风格的函数，使其支持Promise呢？我们称这种方式为**Promise化**
 
 ```js
 function getCity(cb){
@@ -6574,7 +7063,7 @@ getCity((cityName,cityId)=>{
 })
 ```
 
-将原函数改造为Promise风格
+将回调风格改造为Promise风格
 
 ```js
 function getCity(){
@@ -6646,7 +7135,7 @@ try {
 }
 ```
 
-
+**Promise化的场景**
 
 很多时候，我们并不能直接对支持回调的异步函数进行修改。尤其是，修改别人的代码时，很有可能会改出新的bug，所以 ，我们可以把原本的回调函数继续封装一层，让这个新函数支持Promise
 
@@ -6682,7 +7171,7 @@ function getCity(){
         }
     })
 }
-getCity() //1
+getCity() //1  
 ```
 
 终止当前函数要用return
@@ -6707,7 +7196,53 @@ throw抛出错误，会向上终止每一层函数，直到被捕获（如果自
 
 
 
+**Promise.all**
+
+```js
+//3.Promise.all的使用
+//3.1全部fufilled状态，会以数组的形式返回结果
+// function all(){
+//     let taskList=[]
+//     //推入数组时，就调用了函数。只不过没有立即执行
+//     taskList.push(f1(true))
+//     taskList.push(f2(true))
+//     Promise.all(taskList).then(res=>{
+//         console.log('all -->',res)
+//     })
+// }
+// all() //all --> [ { name: 'f1' }, { name: 'f2', age: 2 } ]
+
+//3.2 rejected状态不会阻塞剩下的函数执行，如果有多个rejected状态的，则只返回第一个
+function f3(params){
+    return new Promise((resolve,reject)=>{
+        if(params){
+            resolve({name:"f3"})
+        }else {
+            reject({name:"f3"})
+        }
+        console.log('f3执行了')
+    })
+}
+function all(){
+    let taskList=[]
+    //推入数组时，就调用了函数。只不过没有立即执行
+    taskList.push(f1(false))
+    taskList.push(f3(true))
+    taskList.push(f2(false))
+    Promise.all(taskList).then(res=>{
+        console.log('all -->',res)
+    }).catch(err=>{
+        console.log('all err-->',err)
+    })
+}
+all() //f3执行了    all err--> { name: 'f1' }
+```
+
+
+
 ### async与await的一些细节
+
+**这里写了3个函数，参数为真则返回fulfilled状态的Promise对象，否则返回rejected状态。后面的例子大部分使用这三个函数模拟各种场景**
 
 ```js
 function f1(params){
@@ -6737,58 +7272,34 @@ function f3(params){
         }
     })
 }
-
-// async function def(){
-//     const res=await f1(false).catch(err=>{
-//         console.log('err --> ',err)
-//         return
-//     })
-//     const res2=await f1(false).catch(err=>{
-//         console.log('err2 --> ',err)
-//         return
-//     })
-// }
-
-//方式一： 捕获async/await的err
-async function hij(){
-    // return f1(true).then(async res=> {
-    //     //内层使用then方式，外层catch抓不到
-    //     // f2(false).then( res2=>{
-    //     //     console.log('f2 --> ',res2)
-    //     // })
-    //
-    //     //内层使用async/await方式，外层catch可以抓到错误
-    //     const res2 = await f2(false)
-    // }).catch(err=>{
-    //     console.log('err -->',err)
-    // })
-}
-// hij()
-
-
-
-
-
-//方式三
-async function lmn(){
-    try{
-        const res1 = await f1(false).catch(err=>{
-                console.log("3")
-        })
-        const res2 = await f2(false)
-    }catch (err){
-        console.log("err --> ",err)
-    }
-}
-lmn()
-
 ```
 
+**await**
 
+* 第一个await后的函数返回的了rejected状态的promise对象，后面的代码不会再执行了
 
-try...catch不仅可以捕获Error对象，可以捕获rejected状态的Promise
+  这段代码由于没有处理rejected状态的promise对象，还会报错
 
-* 第一个await返回的了reject，就会立即进入catch处理，后面的代码不会在执行了
+  ```js
+  async function lmn(){
+    	console.log('开始')
+      const res1 = await f1(false)
+      console.log('中间')
+      const res2 = await f2(false)
+      console.log('最后')
+  }
+  lmn()  //开始
+  ```
+
+  注意：await后面的代码虽然不执行了，但是结构赋值还是会执行的
+
+  ```
+  const {name} = await f1(false) 
+  ```
+
+* <span id="错误处理">捕获rejected状态的Promise对象</span>
+
+  使用try...catch。这种处理方案多是为整体流程做兜底处理，由于f1失败，后面的流程都不会被执行
 
   ```js
   async function lmn(){
@@ -6802,7 +7313,7 @@ try...catch不仅可以捕获Error对象，可以捕获rejected状态的Promise
   lmn() // err -->  { name: 'f1', age: 4 }
   ```
 
-* 如果第一个await紧接着被后面的catch处理了，就会继续执行后面的代码。而且因为错误已经被处理了，外部的try...catch就不能捕获到这个错误了
+  使用promise的链式方法catch。这种方案适合单独处理每一步的错误，避免一步错误导致整体流程终止。我们可以看到例子中f1使用catch处理后，会继续运行下面的流程f2。同时需要注意到，因为f1的错误已经被处理了，外部的try...catch就不能继续捕获到这个错误了
 
   ```js
   async function lmn(){
@@ -6820,27 +7331,45 @@ try...catch不仅可以捕获Error对象，可以捕获rejected状态的Promise
   //err -->  { name: 'f2', age: 4 }
   ```
 
-* 所以，我们可以在await后直接catch处理已知的错误，不能识别的错误，直接throw再次抛出，最后在全局try...catch错误做一错误的兜底逻辑
+* 一般的错误处理逻辑：在await后直接catch处理已知的错误，不能识别的错误，直接throw再次抛出，最后在全局try...catch错误做一错误的兜底逻辑
 
-  
+**错误处理**
 
-  
+上面已经使用过`try...catch`和promise的`catch`方法了
 
-嵌套时，外层catch无法捕获内层错误
+这里再进行一些补充，两种方式都是既可以捕获Error对象，也可以捕获rejected状态的Promise。但是，`catch`方法作为promise链上的方法，只能捕获其promise作用链上的Error对象或rejected状态的Promise
+
+
+
+catch作为promise链上的方法，只能捕获其promise作用链上传递的rejected、错误对象
 
 ```js
 function lmn(){
     f1(true).then(resf1=>{
-        f2(false).then()
+        f2(false)
     }).catch(err=>{
         console.log("外层捕获",err)
     })
 
 }
-lmn()
+lmn() //报错，未捕获rejected状态的Promise
 ```
 
-for循环中使用await
+```js
+function lmn(){
+    f1(true).then(resf1=>{
+        throw new Error("抛出的错误")
+    }).catch(err=>{
+        console.log("外层捕获",err)
+    })
+
+}
+lmn() //外层捕获 Error: 抛出的错误
+```
+
+
+
+**for循环中使用await**
 
 * await结果是reject，会中断整个for循环
 
@@ -6871,8 +7400,6 @@ for循环中使用await
   // 1
   
   ```
-
-  
 
 * catch能够捕获当前错误，这样for就不会直接中断了
 
@@ -6956,21 +7483,65 @@ for循环中使用await
   // 2
   ```
 
-  
+
+
+**async函数的返回值为Promise对象**
+
+函数内部使用await，该函数必须添加async关键字
+
+单词async是异步的意思，async函数虽然其内部使用await关键字使得其表现像同步函数，但是其实际仍然是异步函数，其返回值是Promise对象
+
+与Promise的then函数一样，async函数内
+
+* 没有return，默认返回fulfilled状态的Promise，Promise内的值是undefined
+
+  ```js
+  //无return
+  async function lmn(){
+      const res=await f1(true).catch(err=>{
+          console.log('err ---> ',err)
+      })
+  }
+  lmn().then(res=>{
+      console.log(res) //undefined
+  })
+  ```
 
   
 
-  
+* `return 值`，默认返回fulfilled状态的Promise
+
+  ```js
+  async function lmn(){
+      const res=await f1(true).catch(err=>{
+          console.log('err ---> ',err)
+      })
+      return res
+  }
+  lmn().then(res=>{
+      console.log('lmn --> ',res) //lmn -->  { name: 'f1' }
+  })
+  ```
 
   
 
-  
+* `return Promise.reject(值)`才返回rejected状态
+
+  ```js
+  async function lmn(){
+      const res=await f1(true).catch(err=>{
+          console.log('err ---> ',err)
+      })
+      return Promise.reject('失败')
+  }
+  lmn().then(res=>{
+      console.log('lmn --> ',res)
+  }).catch(err=>{
+      console.log('lmn err--> ',err) //lmn err-->  失败
+  })
+  ```
 
   
-
-  
-
-
 
 ### 链式调用
 
@@ -7408,6 +7979,200 @@ let res=testCallBack(()=>{
 })
 
 ```
+
+### 同步延时器
+
+定时器是异步的，但是我们可以通过Promise化，同步调用定时器
+
+```js
+async function f(){
+	//前面的操作
+  await new Promise((resolve)=>{
+    setTimeout(resolve,1000)
+  })
+  
+ //后面的操作
+}
+```
+
+
+
+### JS中的return
+
+函数中体顶层作用域出现return，会直接结束整个函数
+
+```js
+function f1(){
+    console.log(1)
+    return
+    console.log(2)
+}
+f1() //1
+```
+
+if等流程函数中，也会结束整个函数
+
+```js
+function f1(){
+    console.log(3)
+    if(true){
+        return
+        console.log(4)
+    }
+    console.log(5)
+}
+f1() //3
+```
+
+回调函数中return，只能结束回调函数
+
+```js
+function f2(){
+   setTimeout(()=>{
+      console.log(1)
+      return 
+      console.log(2)
+    },2000)
+
+}
+f2()  //1
+```
+
+Promise中return只能将数据传递给下一个then函数。不能结束整个函数
+
+```js
+async function f3(){
+    return 1
+}
+function f4(){
+    //必须在在前面加一个return
+    return f3().then(res=>{
+        return res 
+    })
+}
+f4().then(res=>{
+    console.log(res)
+})
+```
+
+### JS插件系统如何设计
+
+推荐设计（此种设计仍然不够健全，注册的插件可以通过this访问到插件系统的配置，甚至还可以直接修改插件系统的配置，这样就破坏了插件核心的稳定性）
+
+```js
+class HDDPlugin{
+    //插件系统内置属性
+    coreConfig={
+        version:'0.0.1'
+    }
+
+
+    //插件构造方法(用于配置插件系统规则，注册插件)
+    constructor(customCoreConfig) {
+        //1、校验下pluginList的格式必须是数组（数组传入多个插件）
+
+        //2、config插件系统配置（内置属性和config属性合并，用户传入的优先级高）
+        this.coreConfig={...this.coreConfig,...customCoreConfig}
+
+    }
+    //注册插件函数（用于注册插件，同时传入插件配置）
+    register(PluginList){ //箭头函数的写法，可以放置this丢失，这里this永远指向对象
+        if (!Array.isArray(PluginList)||PluginList.length===0){
+            console.warn('插件列表必须指定')
+            return
+        }
+        for (let plugin of PluginList){
+            const { pluginName,pluginExec } = plugin;//插件必须要有两个属性，pluginName插件名，pluginExec插件函数
+            if(!(typeof pluginName==='string')||pluginName===''){
+                console.warn('插件pluginName字段必须为非空字符串')
+                return
+            }
+            if(!pluginExec instanceof Function){
+                console.warn('插件pluginExec字段必须为函数类型')
+                return
+            }
+            this[pluginName] = pluginExec; //将方法添加到类中
+        }
+
+    }
+}
+
+
+//创建实例对象
+let p=new HDDPlugin({version:'1.0.0',secret:'111'}) //传入插件系统配置
+
+//在实例上注册函数
+p.register([{
+    pluginName:'test1',
+    pluginExec(params){
+      	//注意：插件函数可以读取`插件系统`的核心配置
+        console.log(`插件test执行，插件传入的参数${params}，读取插件系统核心配置${JSON.stringify(this.coreConfig)}`)
+    }
+}])
+
+//
+p.test1('1')
+
+```
+
+另一种思路(不太推荐)
+
+将register指定为静态方法，只能通过类调用，这种做法丧失了灵活性。推荐将插件挂载到实例上
+
+```js
+
+class HDDPlugin{
+    //插件系统内置属性
+    coreConfig={
+        version:'0.0.1'
+    }
+
+
+    //插件构造方法(用于配置插件系统规则，注册插件)
+    constructor(customCoreConfig) {
+        //1、校验下pluginList的格式必须是数组（数组传入多个插件）
+
+        //2、config插件系统配置（内置属性和config属性合并，用户传入的优先级高）
+        this.coreConfig={...this.coreConfig,...customCoreConfig}
+
+    }
+    //注册插件函数（用于注册插件，同时传入插件配置）
+    static  register(PluginList){ //箭头函数的写法，可以放置this丢失，这里this永远指向对象
+        if (!Array.isArray(PluginList)||PluginList.length===0){
+            console.warn('插件列表必须指定')
+            return
+        }
+        for (let plugin of PluginList){
+            const { pluginName,pluginExec } = plugin;//插件必须要有两个属性，pluginName插件名，pluginExec插件函数
+            if(!(typeof pluginName==='string')||pluginName===''){
+                console.warn('插件pluginName字段必须为非空字符串')
+                return
+            }
+            if(!pluginExec instanceof Function){
+                console.warn('插件pluginExec字段必须为函数类型')
+                return
+            }
+            this[pluginName] = pluginExec; //将方法添加到类中
+        }
+
+    }
+}
+
+let p=new HDDPlugin({version:'1.0.0',secret:'111'})
+
+HDDPlugin.register([{
+    pluginName:'test1',
+    pluginExec:()=>{
+        console.log('插件test执行')
+    }
+}])
+HDDPlugin.test1()
+
+```
+
+### JS语法树（AST）
+
+
 
 ### JS细节易混淆
 

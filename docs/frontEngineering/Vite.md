@@ -245,9 +245,197 @@ yarn create vite
 
 ## vite配置文件
 
+### 基础格式
+
 vite是开箱即用的，即有一套默认的配置规则
 
 如果，我们需要自定义配置，需要在项目下使用配置文件`vite.config.js`
+
+一般写成下面的形式，但是没有提示
+
+```js
+export default {
+  //vite的配置项
+}
+```
+
+需要编译器提示，就要使用下面的写法
+
+* 方式一：(**推荐的方式**)
+
+  ```js
+  import {defineConfig} from 'vite'
+  export default defineConfig({
+    //vite的配置项
+  })
+  ```
+
+* 方式二：
+
+  ```js
+  /**@type import('vite').UserConfig*/
+  const viteConfig={
+    //vite的配置项
+  }
+  export default  viteConfig
+  ```
+
+### 生产测试环境
+
+主配置文件（vite.config.js），在此文件引入不同环境下的配置文件
+
+通过启动vite的开发服务器使用不同的启动命令，command参数也会不同
+
+```js
+defineConfig(({command})=>{
+    console.log('defineConfig --> ',command)
+})
+```
+
+* `yarn vite dev` 
+
+  command参数值为serve
+
+* `yarn vite build`
+
+  command参数值为build
+
+**vite.config.js**
+
+主配置文件，最终导出vite配置的文件
+
+```js
+import {defineConfig} from 'vite'
+import viteBaseConfig from "./vite.base.config";
+import viteProdConfig from "./vite.prod.config";
+import viteDevConfig from "./vite.dev.config";
+
+//策略模式
+const envResolver={
+    'build':()=>{
+        console.log('生产环境') 
+        return {...viteBaseConfig,...viteProdConfig}
+    },
+    'serve':()=>{
+        console.log('测试环境')
+        return {...viteBaseConfig,...viteDevConfig}
+    }
+
+}
+
+//最终的vite配置
+export default defineConfig(({command})=>{
+    console.log('defineConfig --> ',command) //启动vite时，会输出到终端
+    return envResolver[command]()
+})
+
+```
+
+**vite.base.config**
+
+生产、测试共同的vite配置
+
+```js
+import {defineConfig} from 'vite'
+export default defineConfig({
+    //vite的配置项
+})
+```
+
+**vite.prod.config**
+
+生产环境的配置
+
+```js
+import {defineConfig} from 'vite'
+export default defineConfig({
+    //vite的配置项
+})
+```
+
+**vite.dev.config**
+
+测试环境的配置
+
+```js
+import {defineConfig} from 'vite'
+export default defineConfig({
+    //vite的配置项
+})
+```
+
+**补充问题**
+
+启动vite的环境是Node环境，为啥其读取的配置文件`vite.config.js`中使用的是ESM规范的引入方式？
+
+这是因为vite在读取这配置文件时，会先解析文件语法，如果发现ESM规范会直接替换变成Commonjs规范
+
+### 环境变量
+
+vite启动的环境是Node环境，Node的环境变量是存储在`process.env`这个对象下
+
+vite内置了dotenv这个第三方库，**默认情况**下，dotenv会自动读取项目下的.env文件, 并解析这个文件中的对应环境变量，并将其注入到process对象
+
+```.env
+//.env文件
+APP_key=100
+```
+
+但是，考虑到**默认情况**下的处理方式，会与某些vite配置（envDir，用来配置当前环境变量文件的地址）产生冲突问题， 所以，vite也支持手动配置读取哪个文件注入到process对象
+
+```
+```
+
+
+
+* `yarn vite dev` 
+
+  mode参数，默认
+
+  ```shell
+  yarn vite dev --mode development
+  ```
+
+  
+
+* `yarn vite build`
+
+  ```shell
+  yarn vite build --mode production
+  ```
+
+  
+
+```js
+import {defineConfig} from 'vite'
+import viteBaseConfig from "./vite.base.config";
+import viteProdConfig from "./vite.prod.config";
+import viteDevConfig from "./vite.dev.config";
+
+//策略模式
+const envResolver={
+    'build':()=>{
+        console.log('生产环境')
+        return {...viteBaseConfig,...viteProdConfig}
+    },
+    'serve':()=>{
+        console.log('测试环境')
+        return {...viteBaseConfig,...viteDevConfig}
+    }
+
+}
+
+export default defineConfig(({command,mode})=>{
+    console.log('command --> ',command)
+    console.log('mode --> ',mode)
+    return envResolver[command]()
+})
+
+```
+
+
+
+
 
 
 

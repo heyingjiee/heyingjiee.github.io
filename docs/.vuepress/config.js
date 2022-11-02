@@ -66,6 +66,7 @@ module.exports = {
         items: [
           { text: "前端项目配置", link: "/frontEngineering/项目配置.md" },
           { text: "NPM应知应会", link: "/frontEngineering/NPM应知应会.md" },
+          { text: "启程pnpm", link: "/frontEngineering/启程pnpm.md"},
           { text: "Gulp自动化神器", link: "/frontEngineering/Gulp自动化神器.md" },
         ],
       },
