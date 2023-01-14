@@ -92,7 +92,7 @@ ip addr #查看网络
 使用vi编辑器打开`ens33`网络的配置文件，修改启动配置（如何使用vi编辑器：`i`修模式改数据，`esc`退出，`:wq`保存退出vi编辑器）
 
 ```text
-vi /etc/sysconfig/network-scripts/ifcfg-ebs33
+vi /etc/sysconfig/network-scripts/ifcfg-ens33
 ```
 
 ![image-20220430170248402](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Nginx/image-20220430170248402.png)

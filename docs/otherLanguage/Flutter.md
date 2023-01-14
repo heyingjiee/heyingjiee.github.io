@@ -66,19 +66,165 @@
 
 VSCode中安装`Code Runner`插件，这个插件可以直接运行，单独的 `*.dart`文件（需要提前安装好 Flutter SDK，并配置好环境变量）
 
+### 变量基础
+
+Dart中
+
+- 所有变量的值都是 **对象**，每个对象都是一个 **类** 的实例
+
+  例如：数字、函数以及 `null` 都是对象。注意：除去 `null` 以外, 所有的类都继承于 `Object`类
+
+- 空安全：Null类型的变量其值才能为null，其他类型的值默认不能null（如果确定某个变量为null需要使用`类型?`开启，后面例子中会见到）
+
+- 未初始化以及可空类型的变量拥有一个默认的初始值 `null`（由于空安全的限制，使用**类型声明**变量时，需要使用`?`关闭空安全，变量的默认值才能为`null`，否则就会报错）
+
+- 判断变量类型
+
+  ```dart
+  String getType(dynamic obj) => obj.runtimeType.toString(); //该函数用于判断变量类型
+  ```
+
+  
+
 ### 变量关键字
 
-**var**
+**类型声明**
 
-通过 `var` 声明局部变量而非使用指定的类型，只有在第一次赋值时，才确定其类型（类型推断）
+dart风格指南不推荐这种写法
 
-**late**
+```dart
+//初始化，即声明立即赋值
+String str1 = 'jack';
+print(str1) //jack
 
-延迟初始化，下面的类中，由于空安全的限制，name不能为空，我们应该一开始给name默认值，但这不符合道理，创建一个代表人的类，没必要设置一个默认名字。这时候，我们通常使用late表示变量在**运行时**进行初始化。与final不同，final也是运行时初始化，但是初始化后不可改变
+//声明后，赋值
+String str2;
+str2 = 'tom';
+print(str2); //tom
+  
+//声明后，不赋值就默认为null，类型就必须是String?才行
+String? str3;
+print(str3); //null
+```
+
+如果变量的值不只一个类型，可以将其指定为 `Object`（或 `dynamic`）类型
+
+Object类型：不能为Null类型
+
+```dart
+Object a = "aaaa";
+a = 12;
+print(a); //12
+
+a=null //报错 ，详见【变量基础】提到的，除null外 ，其他的所有类型都继承自Object
+```
+
+dynamic类型：可以是任何类型
+
+```dart
+dynamic a = "aaaa";
+a = 12;
+print(a); //12
+
+a = null;
+print(a); //null
+```
+
+
+
+**var声明**
+
+声明变量，不能指定类型，当一次赋值时推断类型（var可以自动类型推断）
+
+注意：
+
+* var声明的变量，不赋值时会被自动推断为Null类型，该类型的变量值为null
+* var声明的变量，如果赋值后，变量会被推断为赋值的类型。如果这个变量类型不是Null，该变量就不能赋值为null
+* 这里有一个非常有意思的细节，比如变量值为`hello`，该变量会被推断为`String`类型，而不是`String?`类型，所以使用var声明的变量默认就不能为null（出了上一条，未赋值推断为Null类型的情况）
+
+```dart
+//初始化，即声明立即赋值
+var str1 = 'jack';
+print(str1); //jack
+
+//声明后，赋值
+var str2;
+str2 = 'tom';
+print(str2); //tom
+
+//-------与类型声明不同----------
+//声明后，不赋值。变量被推断为dynamic类型，就可以接收null值了
+var str3;
+print(str3); //null
+```
+
+由于dart支持类型推断，所以不需要手动指定，在第一次赋值时就会推断变量的类型
+
+下面的写法是错误的，使用var就表示开启自动推断，不能再设置类型了
+
+```dart
+var String name
+```
+
+**const声明**
+
+***编译时常量***
+
+声明变量时必须赋值，且一旦赋值不可修改
+
+```dart
+const String str = 'jack';
+print(str); //jack
+```
+
+注意const也有类型推断，即使不写变量类型也会推断。所以const更多的写法是不写类型，如下：
+
+```dart
+const str = 'jack';
+print(str); //jack
+```
+
+与JS不同，JS中的const变量只能存储引用类型的地址，所以const类型是可以修改的。Dart解决了这个问题，const变量即使是引用类型也不可以修改
+
+```dart
+const arr = [];
+arr.add(1);
+print(arr);
+```
+
+**final声明**
+
+final最重要的是具有***运行时常量***的特性，其不要求在编译时赋值，而是要求运行时赋值，且一旦赋值不可修改。所以某个方法的返回值赋值给变量使用final关键字（因为方法是运行时，才能返回值）
+
+```dart
+final DateTime a = new DateTime.now();
+print(a);
+```
+
+使用const会报错，因为函数返回的时间是变化的
+
+```dart
+//报错
+const DateTime a = new DateTime.now();
+print(a);
+```
+
+注意final也有类型推断，即使不写变量类型也会推断。所以final更多的写法是不写类型，如下：
+
+```dart
+final a = new DateTime.now();
+print(a);
+```
+
+**late声明**
+
+延迟初始化
+
+下面的类中，由于空安全的限制，name不能为空，我们应该一开始给name默认值，但这不符合道理，创建一个代表人的类，没必要设置一个默认名字。这时候，我们通常使用late表示变量在**运行时**进行初始化。与final不同，final也是运行时初始化，但是初始化后不可改变
 
 ```dart
 class Preson {
-  late String name;
+  late String _name;
 
   //默认构造函数
   Preson(this._name) {
@@ -86,33 +232,6 @@ class Preson {
   }
 }
 ```
-
-**const**
-
-***编译时常量***，必须一开始赋值，且一旦赋值不可修改
-
-**final**
-
-final不仅有const的特性，最重要的是还具有***运行时常量***的特性（在第一次使用前才初始化后，一直保持不变），所以某个方法的返回值赋值给变量使用final关键字
-
-```dart
-main() {
-  final a = new DateTime.now();
-  print(a); //2022-02-03 19:53:02.798029
-}
-```
-
-使用const会报错
-
-```dart
-//报错
-main() {
-  const a = new DateTime.now();
-  print(a);
-}
-```
-
-**注意**：`final`关键字解决了JS中`const`的问题，JS中`const`接收了引用类型后，其实是可以改变引用类型的值的，因为`const`只记录了引用类型的存储位置。而在dart中`const`只能接收一开始就确定的值，引用类型的值需要用`final`接收
 
 ### 内置基本类型
 
@@ -213,11 +332,19 @@ main() {
 }
 ```
 
-#### bool
+#### Bool
 
 `true`和`false`
 
-dart中无隐式转换
+dart中无隐式转换，所以也没有JS中由于隐式类型带来的问题
+
+```dart
+if(这里必须是布尔值){
+  
+}else{
+  
+}
+```
 
 #### List
 
@@ -711,124 +838,7 @@ map只有`forEach`和`map`方法
 int? a;
 ```
 
-### 变量
 
-**本质**
-
-Dart中所有变量引用的都是**对象**，每个对象都是一个**类**的实例。数字、函数以及 `null` 都是对象。除去 `null` 以外, 所有的类都继承于 [`Object`](https://api.dart.cn/stable/dart-core/Object-class.html) 类。
-
-**默认值**
-
-在 Dart 中，未初始化以及可空类型的变量拥有一个默认的初始值 `null`（由于空安全的限制，使用类型声明变量时，需要使用`?`，变量的默认值才能为`null`，否则变量一旦为`null`，就会报错）
-
-* 变量关键字声明
-
-  类型推断：如果使用变量关键字，没有定义类型，则会根据第一次赋值时的类型确定变量类型。
-
-  `var`可以声明变量不赋值，默认变量值为`null`
-
-  ```dart
-  main() {
-    var a = "123";
-    print(a);  //123
-  }
-  ```
-
-  ```dart
-  main() {
-    var a;
-    print(a);  //null
-  }
-  ```
-
-  `const`和`final`关键字，都要求声明时必须赋值（也可以赋值为null）
-
-  ```dart
-  main() {
-    const a = null;
-    print(a);
-  }
-  ```
-
-* 内置类型声明
-
-  直接使用内置类型声明
-
-  ```dart
-  main(){
-    String a="123";
-    print(a); //123
-  }
-  ```
-
-  如果一个对象的引用不局限于单一的类型，可以将其指定为 `Object`（或 `dynamic`）类型
-
-  ```dart
-  main() {
-    Object a = "aaaa";
-    a = 12;
-    print(a); //12
-  }
-  ```
-
-  空类型安全限制，使用`var`、`const`、`final`声明变量可以为`null`，但是使用变量内置类型声明，必须声明初始值，否则报错，因为变量没有默认值。也可以使用`?`显式的声明变量可为空，才能声明时不赋值，自动采用默认值`null`
-
-  ```dart
-  //报错
-  main() {
-    String a;
-    print(a);
-  }
-  ```
-
-  ```dart
-  main() {
-    String? a;
-    print(a);//null
-  }
-  ```
-
-* 空安全
-
-  在Dart 2.12及以上版本，Dart已支持空安全，**内置类型声明**的方式，变量就不可为空，否则报错
-
-  当，初始声明未赋值，空安全没有默认值null
-
-  ```dart
-  //报错
-  main() {
-    String a;
-    print(a);
-  }
-  ```
-
-  当，程序运行过程中，被赋值为null
-
-  ```dart
-  //报错
-  main() {
-    String a = "ww";
-    a = null;
-    print(a);
-  }
-  ```
-
-  如果变量可能为空，则需要使用以下方式显式声明，`类型?`
-
-  ```dart
-  main() {
-    String? a;//使用？，不赋值默认为null
-    print(a);//null
-  }
-  ```
-
-  ```dart
-  main() {
-    String? a = "ww";
-    a = null;
-    print(a);
-  }
-  ```
 
 ### 运算符
 

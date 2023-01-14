@@ -1573,6 +1573,10 @@ let obj= {
 
     //3、默认key是字符串，如果希望把key当做是变量，使用方括号 
     [b]:"tony"
+  
+  	//4、使用模板字符串，必须用中括号
+  	[`${b}`]:3
+  
 
 }
 console.log(obj) //{ name: 'jack', 'l-name': 'tom', '爱好': 'tony' }
@@ -3404,9 +3408,9 @@ for(let [key,value] of m){
 
 JS中this的指向是十分让人头秃的一个知识点，因为this的指向并不固定，不同的调用方式同一个this是不同的
 
-简单一句话概括就是：
+简单一句话概括就是：**this指向其调用者所在的上下文**
 
-**this指向其调用者所在的上下文**
+
 
 | 规则编号 | 规则                    | 当前作用域的上下文（this指向）                               |
 | -------- | ----------------------- | ------------------------------------------------------------ |
@@ -3447,7 +3451,7 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
 
   ```js
   function stu(stunum){
-      this.stunum=stunum//这里的this是指向的是创建的new关键字创建的空对象 【规则2】
+      this.stunum=stunum//【规则2】这里的this是指向的是创建的new关键字创建的空对象
       this.show=function(){//【规则2】
           console.log(this.stunum) //【规则3】
           function func(){
@@ -3507,12 +3511,17 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
   
 * 箭头函数
 
-  箭头函数中的this对象，指向的父级作用域的this的指向
+  * 箭头函数中只是没有 `this`，但是`this` 的查找与常规变量的搜索方式完全相同：在外部词法环境中查找
 
+  - 没有 `arguments`
+  - 不能使用 `new` 进行调用
+  - 它们也没有 `super`
+  
   ```javascript
   let lesson={
       site:"hedaodao",
       show:function(){      
+        	//上下文:在这里this指向lesson
           return ()=>{
               return this.site //【规则9】，其所在的上下文属于【规则3】，指向lesson对象
           }
@@ -3525,6 +3534,71 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
 * call apply bind
 
   会在后面详细介绍
+
+### this指向的丢失
+
+this指向的丢失，可以看到下面的例子中，将函数复制给其他变量调用，会造成this指向的丢失，this变成了window
+
+```js
+let lesson={
+    site:"hedaodao",
+    show:function(){
+        console.log(this.site)
+    }
+}
+lesson.show() //hedaodao
+newVar=lesson.show
+newVar()//undefined
+```
+
+为什么这里this绑定的对象会丢失？
+
+因为这里并没有直接调用show函数，而是通过`lesson`对象找到了对应`show`的内存地址，然后赋值给变量`newVar`。最后通过`newVar` 直接进行了调用，本质上就是独立函数调用【规则1】所以this指向window
+
+
+
+另一种复杂的情况，函数作为回调函数传递的时候，this也会丢失绑定，从而指向window
+
+```js
+let lesson={
+    site:"hedaodao",
+    show:function(){
+        console.log(this.site)
+    }
+}
+
+function fn(callback) {
+    callback()
+}
+fn(lesson.show) //undefined
+```
+
+为什么这里this绑定的对象会丢失？道理与前面的情况其实一样，真正调用函数的并不是lesson，而是callback
+
+
+
+解决this指向丢失:使用bind绑定this的指向
+
+```js
+let lesson={
+    site:"hedaodao",
+    show:function(){
+        console.log(this.site)
+    }
+}
+
+//固定this指向了lesson
+lesson.show=lesson.show.bind(lesson)
+
+function fn(callback) {
+    callback()
+}
+fn(lesson.show) //hedaodao
+```
+
+
+
+
 
 ### 箭头函数的由来
 
@@ -6178,11 +6252,402 @@ export { age } from "./module2.js";
 
 [学习 UMD](https://www.cnblogs.com/wenbinjiang/p/11429368.html)
 
-## JS二进制
+## 设计模式
+
+参考[设计模式](https://github.com/ascoders/weekly/tree/master/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F)
+
+### 策略模式
+
+https://www.jianshu.com/p/bfa7e289303a
 
 
 
+## Dom
 
+### HTML结构
+
+```html
+<html>
+	<head></head>
+  <body></body>
+</html>
+```
+
+### 获取顶层节点
+
+```
+<html>是最顶层的 document 节点，通过document.documentElement获取
+
+<body> 通过document.body获取
+
+<head> 通过document.head获取 
+```
+
+### 获取其他节点
+
+![image-20221219141710618](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221219141711%20.png)
+
+```html
+<html>
+<body>
+  <div>Begin</div>
+
+  <ul>
+    <li>Information</li>
+  </ul>
+
+  <div>End</div>
+
+  <script>
+    //遍历body中的顶层节点
+    for (let elem of document.body.children) {
+      console.log(elem); // DIV, UL, DIV, SCRIPT
+    }
+  </script>
+  ...
+</body>
+</html>
+```
+
+### 查找节点
+
+最常见的就是这几个，不常见的这里就不介绍了
+
+```html
+document.getElementById 参数是html的id值
+
+document.querySelectorAll()、document.querySelector() 参数是css选择器
+
+element.matches() 参数是css选择器，返回布尔值，表示是否存在该元素
+
+closest() 参数是css选择器，向上查找与 CSS 选择器匹配的最近的祖先，找到则停止搜索并返回该祖先
+```
+
+例子1：
+
+```html
+<ul>
+    <li>The</li>
+    <li>test</li>
+</ul>
+<ul>
+    <li>has</li>
+    <li>passed</li>
+</ul>
+<script>
+    let elements = document.querySelectorAll('ul > li:last-child');
+
+    for (let elem of elements) {
+        console.log(elem.innerHTML); // "test", "passed"
+    }
+</script>
+```
+
+例子2：
+
+```html
+<h1>Contents</h1>
+
+<div class="contents">
+  <ul class="book">
+    <li class="chapter">Chapter 1</li>
+    <li class="chapter">Chapter 2</li>
+  </ul>
+</div>
+
+<script>
+  let chapter = document.querySelector('.chapter'); // LI
+
+  console.log(chapter.closest('.book')); // UL
+  console.log(chapter.closest('.contents')); // DIV
+
+  console.log(chapter.closest('h1')); // null（因为 h1 不是祖先）
+</script>
+```
+
+### 创建节点
+
+```
+document.createElement(tag) //用给定的标签创建一个元素节点
+
+document.createTextNode(value) //创建一个文本节点（很少使用）
+```
+
+例子
+
+```html
+<html>
+    <head></head>
+    <body>
+
+    </body>
+    <script>
+        let divEle=document.createElement('div')
+        divEle.className='alert' //类名
+        divEle.innerHTML='hi'  //
+
+        document.body.append(divEle) //页面中追加创建的div元素
+    </script>
+</html>
+```
+
+### 克隆节点
+
+```
+node.cloneNode(deep) //deep为true，是深克隆；false表示不克隆子元素
+```
+
+
+
+### 添加节点
+
+```html
+//将节点或字符串插入不同位置：
+node.append(...nodes or strings) —— 在 node 内部的末尾 插入节点或字符串，
+node.prepend(...nodes or strings) —— 在 node 内部的开头 插入节点或字符串，
+node.before(...nodes or strings) —— 在 node 前面 插入节点或字符串，
+node.after(...nodes or strings) —— 在 node 后面 插入节点或字符串，
+```
+
+![image-20221219155529450](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221219155530%20.png)
+
+### 删除节点
+
+```
+node.remove()
+```
+
+### 替换节点
+
+```
+node.replaceWith(...nodes or strings) —— 将 node 替换为给定的节点或字符串
+```
+
+## 前端数据存储
+
+### Cookie
+
+Cookie一般是由服务端在响应请求时，通过设置响应体的头的`Set-Cookie`字段，浏览器读取后在该域名下设置的键值对(多个键值对使用分号分隔)，并存储在前端浏览器中
+
+所以，Cookie只能在它设置的域名下才能被访问，注意默认情况下，子域名也无法访问（但是可以设置domain这个key来改变，后面会讲到）
+
+```
+在 site.com 下设置的Cookie
+
+在 forum.site.com 下不可以被访问
+```
+
+且默认不区分协议（可以通过设置secure这个key改变）
+
+```
+http://site.com 下的Cookie
+
+https://site.com 也能访问到
+```
+
+
+
+服务端还可以通过设置响应体的头，来设置浏览器是在访问指定的域时，是否要自动携带Cookies
+
+```
+Access-Control-Allow-Credentials:true
+```
+
+前端存储Cookie的限制：
+
+* 一个域名下 存储的Cookie 总数不得超过 20+ 左右（和浏览器自身的限制相关）
+* 每个Cookies大小不能超过 4KB
+
+
+
+读取当前域名下的Cookie：
+
+```js
+document.cookie
+```
+
+修改当前域名下的Cookie：（这只是前端修改Cookie，想要对所有用户生效还是需要服务端修改header的`cookie`字段）
+
+```js
+document.cookie = "user=hedaodao";  //该操作只会更新Cookie中的user字段为hedaodao，其他Cookie字段不会被影响
+```
+
+Cookie中默认的一些Key：
+
+通过指定这些Key的值，可以设置浏览器对Cookie的处理方式
+
+* path
+
+  值是：url 路径，该路径必须是绝对路径，设置后该路径下的页面才可以访问该 Cookie，默认值为当前路径。
+
+  ```js
+  //该域名下的所有路径都可以访问
+  path=/
+  
+  //仅该域名下的/user路径可以访问
+  path=/user
+  ```
+
+* domain
+
+  值是：Cookie的根域名，这个根域名下的子域名都可以访问Cookie。默认情况下，不允许子域访问Cookies（注意：设置IP不行，必须是域名）
+
+  ```js
+  domain=site.com
+  
+  在 site.com 下设置的Cookie
+  
+  在 forum.site.com 下也可以被访问
+  ```
+
+* expires、max-age
+
+  设置Cookie的有效期，两个字段设置任意一个即可，Cookie过期后，浏览器自动删除。如果都不设置则在关闭浏览器后，立即自动删除
+
+  expires：过期时间(必须为标准时间)，如果这个时间设置的是过去的时间，则浏览器自动删除该Cookie
+
+  ```js
+  //设置过期时间为明天
+  let date = new Date(Date.now() + 86400e3); //Tue Dec 20 2022 19:50:09 GMT+0800 (中国标准时间)
+  date = date.toUTCString();//'Tue, 20 Dec 2022 11:50:23 GMT' 
+  document.cookie = "user=John; expires=" + date;
+  ```
+
+  max-age：指明了距离过期的秒数
+
+  ```js
+  //一小时后过期
+  document.cookie = "user=hedaodao; max-age=3600";
+  ```
+
+  
+
+* secure
+
+  设置后，在https域名下设置的Cookie，在http的同域名下不可访问到
+
+  ```js
+  document.cookie = "user=hedaodao; secure";
+  ```
+
+  
+
+* samesite
+
+  * strict
+  * lax
+
+  [详细内容请查看](https://zh.javascript.info/cookie#samesite)
+
+* httpOnly
+
+  设置后，不可使用`document.cookie`来获取当前域名下的Cookie了（即无法通过JS获取Cookie，可防止XSS攻击）
+
+  ```js
+  document.cookie = "user=hedaodao; httpOnly";
+  ```
+
+  
+
+**实践案例**
+
+安装express
+
+```
+yarn init -y
+
+yarn add express
+```
+
+新建`app.js`，作为服务端设置Cookies
+
+```js
+const express = require('express')
+const router = express.Router();
+
+const app = express()
+
+//设置header要在路由之前
+app.all('*', function(reqest, response, next) {
+    response.header('Access-Control-Allow-Origin', '*');//解决跨域
+    response.header('Access-Control-Allow-Credentials','true')
+    response.header('Access-Control-Allow-Methods','PUT,POST,GET,DELETE,OPTIONS');
+    next();
+});
+
+//路由
+router.get('/test',(request,response)=>{
+    console.log('接口响应',response)
+    //有一点需要注意：现在都是前后端分离的项目，后端设置cookie要设置domain，domain值得是前端的域名，否则无法自动种在前端域名下
+    response.cookie('username', 'hedaodao',{ maxAge: 900000,httpOnly:true })
+    response.json({
+        data:null
+    })
+})
+//挂载路由
+app.use(router)
+
+//监听端口
+app.listen('8099',()=>{
+    console.log('启动')
+})
+```
+
+直接在浏览器访问接口 `http://127.0.0.1:8099/test`，可以看到成功在该域名下存储了Cookie，且访问时，请求头自动带了Cookie字段
+
+![image-20221222172508425](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221222172508%20.png)
+
+![image-20221222172436163](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221222172436%20.png)
+
+
+
+新建`index.html`（使用VSCode的Live Server插件运行起来），在不同的域名下，请求接口
+
+注意：现在都是前后端分离的项目，后端设置Cookie要设置domain，domain值得是前端的域名，否则无法将接口返回的Cookie自动存储在前端域名下
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+     axios({
+        method: 'get',
+        url: 'http://127.0.0.1:8099/test'
+    })
+</script>
+<body>
+
+</body>
+</html>
+```
+
+
+
+### sessionStorage、LocalStotage
+
+
+
+## 前端攻击
+
+### XSS
+
+Cookie的`httpOnly`字段可以防止XSS攻击
+
+### XSRF
+
+跨站请求伪造（Cross-Site Request Forgery）
+
+该攻击手段很大程度上是依赖Cookie来实现的，因为默认情况下，访问A.com时存下的Cookie，在访问A.com相关的数据时，Cookie会被自动携带（请求该域名下的接口也会携带）
+
+用户在访问银行网站bank.com时，存下了Cookie，其中存储了用户信息。在evil.com网站上有一个表单，向bank.com域名下的接口提交表单时，也会自动携带带有用户信息的Cookie，这时候evil.com就能伪装成用户进行非法操作了。这就实现了XSRF攻击
+
+![image-20221221163355473](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221221163355%20.png)
+
+Cookie的`samesite`字段可以防止XSRF攻击
 
 ## 网络请求相关
 
@@ -6670,14 +7135,6 @@ console.log(++false)
 //SyntaxError: Invalid left-hand side expression in prefix operation
 ```
 
-目前的推测：字面量类似于 new 创建实例的一种简写，变量存储的是
-
-```js
-let a = "hi"; //
-
-console.log("hi".length); //2
-```
-
 ## 解惑
 
 ### 1、基本类型的属性和方法
@@ -6838,7 +7295,7 @@ export default JSBridge;
               age
           }={}
       }={}
-  } = res={}
+  } = res||{}
   
   console.log('code --> ',code) //code -->  0
   console.log('author --> ',author) //author -->  HDD
@@ -6854,7 +7311,7 @@ export default JSBridge;
   let obj={
       name:"jack"
   }
-  const {name,age}=obj
+  const {name,age}=obj||{}
   console.log(name,age)//jack undefined
   ```
 
@@ -7330,6 +7787,38 @@ function f3(params){
   //f1错误 { name: 'f1', age: 4 }
   //err -->  { name: 'f2', age: 4 }
   ```
+
+* promise函数的返回值
+
+  假如有一个顶层的函数（没有其他函数在内部调用）test。在其中调用了两个异步函数，两个异步函数都做了错误处理（出现错误抛出错误或者return Promise.reject），所以一旦出现错误test函数就会结束
+
+  ```js
+  async function test(){
+    await lmn()
+    
+    await opq()
+  }
+  ```
+
+  我们需要继续在test函数中做错误处理，比如输出内部抛出的错误，然后再结束函数
+
+  可是Promise的链式调用中使用return是不能停止顶层函数的，只能将值传递给下一个then。所以，我常用的是返回`{err:err;data:null}`结构，错误对象如果没有就赋值为null。通过接收其最终值，来实现控制顶层函数的目的。（其思路类似于Go语言的处理思路）
+
+  ```js
+  async function test(){
+    let {err,data}=await lmn().catch(err=>{
+      console.log(err)
+      return {err:err;data:null}
+    })
+    if(err!==null){
+      return 
+    }
+    
+    await opq()
+  }
+  ```
+
+  
 
 * 一般的错误处理逻辑：在await后直接catch处理已知的错误，不能识别的错误，直接throw再次抛出，最后在全局try...catch错误做一错误的兜底逻辑
 
@@ -8197,13 +8686,101 @@ for(let index in obj){
 } 
 ```
 
+## 补充
+
+### swiper官网文档中写的mySwiper.某方法/某属性
+
+mySwiper指的是swiper实例。在.vue文件中，可以给dom元素添加ref=“swiperBlock”，然后用this.$refs.swiperBlock获取dom元素，然后`.swiper`来获取实例
+
+**例如：调用slideTo方法**
+
+![image-20210618144059004](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210618144059004.png)
+
+```
+this.$refs.swiperBlock.swiper.slideTo(index);
+```
 
 
 
+### UUID
 
+生成唯一不重复的编码
 
+百度百科https://baike.baidu.com/item/UUID/5921266?fr=aladdin
 
+```js
+/*
+ 生成UUID
+ @para len {Number} 长度
+ @para radix {Number} 算法基数
+ @return uuid{String} 生成的UUID
+ */
+function createUUID (len, radix) {
+    var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+    var uuid = [],
+        i;
+    radix = radix || chars.length;
 
+    if (len) {
+        // Compact form
+        for (i = 0; i < len; i++) uuid[i] = chars[0 | Math.random() * radix];
+    } else {
+        // rfc4122, version 4 form
+        var r;
+
+        // rfc4122 requires these characters
+        uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+        uuid[14] = '4';
+
+        // Fill in random data.  At i==19 set the high bits of clock sequence as
+        // per rfc4122, sec. 4.1.5
+        for (i = 0; i < 36; i++) {
+            if (!uuid[i]) {
+                r = 0 | Math.random() * 16;
+                uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
+            }
+        }
+    }
+    return uuid.join('');
+}
+```
+
+### 播放器
+
+西瓜播放器https://v2.h5player.bytedance.com/about/
+
+ video.js、mediaElement.js 等视频播放器
+
+### lottie-web制作高性能动画
+
+https://yechuanjie.com/blog/lottie/
+
+[lottie预览网站](https://www.lottiefiles.com/preview):上传json文件，就可以直接显示结果
+
+```vue
+<template>
+	<div id="stareyes"></div>
+</template>
+
+<script>
+import * as fish from "./lottie/fish.json"; // 引入json本地资源
+import lottie from "lottie-web";//引入lottie
+
+export default {
+  mounted() {
+    lottie.loadAnimation({
+      container: document.getElementById("fish"),//设置动画显示的div
+      renderer: "svg",
+      loop: true,
+      animationData: fish.default//使用引入的json文件
+    });
+  },
+};
+</script>
+<style lang="less">      
+</style>
+
+```
 
 
 

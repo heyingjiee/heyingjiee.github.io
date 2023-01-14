@@ -330,42 +330,56 @@
 
 ### 盒子背景
 
-`background`可用于对一个或多个设置值：`background-clip`，`background-color`，`background-image`，`background-origin`，`background-position`，`background-repeat`，`background-size`，和`background-attachment`
+**background**
 
-当不指定属性值时，采用初始默认值：
+复合属性，建议使用这个数据定义下面所有的
 
-- `background-image`: `none` 
-- `background-position`: `0% 0%` 
-- `background-size`: `auto auto` 
-- `background-repeat`: `repeat` 
-- `background-origin`: `padding-box` 
-- `background-clip`: `border-box` 
-- `background-attachment`: `scroll` 
-- `background-color`: `transparent`
+![image-20221207115952522](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207115952%20.png)
 
-**background-attachment**：如果指定了 `background-image` ，那么 `background-attachment`决定背景是在视口中固定的还是随包含它的区块滚动的
+```css
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<style>
+    .all{
+        width: 900px;
+        height: 100px;
+        padding: 100px;
+        border: dotted 30px black;
+        background:url(https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E5%8D%9A%E5%AE%A2%E5%A4%B4%E5%83%8F/avatar.png)  no-repeat left top/cover local padding-box  padding-box;
+      
+      /*
+      	url()定义背景图
+      
+      	no-repeat:当图片不能填充满元素时，不重复（默认是重复的）
+      
+      	left top/cover：这是background-positon/background-size，可以单独定义background-positon，但是如果想定义background-size，必须用这种形式。left top是指左上角(background-origin值是border-box，所以是边框的左上角)。cover是等比例填充满
+      
+      	local：是background-attachment
+      	
+      	剩下的两个要求顺序：border-box padding-box ，第一个是background-origin(放置图片的区域)，第二个是background-clip（放置完图片后，进行裁切时，保留的区域）
+      	
+         	
+      */
+    }
 
-**background-clip**: 背景剪裁，默认值：border-box
 
-| 常用可选值  | 含义                             |
-| ----------- | -------------------------------- |
-| border-box  | 背景范围：content+padding+border |
-| padding-box | 背景范围：content+padding        |
-| content-box | 背景范围：content                |
+</style>
+<body>
+    <div class="all"></div>
+</body>
+</html>
+```
 
-**background-origin**：背景图片左上角，放置在父元素的位置，默认值：padding-box
+补充下：默认background-origin默认值是padding-box;默认background-clip默认值是border-box。前面的代码所以不设置这两个属性，就会出现下面的效果，图片从padding的左上角放置，但是高度超出了父元素，但是因为裁切保留border内的图片，下边框底下会压住图片
 
-| 常用可选值  | 含义                             |
-| ----------- | -------------------------------- |
-| border-box  | 背景范围：content+padding+border |
-| padding-box | 背景范围：content+padding        |
-| content-box | 背景范围：content                |
+![image-20221207121658149](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207121658%20.png)
 
-注意：当使用`background-attachment`为fixed时，该属性将被忽略不起作用。
-
-background-clip和backgound-origin一起使用时，先看背景图放置的位置是哪里，然后再看clip的值是什么，对背景图进行裁剪
-
-**background-color**：背景颜色，默认值：transparent
+**background-color**
+设置元素背景颜色，默认值：transparent
 
 | 常用可选值   | 含义                          |
 | ------------ | ----------------------------- |
@@ -375,13 +389,16 @@ background-clip和backgound-origin一起使用时，先看背景图放置的位�
 | currentcolor | 设置颜色为当前div中的文字颜色 |
 | transparent  | 透明                          |
 
-**background-image**：背景图片，默认值：没有图片
 
-| 常用可选值                                                   | 含义                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| url( )                                                       | 设置背景图片(图片地址不用加引号)                             |
-| linear-gradient(to top left,red,yellow)、radial-gradient()、repeating-linear-gradient()、repeating-radial-gradient() | 渐变图像（详见，css函数部分）                                |
-| 值，值，值                                                   | 设置多个背景图片，越靠前面的处于越上层的位置（这样可以叠加多层图片） |
+
+**background-image**
+
+设置元素背景图片，可设置多张背景图片，用逗号分隔，越靠前面的处于越上层的位置（这样可以叠加多层图片）
+
+| 常用可选值                                                   | 含义                             |
+| ------------------------------------------------------------ | -------------------------------- |
+| url( )                                                       | 设置背景图片(图片地址不用加引号) |
+| linear-gradient(to top left,red,yellow)、radial-gradient()、repeating-linear-gradient()、repeating-radial-gradient() | 渐变图像（详见，css函数部分）    |
 
 ```css
 {
@@ -406,101 +423,269 @@ background-clip和backgound-origin一起使用时，先看背景图放置的位�
 
 
 
-**background-position**：背景位置，这个初始位置是相对于以background-origin定义的背景位置图层来说的
+**background-attachment**：如果指定了 `background-image` ，那么 `background-attachment`决定背景是在视口中固定的还是随包含它的区块滚动的，默认值scroll
 
-[background-positon-x,background-positon-y]
+```
+fixed 以窗口为基准。随元素滚动
 
-| 常用可选值                       | 含义                                                         |
-| -------------------------------- | ------------------------------------------------------------ |
-| left｜right，top｜bottom，center | 设置背景图片所处的位置，两个参数时，指定水平和竖直位置；一个参数时，未指定的是默认为center |
-| 百分比                           | 设置多个背景图片，越靠前面的处于越上层的位置                 |
-| 数值                             | background-position:10px 20px;为距离左边距（background-origin定义图片放置位置，默认是padding-box，10px就是到左边框的距离）为10px，上边距（同上）为20px |
+scroll 以元素为基准。元素内部滚动，背景图不动
 
-**background-repeat**:背景重复，默认值：repeat，背景图像可以沿着水平轴，垂直轴，两个轴重复，直到填充满元素，最后的元素会被剪裁
-
-| 单值      | 等价的双值（第一个值是水平，第二个值是垂直） |
-| :-------- | :------------------------------------------- |
-| repeat-x  | repeat no-repeat                             |
-| repeat-y  | no-repeat repeat                             |
-| repeat    | repeat repeat                                |
-| space     | space space                                  |
-| round     | round round                                  |
-| no-repeat | no-repeat no-repeat                          |
-
-| 常用可选值 | 含义                                                         |
-| :--------- | :----------------------------------------------------------- |
-| repeat     | 图像会按需重复来覆盖整个背景图片所在的区域， 如果最后一个图像，它的大小不合适的，会被裁剪 |
-| space      | 图像会尽可能得重复, 但是不会裁剪。 第一个和最后一个图像会被固定在元素(element)的相应的边上, 同时空白会均匀地分布在图像之间<br />如果图像太大了，甚至没有足够的空间来完整显示一个图像才会裁剪。background-position会被忽略 |
-| round      | **随着允许的空间在尺寸上的增长, 被重复的图像将会伸展(没有空隙), 直到有足够的空间来添加一个图像. 当下一个图像被添加后, 所有的当前的图像会被压缩来腾出空间. 例如, 一个图像原始大小是260px, 重复三次之后, 可能会被伸展到300px, 直到另一个图像被加进来. 这样他们就可能被压缩到225px.** |
-| no-repeat  | 图像不会被重复                                               |
-
-**background-size**：背景大小，图像可以保留其自然大小，拉伸到一个新的大小，或约束，以适应可用空间，同时保持其固有的比例
-
-| 常用可选值  | 含义                                                         |
-| ----------- | ------------------------------------------------------------ |
-| cover       | 在保留其固有比例的同时，覆盖整个背景定位区域（可能会超出被裁剪） |
-| contain     | 在保留其固有比例的同时，包含在背景区域内部（不会超出）       |
-| 百分比/数值 |                                                              |
-| 值,值,值    | 定义多个背景图时，使用逗号分隔                               |
-
-**复合效果**
-
-我们在业务中常常遇到，需要加载图片和视频的需求，网络因素的不确定性，导致图片或者视频时常加载失败，所以我们通常会把图片在放在一个容器中，把容器的背景设置为公司的logo。
-
-可以往往背景色和logo图标是分开的（不能做成一张图，因为不同位置的图片/视频容器的宽高比坑不同，logo会被压缩/拉伸），好在我们的background是支持多图层的，还可以给每个图层分别配置属性
-
-```html
-<div class="img-content">
-  <image src="">
-</div>
+local 以元素为基准。元素内部滚动,背景跟随滚动不动
 ```
 
 
 
-![image-20220214215532410](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220214215532410%20.png)
 
-`background-image`和`background`同时设置，默认图片在上层
+
+**background-origin**、**background-position**、**background-size**、**background-size**、**background-clip**
+
+* background-origin：先指定图片放置的范围（默认：padding-box）
+
+  | 常用可选值  | 含义                             |
+  | ----------- | -------------------------------- |
+  | border-box  | 背景范围：content+padding+border |
+  | padding-box | 背景范围：content+padding        |
+  | content-box | 背景范围：content                |
+
+* background-position：在这个范围内，再指定图片从哪个位置开始放置（默认为left top，或者 0 0）
+
+  | 常用可选值                                     | 含义                                                         |
+  | ---------------------------------------------- | ------------------------------------------------------------ |
+  | left\|right\|top\|bottom\|center               | 1、两个参数时，第一个为水平方向，第二个为竖直方向；<br />2、一个参数时，就是水平方向，竖直方向默认为center |
+  | 数值、百分比（可为负数，百分比以父元素为参考） | 1、两个参数时，第一个为水平方向距左侧距离，第二个为竖直方向距顶部距离；<br />2、一个参数时，就是水平方向距左侧距离，竖直方向默认为还是为center |
+
+* background-size：指定了图片放置的起始位置了，该来指定图片的大小了（默认值auto）
+
+  | 可选值个数 | 含义                                                         |
+  | ---------- | ------------------------------------------------------------ |
+  | 单个值     | 1、cover：保持宽高比，覆盖整个元素区域（可能会超出被裁剪）<br />2、contain：保持宽高比，整个图片全部包含在元素区域（可能会留白）<br /><br />3、auto：背景图像的真实大小<br />4、数字、百分比（不允许负数，百分比以父元素为参考）：指定为图片宽度，默认保持宽高比自动设置高度 |
+  | 多个值     | 数字、百分比（不允许负数，百分比以父元素为参考），分别设置宽、高 |
+
+* background-repeat：前面设置图片尺寸了，但是其中也提到了元素填充背景图后，可能会留白
+  默认情况会在水平和竖直两个方向重复这个图片直到填充满，效果如下：
+
+  ![image-20221207125141369](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207125142%20.png)
+
+  也可以设置不填充，效果如下
+
+  ![image-20221207125336977](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207125337%20.png)
+
+  | 单值      | 等价的双值（第一个值是水平，第二个值是垂直） | 含义                                                     |
+  | :-------- | :------------------------------------------- | -------------------------------------------------------- |
+  | repeat-x  | repeat no-repeat                             | 仅水平方向留白重复填充                                   |
+  | repeat-y  | no-repeat repeat                             | 仅竖直方向留白重复填充                                   |
+  | repeat    | repeat repeat                                | 水平、竖直方向留白重复填充                               |
+  | space     | space space                                  | 当背景图像不能以整数次平铺时，会用空白间隙填充在图像周围 |
+  | round     | round round                                  | 当背景图像不能以整数次平铺时，会根据情况缩放图像         |
+  | no-repeat | no-repeat no-repeat                          | 不重复                                                   |
+
+* background-clip：前面两部把图片放置好后，才轮到裁切（默认为border-box）
+
+  属性值与background-origin相同
+
+  这是一个background-origin为border-box的例子（黑色的点是border），background-clip默认也为border-box
+
+  ![image-20221207123522494](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207123522%20.png)
+
+  修改background-clip为padding-box
+
+  ![image-20221207123653878](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207123654%20.png)
+
+
+
+**技巧**
+
+```
+总想着 background-origin、background-clip 两个属性如何展示，如何裁切心智太重
+
+一般开发中，很少需要裁剪图片，所以，这两个值都设置成一样的，分成两种情况:
+
+* 图片需要显示到padding+content :设置为padding-box
+
+* 图片需要显示到content :设置为content-box
+```
+
+
+
+###  盒子边框
+
+**border**
+
+边框复合属性，下面三个属性的合并
 
 ```css
-.img-content {
-  width: 113px;
-  height: 75px;
-  border: 0 solid rgba(123, 123, 123, 0.2);
-  border-radius: 3.77px;
-  overflow: hidden;
-  
-  
-  background: #dddddd;
-  background-image: url(https://image.bitautoimg.com/yc-h5mp/hm-atom-h5/newCenter/yc-placeholder.png);
-  background-size: 80%, 100%;  //默认background-image属性在上background之上，所以80%是设置图片的宽度，高度默认auto
-  background-repeat: no-repeat;
-  background-position: center;
-}
+border:solid 1px red; 
+/*
+	border-style 边框样式：solid是是实线
+	border-width 边框宽度
+	border-color 边框颜色
+*/
 ```
 
-### 盒子边框
+边框样式还有几个重要的值：
 
-border，border-width，border-style，border-color，border-radius属性跳过
+* none：无边框，即边框宽度为0
 
-**border-image**：边框图片
+* hidden：隐藏边框
 
-| 常用可选值                                | 含义 |
-| ----------------------------------------- | ---- |
-| image-source \| height \| width \| repeat |      |
+* dotted：点状轮廓 
+
+* dashed：虚线轮廓
+
+* solid：实线轮廓
+
+**border-radius**
+
+边框圆角
+
+一组值： `水平半径/垂直半径`，如果只有一个参数值，默认第二个参数和第一个相同
+
+一般情况下我们只指定一组值，则4个圆角都是同一样的，例子如下：
+
+![image-20221207151110452](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221207151111%20.png)
+
+**border-image**
+
+很多时候，默认的边框并不能满足需求，这时候就需要使用图片作为边框了
+
+显示图片边框的前提，必须设置宽边的样式和宽度。当图片加载不出来就会显示这个边框
+
+```
+border: solid 30px;
+```
+
+
+
+border-image
+
+复合属性
+
+```css
+border-image：border-image-source || border-image-slice [ / border-image-width | / border-image-width ? / border-image-outset ]? || border-image-repeat
+```
+
+
+
+border-image-source
+
+指定边框资源
+
+![背景图1-2](http://c.biancheng.net/uploads/allimg/210809/1532491419-0.png)
+
+```css
+border-image-source:url(http://c.biancheng.net/uploads/allimg/210809/1532491419-0.png)
+```
+
+
+
+border-image-slice
+
+指定数字（没单位，默认单位为像）
+
+![image-20221208100926238](/Users/yc/Library/Application Support/typora-user-images/image-20221208100926238.png)
+
+边框图为下图：
+
+![背景图1-2](http://c.biancheng.net/uploads/allimg/210809/1532491419-0.png)
+
+指定`border-image-slice:27`就能顺利的把4个蓝色的菱形分割下来，下面的属性讲的是怎么显示这4条边
+
+border-image-width
+
+指的是图片的宽度，这里border的宽度设置为30px，border-image-width设置为40px，可看出图片边框的宽度大于border的宽度时，是向内延伸的。小于时，是紧靠边框外侧的
+
+![image-20221208095117839](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221208095118%20.png)
+
+border-image-outset
+
+指定在上一步的基础上，四边向外偏移的距离
+
+
+
+border-image-repeat
+
+指定border-image-slice分隔出来的四条边，如何显示在边框上，默认stretch
+
+| 常用可选值 | 含义                                                         |
+| ---------- | ------------------------------------------------------------ |
+| stretch    | 将被分割出来的4个边，分别使用拉伸的方式来填充满边框区域      |
+| repeat     | 将被分割出来的4个边，重复平铺的方式来填充满边框区域，当图像碰到边界时，超出的部分会被截断 |
+| round      | 将被分割出来的4个边，重复平铺的方式来填充满边框区域，当背景图像不能以整数次平铺时，会根据情况缩放图像 |
+| space      | 将被分割出来的4个边，重复平铺的方式来填充满边框区域，当背景图像不能以整数次平铺时，会用空白间隙填充在图像周围 |
+
+例子中，分割出来的四条边都是一个蓝色的菱形，分别使用不同的值效果如下
+
+stretch（默认值）
+
+![image-20221208100600108](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221208100600%20.png)
+
+repeat
+
+![image-20221208100623234](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221208100623%20.png)
+
+round
+
+![image-20221208100653489](/Users/yc/Library/Application Support/typora-user-images/image-20221208100653489.png)
+
+space
+
+![image-20221208100725036](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221208100725%20.png)
+
+### 盒子阴影
 
 **box-shadow**：盒子阴影，可以描述一个或多个阴影效果（多个时，用逗号分隔）
 
-外阴影：offset-x指盒子右边框向外扩展，offset-y 指盒子下边框向下扩展
+外阴影：offset-x指盒子右边框向外扩展，offset-y 指盒子下边框向下扩展，
 
 ```javascript
-box-shadow：offset-x | offset-y | blur-radius（模糊程度） | spread-radius（扩散程度） | color 
+box-shadow：offset-x | offset-y | blur-radius（模糊程度） | spread-radius（扩散程度） | color (如果未定义color阴影颜色将默认取当前最近的文本颜色)
 ```
 
-内阴影：offset-x指盒子左边框向内扩展，offset-y 指盒子上边框向内扩展
+内阴影：再加一个inset属性
 
+
+
+头像发光边框效果：
+
+![image-20221209144705834](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221209144706%20.png)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<style>
+    .all{
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+				
+      	/*padding就是外侧的白圈*/
+        padding: 20px;
+        background: white;
+      
+      	/*外侧的发光效果*/
+        box-shadow:0 0 30px #ddd;
+    }
+    img{
+        width: 100%;
+        height: 100%;
+      	/*图片设置成圆形，带边框*/
+        border-radius: 50%; 
+        border: solid 1px black;
+    }
+</style>
+<body style="background: black">
+    <div class="all">
+        <img src="https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E5%8D%9A%E5%AE%A2%E5%A4%B4%E5%83%8F/avatar.png"/>
+    </div>
+</body>
+</html>
 ```
-box-shadow：inset offset-x | offset-y | blur-radius（模糊程度） | spread-radius（扩散程度） | color 
-```
+
+
 
 ### 格式上下文（简略版）
 
@@ -3148,6 +3333,12 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 ```
 
+
+
+**背景颜色改变过渡效果**
+
+
+
 ## canvas
 
 [学习 HTML5 Canvas 这一篇文章就够了](https://www.runoob.com/w3cnote/html5-canvas-intro.html)
@@ -3272,7 +3463,7 @@ draw();
 可以设置通过下面的方式解决
 
 ```
-左flex子元素设置width:1px;
+左flex子元素设置 width:1px;flex-grow: 1;
 ```
 
 例子：
@@ -3565,9 +3756,19 @@ absolute、fixed时，由其内部撑起来
 
 ![image-20220702163606132](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20220702163606%20.png)
 
+**出现条件**
+
+块级元素中出现行级元素或inline-block元素
+
+最为常见的场景就是，【图片+文字】的组合，如下：
+
+![image-20230105100454264](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230105100454%20.png)
+
+![image-20230105100618425](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230105100618%20.png)
+
 **解决**
 
-设置font-size为零
+父级盒子设置font-size为零
 
 ```css
 .wrap {
@@ -3697,7 +3898,7 @@ CSS中使用百分比绝大部分是父元素的百分比，且横向是父元�
 
 因为如果设置`height:100%`,表示高度为屏幕高度，但是，当用户屏幕高度较小时，中部150px的div会撑出来，撑出来的部分底部没有背景
 
-### 文本
+### 文本省略
 
 **注意**：无论是单行文本还是多行文本，当设置div高度后，如果高度比较小，可能会出现，`...`因为超出盒子而被盖住
 
@@ -3723,7 +3924,25 @@ display: -webkit-box;
 
 ### 居中问题
 
-* 行高和高度相等，可实现div中文字的垂直居中
+* 块级元素居中
+
+  利用margin实现水平居中，记住该块级元素必须有宽度
+
+  ```
+  margin:0 auto;
+  ```
+
+* 行内元素
+
+  ```
+  //父级盒子增加这个属性，可使的内部文本居中
+  text-align:center;
+  
+  //行内元素行高=父级盒子高度
+  height:100px;
+  line-height:100px
+  ```
+
 * flex
 
 * 绝对布局（实现居中）
@@ -4234,6 +4453,239 @@ flex-direction:row;
 如果，给.parent2添加`position: absolute;`，parent2脱离的文档流，但是可以感知到parent1
 
 ![image-20211201161408653](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20211201161408653%20.png)
+
+### flex的大坑之纵向布局无法撑开父元素宽度
+
+目标效果
+
+![image-20221110114445868](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221110114446%20.png)
+
+正常思路：
+
+红色块设置高度，黄色块纵向排列，填满则换行
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<style>
+.all{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+}
+.globe{
+    flex-shrink: 0;
+
+    height: 100px;
+    background: red;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    margin-right: 10px;
+}
+.item{
+    width: 50px;
+    background: yellow;
+    margin: 10px;
+    writing-mode: horizontal-tb;
+}
+</style>
+<body>
+<div class="all">
+    <div class="globe">
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+    </div>
+    <div class="globe">
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+    </div>
+</div>
+</body>
+</html>
+```
+
+实际效果：
+
+![image-20221110114846834](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221110114847%20.png)
+
+利用chrome浏览器隐藏第二个红色块及其子元素：可明细看出来，纵向排列无法撑起父元素宽度
+
+![image-20221110114932278](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221110114932%20.png)
+
+最终实现：利用`writing-mode`属性。
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<style>
+.all{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+.globe{
+    flex-shrink: 0;
+
+    height: 100px;
+    background: red;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    margin-right: 10px;
+    writing-mode: vertical-lr;  /* 指定黄色块，竖直从上至下排列，从左到右列一列的排*/
+}
+.item{
+    width: 50px;
+    background: yellow;
+    margin: 10px;
+    writing-mode: horizontal-tb; /*每个黄色块内部的文字也会被垂直，需要再次指定文字从上到下*/
+}
+</style>
+<body>
+<div class="all">
+    <div class="globe">
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+        <div class="item" >111</div>
+    </div>
+    <div class="globe">
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+        <div class="item" >222</div>
+    </div>
+</div>
+</body>
+</html>
+
+```
+
+### 水波增长动画
+
+html
+
+```html
+<view class="upload-animation-wrapper">
+  <view style="animation: rollover 10s linear infinite, moveup {{duration}} ease-out forwards;" class="progress-wave"></view>
+  <image
+    class="big-cloud-bg"
+    src="https://mocard-1251489075.cos.ap-beijing.myqcloud.com/charge-mini-program/orderUploading/icon-big-cloud.png">
+  </image>
+  <image
+    class="icon-blue-arrow-up"
+    src="https://mocard-1251489075.cos.ap-beijing.myqcloud.com/charge-mini-program/orderUploading/icon-blue-arrow-up.png">
+  </image>
+</view>
+
+```
+
+css
+
+```css
+.upload-animation-wrapper {
+  width: 220rpx;
+  height: 156rpx;
+  position: relative;
+  margin: 238rpx auto 40rpx;
+  overflow: hidden;
+  background-color: #EAF1FF;
+}
+
+.progress-wave {
+  position: absolute;
+  top: 156rpx;
+  left: 50%;
+  width: 600rpx;
+  margin-left: -300rpx;
+  height: 600rpx;
+  border-radius: 43%;
+  z-index: 1;
+  background-color: #C7D9FE;
+}
+
+.big-cloud-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.icon-blue-arrow-up {
+  width: 80rpx;
+  height: 74rpx;
+  position: absolute;
+  top: 62rpx;
+  left: 72rpx;
+  z-index: 3;
+  animation: bounce 1s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+  from {}
+
+  50% {
+    top: 42rpx;
+  }
+
+  to {
+    top: 62rpx;
+  }
+}
+
+@keyframes rollover {
+  from {}
+
+  to {
+    transform: rotateZ(360deg);
+  }
+}
+
+@keyframes moveup {
+  from {}
+
+  to {
+    top: 0;
+  }
+}
+
+```
+
+核心是
+
+```
+.progress-wave这个元素边旋转、边上升
+```
+
+
 
 ## 回流与重绘
 

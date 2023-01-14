@@ -1400,7 +1400,7 @@ Post请求将传递的数据放在请求体中
 
 分为：
 
-* form-data
+* **form-data**
 
   可以从Postman工具的Body字段得知，form-data可以传递多条键值对数据，数据值可以是字符串/文件
 
@@ -1412,7 +1412,49 @@ Post请求将传递的数据放在请求体中
 
   ![image-20220612165822500](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220612165822%20.png)
 
-* x-www-from-urlencoded
+  前端发送方式：
+
+  手动构造FormData对象，然后发送。[FormData的常用方法](https://blog.csdn.net/weixin_46058921/article/details/122387516)
+
+  ```html
+  <script>
+    // 创建FormData对象
+  	var formData = new FormData(); 
+   
+  	//往FormData对象里加入键值对：
+  	formData.append('username', 'Chris');
+    //删除键值对
+    formData.delete('username');
+  
+    let response = await fetch('./upload', {
+        method: 'POST',
+        body: formData
+    });
+  </script>
+  ```
+
+  自动构造FormData，通过指定enctype为`multipart/form-data`
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>上传</title>
+  </head>
+  <body>
+    <form action="./upload" method="post" enctype="multipart/form-data">
+      	<!--所有的输入元素都需要有name属性，name就是键-->
+        <input type="file" name="file1">
+        <input type="submit" value="提交">
+    </form>
+  </body>
+  </html>
+  ```
+
+  
+
+* **x-www-from-urlencoded**
 
   可以传递多条键值对数据，数据值只能是字符串。所以，不能上传文件
 
@@ -1422,7 +1464,18 @@ Post请求将传递的数据放在请求体中
 
   ![image-20220612170037469](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220612170037%20.png)
 
-* raw
+  ```html
+  <script>
+    let response = await fetch('./upload', {
+        method: 'POST',
+        body: 'username=hello&password=123'
+    });
+  </script>
+  ```
+
+  
+
+* **raw**
 
   传递文本数据
 
@@ -1437,7 +1490,25 @@ Post请求将传递的数据放在请求体中
 
   ![image-20220605181653494](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220605181653%20.png)
 
-* binary
+  前端发送方式：
+
+  ```html
+  <script>
+    let user = {
+    	name: 'John',
+    	surname: 'Smith'
+  	};
+    
+    let response = await fetch('./upload', {
+        method: 'POST',
+        body: JSON.stringify(user)
+    });
+  </script>
+  ```
+
+  
+
+* **binary**
 
   只可以上传二进制数据，通常用来上传文件，由于没有键值，所以，一次只能上传一个文件
 
@@ -6063,18 +6134,6 @@ r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
   [Bcrypt库](https://pkg.go.dev/golang.org/x/crypto/bcrypt)
 
   
-
-## 单元测试（待补充）
-
-项目中，以`*_test.go`命名的源代码文件都是测试文件，这些文件不会被`go build`编译到最终的可执行文件中
-
-在`*_test.go`文件中有三种类型的函数：
-
-|   类型   |         格式          |              作用              |
-| :------: | :-------------------: | :----------------------------: |
-| 测试函数 |   函数名前缀为Test    | 测试程序的一些逻辑行为是否正确 |
-| 基准函数 | 函数名前缀为Benchmark |         测试函数的性能         |
-| 示例函数 |  函数名前缀为Example  |       为文档提供示例文档       |
 
 ## HTTP压测
 

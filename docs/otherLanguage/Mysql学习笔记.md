@@ -20,7 +20,7 @@ CREATE TABLE chihiro_code_count (
   total_num int(255) NOT NULL comment '总变化行数',
   repo_rid int(11) NOT NULL comment '仓库信息id',
   PRIMARY KEY (`id`)
-)comment='代码统计数据表';
+)comment '代码统计数据表';
 ```
 
 推荐使用时间戳（无论在哪个时区，时间戳是一样的，避免Mysql、容器、Node环境下个各个依赖，采用不同时区带来的问题）

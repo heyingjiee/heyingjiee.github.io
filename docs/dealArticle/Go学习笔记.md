@@ -781,7 +781,7 @@ func main() {
 
 **fmt.scan**
 
-输入值，如果有多个值，用空白符分隔开多个。当分隔开的值和参数变量个数一致时，回车才会结束输入
+输入值，如果有多个值，用空白符分隔开多个。当分隔开的值个数>参数变量个数时，回车才会结束输入，否则回车会被当做分隔的空白符
 
 ```go
 var (
@@ -791,6 +791,11 @@ var (
 
 fmt.Scan(&name, &age)
 fmt.Println(name, age)
+
+
+//输入：a 1 2 3
+//输出：a 1
+
 ```
 
 **fmt.scanln**
@@ -806,6 +811,20 @@ var (
 fmt.Scanln(&name, &age)
 fmt.Println(name, age)
 ```
+
+从上面我们可以知道，空格、回车等作为空白符是不能被scan、scanln读入。所以，这里我们介绍bufio包下的方式
+
+```go
+reader := bufio.NewReader(os.Stdin)
+str, err := reader.ReadString('\n') //回车结束输入
+if err != nil {
+	fmt.Printf("err-->%v", err)
+	return
+}
+fmt.Println(str)
+```
+
+
 
 **fmt.scanf**
 
@@ -887,13 +906,13 @@ time包中的Now是构造函数，返回Time结构体。Year、Month...等是Tim
 
 ```go
 now := time.Now()         //时间对象
-fmt.Println(now)          //2022-05-12 00:17:11.940078 +0800 CST m=+0.000130398
+fmt.Println(now)          //2022-05-12 19:17:11.940078 +0800 CST m=+0.000130398
 fmt.Println(now.Year())   //2022
 fmt.Println(now.Month())  //May
 fmt.Println(now.Day())    //12
-fmt.Println(now.Hour())   //
+fmt.Println(now.Hour())   //19（24小时制）
 fmt.Println(now.Minute()) //17
-fmt.Println(now.Second()) //10
+fmt.Println(now.Second()) //11
 ```
 
 **时间戳**
@@ -902,6 +921,12 @@ fmt.Println(now.Second()) //10
 
 ```go
 fmt.Println(now.Unix()) //当前时间结构体实例转化为时间戳（单位秒）
+```
+
+时间戳转化为时间对象
+
+```go
+fmt.Println(time.Unix(1673093066, 0)) //第一个参数是秒，第二个是纳秒
 ```
 
 **时间格式化**
@@ -1012,32 +1037,15 @@ func (t Time) After(u Time) bool
 
 如果t代表的时间点在u之后，返回真；否则返回假。
 
-**定时器**
-
-time.Tick(时间间隔 d)，返回值是通道，每隔***时间间隔d***向通道放入一个当前的时间实例
-
-```go
-time.Tick(10 * time.Second)
-```
-
-每隔1秒打印当前时间
-
-```go
-for temp := range time.Tick(time.Second) {
-	fmt.Println(temp)
-}
-
-//2022-05-12 00:54:56.79165 +0800 CST m=+23.001189704
-//2022-05-12 00:54:57.790955 +0800 CST m=+24.000480296
-//2022-05-12 00:54:58.791673 +0800 CST m=+25.001182955
-//....
-```
-
 **休眠**
 
 不建议使用，因为这个函数是真的使得goroutine停止运行等待
 
 time.sleep(时间间隔)
+
+**通道相关的时间函数、方法**
+
+详见<a href="#time库中与通道相关的函数">此处</a>
 
 ### sync
 
@@ -1059,235 +1067,9 @@ sync包提供了基本的同步基元，如互斥锁。除了Once和WaitGroup类
 
 当然，我们也可以不使用这些并发安全的类型，而是使用对变量加锁的方式处理
 
-### os、bufio、io/ioutil读写文件
-
-os包的接口规定为在所有操作系统中都是一致的，其中做常用的是读取文件的一些操作
-
-```
-https://www.liwenzhou.com/posts/Go/go_file/
-```
 
 
-
-**使用os.open返回的文件实例自带的Read方法读取**
-
-```go
-package main
-
-import (
-	"fmt"
-	"io"
-	"os"
-)
-
-func main() {
-	file, err := os.Open("./test.txt")//执行代码文件同目录下的test.txt文件
-	defer file.Close()
-	if err != nil {
-		fmt.Println("read from file failed...  ")
-		return
-	}
-	//res := make([]byte, 1000)
-	for {
-		temp := make([]byte, 100)
-		n, err := file.Read(temp) //将数据读入temp中,n是读取的字节数
-		if err == io.EOF {
-			//res = append(res, temp...)
-			fmt.Printf("%s", string(temp[:n]))
-			return
-		}
-		if err != nil {
-			fmt.Println("read file failed...")
-		}
-		fmt.Printf("%s", string(temp))
-
-	}
-
-}
-```
-
-**使用os.openFile返回的文件实例自带的Write/WriteString方法写**
-
-```
-func OpenFile(name string, flag int, perm FileMode) (*File, error) {
-	...
-}
-```
-
-`name`：要打开的文件名 
-
- `flag`：打开文件的模式。 模式有以下几种：
-
-|     模式      |   含义   |
-| :-----------: | :------: |
-| `os.O_WRONLY` |   只写   |
-| `os.O_CREATE` | 创建文件 |
-| `os.O_RDONLY` |   只读   |
-|  `os.O_RDWR`  |   读写   |
-| `os.O_TRUNC`  |   清空   |
-| `os.O_APPEND` |   追加   |
-
-`perm`：文件权限，一个八进制数，用四位，第一位是0表示是一个八进制数。r（读）4，w（写）2，x（执行）1
-
-如果我们在代码中读取一个数字作为perm，比如输入777，其实这是十进制数字，如果传入这个值，权限就会有问题，所以我们可以将其当作是八进制数，然后使用strconv.ParseInt转化为十进制，然后把这个十进制数字当成perm参数传入
-
-```go
-package main
-
-import (
-	"fmt"
-	"os"
-)
-
-func main() {
-	file, err := os.OpenFile("test.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		fmt.Print("read from file failed... ")
-    return
-	}
-	str := "你好\n"
-	file.Write([]byte(str)) //参数是byte切片
-	file.WriteString("大家好") //参数是字符串
-}
-```
-
-****
-
-**把文件用bufio的Reader封装起来，使用Reader的ReadString/Read读取**
-
-```go
-package main
-
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
-)
-
-func main() {
-	file, err := os.Open("./test.txt")
-	defer file.Close()
-	if err != nil {
-		fmt.Println("read from file failed...")
-    return
-	}
-	reader := bufio.NewReader(file)
-	for {
-    line, err := reader.ReadString('\n') //ReadString("\n"),是按照\n读取
-		if err == io.EOF {
-			fmt.Print(line)
-			return
-		}
-		if err != nil {
-			fmt.Printf("read from file failed: %v\n", err)
-			return
-		}
-		fmt.Print(line)
-	}
-
-}
-
-```
-
-补充：也可以使用Reader的Read方法，和上面的file对象的Read方法一样
-
-```go
-var buf [1000]byte
-Str := bufio.NewReader(file)
-n, err := Str.Read(buf[:]) //数据读入了buf中，n是读取的字节数
-	if err != nil {
-		fmt.Printf("读取失败：%v", err)
-}
-```
-
-
-
-**把文件用bufio的Writer封装起来，使用Writer的WriteString写入**
-
-```go
-func main() {
-	file, err := os.OpenFile("xx.txt", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
-	if err != nil {
-		fmt.Println("open file failed, err:", err)
-		return
-	}
-	defer file.Close()
-	writer := bufio.NewWriter(file)
-	for i := 0; i < 10; i++ {
-		writer.WriteString("hello\n") //将数据先写入缓存
-	}
-	writer.Flush() //将缓存中的内容写入文件
-}
-```
-
-****
-
-**使用`io/ioutil`直接读取文件**
-
-```go
-package main
-
-import (
-	"fmt"
-	"io/ioutil"
-)
-
-func main() {
-	fileByte, err := ioutil.ReadFile("./test.txt")
-	if err != nil {
-		fmt.Printf("read file by ioutil,err:%v\n", err)
-    return
-	}
-	fmt.Print(string(fileByte))
-}
-```
-
-**使用`io/ioutil`直接写文件**
-
-```js
-package main
-
-import (
-	"fmt"
-	"io/ioutil"
-)
-
-func main() {
-	str := "\nioutil写入"
-	err := ioutil.WriteFile("./test.txt", []byte(str), 0666)
-	if err != nil {
-		fmt.Println("read from file failed")
-    return
-	}
-}
-```
-
-**使用`io/ioutil`读取字符串**
-
-```go
-package main
-s
-import (
-	"fmt"
-	"io/ioutil"
-	"strings"
-)
-
-func main() {
-	r := strings.NewReader("Go是一种通用语言，设计时考虑到了系统编程")
-	data, err := ioutil.ReadAll(r) //参数是io.Rreader类型，返回值是[]byte类型
-	if err != nil {
-		fmt.Println("read from file failed")
-		return
-	}
-	fmt.Printf("%v\n", string(data))
-}
-```
-
-
-
-### os文件夹相关补充
+### os文件夹相关
 
 **os.Mkdir**
 
@@ -1641,8 +1423,6 @@ func main() {
 
 
 
-
-
 ## 标识符
 
 **GO语言变量编译规则**
@@ -1839,7 +1619,7 @@ const _ string = "jack"
 
 我们通常使用int，其范围已经足够我们使用了，而且因为int变量占据的内存大小，会随着运行平台而变化。如果用了int64，运行在32位平台，那么存储的这个int64的变量在被读取时，只能读到存储的一半数据，导致与实际数值不同
 
-类型推断默认将浮点型推断为int
+类型推断默认将整数推断为int
 
 ```go
 package main
@@ -1872,6 +1652,47 @@ func main() {
 }
 
 ```
+
+
+
+**数字与字符串基础**
+
+[在线进制转换](https://tools.fun/hex-convert.html)
+
+```
+通常在各种语言中，为了区分数字的进制，使用不同前缀开头代表不同的进制
+
+2：表示是十进制数字
+02：表示是十进制数字（0为前缀）
+0x2:表示十六进制数字（0x为前缀）
+
+数字2，在三种进制中区别不大，再换一个明显点的数字19
+19=023=0x13
+```
+
+我们知道字符底层是使用数字表示的，所以，我们也可以直接使用数字表示某个字符串，但是必须换用`\x`开头
+
+```
+0x42是数字，其对应十进制数字66
+
+\x42是字符，其对应字符A（A的ASC编码是66，这被称为码点。ASC码字符集中的字符，都是由一个码点就能标识。一个码点占据一个字节的存储空间）
+```
+
+其他字符标识
+
+```
+\u开头标识为一个字符，后面接十六进制的Unicode编码（一个Unicode编码对应一个字符，也称为一个码点）
+```
+
+下面是等价对应关系
+
+```
+"世" = "\xe4\xb8\x96" = "\u4e16" 
+```
+
+汉字 "世" ，已经超出了ASC码的编码范围，所以它用了多个码点标识这一个汉字
+
+
 
 ### 浮点型
 
@@ -1914,6 +1735,13 @@ func main() {
 
 ### 字符串
 
+**基本概念**
+
+* **字节**：存储单位
+* **字符**：字符串中的每一个元素叫做“字符”，例如一个汉字、一个字母
+
+一个字符，可能占用多个字节的存储空间
+
 **字符编码问题**
 
 基础：GO使用的是Uncode编码集，按照UTF-8编码存储，UTF-8是可变长度的，1个UTF-8字符，占据1～4个字节（byte）
@@ -1924,13 +1752,17 @@ func main() {
 
 
 
-与其他语言类型基本相同，上面凡是涉及字符串长度和索引的方法，实际上都是按照字节（byte）计算的，所以字符串中出现汉字就会造成不准确的问题
+
+
+与其他语言类型基本相同，Go语言中凡是涉及字符串长度和索引的方法，实际上都是按照字节（byte、B）计算的，所以字符串中出现汉字就会造成不准确的问题
 
 
 
-引入概念：字符串中的每一个元素叫做“字符”，在遍历或者单个获取字符串元素时可以获得字符。字符串使用`""`，字符使用`''`
+字符串中的每一个元素叫做“字符”，在遍历或者单个获取字符串元素时可以获得字符。字符串使用`""`，字符使用`''`
 
-Go语言的字符有以下两种：
+
+
+**Go语言的字符**有以下两种：
 
 - 一种是 byte 类型（1字节，byte是uint8类型的别名）
 - 另一种是 rune 类型（1～4字节，rune是 int32 类型的别名），代表一个 UTF-8 字符，当需要处理中文、日文或者其他复合字符时，则需要用到 rune 类型
@@ -1953,7 +1785,7 @@ func main() {
 }
 ```
 
-反引号中不能放置变量，只能是常量。与JS中的模版字符不通，如果想要字符串中放置变量，必须使用Sprintf
+反引号中不能放置变量，只能是常量。与JS中的模版字符不同，如果想要字符串中放置变量，必须使用Sprintf
 
 **Sprintf**
 
@@ -1967,6 +1799,8 @@ fmt.Println(str)
 
 **字符串基本使用**
 
+注意：Go中字符串可以使用索引访问，但是不允许修改，所以经常转化为切片处理
+
 ```go
 package main
 
@@ -1977,24 +1811,30 @@ import (
 func main() {
 	str := "你好"
 
-	//长度
+	//长度（字节长度）
 	fmt.Println(len(str)) //6
 
-	
-  //+拼接
-  fmt.Println(str + "123") //你好123
+	//+拼接
+	fmt.Println(str + "123") //你好123
+
+	//访问（索引指的是几个字节）
+	fmt.Printf("%v\n", str[0]) //0xe4 （0xe4是一个十六进制数，对应十进制的228）因为汉字是由多个字节组成，这里只能访问到第一个字节
   
+  //字符串可以截取切片，注意[0:1]是左闭右开，取得是第一个字节。截取的类型是字符串
+  fmt.Printf("%T\n", str[0:1])//string
+	fmt.Printf("%x\n", str[0:1]) //e4 ，这里如果使用%v占位符就会输出乱码，所以使用%x输出第一个字节的16进制数字
+  fmt.Printf("%v\n", str[0:3]) //你 ，这里如果使用%v占位符就会输出乱码
   
-  //修改，注意：Go中的字符串是不允许修改的，所以返回一个字符串转化的rune切片，对切片进行处理。（原字符串不变）
-  runeArr := []rune(str) //类型(变量)这是强制转换的语法 
+
+	//修改，注意：Go中的字符串是不允许修改的，所以返回一个字符串转化的rune切片，rune切片的每个元素是一个UTF8字符，对切片进行处理。（原字符串不变）
+	runeArr := []rune(str) //类型(变量)这是强制转换的语法
 	runeArr[0] = '我'
 	fmt.Println(string(runeArr)) //我好
-  println(str) //你好
+	println(str)                 //你好
 }
-
 ```
 
-**字符串的相关方法**
+**<span id='字符串的相关方法'>字符串的相关方法</span>**
 
 ```go
 package main
@@ -2023,7 +1863,7 @@ func main() {
 	fmt.Println(strings.Index(str, "ld"))    //9
 	fmt.Println(strings.LastIndex(str, "好")) //14
 
-	//把切片拼接成字符串
+	//把切片拼接成字符串。注意，第一个参数类型是字符串切片[]string
 	fmt.Println(strings.Join(arr, "+")) //hello+world你好
 
 	//去除空行
@@ -2031,26 +1871,205 @@ func main() {
 }
 ```
 
+上面说了len统计的是字节数，一个汉字字符占位多个字节。那么如何精确统计字符数量
+
+```go
+str := "你好"
+fmt.Println(len(str)) //6 ，字节
+
+fmt.Println(utf8.RuneCountInString(str)) //2
+
+//转成rune切片，计算切片长度
+fmt.Println(len([]rune(str))) //2
+```
+
+
+
 ### 类型转换
 
 JS中令我最为头疼的就是它的类型转换，各种类型之间都可以随意转换（感觉很多转换完全没有实际意义），还存在各种隐形转换
 
 Go语言中，必须显式的转换，而且某个类型只能转换到其他的几个特定类型
 
-```
-//数字型
+**数字型**
 
 int float 相关的类型可以互相转换，注意：可能会造成精度丢失
+
+```go
+i := 12.56
+fmt.Println(int(i)) //12
 ```
 
+```go
+j := 12
+fmt.Printf("%T , 结果：%v\n", float32(j), float32(j)) //float32 , 结果：12
+fmt.Printf("%T , 结果：%v", float64(j), float64(j)) //float64 , 结果：12
 ```
-//字符串
 
-string <--> []rune 或者 []byte 
 
-//注意:字符串和数组不可以转换，但是，我们可以取整个数组为切片
-string 和 [100]byte 
+
+**字符串**
+
+转换的意义：在Go中字符串底层一旦创建是不可改变的，而切片是可以自由截取修改的，所以我们时常将字符串转化为切片处理，然后再转换回字符串。请阅读：[关于切片的操作技巧](https://www.liwenzhou.com/posts/Go/slice_tricks/)
+
+string --> []rune 或者 []byte 
+
+```go
+str := "你好"
+//注意:0x开头表示是16进制数据
+
+//两个汉字占了6个字节，所以byte数组有6位。
+fmt.Printf("%#v\n", []byte(str)) //[]byte{0xe4, 0xbd, 0xa0, 0xe5, 0xa5, 0xbd}
+
+//两个汉字是两个UTF8字符，所以rune数组有2位。对于两个字符的Unicode编码
+fmt.Printf("%#v\n", []rune(str)) //[0x4f60 0x597d]
+
 ```
+
+string <-- []rune 或者 []byte 
+
+```go
+str := "你好"
+
+fmt.Printf("%#v\n", string([]byte(str))) //"你好"
+
+fmt.Printf("%#v\n", string([]rune(str))) //"你好"
+```
+
+string --> []string
+
+```go
+//字符串可以截取切片，注意[0:1]是左闭右开，返回值是string类型
+fmt.Printf("%x\n", str[0:1]) //e4
+
+
+//然后将字符串推入一个字符串切片即可
+append()
+```
+
+string <-- []string
+
+字符串切片不能通过string函数直接转化为字符串，需要使用Join函数
+
+```go
+strSlice := []string{"你", "好"}
+fmt.Printf("%#v\n", strings.Join(strSlice, "")) //"你好"
+```
+
+额外的关于底层的一些介绍：
+
+```go
+s := "abc"
+b := []byte(s) // 做了一次拷贝，分配了一个新的字节切片。所以修改b不会影响s
+s2 := string(b) //构造一个字符串拷贝
+```
+
+可以看出转换的过程中涉及大量的内存分配，所以Go提供 `strings` 提供了许多实用函数，这些函数可以直接处理字符串，而不需要转化为切片处理后再转化为字符串。详见<a href="#字符串的相关方法">这里</a>
+
+`bytes` 包还提供了 `Buffer` 类型用于字节 `slice` 的缓存。一个 `Buffer` 开始是空的，但是随着 `string` 、 `byte` 或 `[]byte` 等类型数据的写入可以动态增长，一个 `bytes.Buffer` 变量并不需要初始化，因为零值也是有效的：
+
+* WriteByte 写入一个字节，`ASCII` 字符是一个字节，因此这个函数多用于写入`ASCII` 字符
+* WriteRune 写入一个字符 
+
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"strconv"
+)
+
+func intsToString(values []int) string {
+	var buf bytes.Buffer
+	buf.WriteByte('[')
+	for i, v := range values {
+		if i > 0 {
+			buf.WriteString(",")
+		}
+		buf.WriteString(strconv.Itoa(v)) //数字转成字符，才能作为WriteString的参数
+	}
+	buf.WriteByte(']')
+	return buf.String()
+}
+func main() {
+	fmt.Println(intsToString([]int{1, 2, 3})) // "[1, 2, 3]"
+}
+
+```
+
+
+
+
+
+**字符串与数字之间**
+
+大多使用strconv这个Go标准库
+
+数字-->字符串
+
+```go
+i := 12
+
+//方法1：
+fmt.Printf("类型：%T，值：%v \n", strconv.Itoa(i), strconv.Itoa(i)) //类型：string，值：12 
+
+//方法2：Sprintf返回值就是字符串，甚至能通过指定占位符%b、%o、%x转换进制
+res := fmt.Sprintf("%d", i) 
+fmt.Printf("类型：%T，值：%v \n", res, res) //类型：string，值：12
+
+```
+
+数字<--字符串
+
+两种方案参数必须是整数字符串，否则就会抛出err（相比）
+
+方案1：
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	x, err := strconv.Atoi("123")
+	if err != nil {
+		fmt.Printf("err:%v\n", err)
+		return
+	}
+	fmt.Printf("类型：%T，值：%v \n", x, x) //类型：int，值：123
+
+}
+```
+
+方案2：
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+  //参数1:为待转换的字符串
+  //参数2:指定把字符串当成是进制的数字
+  //参数3:为字符串转换的int类型。0表示int，16表示int16。最后会转化为int64返回
+  //返回结果为：int64 类型
+	x, err := strconv.ParseInt("12", 3, 64) 
+	if err != nil {
+		fmt.Printf("err:%v\n", err)
+		return
+	}
+	fmt.Printf("类型：%T，值：%v \n", x, x) //类型：int64，值：5
+}
+```
+
+
 
 ## 流程控制
 
@@ -2345,6 +2364,8 @@ func main() {
 
 ## 切片类型
 
+补充：[关于切片的操作技巧](https://www.liwenzhou.com/posts/Go/slice_tricks/)
+
 切片（Slice）是基于数组类型做的一层封装，是一个拥有相同类型元素的可变长度的序列。它非常灵活，支持自动扩容。
 
 切片是一个引用类型，它的内部结构包含`地址`、`长度`和`容量`。切片一般用于快速地操作一块数据集合
@@ -2361,9 +2382,20 @@ func main() {
 var arr []int 
 fmt.Printf("%T\n", arr) //[]int
 fmt.Println(arr == nil) //true
+fmt.Println(len(slice1)) //0  len切片长度，后面会讲到
+fmt.Println(cap(slice1))  //0  cap切片容量，后面会讲到
 ```
 
 Go语言与其他大多数语言一样，都是定长数组。这一点不如JS的可变长度数组使用的方便
+
+注意：Go中切片类型的变量不用初始化空间，就可以向其中追加元素，这是一种很常见的用法
+
+```go
+str := "你好"
+var slice1 []string
+res := append(slice1, str[0:3]) //append向空切片中追加元素，后面会讲到
+fmt.Printf("%v\n", res) //[你]
+```
 
 **数组初始化**
 
@@ -2580,7 +2612,7 @@ var a map[string]int //key是string，value是int类型的map
 fmt.Println(a == nil) //true
 ```
 
-想要在map中保存数据，必须初始化
+想要在map中保存数据，必须初始化（回一下前面，切片不初始化也可以保存数据）
 
 **初始化map类型变量**
 
@@ -2971,6 +3003,30 @@ type 自定义类型名 类型
 type 别名 = 类型
 ```
 
+**两者区别**
+
+别名可以看成起了一个乳名，判断变量类型输出的还是大名
+
+```go
+func main() {
+	type test = int
+	var a test = 1
+	fmt.Printf("%T\n", a) //int
+}
+```
+
+自定义类型，是真的定义了一个全新的类型
+
+```go
+func main() {
+	type test int
+	var a test = 1
+	fmt.Printf("%T\n", a) //main.test
+}
+```
+
+
+
 ## 结构体类型
 
 与C语言的结构体一样，其实就是帮助我们构造一些复杂的类型
@@ -3255,8 +3311,8 @@ Go中提供的方法，以一种新的形式为Struct注册函数，这种方式
 
 注意：
 
-* 接收者和参数一样都是值传递，所以指针接收者，可以修改结构体实例的值
-* 结构体实例、结构体实例指针，均可以两种调用方法（接收者是结构体类型、结构体指针类型）
+* 相同点：结构体实例、结构体实例指针，均可以两种调用方法（接收者是结构体类型、结构体指针类型）
+* 不同点：接收者和参数一样都是值传递，所以指针接收者，可以修改结构体实例的值
 
 ```go
 func(结构体类型首字母小写 结构体类型)方法名（参数列表）（返回值列表）{
@@ -4058,6 +4114,66 @@ func main() {
 
 需要使用reflect标准库
 
+反射是建立在接口的基础上的。Go是一门静态语言，除接口类型外，其他类型的变量在代码运行前就已经确定了（例如一个int、string类型的变量），且不会改变
+
+唯独接口类型的变量，会在运行时，随着赋值不同而发生变化，所以更多时候，我们使用反射来查看接口类型变量在运行时的类型、值
+
+前面提到过，空接口的内部结构分为两个部分，当存入不同值时，type字段会记录存入值的类型，而value字段就是存入值。
+
+![image-20220511232331687](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220511232331687.png)
+
+反射可以帮助我们在程序运行时，动态的获取接口类型变量中存储的值（value）、值的类型（type）
+
+### 使用流程
+
+![image-20230110012216786](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230110012217%20.png)
+
+**实例转化为reflect.Type、reflect.Value**
+
+使用反射，一般会将接口类型的变量先转化为  reflect.Type 、reflect.Value 类型实例。然后通过他们的方法完成逻辑
+
+![image-20230109225548308](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230109225548%20.png)
+
+最重要的两个函数：（获取Type、Value实例）
+
+```go
+//TypeOf返回接口中保存的值的类型，TypeOf(nil)会返回nil。
+func TypeOf(i interface{}) Type
+
+//返回一个初始化为接口类型的变量i，它的具体值的Value，ValueOf(nil)返回Value零值。
+func ValueOf(i interface{}) Value
+```
+
+这里用一个静态变量做一个展示（静态变量不会变化，但是如果是接口类型的变量就会随着赋值一直变化）
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	//静态类型的变量
+	var x float32 = 3.4
+	fmt.Println("类型是", reflect.TypeOf(x)) //类型是 float32
+	fmt.Println("值是", reflect.ValueOf(x)) //值是 3.4
+
+	//通过ValueOf拿到的Value类型（即存储的值），能判断更多信息
+	v := reflect.ValueOf(x)
+	fmt.Println(v.Kind() == reflect.Float32) //true
+	fmt.Println(v.Type())                    //float32
+	fmt.Println(v.Float())                   //3.4000000953674316
+}
+```
+
+
+
+**11**
+
+
+
 ### 基本使用
 
 **获取任意值的类型对象（reflect.Type）**
@@ -4415,17 +4531,19 @@ func main() {
 
 ## 并发编程
 
-### 并发基础
+### 并发知识基础
 
-这里的很多内容，其实都是《计算机操作系统》这门课程中的内容
+这里的很多内容，其实都是《计算机操作系统》这门大学课程中的内容，这里只是简略介绍
 
 **并发概念**
 
-进程（process）：操作系统进行资源分配和调度的一个独立单位
+进程（process）：操作系统进行**资源分配和调度**的最小单位，在内核态
 
-线程（thread）：操作系统基于进程开启的轻量级进程，一个进程里至少有一个线程，线程是操作系统调度执行的最小单位
+线程（thread）：操作系统基于进程开启的轻量级进程，一个进程里至少有一个线程，线程是**操作系统调度**执行的最小单位，在内核态
 
-协程（coroutine）：非操作系统提供而是由用户自行创建和控制的用户态‘线程’，比线程更轻量级
+协程（coroutine）：非操作系统提供而是由用户自行创建和控制的，比线程更轻量级，在用户态
+
+总结下：进程、线程是由系统调度的，协程是用户实现的，在大多数语言中都是对内核线程的封装
 
 **系统进程通讯**
 
@@ -4433,13 +4551,90 @@ func main() {
 
 
 
-### Go中的线程
+### 语言基本的并发模型
 
-即goroutine，是语言级别实现的用户级别线程，开发者操作Go语言中的线程，Go语言底层再去调用系统的线程库，实现多线程。所以，Go线程的切换不需要系统内核调度，而是由Go运行时（runtime）负责调度
+只有内核线程能操作系统资源，各个语言基本都是创建用户态的协程，通过和内核线程建立映射来实现并发
 
-Go语言中的并发程序主要是通过基于CSP（communicating sequential processes，一种线程模型），也就是**管道通讯**的方式，使用Go语言中的goroutine和channel来实现，当然也支持使用传统的多线程共享内存的并发方式
+**一对一模型**
+
+1个内核态线程对于1个用户态的协程
+
+缺点是销毁、创建这种协程以及多个协程的上下文切换，都是都是直接由操作系统层面来做需要损耗大量性能
+
+![image-20221203190949994](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20221203190950%20.png)
+
+**一对多模型**
+
+1个内核态线程对于多个用户态的协程，很多语言都是采用的这种实现方案
+
+缺点是
+
+* 一个用户态协程调用阻塞式的系统调用时，其他内核线程的协程就会被阻塞。对于这个问题很多语言提出了解决方案：
+
+  它们的**协程库**会把一些阻塞的操作重新封装为完全的非阻塞形式，然后在要阻塞的点上，主动让出自己，并通过某种方式通知或唤醒其他待执行的协程运行，从而避免了其他协程被阻塞
+
+* 同属于一个内核线程的协程只能运行在一个CPU上，无法在多核CPU上执行
+
+![image-20221203191810331](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20221203191810%20.png)
+
+**多对多模型**
+
+1个内核态线程对于多个用户态的协程，很多语言都是采用的这种实现方案，及解决了上面出现的问题
+
+![image-20221203192539789](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20221203192539%20.png)
+
+
+
+**Go的GPM并发模型**
+
+Go的GPM并发模型是典型的多对多模型，Go语言内置的调度器，可以让多核CPU中每个CPU执行一个协程
+
+详见[这里](https://github.com/rubyhan1314/Golang-100-Days/blob/master/Day16-20(Go%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E8%BF%9B%E9%98%B6)/day17_Go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91Goroutine.md#22-go%E5%B9%B6%E5%8F%91%E8%B0%83%E5%BA%A6-g-p-m%E6%A8%A1%E5%9E%8B)
+
+
+
+
+
+### runtime包
+
+runtime包提供和go运行时环境的互操作功能
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func init() {
+	fmt.Printf("CPU数量：%v\n", runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
+func main() {
+	fmt.Printf("GOROOT目录：%v\n", runtime.GOROOT())
+	fmt.Printf("当前系统：%v\n", runtime.GOOS)
+
+	go func() {
+		for i := 0; i < 1000; i++ {
+			fmt.Println("goroutine")
+		}
+	}()
+	for i := 0; i < 4; i++ {
+		runtime.Gosched()
+		fmt.Println("main")
+	}
+
+}
+
+//runtime.Goexit() //结束goroutine，但是defer还是会执行
+```
+
+
 
 ### goroutine
+
+即Go语言的协程，是语言级别实现的用户级协程，开发者操作Go语言中的线程，Go语言底层再去调用系统的线程库，实现多线程。所以，Go线程的切换不需要系统内核调度，而是由Go运行时（runtime）负责调度
 
 一个goroutine一般只需要2KB大小，所以，在Go程序中同时创建成百上千个goroutine是非常普遍的
 
@@ -4454,16 +4649,130 @@ goroutine 是 Go 程序中最基本的并发执行单元。每一个 Go 程序�
 操作系统线程与goroutine是多对多的关系
 
 * 一个操作系统线程对应多个goroutine
+
 * 多个goroutine可能被Go runtime分配到多个操作系统线程运行
 
-**开启goroutine**
+  
+
+**主goroutine**
+
+main函数运行后，会开启一个mian-goroutine（主goroutine）
+
+主goroutine启动后，按顺序进行如下工作：
+
+* 设置每一个子goroutine所能申请的最大栈空间
+
+  32位操作系统上为250MB，64位操作系统上为1GB。如果子goroutine超出就会引发栈溢出的panic，程序也就终止了
+
+* 创建一个特殊的defer语句，用于在主goroutine退出后，进行善后操作
+
+* 创建后台清理内存垃圾的goroutine
+
+* 执行main包中的init函数
+
+* 检查主goroutine是否引发panic，如果有就进行必要的处理
+
+* 主goroutine结束，并且结束当前进程
+
+**两个注意点**
+
+* 主goroutine结束，其中的子goroutine会直接被销毁（为了保证子进程结束后，主进程才能结束，就需要阻塞主goroutine结束，后面会讲到如何做）
+
+  ```go
+  package main
+  
+  import "fmt"
+  
+  func sub() {
+  	fmt.Println("子goroutine")
+  }
+  func main() { //mian-goroutine
+  	go sub() //启动一个子goroutine
+  }
+  ```
+
+  
+
+* 主goroutine会先运行，只有它让出资源，子groutine才能运行
+
+  所以，下面的代码无论运行多少次，都是输出main就结束了，不会输出goroutine
+
+  但是在main函数最后加一句`time.Sleep(10 * time.Second)`，就会在main放弃资源后不结束程序，才会继续输出goroutine
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"runtime"
+  	"time"
+  )
+  
+  func init() {
+  	runtime.GOMAXPROCS(runtime.NumCPU())
+  }
+  func main() {
+  	go func() {
+  		for i := 0; i < 5; i++ {
+  			fmt.Println("goroutine")
+  		}
+  	}()
+  	for i := 0; i < 4; i++ {
+  		fmt.Println("main")
+  	}
+  }
+  
+  ```
+
+  
+
+**goroutine的使用规则**
 
 * 使用go关键字，去执行函数，就会创建一个goroutine（由Go runtime调度何时启动）
 
-* main运行后，会开启一个mian-goroutine。使用go关键创建的sayHello进程是子goroutine。如果main-goroutine结束，子goroutine直接被销毁。为了保证子进程结束后，主进程才能结束，就需要使用sync.WaitGroup这个类型
+  
 
-* 同时存在多个goroutine，如果`GOMAXPROCS=1`（设置只用一个系统线程，运行多个goroutine），则能看到一个goroutine执行完后，另一个goroutine才会执行。但是，Go默认使用CPU核数作为GOMAXPROCS的值，所以，实际上可以最多GOMAXPROCS个goroutine同时执行
-* 同时存在多个goroutine，goroutine执行顺序不是创建顺序
+* 同时存在多个goroutine，如果`GOMAXPROCS=1`（设置只用一个CPU，运行多个goroutine），则能看到一个goroutine执行完后，另一个goroutine才会执行。但是，Go默认使用CPU核数作为GOMAXPROCS的值，所以，实际上可以最多GOMAXPROCS个goroutine同时执行
+
+  
+
+* 同时存在多个goroutine，goroutine执行顺序不是创建顺序。
+
+  如果只用一个CPU运行多个goroutine，会等一个goroutine运行完，在运行下一个
+
+  ```go
+  func init() {//运行时会先执行，限制只用一个CPU
+  	runtime.GOMAXPROCS(1)
+  }
+  func m() {
+  	for i := 0; i < 100; i++ {
+  		fmt.Printf("m%v\n", i)
+  	}
+  
+  }
+  func w() {
+  	for i := 0; i < 100; i++ {
+  		fmt.Printf("w%v\n", i)
+  	}
+  }
+  func main() {
+  	go m()
+  	go w()
+  	time.Sleep(10 * time.Second) //防止主groutine直接结束
+  }
+  
+  //输出的结果是m的在一起、w的一起，只不过w和m的先后顺序不一定
+  ```
+
+  去掉init函数，w和m的输出就会混在一起了，因为他们在多个CPU上运行，真正的并行
+
+  
+
+  
+
+* 与函数不同，Go不等到goroutine执行结束，所以使用go关键字启动的函数即使有返回值也会被忽略
+
+  
 
 进程执行了，就会执行完，再切换另一个进程
 
@@ -4623,110 +4932,525 @@ runtime.GOMAXPROCS(1)
 
 则，会发现打印结果是 ***a打印完了再打印b*** 或者 ***b打印完了再打印a***，因为只有一个操作系统线程，goroutine只能执行完一个，在执行下一个
 
-### channel类型
+### WaitGroup
 
-**为什么需要通讯**
+同步等待组，用于解决主goroutine与子goroutine通信问题
 
-实际业务中我们往往是使用多个goroutine合作去完成一个任务，这就需要goroutine之间进行通讯
+例如：前面遇到的，由于主goroutine结束，子goroutine未结束就被终止了
 
-* **共享内存**这种通讯方式，由于多个的 goroutine 会同时争抢同一空间，为了保证数据交换的正确性，很多并发模型中必须使用互斥量对内存进行加锁，这种做法势必造成性能问题
-* Go语言采用的并发模型是`CSP（Communicating Sequential Processes）`，提倡**通过通信共享内存**，每次对channel的操作都是原子操作
+程序先执行了主goroutine，然后被`wg.Wait()`阻塞，等待两个子goroutine结束时运行`wg.Done()`，计数器归零，则结束主goroutine
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+var wg sync.WaitGroup
+
+func f1() {
+	fmt.Println("f1执行")
+  //计数器减1
+	wg.Done()
+}
+func f2() {
+	fmt.Println("f2执行")
+  //计数器减1
+	wg.Done()
+}
+func main() {
+  //计数器设置为2
+	wg.Add(2)
+	go f1()
+	go f2()
+	fmt.Println("main阻塞，等待")
+  //阻塞主goroutine，等待计数器归零
+	wg.Wait()
+	fmt.Println("main结束阻塞")
+}
+
+//main阻塞，等待
+//f2执行
+//f1执行
+//main结束阻塞
+
+```
 
 
 
-**使用channel实现通讯**
+### 临界资源
+
+例子
+
+```go
+//main.go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	a := 1
+
+	go func() {
+		a = 2
+		fmt.Printf("子goroutine:%v\n", a)
+	}()
+
+	a = 3 
+	time.Sleep(5 * time.Second)
+	fmt.Printf("主goroutine:%v\n", a)
+
+}
+
+//子goroutine:2
+//主goroutine:2
+
+```
+
+当a被赋值为3后，子协程开始执行，把a又修改为2
+
+查看是否存在临界资源
+
+```shell
+go run -race main.go
+```
+
+Found 1 data race(s) ， 发现1个数据发生争抢
+
+![image-20221204184933910](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20221204184934%20.png)
+
+多个并发的协程，对一个数据进行争抢操作极有可能造成数据错误
+
+
+
+**火车票案例**
+
+多个售票口，会将票卖到0张以下
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"runtime"
+	"time"
+)
+
+//总票数
+var ticketNum = 10
+
+//售票口，开启4个goroutine，同时售票
+func saleTickets(name string) {
+	rand.Seed(time.Now().UnixNano())//随机数发生器初始化为不同的值，rand.Intn(1000)产生的0-999的随机整数，就会不一样
+	for {
+		if ticketNum > 0 {
+      //goroutine抢到资源后，就睡眠让出了资源，等睡眠结束，可能ticketNum已经小于0了
+			time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+			fmt.Println(name, "售出", ticketNum)
+			ticketNum--
+		} else {
+			fmt.Println(name, "售罄", ticketNum)
+      break
+		}
+	}
+}
+
+func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	go saleTickets("售票口1")
+	go saleTickets("售票口2")
+	go saleTickets("售票口3")
+	go saleTickets("售票口4")
+	
+  //防止主goroutin结束，而直接终止未结束的子goroutine
+	time.Sleep(5 * time.Second)
+}
+
+```
+
+
+
+如何处理临界资源？我们可以通过锁机制，对资源进行加锁，就是我们接下来的要讲的
+
+但是，Go语言更加推荐是用channel的方式
+
+### 加锁机制
+
+主要用于处理多个子goroutine的通讯问题
+
+
+
+**互斥锁、读写锁 概述**
+
+多个对同一个数据仅读取是不存在问题的，不必加锁
+
+真正出现问题的是：写-写（互斥锁）、读-写（读写锁）
+
+例子：
+
+```go
+1、A读取-B修改-A修改
+	进程A读取值，进程B马上修改值。这样A后续的操作都是在错误的值上操作的
+	例子：A售票窗口读取剩余票数1，但是B售票窗口马上售出这张票，实际上票已售罄，但是A不知道还会继续售票。就出现了错误
+
+2、A、B读取-A、B修改
+	进程A修改值，进程马上B修改值。这样A修改的值被覆盖
+	例子：A、B读取剩余票数n，A售票窗口售出1张票，剩余n-1，B售票窗口售出1张票，剩余n-1。实际上售出了两张票，应该是n-2
+```
+
+
+
+**互斥锁**
+
+当某个goroutine获得互斥锁后，其他goroutine均不可对资源进行读写
+
+代码中`mutex.Lock`与`mutex.Unlock`之间同一时间，只能存在一个goroutine访问
+
+注意：加锁后一定记得解锁
+
+相关方法：
+
+![image-20230107132624410](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230107132624%20.png)
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"sync"
+	"time"
+)
+
+//互斥锁
+var mutex sync.Mutex
+var wg sync.WaitGroup
+
+//总票数
+var ticketNum = 10
+
+//售票口，开启4个goroutine，同时售票
+func saleTickets(name string) {
+	defer wg.Done()
+	rand.Seed(time.Now().UnixNano())
+	for {
+		//上锁，从这行开始，就只能有一个goroutine才能执行,其他goroutine不能执行
+		mutex.Lock()
+		if ticketNum > 0 {
+			time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+			fmt.Println(name, "售出", ticketNum)
+			ticketNum--
+		} else {
+			//如果走到这里，执行break后，就不会执行后面的（*）进行解锁了。所以这里需要再加一个解锁
+			mutex.Unlock()
+			fmt.Println(name, "售罄")
+			break
+		}
+		//解锁（*）
+		mutex.Unlock()
+	}
+}
+
+func main() {
+	wg.Add(4)
+	go saleTickets("售票口1")
+	go saleTickets("售票口2")
+	go saleTickets("售票口3")
+	go saleTickets("售票口4")
+	wg.Wait()
+}
+
+```
+
+
+
+**读写锁**
+
+同一时间
+
+* 如果有一个读操作进行（比互斥锁并发度高，适合多读写少的场景），其他读操作也可以进行，但是不允许写操作
+* 如果有一个写操作进行，不允许任何读操作
+
+相关方法：
+
+![image-20230107132901103](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230107132901%20.png)
+
+多协程读+写数据
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func readData(i int) {
+	defer wg.Done()
+	//读写锁，对读操作上锁
+	rwMutex.RLock()
+	fmt.Printf("编号：%v，开始read\n", i)
+	time.Sleep(2 * time.Second)
+	fmt.Printf("编号：%v，read结束\n", i)
+	//读写锁，对读操作解锁
+	rwMutex.RUnlock()
+}
+
+func writeData(i int) {
+	defer wg.Done()
+	//读写锁，对写操作上锁
+	rwMutex.Lock()
+	fmt.Printf("编号：%v，开始write\n", i)
+	time.Sleep(2 * time.Second)
+	fmt.Printf("编号：%v，write结束\n", i)
+	//读写锁，对写操作解锁
+	rwMutex.Unlock()
+}
+
+var rwMutex sync.RWMutex
+var wg sync.WaitGroup
+
+func main() {
+	wg.Add(4)
+
+	go writeData(1)
+	go readData(2)
+	go readData(3)
+	go writeData(4)
+
+	wg.Wait()
+}
+```
+
+可以看出：
+
+* 同一协程的写操作是开始和结束都是成对出现的，不会别其他读、写打断
+* 不同协程的读操作是可以同时进行的，且不会别读da
+
+![image-20230107140601988](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107140602%20.png)
+
+
+
+### 通道channel
+
+Go社区中有一句十分经典的语录
+
+>不要通过共享内存来通信，而应该通过通信来共享内存
+
+如何理解？
+
+* 通信，即使用多个goroutine合作去完成一个任务，这就需要goroutine之间进行通讯
+
+* **通过共享内存来通信**
+
+  多个 goroutine 同时访问同一临界区数据（内存中），使用手动加锁的机制来限制多个goroutine的执行，来访问同一块内存。这种方式会造成性能问题，所以Go官方并不推荐
+
+* **通信来共享内存**
+
+  我们可以将数据分装成一个对象，将对象放入channel，由Go语言从语言层面保证同时只能有一个goroutine能访问channel，取出后在处理其指向的内存对象
+
+  补充：Go语言采用的并发模型是`CSP（Communicating Sequential Processes）`
+
+
+
+
+
+**通道的概念**
 
 channel是可以让一个 goroutine 发送特定值到另一个 goroutine ，从而使得两个独立的goroutine可以通信
 
-Go 语言中的通道（channel）是一种**引用**类型。通道像一个传送带或者队列，总是遵循先入先出的规则，保证收发数据的顺序。每一个通道内部元素必须制定具体类型，也就是声明channel的时候需要为其指定元素类型
+Go 语言中的通道是一种**引用**类型，像一个队列，总是遵循先入先出的规则，来保证收发数据的顺序。每一个通道内部元素必须指定其中元素的具体类型
+
+**声明通道类型**
+
+channel是引用类型，默认零值为nil，需要使用make初始化空间才能使用
+
+```go
+//1、定义通道类型的变量，通道内部元素为int
+var ch chan int 
+
+//2、定向通道
+var a chan<- int //只能写入数据的通道
+var b <-chan int //只能读取数据的通道
 
 
-
-**声明channel类型**
-
-channel是引用类型，默认零值为nil，需要使用make初始化空间，才能使用
-
+//3、默认零值为nil
+fmt.Println(ch == nil) //true
+//4、容量为0
+fmt.Println(cap(ch)) //0
+//5、长度为0
+fmt.Println(len(ch)) //0
 ```
-var ch chan int //定义channel变量，channel内部元素为int
-```
 
-**初始化空间**
+无论是未初始化，还是初始化后数据为空，判断通道为空，都是判断`len(ch)==0`（与切片相同）
+
+**始化空间**
 
 channel容量确定后不可更改
 
 ```go
+//上面声明的变量ch，需要使用make初始化空间才能使用
+ch= make(chan int) 
+
+//一般直接使用:=进行类型推断
 ch:=make(chan int，10) //第二个参数是通道容量
 
 ch:=make(chan int)  //不传第二个参数，则默认为0
 ```
 
-**无缓冲区的channel**
+**写入和读取数据**
 
-容量为0的channel比较特殊，需要先读取通道，才能写入
+必须make初始化后，才能从channel中读写
 
-下面的代码会阻塞
+一旦将数据从通道读出来，数据就被移出管道了
 
 ```go
-ch := make(chan int)
-ch <- 1  // 由于消费者还没执行到，这里会一直阻塞住
-<-ch
+ch := make(chan int, 10)
+
+//向channel写
+ch <- 1
+
+//从channel读
+data:=<-ch
+fmt.Println(data) //1
+```
+
+读取也支持一个额外的返回值，这个返回值一般用于判断通道是否关闭。
+
+```go
+//ok为false的情况是，通道关闭+数据已经被读取空了
+//通道未关闭+数据已经被读取空了，会阻塞
+data,ok:=<-ch
 ```
 
 
 
-**造成死锁**
+**无缓冲区的通道**
 
-* 当一个goroutine给一个通道发送数据时，如果通道满了，就会发生阻塞，等待通道有空位
-* 当一个goroutine等着从一个信道接受数据时，如果通道为空，就会发生阻塞，等待通道有数据
-
-
-
-所以一个典型的错误就是，声明通道，但是未初始化通道时（channel是nil）。同时有一个goroutine想要读取和一个goroutine想要写入，两个goroutine都会被阻塞，所以会触发死锁
-
-
-
-所以，channel能够限制两个goroutine执行的顺序
-
-![image-20220909143620761](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220909143621%20.png)
-
-**写**
-
-将数据写入管道
+容量为0的channel比较特殊，读、写均是阻塞的，需要另一个goroutine写、读，来解除阻塞
 
 ```go
-ch<-10  //将10发送到通道
+ch := make(chan int)//不传第二个参数，则默认为0,即无缓冲区的通道
 ```
 
-**读**
+**死锁**
 
-将数据从通道读出来，一旦读出该数据，数据就被移出管道了
+就是一直阻塞，比如一个读goroutine被阻塞了，但是代码里没有任何要写数据的goroutine，则必然发生死锁
+
+![image-20230107184831791](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107184832%20.png)
+
+**阻塞**
+
+channel是同步的，同一时刻，只能有一个goroutine读/写通道
+
+同时又因为有阻塞的存在，才能让不阻塞的goroutine先运行，阻塞的后运行。所以，我们要巧妙运用阻塞
+
+何种情况会发生goroutine阻塞？
+
+* 当一个执行**写操作**的goroutine，向通道写数据，如果通道满了，就会发生阻塞，等待执行**读操作**的goroutine先执行
+
+  
+
+* 当一个执行**读操作**的goroutine，从通道读数据，如果通道为空，就会发生阻塞，等待执行**写操作**的goroutine先执行
+
+下图介绍了，不同状态下的通道，对于读、写goroutine的反应：
+
+![image-20230107154446103](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107154446%20.png)
+
+在实践中，上表的两种情况应该规避，避免出现死锁：
+
+* 通道未初始化（第2列）
+
+  这个问题主要依赖开发者，不要忘记初始化通道。否则会出现死锁或panic
+
+  ```go
+  ch := make(chan int, 10)
+  ```
+
+* 通道关闭（第6列）
+
+  关闭一般由写goroutine执行，并且只有在读goroutine的代码逻辑中，真的判断了是否关闭，我们才会在写goroutine中执行关闭通道，否则就不用关闭（关闭通道不是必须的）
+
+  ```go
+  close(ch)
+  ```
+
+  注意下，通道关闭了，其中的数据仍然可以被读出来
+
+  如何获知通道被关闭了？
+
+**通道关闭**
+
+目前Go语言中判断通道是否被关闭，必须通过读取通道才能得知：
+
+循环读取通数据，等通道数据被读空后。ok为false代表通道被关闭了（可见在Go的逻辑中，并不希望我们直接判断通道是否关闭，而是希望我们正常读取数据，最后才能知道通道是否关闭）
 
 ```go
-<-ch  //发送出去，但是不接收
-
-x:<-ch //接收数据
-
+data,ok:=<-ch
 ```
 
-**关闭通道**
+如果通道中还有数据，则ok=true，data为读出的值
 
-通道值是可以被垃圾回收掉的。通道通常由发送方执行关闭操作，并且只有在接收方明确等待通道关闭的信号时才需要执行关闭操作。它和关闭文件不一样，通常在结束操作之后关闭文件是必须要做的，但关闭通道不是必须的
+如果数据被读空了，且通道被关闭，则返回ok=false，data为零值；如果通道未关闭，则阻塞读goroutine
+
+
+
+通道关闭后，还是要继续读取数据的，判断ok为false后：
+
+* 结束不需要继续读取了（继续读返回无意义的零值）
+
+* 不要再执行close操作了，否则就会panic
 
 ```go
-close(ch)
+package main
+
+import (
+	"fmt"
+)
+
+func setData(ch chan int) {
+  //这段代码比较有意思的点，使用的是无缓冲区的通道，这就会导致for循环每写入一次，就会停止，等待数据被读走后，再次写入
+	for i := 0; i < 10; i++ {
+		ch <- i
+	}
+	close(ch)
+}
+
+func main() {
+	ch := make(chan int)
+	go setData(ch)
+	//主进程被for循环阻塞。这段代码记住，用于遍历channel，后面会再次提到
+	for {
+		value, ok := <-ch
+		if ok {
+			fmt.Printf("读取值：%v,%v\n", value, ok)
+
+		} else {
+			fmt.Println("读取结束")
+			break
+		}
+	}
+	fmt.Println("主goroutine结束")
+
+}
 ```
 
-关闭后的通道有以下特点：
+![image-20230107182512279](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107182512%20.png)
 
-1. 发送：对一个关闭的通道再发送值就会导致 panic。
-2. 接收：对一个关闭的通道，进行接收会一直获取值直到通道为空，继续执行接收操作会得到对应类型的零值。
-4. 关闭：关闭一个已经关闭的通道会导致 panic。【注意：目前Go语言中并没有提供一个不对通道进行读取操作就能判断通道是否被关闭的方法】
 
-**遍历通道**
 
-两种方式，都需要在通道已经关闭的情况下，遍历管道内容。否则，遍历时将所有元素取出后，仍然会阻塞等待其他goroutione写入数据，可是这时候已经没有其他goroutione写入了，所以就会提示出现死锁
+**读goroutine遍历读取通道**
 
-如果写入完关闭管道，这两种方式都能检测到关闭的通道
+重点：写goroutine最后必须调用close，否则这两种方式均会出现死锁
+
+【如果写goroutine不close，这两种方式均会一直读取，而代码里又没有写的地方了，所以必然会发生】
 
 方式一：读取到管道为空时，ok变会为false，x为元素类型对应的零值
 
@@ -4747,6 +5471,249 @@ for {
 for item := range ch2 {
 	fmt.Println(item)
 }
+```
+
+
+
+
+
+**主、子goroutine通讯实战**
+
+WaitGroup实际上是主goroutine与子goroutine通讯，在子goroutine均结束后，才终止主goroutine
+
+这里使用的是无缓冲区的通道实现的，不必再使用WaitGroup
+
+通过主goroutine的读操作阻塞
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch := make(chan bool)
+	go func() {
+		fmt.Println("子goroutine执行")
+		time.Sleep(2 * time.Second)
+		ch <- true
+	}()
+	//通道为空，会阻塞主goroutine。必须等待子goroutine写入通道数据，主goroutine才会继续执行
+	<-ch
+	fmt.Println("主goroutine执行完毕")
+}
+```
+
+这种也是同样的道理，通过主goroutine的写操作阻塞
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch := make(chan bool)
+	go func() {
+		fmt.Println("子goroutine执行")
+		time.Sleep(2 * time.Second)
+    //区别看这里
+		<-ch 
+	}()
+	//区别看这里
+	ch<-true
+	fmt.Println("主goroutine执行完毕")
+}
+```
+
+
+
+**select语句**
+
+```go
+select {
+case xx:
+ //执行语句1
+case yy:
+ //执行语句2
+  
+default://可以没有default
+  //执行语句3
+}
+```
+
+注意点：
+
+* 可以有多个case，每个case必须是通道操作（读、写通道）。如果有多个case的通道操作都没被阻塞，则随机挑选一个未被阻塞的case执行
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  )
+  
+  func main() {
+  	ch1 := make(chan int, 1)
+  	ch2 := make(chan int, 1)
+  	ch1 <- 100
+  	ch2 <- 200
+  	var data int
+    
+    //两个读取通道的操作均不被阻塞，会随机读取一个
+  	select {
+  	case data = <-ch1:
+  		fmt.Println("执行了第一个case", data)
+  	case data = <-ch2:
+  		fmt.Println("执行了第二个case", data)
+  	}
+  }
+  ```
+
+  
+
+* 如果没有default，所有case都被**阻塞**，则整个select阻塞等待某一个case不阻塞后执行该case。如果有default，一定不会阻塞，会直接执行default
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  )
+  
+  func main() {
+  	ch1 := make(chan int, 1)
+  	ch2 := make(chan int, 1)
+  
+  	var data int
+    //两个通道都为空，肯定阻塞了，所以会走defalut。这个例子中甚至没有default会造成死锁，因为ch1、ch2均没有输入，他们会造成一直阻塞，即死锁
+  	select {
+  	case data = <-ch1:
+  		fmt.Println("执行了第一个case", data)
+  	case data = <-ch2:
+  		fmt.Println("执行了第二个case", data)
+  
+  	default:
+  		fmt.Println("执行了default") //执行了default
+  
+  	}
+  }
+  
+  ```
+
+  
+
+
+
+
+
+### <span id='time库中与通道相关的函数'>time库中与通道相关的函数</span>
+
+Timer相关的几个方法：
+
+![image-20230107200914656](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107200915%20.png)
+
+Timer是类似于setTimeout，指定一个时间间隔，到时间后触发一次
+
+**NewTimer**
+
+创建一个Timer对象，它是一个结构体，其中C字段是一个只读的通道。到达指定的时间后，会在这个通道中放入一个当前时间的时间对象（Time对象）
+
+因为C是个只读的通道，所以读取这个通道，会阻塞其所在的goroutine，直到时间到了后，会自动放入一个当前时间的时间对象
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+
+func main() {
+	fmt.Println(time.Now()) //2023-01-07 20:22:18.478305 +0800 CST m=+0.000077767
+	timer := time.NewTimer(5 * time.Second)
+	ch := timer.C
+	t := <-ch //阻塞，5s后解除阻塞
+	fmt.Println(t) //2023-01-07 20:22:23.478783 +0800 CST m=+5.000432370
+
+}
+```
+
+
+
+**AfterFunc**
+
+定时触发函数，返回值也是Timer
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+var wg sync.WaitGroup
+
+func main() {
+	wg.Add(1)
+	fmt.Println(time.Now()) //2023-01-07 20:32:54.275679 +0800 CST m=+0.000106664
+	time.AfterFunc(5*time.Second, func() {
+		fmt.Println("5s后触发") //5s后触发
+		wg.Done()
+	})
+	wg.Wait()
+}
+```
+
+
+
+**Reset、Stop**
+
+用于重启、停止Timer
+
+```go
+timer := time.NewTimer(5 * time.Second)
+timer.Stop()
+```
+
+
+
+还有两个time包内的函数，返回值是通道
+
+![image-20230107210511511](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107210511%20.png)
+
+**After**
+
+等价于NewTimer(d).C，即在d时间间隔后，像返回的通道中写入一个时间对象（Time）
+
+
+
+**Tick**
+
+返回值是通道，每隔***时间间隔d***向通道放入一个当前的时间实例
+
+```go
+func Tick(d Duration) <-chan Time
+```
+
+每隔1秒打印当前时间
+
+```go
+for temp := range time.Tick(time.Second) {
+	fmt.Println(temp)
+}
+
+//2022-05-12 00:54:56.79165 +0800 CST m=+23.001189704
+//2022-05-12 00:54:57.790955 +0800 CST m=+24.000480296
+//2022-05-12 00:54:58.791673 +0800 CST m=+25.001182955
+//....
 ```
 
 
@@ -4800,24 +5767,6 @@ func main() {
 }
 ```
 
-**管道类型作为参数**
-
-限制传入的通道，只能写
-
-```go
-func f1(ch1 chan<- int, ch2 chan int){
-  
-}
-```
-
-限制传入的通道，只能读
-
-```go
-func f2(ch1 <-chan int, ch2 chan int){
-
-}
-```
-
 **并非n个任务就要启动n个goroutine**
 
 ```text
@@ -4864,10 +5813,7 @@ func main() {
 }
 ```
 
-使用多路复用实现（下面会讲到）
 
-```go
-```
 
 
 
@@ -4949,112 +5895,11 @@ func main() {
 
 
 
-### 同步加锁
+### 进程通讯
 
-多个goroutine对同一个数据进行操作，例如下面例子中的`x=x+1`，首先需要明确一个概念，这个赋值语句并不是原子操作
+Go语言中的并发程序主要是通过基于CSP（communicating sequential processes，一种线程模型），也就是**管道通讯**的方式，使用Go语言中的goroutine和channel来实现，当然也支持使用传统的多线程共享内存的并发方式
 
-可能存在这样一种情况：一个goroutine读取x为1，执行加1结果是2，同时刻另一个goroutine（在另一个系统线程上运行），也读取了x为1，执行加1结果是2。这时候两个goroutine先后将2赋值给x，所以最后的结果是2。这已经出现明显的错误了，应该是3
-
-所以，我们需要进行加锁操作
-
-**互斥锁**
-
-某个goroutine一旦对资源加了互斥锁，其他goroutine都不能对资源进行读和写
-
-```go
-package main
-
-import (
-	"fmt"
-	"sync"
-	"time"
-)
-
-var (
-	x    int
-	Lock sync.Mutex
-	wg   sync.WaitGroup
-)
-
-func read() {
-	Lock.Lock()
-	time.Sleep(1 * time.Second)
-	Lock.Unlock()
-	wg.Done()
-}
-func write() {
-	Lock.Lock()
-	x = x + 1
-	Lock.Unlock()
-	wg.Done()
-}
-
-func main() {
-	start := time.Now()
-
-	for i := 0; i < 10; i++ {//十个进程读
-		wg.Add(1)
-		go read()
-	}
-	wg.Add(1)
-	go write() //一个进程写
-	wg.Wait()
-	fmt.Println(time.Now().Sub(start)) //10.007944749s
-
-}
-```
-
-**读/写锁**
-
-某个goroutine对资源加读锁，该goroutine只能读资源，不能写资源，其他goroutine也只能读
-
-某个goroutine对资源加写锁，该goroutine对资源可读可写，其他goroutine不能读不能写
-
-如果使用场景中，读的次数比较多，那推荐使用读写锁。如果读写次数相差不多，那就使用互斥锁
-
-可以看到使用读写锁，时间只用了2s多
-
-```go
-package main
-
-import (
-	"fmt"
-	"sync"
-	"time"
-)
-
-var (
-	x      int
-	RWLock sync.RWMutex
-	wg     sync.WaitGroup
-)
-
-func read() {
-	RWLock.RLock()
-	time.Sleep(1 * time.Second)
-	RWLock.RUnlock()
-	wg.Done()
-}
-func write() {
-	RWLock.Lock()
-	x = x + 1
-	RWLock.Unlock()
-	wg.Done()
-}
-
-func main() {
-	start := time.Now()
-
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go read()
-	}
-	wg.Add(1)
-	go write()
-	wg.Wait()
-	fmt.Println(time.Now().Sub(start)) //2.002323119s
-}
-```
+[详情](https://github.com/rubyhan1314/Golang-100-Days/blob/master/Day16-20(Go%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E8%BF%9B%E9%98%B6)/day18_channel%E9%80%9A%E9%81%93.md#%E5%8D%81%E4%B8%80go%E8%AF%AD%E8%A8%80%E7%9A%84csp%E6%A8%A1%E5%9E%8B)
 
 ### 并发安全
 
@@ -5157,23 +6002,7 @@ func main() {
 
 当然，我们也可以不使用这些并发安全的类型，而是使用前面的加锁的方式处理
 
-## 测试（待学习）
 
-测试中涉及一些，我并不了解的知识，所以放在最后学习
-
-[单元测试从零到溜系列——第0篇：单元测试基础](https://www.liwenzhou.com/posts/Go/golang-unit-test-0/)
-
-[单元测试从零到溜系列——第1篇：网络测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-1/)
-
-[单元测试从零到溜系列——第2篇：MySQL和Redis测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-2/)
-
-[单元测试从零到溜系列——第3篇：mock接口测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-3/)
-
-[单元测试从零到溜系列——第4篇：monkey打桩测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-4/)
-
-[单元测试从零到溜系列——第5篇：goconvey的使用](https://www.liwenzhou.com/posts/Go/golang-unit-test-5/)
-
-[单元测试从零到溜系列——第6篇：编写可测试的代码](https://www.liwenzhou.com/posts/Go/golang-unit-test-6/)
 
 ## 网络编程
 
@@ -5635,6 +6464,897 @@ http.HandleFunc("/postExample", func(w http.ResponseWriter, r *http.Request) {
 
 
 
+## 文件操作
+
+### 权限基础知识
+
+```
+linux 下有2种文件权限表示方式，即“符号表示”和“八进制表示”。
+
+（1）符号表示方式:
+-      ---         ---        ---
+type   owner       group      others
+文件的权限是这样子分配的 读 写 可执行 分别对应的是 r w x 如果没有那一个权限，用 - 代替
+(-文件 d目录 |连接符号)
+例如：-rwxr-xr-x
+
+
+（2）八进制表示方式：	
+r ——> 004
+w ——> 002
+x ——> 001
+- ——> 000
+
+所以：0是没有任何权限，1是仅可执行，3是可写可执行，5是可读可执行，6是可读可写，7是全部权限
+
+例如：（回忆下，开头的0是八进制数据的前缀）
+0755 //owner有所有权限，group、others可读可执行
+0777 //owner、group、others 有所有权限
+0666 //owner、group、others 都可读可写
+```
+
+### 文件路径操作
+
+```go
+package main
+
+import (
+	"fmt"
+	"path/filepath"
+)
+
+func main() {
+	path := "a.txt"
+
+	//判断是否为绝对路径：func IsAbs(path string) bool
+	fmt.Println(filepath.IsAbs(path)) //false
+
+	//转化为绝对路径func Abs(path string) (string, error)
+	fmt.Println(filepath.Abs(path)) //Users/yc/Documents/GO/GoProject/testFunc/a.txt <nil>
+
+	//拼接路径：func Join(elem ...string) string
+	fmt.Println(filepath.Join("..", path)) //../a.txt
+
+}
+```
+
+### 目录操作
+
+Mkdir、MkdirAll
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	//使用Mkdir创建的目录有两点限制:1、创建的目录不能存在；2、只能创建一层目录（其父目录必须存在）,例如：创建./newFolder/data，必须保证newFolderfu存在才能成功创建data目录
+	err := os.Mkdir("./newFolder/data", 0777)
+	if err != nil {
+		fmt.Printf("目录创建失败err-->%v", err)
+		return
+	}
+	fmt.Println("目录创建成功") //目录创建成功
+
+	//MkdirAll 与 Mkdir 用法相同，区别是没有Mkdir的两点限制
+}
+```
+
+### 文件操作
+
+**获取文件信息**
+
+<span id="FileInfo">**FileInfo**</span>类型：FileInfo是一个接口类型，用来描述一个文件的信息
+
+```go
+type FileInfo interface {
+    Name() string       // 文件的名字（不含扩展名）
+    Size() int64        // 普通文件返回值表示其大小；其他文件的返回值含义各系统不同
+    Mode() FileMode     // 文件的模式位
+    ModTime() time.Time // 文件的修改时间
+    IsDir() bool        // 等价于Mode().IsDir()，判断是否为目录
+    Sys() interface{}   // 底层数据来源（可以返回nil）
+}
+```
+
+返回FileInfo类型的函数：
+
+* 参数都是文件路径
+
+* 如果出错，返回的错误值为*PathError类型
+* 区别：
+  * Stat：如果指定的文件对象是一个符号链接（软链接），返回的FileInfo**描述该符号链接指向的文件的信息**
+  * Lstat：如果指定的文件对象是一个符号链接（软链接），返回的FileInfo**描述该符号链接的信息**
+
+```go
+func Stat(name string) (fi FileInfo, err error)
+
+func Lstat(name string) (fi FileInfo, err error)
+```
+
+例子
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+/**
+FileInfo: 文件信息
+*/
+func main() {
+	fileInfo, err := os.Stat("./a.txt")
+	if err != nil {
+		fmt.Printf("err:%v\n", err)
+		return
+	}
+
+	fmt.Println(fileInfo.Name()) //a.txt
+	fmt.Println(fileInfo.Size()) //11字节
+
+	fmt.Println(fileInfo.Mode()) //-rw-r--r-- 。
+
+	fmt.Println(fileInfo.ModTime()) //2022-11-23 13:19:50.828517901 +0800 CST
+	fmt.Println(fileInfo.IsDir())   //false
+	fmt.Println(fileInfo.Sys())     //
+
+}
+```
+
+
+
+**创建文件**
+
+<span id="File类型">File类型</span>，表示一个打开的文件对象。
+
+```
+type File struct {
+    // 内含隐藏或非导出字段
+}
+```
+
+创建文件的函数
+
+```go
+func Create(name string) (file *File, err error)
+```
+
+例子
+
+```go
+//创建文件。创建的文件权限为666（任何人可读可写）；若文件存在，则会清空已存在文件;只能创建文件，所以./newFolder/a.txt这种参数，必须保证newFolder目录存在
+file, err := os.Create("./newFolder/a.txt")
+if err != nil {
+	fmt.Printf("创建文件出错，err-->%v", err)
+	return
+}
+```
+
+**删除文件**
+
+Remove
+
+可以用来直接删除文件，删除目录时，只有目录为空时，才能被删除
+
+```go
+err := os.Remove("./a.txt")
+if err != nil {
+	fmt.Printf("文件打开错误：err-->%v", err)
+	return
+}
+```
+
+RemoveAll
+
+这个删除比Remove多了一点功能就是：即使目录不为空，也可直接删除
+
+**打开文件**
+
+Open创建的文件是只读的（不可写入数据）
+
+```go
+file, err := os.Open("a.txt")
+if err != nil {
+	fmt.Printf("文件打开错误：err-->%v", err)
+	return
+}
+```
+
+OpenFile可通过
+
+* 参数1：文件名
+
+* 参数2：指定打开文件的方式。多个常量使用`|`连接
+* 参数3：如果文件不存在，且参数2指定了`O_CREAT`，则会按照该参数指定的权限创建文件。常量`os.ModePerm`等价于0777，即所有用户均有读写执行权限
+
+```go
+file, err := os.OpenFile("a.txt", O_RDONLY|syscall.O_WRONLY, os.ModePerm)
+if err != nil {
+	fmt.Printf("文件打开错误：err-->%v", err)
+	return
+}
+```
+
+参数2的选项
+
+```go
+const (
+    O_RDONLY int = syscall.O_RDONLY // 只读模式打开文件
+    O_WRONLY int = syscall.O_WRONLY // 只写模式打开文件
+    O_RDWR   int = syscall.O_RDWR   // 读写模式打开文件，是前两个的结合
+  
+  	O_CREATE int = syscall.O_CREAT  // 如果不存在将创建一个新文件【写操作默认不会创建文件】
+    O_EXCL   int = syscall.O_EXCL   // 和O_CREATE配合使用，文件必须不存在
+  
+  
+    O_APPEND int = syscall.O_APPEND // 写操作时将数据附加到文件尾部。【写操作默认会覆盖文件】
+    
+    O_SYNC   int = syscall.O_SYNC   // 打开文件用于同步I/O
+    O_TRUNC  int = syscall.O_TRUNC  // 如果可能，打开时清空文件
+)
+```
+
+**关闭文件**
+
+上一部分，介绍了打开文件，所有函数都会返回一个File类型的变量（文件对象）。一旦文件被打开，就一定记得要关闭，否则文件会一直是被占用状态
+
+```go
+file.Close()
+```
+
+## I/O操作
+
+### 基础知识
+
+I/O操作指定的数据的输入输出
+
+Go语言中的I/O相关的功能大部分都在`io`包中，`io`包中最重要的就是两个接口类型：
+
+* **Reader类型**
+
+  该类型是个接口，所有实现Read方法的类型都可以看做是Reader
+
+  ```go
+  type Reader interface {
+      Read(p []byte) (n int, err error)
+  }
+  ```
+
+  Read方法：读取len(p)字节数据写入参数p中，当Read在读取部分数据后遭遇错误时或者到达文件结尾，就会结束读取，并返回读取的字节数和错误对象（读到文件结尾，`err==io.EOF`），且p中存储着发生错误前已读入的数据。
+
+  
+
+* **Writer类型**
+
+  该类型是个接口，所有实现Write方法的类型都可以看做是Writer
+
+  ```go
+  type Writer interface {
+      Write(p []byte) (n int, err error)
+  }
+  ```
+
+  Write方法：把len(p) 字节数据从参数p中，写入底层的数据流。它会返回写入的字节数(0 <= n <= len(p))和遇到的任何导致写入提取结束的错误
+
+  
+
+注意：Read、Write的参数类型是字节切片
+
+**实现了这两个接口怎么用？**
+
+实现了这个接口类型的对象，就可以：
+
+* 该对象的实例自身带有Read、Write方法可以用来读写
+
+* 把该对象作为参数传入，某些指定参数类型为`io.Reader`、`io.Writer`的函数（这些函数内部还是调用了对象自身带有的Read、Write方法）
+
+  ```go
+  //这两个函数在bufio包中，用于读写，在后面会讲到
+  func NewReader(rd io.Reader) *Reader
+  
+  func NewWriter(w io.Writer) *Writer
+  ```
+
+**哪些类型实现了这两个接口？**
+
+* 标准输入输出
+
+  ```
+  os.Stdin
+  
+  os.Stdout
+  ```
+
+* `strings`包下的
+
+  ```
+  func NewReader(s string) *Reader
+  ```
+  
+  例子，只读了100个字节，如果需要完整的读文件，要使用for循环
+  
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"strings"
+  )
+  
+  func main() {
+  	temp := make([]byte, 100)
+  	reader := strings.NewReader("hello world")
+  	_, err := reader.Read(temp)
+  	if err != nil {
+  		fmt.Printf("err-->%v", err)
+  		return
+  	}
+  	fmt.Println(string(temp))
+  }
+  
+  ```
+  
+  
+  
+* 文件对象File
+
+  上一章节【文件操作】，讲到的**创建文件**、**打开文件**返回的 <a href="#File类型">File类型</a>（文件对象），实现了这两个接口，所以File类型的实例有这两个方法
+
+![image-20221123180848216](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221123180848%20.png)
+
+
+
+**注意**：后面的IO操作基本都以读写文件对象作为例子，但是实际上可以读取 支持任何实现了`io.Reader`和`io.Writer`的对象
+
+### 读文件数据
+
+**方式1**
+
+指定一个固定长度的字节切片，循环读取。在写这里时，我发现有一个细节，Read方法放入一个未初始化的切片，不能读进去内容。但是，我们可以定义一个未初始化的切片（这样就不用指定长度了）来接收每一次读入的字节
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+)
+
+func main() {
+	file, err := os.Open("./a.txt") 
+	defer file.Close()
+	if err != nil {
+		fmt.Println("read from file failed...  ")
+		return
+	}
+	var res []byte
+	for {
+		temp := make([]byte, 100)
+		_, err := file.Read(temp) //将数据读入temp中,n是读取的字节数
+		if err == io.EOF||n=0 {
+			fmt.Println("读取文件结束")
+			break
+		}
+		if err != nil {
+			fmt.Println("读取文件失败")
+			break
+		}
+		res = append(res, temp...)
+	}
+	fmt.Printf("%s", string(res))
+
+}
+```
+
+
+
+### 写文件数据
+
+file对象还实现了WriteString方法，参数为字符串，可向文件中直接写入字符串
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	file, err := os.OpenFile("./a.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm) 
+	defer file.Close()
+	if err != nil {
+		fmt.Printf("打开文件失败，err-->%v", err)
+		return
+	}
+	writeStr := "你好，世界"
+	_, err = file.Write([]byte(writeStr))
+	if err != nil {
+		fmt.Printf("写入失败,err-->%v", err)
+		return
+	}
+
+}
+```
+
+### 读写游标
+
+前面我们只在写文件时，可以通过OpenFile的第二个参数指定，写入的数据追加到文件的末尾
+
+```go
+os.OpenFile("./a.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm) 
+```
+
+如何指定开始读写的位置？
+
+这要讲到Seeker接口，它有一个Seek方法。
+
+```go
+type Seeker interface {
+  	//参数1:偏移量（从1开始，1从游标的起始位置开始向后移动1字节）
+  	//参数2:游标的起始位置
+    Seek(offset int64, whence int) (int64, error)
+}
+```
+
+游标起始位置，类型是int：
+
+```go
+0:文件开头位置
+1:游标当前位置
+2:文件末尾位置
+```
+
+
+
+File对象就实现了这个接口，有Seek方法
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+  //文件内容是：abcde
+	file, err := os.OpenFile("./a.txt", os.O_RDWR, os.ModePerm)
+	if err != nil {
+		fmt.Printf("打开文件失败，err-->%v", err)
+		return
+	}
+  
+  //读取
+	file.Seek(1, 0)//指定游标起始位置是文件开头，向后移动1字节。应输出b
+	temp := make([]byte, 1)
+	file.Read(buffer)
+	fmt.Println(string(temp)) //b
+  
+  //写入
+  file.Seek(0, 2)//指定游标起始位置是文件末尾，向后移动0字节。文件会在默认追加写入字符f
+	file.Write([]byte("f")) 
+  
+}
+```
+
+
+
+
+
+### 复制文件
+
+```go
+func Copy(dst Writer, src Reader) (written int64, err error)
+```
+
+参数是两个接口类型，File对象就实现了这两个方法，所以File对象可作为参数传入
+
+这个方法的底层实现，就是先读入一个字节切片的数据，然后马上写入到输出文件，然后循环读写。与我们前面学的读写文件的方式一样，只不过Copy方法指定的切片大小为
+
+```go
+tempSlice := make([]byte, 32*1024)
+```
+
+
+
+### ioutil包
+
+Go语言的I/O操作基本都在`io`包中，但其实还有一个`ioutil`包，它是对`io`包的封装，提供更加方便易用的方法
+
+* 下面两个函数，参数直接就是文件名，不用再自己手动Open文件，获取File对象后才能读写，但是，当文件非常大时，最好不要使用（一次性读写，bufio包使用了缓存，显著提高效率，后面会讲到）
+
+  ```go
+  func ReadFile(filename string) ([]byte, error)
+  
+  //写入文件。存在文件，会覆盖原文件。没有则会创建文件，文件权限是第三个参数。第二个参数就是写入的数据
+  func WriteFile(filename string, data []byte, perm os.FileMode) error  
+  ```
+
+  例子
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"io/ioutil"
+  )
+  
+  func main() {
+  	byteStr, err := ioutil.ReadFile("./a.txt")
+  
+  	if err != nil {
+  		fmt.Printf("写入文件，err-->%v", err)
+  		return
+  	}
+  	fmt.Println(string(byteStr))
+  }
+  ```
+
+* 从`io.Reader`类型中读取
+
+  ```go
+  func ReadAll(r io.Reader) ([]byte, error)
+  ```
+
+  例子
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"io/ioutil"
+  	"strings"
+  )
+  
+  func main() {
+  	reader := strings.NewReader("hello world")
+  	byteSlice, err := ioutil.ReadAll(reader)
+  	if err != nil {
+  		fmt.Printf("err-->%v", err)
+  		return
+  	}
+  	fmt.Println(string(byteSlice))
+  }
+  ```
+
+* 读取指定目录下的目录（只能得到一层目录，子目录无法获取）
+
+  返回值是一个FileInfo的切片，FileInfo类型我们在前面讲过，<a href="#FileInfo">看这里</a>
+
+  ```go
+  func ReadDir(dirname string) ([]os.FileInfo, error)
+  ```
+
+  例子
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"io/ioutil"
+  )
+  
+  func main() {
+  
+  	fileInfoSlice, err := ioutil.ReadDir("./")
+  	if err != nil {
+  		fmt.Printf("err-->%v", err)
+  		return
+  	}
+  	fmt.Printf("目录总个数：%v\n", len(fileInfoSlice))
+  	for i, v := range fileInfoSlice {
+  		fmt.Printf("第%v个文件，名为：%v，是否为目录:%v\n", i, v.Name(), v.IsDir())
+  	}
+  
+  }
+  ```
+
+  如何获取目录下的所有目录及其子目录?
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"io/ioutil"
+  )
+  
+  func listFileDir(curPath string, level int) {
+  	s := "|--"
+  	for i := 0; i < level; i++ {
+  		s = fmt.Sprintf("| %s", s)
+  	}
+  	fileInfoSlice, err := ioutil.ReadDir(curPath)
+  	if err != nil {
+  		fmt.Printf("读取目录失败，err-->%v", err)
+  		return
+  	}
+  	for _, v := range fileInfoSlice {
+  		fmt.Printf("%v%v\n", s, v.Name())
+  		if v.IsDir() {
+  			nextPath := fmt.Sprintf("%s/%s", curPath, v.Name())
+  			listFileDir(nextPath, level+1)
+  		}
+  	}
+  
+  }
+  func main() {
+  	listFileDir("./", 0)
+  }
+  ```
+
+  运行效果：
+
+  ![image-20221126220438353](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20221126220438%20.png)
+
+* 临时目录、临时文件
+
+  函数并不会删除创建的临时目录、临时文件，需要手动删除`os.Remove(路径)`
+
+  ```go
+  //在dir目录里创建一个新的、使用prfix作为前缀的临时文件夹，并返回文件夹的路径
+  func TempDir(dir, prefix string) (name string, err error)
+  
+  //在dir目录下创建一个新的、使用prefix为前缀的临时文件，以读写模式打开该文件并返回os.File指针
+  func TempFile(dir, prefix string) (f *os.File, err error)
+  ```
+
+  例子
+
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"io/ioutil"
+  	"os"
+  )
+  
+  func main() {
+  
+  	tempDirName, err := ioutil.TempDir("./", "Test")
+  	if err != nil {
+  		fmt.Printf("err-->%v", err)
+  		return
+  	}
+  	fmt.Printf("临时目录名：%v\n", tempDirName)
+  	tempFile, err := ioutil.TempFile(tempDirName, "Test")
+  	fmt.Printf("临时文件名：%v\n", tempFile.Name())
+  
+  	defer os.Remove(tempDirName)
+  	defer os.Remove(tempFile.Name())
+  
+  }
+  ```
+
+  
+
+
+
+### bufio包
+
+bufio也是I/O相关的包，它也是对`io`包的封装，其主要是实现了有缓冲区的I/O，通过划分一块内存作为缓冲区，读写都在缓冲区中，最后在读写文件，这会大幅降低访问磁盘的次数，所以可以提高效率
+
+
+
+bufio包中，最重要的两个类型（仔细看，这两个不是接口类型，所以有已经实现的方法）：
+
+* **bufio.Reader**类型
+
+  其封装了`io.Reader`类型（注意rd字段类型就是`io.Reader`）
+
+  ```go
+  type Reader struct {
+  	buf          []byte
+  	rd           io.Reader // reader provided by the client
+  	r, w         int       // buf read and write positions
+  	err          error
+  	lastByte     int // last byte read for UnreadByte; -1 means invalid
+  	lastRuneSize int // size of last rune read for UnreadRune; -1 means invalid
+  }
+  ```
+
+  
+
+  带缓存区的读取实现思路：其核心就是看缓存区>读取的切片，就会使用缓冲区机制，一次性读入数据到缓存（读满缓存区），然后再使用io包的Read读取数据到切片p中（缓存区要删除读走的数据）
+
+  ![image-20221124185158994](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20221124185159%20.png)
+
+  
+
+  获取`bufio.Reader`类型的实例：（参数是io包的Reader接口类型，回忆下，File对象实现了这个接口）
+
+  ```go
+  func NewReader(rd io.Reader) *Reader  //默认缓冲区大小为4096字节
+  
+  func NewReaderSize(rd io.Reader, size int) *Reader //第二个参数可以指定缓冲区大小(单位是字节)
+  ```
+
+  其实NewReader的底层还是NewReaderSize
+
+  ```go
+  const (
+  	defaultBufSize = 4096
+  )
+  func NewReader(rd io.Reader) *Reader {
+  	return NewReaderSize(rd, defaultBufSize)
+  }
+  ```
+
+  因为`bufio.Reader`类型已经实现了大量的读取方法，获取的`bufio.Reader`实例可直接调用：
+
+  ```go
+  //注意：bifio包中的Reader类型的Read方法。与前面讲的，File对象自身实现的io包的Reader接口的Read方法不同
+  func (b *Reader) Read(p []byte) (n int, err error)
+  
+  
+  //ReadLine读取一行，这是一个低水平的行数据读取原语，官方已经不建议使用了
+  func (b *Reader) ReadLine() (line []byte, isPrefix bool, err error)
+  
+  
+  //注意：ReadString、ReadBytes两个函数的作用是读取到指定字节终止，参数都是字节，返回值才不一样
+  
+  //读取到delim为止，返回读取的数据（注意返回的是字符串）；如果到文件结束都因为没遇到delim停止，就结束并返回错误err==io.EOF
+  func (b *Reader) ReadString(delim byte) (line string, err error)
+  //与ReadString用法一样，只不过返回值是[]byte
+  func (b *Reader) ReadBytes(delim byte) (line []byte, err error)
+  
+  ```
+
+  实践例子
+
+  ```go
+  package main
+  
+  import (
+  	"bufio"
+  	"fmt"
+  	"io"
+  	"os"
+  )
+  
+  func main() {
+    
+    //---------Read---------
+  	file, err := os.Open("./a.txt")
+  	if err != nil {
+  		fmt.Printf("打开文件失败,err-->%v", err)
+  		return
+  	}
+  
+  	var res []byte
+  	reader := bufio.NewReader(file)
+  	for {
+  		temp := make([]byte, 2)
+  		_, err := reader.Read(temp)
+  		if err == io.EOF {
+  			fmt.Printf("文件读取结束 %v\n", err)
+  			break
+  		}
+  		res = append(res, temp...)
+  	}
+  
+  	fmt.Println(string(res))
+  	//文件读取结束 EOF
+  	//abcdef
+  
+    //---------ReadString  从文件读取---------
+  	reader2 := bufio.NewReader(file)
+  	str, err := reader2.ReadString('c')
+  	if err != nil {
+  		fmt.Printf("读取错误，err-->%v", err)
+  		return
+  	}
+  	fmt.Println(str) //abc
+  
+    //---------ReadString  从控制台读取---------
+  	reader3 := bufio.NewReader(os.Stdin)
+  	str, err = reader3.ReadString('\n')
+  	if err != nil {
+  		fmt.Printf("err-->%v", err)
+  		return
+  	}
+  	fmt.Println(str)
+  
+  }
+  ```
+
+  
+
+* **Writer**类型
+
+  其封装了`io.Writer`类型
+
+  ```go
+  type Writer struct {
+  	err error
+  	buf []byte
+  	n   int
+  	wr  io.Writer //这里是io.Writer
+  }
+  ```
+
+  
+  
+  获取`bufio.Writer`类型的实例：
+  
+  ```go
+  func NewWriter(w io.Writer) *Writer
+  
+  func NewWriterSize(w io.Writer, size int) *Writer
+  ```
+  
+  因为`bufio.Writer`类型的写入方法：
+  
+  ```go
+  //写入一个字符串
+  func (b *Writer) WriteString(s string) (int, error)
+  
+  //写入一个字节
+  func (b *Writer) WriteByte(c byte) error
+  
+  //写入一个字符
+  func (b *Writer) WriteRune(r rune) (size int, err error)
+  ```
+  
+  注意，只有缓存区写满后，才会写入文件。所以，需要Flush函数刷新缓冲区，把缓冲区的内容写入文件
+  
+  ```go
+  func (b *Writer) Flush() error
+  ```
+  
+  实践例子：
+  
+  ```go
+  package main
+  
+  import (
+  	"bufio"
+  	"fmt"
+  	"os"
+  )
+  
+  func main() {
+  	file, err := os.OpenFile("./a.txt", os.O_CREATE|os.O_WRONLY, os.ModePerm)
+  	if err != nil {
+  		fmt.Printf("打开文件失败,err-->%v", err)
+  		return
+  	}
+  	defer file.Close()
+  
+  	writer := bufio.NewWriter(file)
+  	_, err = writer.WriteString("hello world")
+  	if err != nil {
+  		fmt.Printf("写入文件，err-->%v", err)
+  		return
+  	}
+  	writer.Flush()
+  
+  }
+  
+  ```
+  
+  
+  
+  
+
+
+
+
+
+
+
 
 
 ## 日志库作业
@@ -5705,6 +7425,652 @@ func NewLoger(logStartLevel LogLevel, outputMode outputMode) *Logger {
 	}
 }
 ```
+
+
+
+## 代码测试（待补充）
+
+### 学习资料
+
+测试中涉及一些，我并不了解的知识，所以放在最后学习
+
+[单元测试从零到溜系列——第0篇：单元测试基础](https://www.liwenzhou.com/posts/Go/golang-unit-test-0/)
+
+[单元测试从零到溜系列——第1篇：网络测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-1/)
+
+[单元测试从零到溜系列——第2篇：MySQL和Redis测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-2/)
+
+[单元测试从零到溜系列——第3篇：mock接口测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-3/)
+
+[单元测试从零到溜系列——第4篇：monkey打桩测试](https://www.liwenzhou.com/posts/Go/golang-unit-test-4/)
+
+[单元测试从零到溜系列——第5篇：goconvey的使用](https://www.liwenzhou.com/posts/Go/golang-unit-test-5/)
+
+[单元测试从零到溜系列——第6篇：编写可测试的代码](https://www.liwenzhou.com/posts/Go/golang-unit-test-6/)
+
+项目中，以`*_test.go`命名的源代码文件都是测试文件，这些文件不会被`go build`编译到最终的可执行文件中
+
+在`*_test.go`文件中有三种类型的函数：
+
+|     类型     |                  格式                   | 示例         |              作用              |
+| :----------: | :-------------------------------------: | ------------ | :----------------------------: |
+| 单元测试函数 |   函数名前缀为Test（后接大写首字母）    | TestSum      | 测试程序的一些逻辑行为是否正确 |
+| 基准测试函数 | 函数名前缀为Benchmark（后接大写首字母） | BenchmarkSum |         测试函数的性能         |
+|   示例函数   |  函数名前缀为Example（后接大写首字母）  | ExampleSum   |       为文档提供示例文档       |
+
+### 单元测试
+
+函数名前缀为Test ，参数必须为`testing`包中的`*testing.T`
+
+```go
+//a_test.go
+func TestSum(t *testing.T){
+  
+}
+```
+
+其中参数`t`用于报告测试失败和附加的日志信息。 `testing.T`的拥有的方法如下：
+```go
+func (c *T) Cleanup(func())
+func (c *T) Error(args ...interface{})
+func (c *T) Errorf(format string, args ...interface{})
+func (c *T) Fail()
+func (c *T) FailNow()
+func (c *T) Failed() bool
+func (c *T) Fatal(args ...interface{})
+func (c *T) Fatalf(format string, args ...interface{})
+func (c *T) Helper()
+func (c *T) Log(args ...interface{})
+func (c *T) Logf(format string, args ...interface{})
+func (c *T) Name() string
+func (c *T) Skip(args ...interface{})
+func (c *T) SkipNow()
+func (c *T) Skipf(format string, args ...interface{})
+func (c *T) Skipped() bool
+func (c *T) TempDir() string
+```
+
+运行单元测试
+
+注意不指定run时，`go test`默认运行的是单元测试，而不会运行基准测试
+
+```shell
+go test -v -timeout=20m -run=Sum -count=1 -short a_test.go
+# -v 打印详细测试信息
+
+# -timeout 超时时间
+
+# -count 函数运行次数
+
+# -short 如果希望在跳过某些用例（比如，耗时的用例），详细会在下面讲解
+
+# -run 参数是一个正则表达式，只有函数名匹配上的"单元测试函数"才会被执行测试
+# -bench 与run一样参数是一个正则表达式，但是是指定执行哪些基准测试函数
+
+#-benchmem 输出内存分配情况
+
+#-benchtime 每个基准测试函数的运行时间
+```
+
+详细讲解short
+
+```shell
+go test -short
+```
+
+```go
+func TestTimeConsuming(t *testing.T) {
+  
+    if testing.Short() { //当使用-short命令，testing.Short()函数返回值为true
+        t.Skip("short模式下会跳过该测试用例")
+    }
+  
+}
+```
+
+**一个单元测试的例子**
+
+[GotestExample](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/GotestExample)
+
+*  单测试用例
+
+  ```go
+  //split_test.go
+  package split
+  
+  import (
+  	"reflect"
+  	"testing"
+  )
+  
+  
+  func TestSplit(t *testing.T) {
+  	got := Split("a,b,c,d", ",")
+  	want := []string{"a", "b", "c", "d"}
+  	if !reflect.DeepEqual(got, want) { //因为slice不能比较直接，借助反射包中的方法比较
+  		t.Errorf("want:%v,but got:%v", want, got)
+  	}
+  }
+  ```
+
+* 多单测试用例。提前将多个测试用例写入一个切片中，在一个测试函数中，通过循环切片中的多个用例，来执行多个测试
+
+  ```go
+  //split_test.go
+  package split
+  
+  import (
+  	"reflect"
+  	"testing"
+  )
+  
+  func TestSplit(t *testing.T) {
+  	type test struct {
+  		input string
+  		sep   string
+  		want  []string
+  	}
+  	tests := map[string]test{
+  		"example1": test{input: "a,b,c", sep: ",", want: []string{"a", "b", "c"}},
+  		"example2": test{input: ",b,", sep: ",", want: []string{"", "b", ""}},
+  	}
+  
+  	for key, value := range tests {
+  		got := Split(value.input, value.sep)
+  		if !reflect.DeepEqual(got, value.want) {
+  			t.Errorf("name: %s fail,want:%v,got:%v", key, value.want, got)
+  		}
+  	}
+  }
+  ```
+
+* 子测试。Go1.7+中新增子测试,支持在一个测试函数中使用多个t.Run执行多组测试用例，每个t.Run执行一组用例
+
+  ```go
+  //split_test.go
+  package split
+  
+  import (
+  	"reflect"
+  	"testing"
+  )
+  
+  //子测试，
+  func TestSplit(t *testing.T) {
+  	t.Run("example1", func(t *testing.T) {
+  		got := Split("a,b,c,d", ",")
+  		want := []string{"a", "b", "c", "d"}
+  		if !reflect.DeepEqual(got, want) {
+  			t.Errorf("want:%v,but got:%v", want, got)
+  		}
+  	})
+  
+  	t.Run("example2", func(t *testing.T) {
+  		got := Split(",b,c,", ",")
+  		want := []string{"", "b", "c", ""}
+  		if !reflect.DeepEqual(got, want) {
+  			t.Errorf("want:%v,but got:%v", want, got)
+  		}
+  	})
+  }
+  ```
+
+* 表格驱动测试+并行测试
+
+  这是一种思想，即提前将多个测试用例写入一个切片中，通过循环切片中的多个用例，通过t.Run执行每一组用例。
+
+  这样有哪些用例一目了然，其实就是第2、3点的结合
+
+  并行测试：t.Parallel，将当前测试用例标记为能够并行运行
+
+  ```go
+  //split_test.go
+  package split
+  
+  import (
+  	"reflect"
+  	"testing"
+  )
+  
+  func TestSplit(t *testing.T) {
+  	type test struct {
+  		input string
+  		sep   string
+  		want  []string
+  	}
+  	tests := map[string]test{
+  		"example1": test{input: "a,b,c", sep: ",", want: []string{"a", "b", "c"}},
+  		"example2": test{input: ",b,", sep: ",", want: []string{"", "b", ""}},
+  	}
+  
+  	for key, value := range tests {
+      t.Run(key,func(* testing.T){
+        t.Parallel() //将每个测试用例标记为能够彼此并行运行
+        got := Split(value.input, value.sep)
+  			if !reflect.DeepEqual(got, value.want) {
+  				t.Errorf("name: %s fail,want:%v,got:%v", key, value.want, got)
+  			}
+      })
+  	}
+  }
+  ```
+
+
+
+**生成表格测试文件的工具**
+
+gotests是一个生产测试文件的工具，是一个全局的工具[文档地址](https://github.com/cweill/gotests)
+
+```go
+//编译并将gotests命令添加到环境变量
+go install github.com/cweill/gotests/...
+
+//生成单元测试文件。目录下如果事先存在这个文件就不再生成
+gotests -all -w xxx.go
+```
+
+默认生成的文件 `xxx_test.go`
+
+```go
+package sum
+
+import "testing"
+
+func Test_sum(t *testing.T) {
+	type args struct {
+		a int
+		b int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := sum(tt.args.a, tt.args.b); got != tt.want {
+				t.Errorf("sum() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+```
+
+
+
+**测试覆盖率**
+
+测试覆盖率是指代码被测试用例覆盖的百分比，也就是在测试中至少被运行一次的代码占总代码的比例。在公司内部一般会要求测试覆盖率达到80%左右。
+
+进入包含测试文件的目录，执行下面命令，输出测试覆盖率
+
+```go
+go test -cover
+```
+
+![image-20221119221342941](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221119221343%20.png)
+
+执行下面命令，输出覆盖率相关的信息到一个文件
+
+```go
+go test -coverprofile a.text //输出到a.text文件
+```
+
+使用`cover`工具来处理生成的记录信息，并打开本地的浏览器窗口生成一个HTML报告。绿色的部分是被测试覆盖的代码，红色的是未覆盖的
+
+```go
+go tool cover -html=a.text
+```
+
+![image-20221119221729419](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221119221729%20.png)
+
+
+
+**测试断言**
+
+我们在写单元测试的时候，通常需要使用断言来校验测试结果（比如，前面使用`reflect.DeepEqual`），但是Go语言官方没有提供断言
+
+[testify](https://github.com/stretchr/testify)是一个社区非常流行的Go单元测试工具包，其中使用最多的功能就是它提供的断言工具——`testify/assert`或`testify/require`
+
+* `testify/assert`提供了非常多的断言函数，可以查看[官方文档](https://pkg.go.dev/github.com/stretchr/testify/assert#pkg-functions)
+
+* `testify/require`拥有`testify/assert`所有断言函数，它们的唯一区别就是——`testify/require`遇到失败的用例会立即终止本次测试。
+
+```go
+go get github.com/stretchr/testify
+```
+
+前面的写法
+
+```go
+t.Run(tt.name, func(t *testing.T) { // 使用t.Run()执行子测试
+	got := Split(tt.input, tt.sep)
+	if !reflect.DeepEqual(got, tt.want) {
+		t.Errorf("expected:%#v, got:%#v", tt.want, got)
+	}
+})
+```
+
+使用testify工具后面的写法，使用assert.Equal函数，如果不相等会自动抛出错误
+
+```go
+t.Run(tt.name, func(t *testing.T) { // 使用t.Run()执行子测试
+	got := Split(tt.input, tt.sep)
+	assert.Equal(t, got, tt.want)  // 使用assert提供的断言函数
+})
+```
+
+也可以
+
+```go
+func TestSomething(t *testing.T) {
+  assert := assert.New(t)
+
+  //断言相等
+  assert.Equal(123, 123, "they should be equal")
+
+  //断言不相等
+  assert.NotEqual(123, 456, "they should not be equal")
+
+  //断言为nil
+  assert.Nil(object)
+
+  //断言为非nil。非nil才能取取Value字段
+  if assert.NotNil(object) {
+    assert.Equal("Something", object.Value)
+  }
+}
+```
+
+
+
+### 基准测试
+
+函数名前缀为Benchmark，参数为***testing.B类型的参数b**
+
+基准测试必须要**执行b.N**次，这样的测试才有对照性，b.N的值是系统根据实际情况去调整的，从而保证测试的稳定性
+
+```go
+//a_test.go
+func BenchmarkSum(b *testing.B){
+  
+}
+```
+
+运行基准测试，必须指定-bench
+
+指定`-run=^$`，即可不运行单元测试函数，否则会默认运行单元测试函数
+
+```shell
+go test -bench=StrCat -run=^$ -benchmem -benchtime=2s  a_test.go
+
+#-bench 指定运行哪个基准测试函数，支持正则表达式。StrCat表示包含StrCat这个词的基准测试函数
+#-benchmem 输出内存分配情况
+#-benchtime 每个函数运行时间
+#-cpuprofile 输出CPU性能数据 到指定文件，例如：-cpuprofile=cpu.prof输出到cpu.prof文件
+#-memprofile 输出内存性能数据 到指定文件
+```
+
+案例：
+
+```go
+//split.go
+package split
+
+import "strings"
+// Split 用法Split("a,b" ,",") => []string{a,b}
+func Split(inputString, spe string) (result []string) {
+	idx := strings.Index(inputString, spe)
+	for idx > -1 {
+		result = append(result, inputString[:idx])
+		inputString = inputString[idx+len(spe):]
+		idx = strings.Index(inputString, spe)
+	}
+	result = append(result, inputString[:])
+	return
+}
+```
+
+测试文件 `split_test.go`
+
+```go
+func BenchmarkSplit(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = Split("a,b,c,d,e", ",")
+	}
+}
+```
+
+```shell
+go test -bench=Split 
+```
+
+![image-20221120232203884](/Users/yc/Library/Application Support/typora-user-images/image-20221120232203884.png)
+
+```shell
+ go test  -bench=Split  -benchmem
+```
+
+![image-20221120231636887](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221120231637%20.png)
+
+
+
+## 性能分析pprof
+
+### 介绍
+
+pprof是Go程序性能分析工具，prof是profile（画像）的缩写
+
+使用pprof可以分析下面9种数据
+
+![img](https://pic2.zhimg.com/80/v2-fdf96daa0d4826fae78d0d2e3d9f77b5_1440w.webp)
+
+分析时一般常用4种：
+
+- **CPU Profiling**
+
+  CPU 分析，按照一定的频率采集所监听的应用程序 CPU（含寄存器）的使用情况，可确定应用程序在主动消耗 CPU 周期时花费时间的位置
+
+- **Memory Profiling**
+
+  内存分析，在应用程序进行堆分配时记录堆栈跟踪，用于监视当前和历史内存使用情况，以及检查内存泄漏
+
+- **Block Profiling**
+
+  阻塞分析，记录 goroutine 阻塞等待同步（包括定时器通道）的位置
+
+- **Mutex Profiling**
+
+  互斥锁分析，报告互斥锁的竞争情况
+
+
+
+### 采集数据
+
+分成两大类场景，对应使用不同的Go标准库
+
+* 采集指定代码区域的运行数据进行分析，使用标准库**runtime/pprof**，也可以使用基准测试函数
+
+  比如，都某个函数的分析
+
+* 对于Http Server类应用，采集其运行时的数据进行分析，使用标准库**net/http/pprof**
+
+  比如，一个Gin框架的Web服务器
+
+下面分别具体介绍
+
+**注意**：使用`go tool pprof`分析工具提示
+
+```
+Could not execute dot; may need to install graphviz.
+```
+
+使用如下方法安装:[mac安装graphviz的3种方法](https://zhuanlan.zhihu.com/p/417012153)
+
+### 采集指定区域运行数据
+
+**CPU分析**
+
+```go
+package main
+
+import (
+	"GoTestExample/split"
+	"os"
+	"runtime/pprof"
+)
+
+
+func work() {
+
+}
+
+func main() {
+	cpuOut, _ := os.Create("./cpu.pprof")
+	//1、开始监控
+	pprof.StartCPUProfile(cpuOut)
+	//2、需要监控的代码
+  work()
+	//3、结束监控
+	pprof.StopCPUProfile()
+  cpuOut.Close()
+}
+```
+
+生成文件`cpu.pprof`，通过tool生成一个Web可视化界面
+
+```shell
+go tool pprof -http=:8080 cpu.pprof  #-http是指定可视化web页面的启动地址，不指定启动IP地址，默认在127.0.0.1启动
+```
+
+**内存分析**
+
+```go
+memOut, _ := os.Create("./mem.pprof")
+pprof.WriteHeapProfile(memOut)
+memOut.Close()
+```
+
+生成文件，可视化分析
+
+```shell
+go tool pprof -http=:8080 mem.pprof
+```
+
+### 采集Web服务运行数据
+
+**CPU分析**
+
+```shell
+go tool pprof -http=:8080 http://localhost:9090/debug/pprof/profile
+
+# -http指定可视化Web页面启动地址，后面的http://localhost:9090是项目的运行地址
+```
+
+**内存分析**
+
+```shell
+go tool pprof -http=:8080 http://localhost:9090/debug/pprof/heap
+```
+
+
+
+### 性能数据分析
+
+前面的例子中，都是通过下面的工具来实现可视化分析的
+
+```shell
+go tool pprof -http=:8080 
+```
+
+也可以使用下面的命令，在命令行进入交互模式
+
+```
+go tool pprof 文件
+```
+
+交互模式下常用命令
+
+```shell
+topn // 例如top10，性能消耗前十名的数据
+
+list //列出详细数据
+
+func
+
+peekfunc
+
+web
+```
+
+## 协程排查工具trace
+
+如何生成trace文件
+
+* 在代码中显式调用trace
+
+  ```go
+  package main
+  
+  import (
+  	"os"
+  	"runtime/trace"
+  	"strings"
+  )
+  
+  func work(){
+  	
+  }
+  func main() {
+  	traceOut, _ := os.Create("./trace.pprof")
+  	trace.Start(traceOut) //开始trace
+  	defer trace.Stop()    //结束trace
+    work()  //监控的对象
+  }
+  ```
+
+  通过web可视化页面，查看trace文件数据
+
+  ```shell
+   go tool trace -http=127.0.0.1:8080 trace文件位置
+  ```
+
+  ![image-20221121004506087](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221121004506%20.png)
+
+* 利用pprof生成trace文件
+
+  ![image-20221121004859440](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221121004859%20.png)
+
+  查看trace文件
+
+  ```go
+  go tool trace -http=127.0.0.1:8080 /path/to/trace_file
+  ```
+
+  
+
+* go test时，加上-trace参数，指定输出的文件名
+
+  ```go
+  go test -trace=trace_file
+  ```
+
+  查看trace文件
+
+  ```shell
+  go tool trace -http=127.0.0.1:8080 trace文件位置
+  ```
+
+  
+
+
+
+
+
+
 
 
 
