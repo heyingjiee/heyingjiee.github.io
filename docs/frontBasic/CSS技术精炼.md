@@ -1452,7 +1452,7 @@ white-space: nowrap;
 
 https://blog.csdn.net/weixin_41342585/article/details/79484879
 
-## 栅格布局
+## 网格布局
 
 将页面划分为网格，分为行和列，就像一块地图，可以将元素任意放置在这些块或者块组成的区域中
 
@@ -1773,6 +1773,306 @@ grid-column: 1/2; /*或者使用偏移量 grid-column:1/span 2*/
 </body>
 </html>
 ```
+
+## 网格布局（新版）
+
+### 网格
+
+这里写一个Html模版，父元素里有6个子元素。后面的样式都是添加到这里，查看效果
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">11</div>
+        <div class="box">22</div>
+        <div class="box">33</div>
+        <div class="box">44</div>
+        <div class="box">55</div>
+        <div class="box">66</div>
+    </div>
+</body>
+<style>
+     这里写样式
+</style>
+</html>
+```
+
+
+
+**网格布局**
+
+父级元素设置display属性为grid，则其子元素变为网格子元素
+
+```css
+display:grid;
+```
+
+**网格间距**
+
+```css
+/*列、行间距*/
+grid-gap:10px;
+
+/*列间距*/
+grid-column-gap:10px;
+
+/*行间距*/
+grid-row-gap:10px;
+```
+
+**网格分为显式网格、隐式网格**
+
+* 显式网格
+
+  通过下面属性显式的设置行、列
+
+  ```css
+  /*设置两列，第一列宽为100px，第二列宽为100px*/
+  grid-template-columns:100px 100px; 
+  
+  
+  /*设置两行，第一行的高为50px，第二行的高为50px*/
+  grid-template-rows:50px 50px; 
+  ```
+
+  实际例子:
+
+  可以看出来，网格子元素按照从左到右排列（看下元素的编号）。共有四个是宽100px，高50px的网格子元素
+
+  剩下两个子元素，继续排列，这时候就是隐式网格了：
+
+  隐式网格的列还是grid-template-columns定义的个数和尺寸
+
+  隐式网格的行会自动增加，高度由内部撑开
+
+  ```css
+  .container{
+      display: grid;
+      grid-template-columns:100px 100px;
+      grid-template-rows:50px 50px;
+      grid-gap: 10px;
+  }
+  ```
+
+  ![image-20230119141740957](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230119141741%20.png)
+
+  
+
+* 隐式网格自动宽高
+
+  隐式：指不设置`grid-template-columns`或`grid-template-rows`
+
+  
+
+  自动宽高：指不设置`grid-auto-columns`、`grid-auto-rows`不设置值，默认为auto，每个网格子元素其根据内容撑开（注意：第1行的第1列元素撑起了高度，整个第1行高度都会被撑起来）
+
+  
+
+  综合起来：
+
+  隐式网格的列：不设置默认1列、隐式列宽度为100%。设置了就按照设置的来
+
+  隐式网格的行：如果未超出了定义的网格个数，就按照设置的来。超出了定义的网格个数，会自动增加行，高度由内部撑开
+
+  例子：不设置列、行
+
+  ```
+  .container{
+      display: grid;
+      grid-gap: 10px;
+  }
+  ```
+
+  ![image-20230119142932537](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119142932%20.png)
+
+  例子：设置列、不设置行（网格个数为0，子元素的行高是撑开的）
+
+  ```css
+  .container{
+      display: grid;
+      grid-template-columns:100px 100px;
+      grid-gap: 10px;
+  }
+  ```
+
+  ![image-20230119143513993](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119143514%20.png)
+
+  
+
+* 隐式网格手动设置宽高
+
+  如下例子，列宽为100px，列高50px
+
+  ```css
+  .container{
+      display: grid;
+      grid-auto-columns: 100px;
+    	grid-auto-rows: 50px;
+      grid-gap: 10px;
+  }
+  ```
+
+  
+
+  
+
+**网格列、行宽高单位**
+
+设置值可以使用像素、百分比
+
+```css
+/*设置两列，第一列宽为100px，第二列宽为100px*/
+grid-template-columns:100px 100px; 
+
+
+/*设置两行，第一行的高为50px，第二行的高为50px*/
+grid-template-rows:50px 50px; 
+```
+
+剩余空间按比例分配
+
+```css
+/*第1列宽100px。剩余的宽度分成3分，第二列占1份，第三列占2份*/
+grid-template-columns:100px 1fr 2fr;
+```
+
+repeat函数重复分配。参数1：重复次数；参数2：尺寸
+
+```css
+/*repeat(2,1fr)等价于1fr 1fr*/
+grid-template-columns:repeat(2,1fr)
+/*repeat(2,1fr 2fr)等价于1fr 2fr 1fr 2fr*/
+grid-template-columns:repeat(2,1fr 2fr)
+
+
+/*参数1，除了指定具体数字外，还有几个特殊的属性：auto-fill、auto-fit
+	所以，reapeat函数可以实现自适应效果。自动生成网格的列数
+	后面会详细讲解
+*/
+
+grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+```
+
+内容撑起
+
+```css
+/*行宽度 最少是100px，最大是200px*/
+grid-template-rows: minmax(100px, 200px);
+/*行宽度 最少是100px，内容可以被撑起来*/
+grid-template-rows: minmax(100px, auto);
+```
+
+
+
+**repeat函数**
+
+auto-fill、auto-fit
+
+```css
+/*含义：
+	auto-fill让一行内，尽可能有更多的列，这时是按照最小宽度200px分配空间的。
+	如果一行中最后剩余空间不足200px，即不能再放下一个列了，就会把剩余空间平均分配到每一列上（这是每列也就大于了200px）
+	
+	
+	auto-fill与auto-fit只有一个差别：
+	比如，我有3个网格元素，占据屏幕3*200 =600px；两个gap占据2*20=40px 。共计640px
+	如果，此时屏幕宽度为840px
+	auto-fill会有4列，只不过最后一列是空的
+	auto-fit会有3列，它会将没有被占用的列的宽，分配给已存在的3列
+*/
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: minmax(100px, auto);
+  grid-gap: 20px;
+}
+```
+
+![2023-01-19 16.25.13](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119162624%20.gif)
+
+
+
+
+
+
+
+
+
+### 放置元素
+
+定义完网格，我们就可以在其中放置元素了。（可以指定多个相邻的网格为一个区域，放置元素）
+
+这里有个很好的例子可以参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/grid-template-areas
+
+```css
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">头</div>
+        <div class="aside">侧边栏</div>
+        <div class="main">主体</div>
+        <div class="footer">底部</div>
+    </div>
+</body>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 4fr;
+        grid-template-rows:1fr 4fr 1fr;
+				
+      	/*定义的网格是 2*3 的，这里需要给每个网格元素命名*/
+        grid-template-areas:
+                "header header"
+                "aside main"
+                "footer footer";
+
+    }
+
+    .header {
+      	/*这里将网格元素的名字，给对应的元素设置上。这些元素就会放置到这些网格中*/
+        grid-area: header;
+        background-color: red;
+    }
+    .aside{
+        grid-area: aside;
+        background-color: yellow;
+    }
+    .main{
+        grid-area: main;
+        background-color: green;
+    }
+    .footer{
+        grid-area: footer;
+        background-color: blue;
+    }
+</style>
+</html>
+
+```
+
+效果：
+
+![image-20230119164536215](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119164536%20.png)
 
 
 
@@ -3682,6 +3982,28 @@ absolute、fixed时，由其内部撑起来
 **父、子都是块级元素，父元素脱离文档流**
 
 没影响，positon值是哪个，子元素都会继承父元素宽度
+
+### white-space
+
+重点关注white-space的不同属性，对于
+
+* 文本中的空格、制表符
+* 文本中的回车
+* 文本遇到父元素边界是否自适应换行
+
+等方面的影响
+
+| 属性         | 作用                                                     |
+| ------------ | -------------------------------------------------------- |
+| normal(默认) | 所有空格、回车、制表符都合并成一个空格，文本自适应换行   |
+| nowrap       | 所有空格、回车、制表符都合并成一个空格，文本不换行       |
+| pre          | 所有东西原样输出，文本不自适应换行                       |
+| pre-wrap     | 所有东西原样输出，文本自适应换行                         |
+| pre-line     | 所有空格、制表符合并成一个空格，回车换行，文本自适应换行 |
+
+pre-line是我很喜欢的属性，在下面例子中，标题是一样的字体但是分为了两行。采用pre-line就可以在文本中加入`\n`来实现换行
+
+![image-20230119131650735](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230119131651%20.png)
 
 ### 三角形和梯形
 

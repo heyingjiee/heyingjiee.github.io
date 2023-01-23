@@ -189,9 +189,11 @@ CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build
 * **GOOS**  目标平台
 * **GOARCH ** 目标平台机器处理器架构
 
-## Package
+## Package（包）
 
-### 包（package）
+同一个目录下只能有一个包，有多个文件他们的package名相同
+
+### 包
 
 ***问题1***：同一个包（package）内有多个Go文件，两个文件怎么调用对方的函数或者变量
 
@@ -337,7 +339,7 @@ func init(){
 
   ![image-20220509190502195](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220509190502195.png)
 
-## Go Module
+## Go Module（module）
 
 > 很多教程中，将module和package都翻译成包，这会造成极大的混淆
 >
@@ -351,21 +353,6 @@ func init(){
 * 项目中的依赖是第三方模块（module）
 
 所以，你应该反应过来，一个Go项目既可以单独的作为Go项目开发，也可以直接作为别人的Go项目中依赖
-
-### 第三方模块（module）
-
-第三方包，其实就是一个完整的Go项目，包的根目录也有一个go.mod文件
-
-```go
-import (
-	"fmt"
-	"liwenzhou.com/q1mi/p2"
-)
-func main() {
-	p2.New()
-	fmt.Println("main")
-}
-```
 
 ### 模块管理
 
@@ -410,9 +397,15 @@ require github.com/q1mi/hello v0.1.1 // indirect
 
 **go get**
 
-这个命令主要用来拉取远程的第三方模块（module），第三方模块地址的格式如下：
+这个命令主要用来拉取远程的第三方模块（module）
+
+目前支持的模块地址有 BitBucket、GitHub、Google Code 和 Launchpad，其中最常用的就是GitHub， `go get `命令会根据模块地址来使用对应的代码管理工具，如 Git、SVN等去拉取代码
+
+以Github为例子，第三方模块地址的格式如下：
 
 ![image-20220509223554243](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220509223554243.png)
+
+拉取安装模块：（`-u`参数，如果依赖发布了新的版本，就会强制本地更新依赖的版本）
 
 ```shell
 # 默认拉取GitHub主分支最新的代码
@@ -428,9 +421,9 @@ go get -u github.com/q1mi/hello@v0.1.0
 go get github.com/q1mi/hello@2ccfadd
 ```
 
-`-u`参数，如果依赖发布了新的版本，就会强制本地更新依赖
 
-其实get这个命令主要分成两部分执行：
+
+get执行分为两部分：
 
 * 下载模块源代码
 
@@ -487,6 +480,40 @@ func main(){
 }
 ```
 
+自定义域名的功能：
+
+实际是，一般企业中只会把代码托管在内部服务器上，而不是其默认支持的GitHub等网站
+
+**GOPROXY**这个环境变量主要是用于设置 Go 模块的代理，其作用是用于使 Go 在后续拉取模块版本时能够脱离传统的 VCS 方式，直接通过镜像站点来快速拉取。
+
+其默认值是：
+
+```go
+https://proxy.golang.org,direct
+
+//由于某些原因国内无法正常访问该地址，,目前社区使用比较多的有两个https://goproxy.cn和https://goproxy.io
+```
+
+设置GOPAROXY的方式：
+
+```go
+go env -w GOPROXY=https://goproxy.cn,direct
+```
+
+GOPROXY 允许设置多个代理地址，多个地址之间需使用英文逗号分隔。最后的 `direct`用于指示 Go 回源到源地址去抓取（比如 GitHub 等）。当配置有多个代理地址时，如果第一个代理地址返回 404 或 410 错误时，Go 会自动尝试下一个代理地址，当遇见 `direct”`时触发回源，也就是回到源地址去抓取
+
+
+
+设置了GOPROXY 之后，get命令就会从配置的代理地址拉取和校验依赖包。当我们在项目中引入了非公开的包（公司内部git仓库或 github 私有仓库等），此时便无法正常从代理拉取到这些非公开的依赖包，这个时候就需要配置 GOPRIVATE 环境变量。GOPRIVATE用来告诉 go 命令哪些仓库属于私有仓库，不必通过代理服务器拉取和校验
+
+```go
+go env -w GOPRIVATE="git.mycompany.com"
+```
+
+GOPRIVATE 的值也可以设置多个，多个地址之间使用英文逗号分隔。我们通常会把自己公司内部的代码仓库设置到 GOPRIVATE 中，这样就可以正常拉取了
+
+
+
 **go install**
 
 go install 编译源代码，并将生成的可执行文件放置到 GOPATH/bin下，以及添加到环境变量中
@@ -497,99 +524,309 @@ go install 编译源代码，并将生成的可执行文件放置到 GOPATH/bin�
 
 ### 发布模块
 
-当我们想要在社区发布一个自己编写的代码包时，我们该怎么做呢？接下来，我们就一起编写一个代码包并将它发布到`github.com`仓库
+当我们想要在社区发布一个自己编写的代码模块时，我们该怎么做呢？接下来，我们就一起编写一个代码包并将它发布到`github.com`仓库
 
-* 新建GitHub仓库，克隆空仓库到本地
+**准备模块仓库**
 
-* 在根目录下，初始化项目，创建`go.mod`文件
+新建GitHub仓库，用来存储Go模块。并克隆到本地， 接下来开始编写模块内容
 
-  ```
-  go mod init github.com/用户名/项目名
-  ```
+```
+github.com/用户名/项目名
+```
 
-* 根目录下创建 `hello.go` 文件，添加下面的内容
+**初始化项目**
 
-  ```go
-  package hello
-  
-  import "fmt"
-  
-  func SayHi() {
-  	fmt.Println("你好")
-  }
-  ```
+初始化项目，创建`go.mod`文件，其格式必须为：
 
-* 推送到GitHub仓库，这样就对外发布了一个Go包，其他人可以通过`github.com/用户名/项目名`这个引入路径下载并使用这个包了。发布版本号使用git tag为代码包打上标签即可，比如打上标签`v0.1.0`，就发布了一个版本号为`v0.1.0`的版本
+```
+go mod init github.com/用户名/项目名
+```
 
-  Go modules中建议使用语义化版本控制，其建议的版本号格式如下：
+这里，我新建了一个`test-go-module`仓库
+
+```
+go mod init github.com/heyingjiee/test-go-module
+```
+
+生成的`go.mod`为
+
+```go
+module github.com/heyingjiee/test-go-module
+
+go 1.18
+```
+
+**编写模块**
+
+和正常的Go项目一样，我们新建pkg1目录，并新增以下Go文件。这里我们就有了一个名为pkg1的包
+
+```go
+package pkg1
+
+import "fmt"
+
+func SayHi() {
+	fmt.Println("这里是pkg1包中的函数SayHi")
+}
+```
+
+我们也可以创建更多包（新建一个pkg2目录）
+
+```go
+package pkg2
+
+import "fmt"
+
+func SayHi() {
+	fmt.Println("这里是pkg2包中的函数SayHi")
+}
+```
+
+**推送模块到远程仓库**
+
+推送到GitHub仓库，这样就对外发布了一个Go模块（module）
+
+```shell
+git add .
+git commit -m "init go module"
+git push
+```
+
+打tag，并推送到远程仓库。tag就是模块的版本号，这里就发布了一个版本号为`v1.0.0`的版本
+
+```shell
+git tag v1.0.0
+
+git push origin v1.0.0
+
+#git push origin --tags #推送所有标签
+```
+
+Go modules建议的版本号格式如下：
 
 ![语义化版本号示意图](https://www.liwenzhou.com/images/Go/package/version_number.png)
 
 
 
-* 发布新的主版本
+**使用模块**
 
-  新版本如果是与之前版本不兼容的更新（使用方式方式了变化，比如这里新的版本调用SayHi函数需要一个参数）
+在代码中，通过`github.com/用户名/项目名`的格式引入这个模块
 
-  ```go
-  package hello
+先下载Go模块
+
+```go
+go get -u github.com/heyingjiee/test-go-module
+//-u 就是如果模块有更新，就下载最新版本的模块
+
+go get -u github.com/heyingjiee/test-go-module@版本号
+```
+
+go.mod就会出现这个模块
+
+```go
+module app
+
+go 1.18
+
+require (
+	github.com/heyingjiee/test-go-module v1.0.0 // indirect
+)
+```
+
+代码中引用，这里需要注意一点，**引用地址需要写到包文件所在的根目录**
+
+即，Go安装了整个模块，但是使用时只是引入某个包
+
+```go
+//mian.go
+
+package main
+
+import (
+	"github.com/heyingjiee/test-go-module/pkg1"
+  "github.com/heyingjiee/test-go-module/pkg2"
+)
+
+func main() {
+	pkg1.SayHi()
+  pkg2.SayHi()
+}
+```
+
+引入时，还可以重命名模块
+
+```go
+import (
+	abc "github.com/heyingjiee/test-go-module/pkg1"
+)
+
+//使用重命名后的新名字引用
+abc.SayHi()
+```
+
+
+
+**发布新的不兼容版本**
+
+新版本如果是与之前版本不兼容的更新（使用方式方式了变化，比如这里新的版本调用SayHi函数需要一个参数）。例如这里修改了pkg1包中的函数
+
+```go
+package hello
+
+import "fmt"
+
+// SayHi 向指定人打招呼的函数
+func SayHi(name string) {
+	fmt.Printf("你好%s\n", name)
+}
+```
+
+在这种情况下，我们会改变发布模块的名字
+
+例如，我们在模块后加个`v2`，并将代码打好新的tag： `v2.0.0` ，最后推送到GitHub仓库
+
+```
+module github.com/用户名/项目名/v2
+
+go 1.16
+```
+
+这样就可以在不影响使用旧版本的用户的前提下，发布出去了新版本
+
+```go
+//这个仍然会下载最新的v1.0.0版本
+go get -u github.com/heyingjiee/test-go-module
+
+//这里才会下载刚刚我们新增的不兼容版本，也可以在后面追加@版本号，来指定使用v2下的哪个版本
+go get -u github.com/heyingjiee/test-go-module/v2 
+```
+
+通过go.mod也能看出来，其实他们已经变成了两个不同的模块地址了（代码中会保留两个版本）
+
+```go
+module app
+
+go 1.18
+
+require (
+	github.com/heyingjiee/test-go-module v1.0.0 // indirect
+	github.com/heyingjiee/test-go-module/v2 v2.0.0 // indirect
+)
+```
+
+引入包时，地址需要加上v2
+
+```go
+package main
+
+import "github.com/heyingjiee/test-go-module/v2/pkg1"
+
+func main() {
+	pkg1.SayHi("张三") // v2版本的SayHi函数需要传入字符串参数
+}
+```
+
+
+
+**废弃已发布版本**
+
+如果某个发布的版本存在致命缺陷不再想让用户使用时，我们可以使用`retract`声明废弃的版本。修改项目下的`go.mod`文件，并打包推送到GitHub仓库
+
+```go
+module github.com/q1mi/hello
+
+go 1.16
+
+
+retract v0.1.2
+```
+
+用户使用go get下载`v0.1.2`版本时就会收到提示，催促其升级到其他版本
+
+
+
+**模块文档**
+
+Go官方提供的模块文档https://pkg.go.dev/
+
+发布Go模块化，在官网上还搜不到，这是因为只有通过proxy.golang.org下载包的时候，才会自动同步到官网上
+
+使用get拉取后，就能在官网查到了
+
+![image-20230121190312322](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230121190312%20.png)
+
+官网也会自动提取代码中的注释和示例，然后显示在官网的文档中
+
+![image-20230121200200093](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230121200200%20.png)
+
+为了更好的显示文档，这里补充下需要添加的文件
+
+* 添加README文件
+
+* 添加LICENSE文件（必须添加许可证才能在文档上显示包内的函数等信息）
+
+  下面讲下如何在GitHub上添加
+
+  ![image-20230121200450421](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230121200450%20.png)
+
+  ![image-20230121200548710](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230121200549%20.png)
+
+    选择MIT协议，提交即可，后面就是PR的流程
+
+  ![image-20230121200715374](/Users/yc/Library/Application Support/typora-user-images/image-20230121200715374.png)
+
+### 本地模块
+
+新建一个testFunc项目，并添加pkg包
+
+```
+go mod init testFunc
+```
+
+![image-20230122131018515](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230122131018%20.png)
+
+另外，新建一个项目
+
+```
+go mod init app
+```
+
+在`go.mod`中引入sdk模块，使用replace关键字将模块执行本地
+
+```go
+module app
+
+go 1.18
+
+require sdk v0.0.0
+
+replace sdk => ../testFunc
+```
+
+就可以使用本地的模块了
+
+```go
+package main
+
+import "sdk/pkg"
+
+func main() {
+	pkg.GetMessage()
+}
+
+```
+
+
+
+**注意**：
+
+* 本地模块不能放在根目录下，例子中是放在pkg文件夹下的
+
+* 引用模块中的包时，不能引用模块的main包（一般情况下，第三方模块也不会有main包）
+
+  ![image-20230122131605208](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230122131605%20.png)
+
   
-  import "fmt"
-  
-  // SayHi 向指定人打招呼的函数
-  func SayHi(name string) {
-  	fmt.Printf("你好%s\n", name)
-  }
-  ```
-
-  因此我们需要发布一个主版本号递增的`v2`版本。在这种情况下，我们通常会修改当前`go.mod`包的引入路径，像下面的示例一样为引入路径添加版本后缀
-
-  ```
-  module github.com/用户名/项目名/v2
-  
-  go 1.16
-  ```
-
-  并将代码打好 tag 推送到GitHub仓库，这样就可以在不影响使用旧版本的用户的前提下，发布出去了新版本。想要使用`v2.0.0`版本的代码包的用户只需按修改后的引入路径下载即可
-
-  注意：下载路径变化了，版本号也变化了
-
-  ```shell
-  go get github.com/用户名/项目名/v2@v2.0.0 
-  ```
-
-  在代码中使用的过程与之前类似，只是需要注意引入路径要添加 v2 版本后缀
-
-  注意：虽让加了v2但是还是将包，以项目名使用
-
-  ```go
-  package main
-  
-  import (
-  	"fmt"
-  
-  	"github.com//用户名/项目名/v2" // 引入v2版本
-  )
-  
-  func main() {
-  	项目名.SayHi("张三") // v2版本的SayHi函数需要传入字符串参数
-  }
-  ```
-
-* 废弃已发布版本
-
-  如果某个发布的版本存在致命缺陷不再想让用户使用时，我们可以使用`retract`声明废弃的版本。修改项目下的`go.mod`文件，并打包推送到GitHub仓库
-
-  ```go
-  module github.com/q1mi/hello
-  
-  go 1.16
-  
-  
-  retract v0.1.2
-  ```
-
-  用户使用go get下载`v0.1.2`版本时就会收到提示，催促其升级到其他版本
 
 ### 模块的一些理解
 
@@ -1558,15 +1795,17 @@ const (
 
 * iota常量 
 
+  这里列举的用法比较全面：https://zhuanlan.zhihu.com/p/372117921
+  
   ```go
-  //iota=在const中第一次出现的行数-1
+  //iota=在const中第一次出现的值为0
   //随后的每行iota的值加1
   const (
   	n1 = 10   //10
   	n2 = iota //1
   	n3 = 20   //20
   	n4        //20
-  	n5 = iota //默认为iota，4
+  	n5 = iota //默认为iota，其值为4，即第一出现位置为0后，每行累加1，这里正好是4
   )
   ```
   
@@ -2022,7 +2261,7 @@ fmt.Printf("类型：%T，值：%v \n", res, res) //类型：string，值：12
 
 数字<--字符串
 
-两种方案参数必须是整数字符串，否则就会抛出err（相比）
+两种方案参数必须是整数字符串，否则就会抛出err
 
 方案1：
 
@@ -4132,9 +4371,101 @@ func main() {
 
 使用反射，一般会将接口类型的变量先转化为  reflect.Type 、reflect.Value 类型实例。然后通过他们的方法完成逻辑
 
-![image-20230109225548308](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230109225548%20.png)
+**reflect.Type**
 
-最重要的两个函数：（获取Type、Value实例）
+是一个接口类型，其实例实现了接口规定的方法
+
+```go
+type Type interface {
+    // Kind返回该接口的具体分类
+    Kind() Kind
+    // Name返回该类型在自身包内的类型名，如果是未命名类型会返回""
+    Name() string
+    // PkgPath返回类型的包路径，即明确指定包的import路径，如"encoding/base64"
+    // 如果类型为内建类型(string, error)或未命名类型(*T, struct{}, []int)，会返回""
+    PkgPath() string
+    // 返回类型的字符串表示。该字符串可能会使用短包名（如用base64代替"encoding/base64"）
+    // 也不保证每个类型的字符串表示不同。如果要比较两个类型是否相等，请直接用Type类型比较。
+    String() string
+    // 返回要保存一个该类型的值需要多少字节；类似unsafe.Sizeof
+    Size() uintptr
+    // 返回当从内存中申请一个该类型值时，会对齐的字节数
+    Align() int
+    // 返回当该类型作为结构体的字段时，会对齐的字节数
+    FieldAlign() int
+    // 如果该类型实现了u代表的接口，会返回真
+    Implements(u Type) bool
+    // 如果该类型的值可以直接赋值给u代表的类型，返回真
+    AssignableTo(u Type) bool
+    // 如该类型的值可以转换为u代表的类型，返回真
+    ConvertibleTo(u Type) bool
+    // 返回该类型的字位数。如果该类型的Kind不是Int、Uint、Float或Complex，会panic
+    Bits() int
+    // 返回array类型的长度，如非数组类型将panic
+    Len() int
+    // 返回该类型的元素类型，如果该类型的Kind不是Array、Chan、Map、Ptr或Slice，会panic
+    Elem() Type
+    // 返回map类型的键的类型。如非映射类型将panic
+    Key() Type
+    // 返回一个channel类型的方向，如非通道类型将会panic
+    ChanDir() ChanDir
+    // 返回struct类型的字段数（匿名字段算作一个字段），如非结构体类型将panic
+    NumField() int
+    // 返回struct类型的第i个字段的类型，如非结构体或者i不在[0, NumField())内将会panic
+    Field(i int) StructField
+    // 返回索引序列指定的嵌套字段的类型，
+    // 等价于用索引中每个值链式调用本方法，如非结构体将会panic
+    FieldByIndex(index []int) StructField
+    // 返回该类型名为name的字段（会查找匿名字段及其子字段），
+    // 布尔值说明是否找到，如非结构体将panic
+    FieldByName(name string) (StructField, bool)
+    // 返回该类型第一个字段名满足函数match的字段，布尔值说明是否找到，如非结构体将会panic
+    FieldByNameFunc(match func(string) bool) (StructField, bool)
+    // 如果函数类型的最后一个输入参数是"..."形式的参数，IsVariadic返回真
+    // 如果这样，t.In(t.NumIn() - 1)返回参数的隐式的实际类型（声明类型的切片）
+    // 如非函数类型将panic
+    IsVariadic() bool
+    // 返回func类型的参数个数，如果不是函数，将会panic
+    NumIn() int
+    // 返回func类型的第i个参数的类型，如非函数或者i不在[0, NumIn())内将会panic
+    In(i int) Type
+    // 返回func类型的返回值个数，如果不是函数，将会panic
+    NumOut() int
+    // 返回func类型的第i个返回值的类型，如非函数或者i不在[0, NumOut())内将会panic
+    Out(i int) Type
+    // 返回该类型的方法集中方法的数目
+    // 匿名字段的方法会被计算；主体类型的方法会屏蔽匿名字段的同名方法；
+    // 匿名字段导致的歧义方法会滤除
+    NumMethod() int
+    // 返回该类型方法集中的第i个方法，i不在[0, NumMethod())范围内时，将导致panic
+    // 对非接口类型T或*T，返回值的Type字段和Func字段描述方法的未绑定函数状态
+    // 对接口类型，返回值的Type字段描述方法的签名，Func字段为nil
+    Method(int) Method
+    // 根据方法名返回该类型方法集中的方法，使用一个布尔值说明是否发现该方法
+    // 对非接口类型T或*T，返回值的Type字段和Func字段描述方法的未绑定函数状态
+    // 对接口类型，返回值的Type字段描述方法的签名，Func字段为nil
+    MethodByName(string) (Method, bool)
+    // 内含隐藏或非导出方法
+}
+```
+
+![image-20230114223557449](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230114223557%20.png)
+
+**reflect.Value**
+
+是一个结构体类型，截图是该结构体的一部分部分方法
+
+```go
+type Value struct {
+    // 内含隐藏或非导出字段
+}
+```
+
+![image-20230114223446126](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230114223446%20.png)
+
+
+
+**获取Type、Value实例**
 
 ```go
 //TypeOf返回接口中保存的值的类型，TypeOf(nil)会返回nil。
@@ -4168,25 +4499,108 @@ func main() {
 }
 ```
 
-
-
-**11**
-
-
-
-### 基本使用
-
-**获取任意值的类型对象（reflect.Type）**
-
-reflect.Type类型的Name和Kind方法
+### 获取实例
 
 ```go
-func(i any) Name()string  //返回类型名
+package main
 
-func(i any) Kind() Kind   //返回类型的Kind （一般使用Kind）
+import (
+	"fmt"
+	"reflect"
+)
+
+type Stu struct {
+	Name string
+	Age  int
+}
+
+func (s Stu) Run() {
+	fmt.Println("run")
+}
+func (s Stu) Say() {
+	fmt.Println("say")
+}
+
+func getMessage(input interface{}) {
+	//---reflect.Type实例---
+	getType := reflect.TypeOf(input)
+	fmt.Println(getType)        //main.Stu
+	fmt.Println(getType.Kind()) //struct
+	fmt.Println(getType.Name()) //Stu
+
+	//---reflect.Value实例---
+	getValue := reflect.ValueOf(input)
+	fmt.Println(getValue)        //{jack 19}
+	fmt.Println(getValue.Kind()) //struct
+	fmt.Println(getValue.Type()) //main.Stu 获取Vaule对应的Type,和typeOf(input)返回值一样
+
+	//---获取实例的字段信息---（注意：只有实例是结构体类型时，才能遍历，否则NumField()会造成panic）
+	if getType.Kind() == reflect.Struct {
+		for i := 0; i < getType.NumField(); i++ {
+			field := getType.Field(i) //根据索获取结构体字段的StructField实例
+			value := getValue.Field(i).Interface()
+			fmt.Printf("字段名：%v，字段类型：%v，值是：%v\n", field.Name, field.Type, value)
+		}
+		//字段名：Name，字段类型：string，值是：jack
+		//字段名：Age，字段类型：int，值是：19
+
+		//补充下：getType.FieldByName("Age") 可以通过Struct字段名字来获取字段对应的值，它的Value对象
+
+	}
+
+	//---获取实例的方法信息（方法首字母必须大写，否则NumMethod获取不到这个方法）---
+	for i := 0; i < getType.NumMethod(); i++ {
+		method := getType.Method(i) //获取Method实例
+		fmt.Printf("方法名：%v，方法类型：%v\n", method.Name, method.Type)
+	}
+
+}
+
+func main() {
+	getMessage(Stu{
+		Name: "jack",
+		Age:  19,
+	})
+}
+
 ```
 
-Go中定义的Kind类型的常量
+Field(index int)返回的StructField类型的组成：
+
+```go
+type StructField struct {
+    Name    string //Name是字段的名字
+    PkgPath string //PkgPath是非导出字段的包路径，对导出字段该字段为""
+    Type      Type      // 字段的类型
+    Tag       StructTag // 字段的标签
+    Offset    uintptr   // 字段在结构体中的字节偏移量
+    Index     []int     // 用于Type.FieldByIndex时的索引切片
+    Anonymous bool      // 是否匿名字段
+}
+```
+
+Method(index int)返回的Method类型的组成
+
+```go
+type Method struct {
+    Name    string
+    PkgPath string
+    Type    Type
+    Func    Value
+    Index   int
+}
+```
+
+Type的Kind()、Name()方法区别
+
+```
+上面例子可以看出，当实例是结构体时
+
+Kind() 返回的是Struct
+Name() 返回的是Stu
+```
+
+reflect包中定义的一些类型常量（Kind的返回值）
 
 ```go
 type Kind uint
@@ -4221,9 +4635,72 @@ const (
 )
 ```
 
-【注意】Go语言的反射中像数组、切片、Map、指针等类型的变量的Name()都是返回空
+例如，可以通过下面的方式判断是否是结构体
 
-例子
+```
+if getType.Kind() == reflect.Stuct 
+```
+
+### 通过reflect.Value修改实例
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	num := 1.23
+	//1、参数必须是指针类型，才能被修改
+	ptr := reflect.ValueOf(&num)
+	//参数是指针类型类型，才进行下面的步骤
+	if ptr.Kind() == reflect.Ptr {
+		//2、获取指针指向的值的Value实例。前提是：第一步，传入的必须是指针类型，否则panic
+		value := ptr.Elem()
+		//3、CanSet返回值为true，即可修改，通过setXXX函数进行修改。前提是：第一步，传入的必须是指针类型，否则panic
+		if value.CanSet() {
+			value.SetFloat(3.15)
+		}
+		fmt.Printf("修改后的值：%v\n", num) //修改后的值：3.15
+	}
+}
+```
+
+修改结构体字段的例子，仅需传入结构的地址，修改结构体字段时，就可以可直接对字段值的Value使用SetXXX方法修改了
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type Stu struct { 
+	Name string
+	Age  int
+}
+
+func main() {
+	s := Stu{
+		Name: "tom",
+		Age:  20,
+	}
+	ptr := reflect.ValueOf(&s)
+	if ptr.Kind() == reflect.Ptr {
+		structValue := ptr.Elem()
+		filed1 := structValue.FieldByName("Name")
+		filed1.SetString("jack")
+	}
+	fmt.Println(s) //{jack 20}
+
+}
+
+```
+
+### 通过reflect.Value调用方法
 
 ```go
 package main
@@ -4234,189 +4711,47 @@ import (
 )
 
 type Stu struct {
-	name       string
-	age, score int
-	hobby      []string
+	Name string
+	Age  int
 }
 
-func (s *Stu) run() {
-	fmt.Println("学生跑步")
+func (s Stu) Run() {
+	fmt.Println("run")
 }
+func (s Stu) Say(word1, word2 string) {
+	fmt.Println("say", word1, word2)
+}
+
 func main() {
-	s := Stu{
-		name:  "jack",
-		age:   18,
-		score: 100,
-		hobby: []string{"唱歌", "学习"},
+	value := reflect.ValueOf(Stu{
+		Name: "tom",
+		Age:  20,
+	})
+  
+	//MethodByName的参数指定的方法不存在，返回零值，即<invalid reflect.Value>，在调用Call回触发panic
+	methodValue := value.MethodByName("Run")
+  if methodValue2.Kind() != reflect.Func {
+		return
 	}
-	//任意值的类型对象（reflect.Type）
-	t := reflect.TypeOf(s)
-	fmt.Printf("%v\n", t) //main.Stu
-	//方法Name返回名字，方法Kind返回类型
-	fmt.Printf("%v-----%v\n", t.Name(), t.Kind()) //Stu-----struct
+	fmt.Printf("Value的类型是：%v，Value的Type实例%v\n", methodValue.Kind(), methodValue.Type()) //Value的类型是：func，Value的Type实例func()
+	//无参数的函数在调用时，传入nil或者空切片
+	methodValue.Call(nil)                      //run
+	methodValue.Call(make([]reflect.Value, 0)) //run
 
-}
-```
-
-
-
-**获取任意值的值对象（reflect.Value）**
-
-方法
-
-* reflect.Value类型可与原始值之间可以互相转换，通过方法Int()、Float()等
-
-  | 方法                     | 描述                                                         |
-  | ------------------------ | ------------------------------------------------------------ |
-  | interface() interface {} | 将值以 interface{} 类型返回，可以通过类型断言转换为指定类型  |
-  | Int() int64              | 将值以 int 类型返回，所有有符号整型均可以此方式返回          |
-  | Uint() uint64            | 将值以 uint 类型返回，所有无符号整型均可以此方式返回         |
-  | Float() float64          | 将值以双精度（float64）类型返回，所有浮点数（float32、float64）均可以此方式返回 |
-  | Bool() bool              | 将值以 bool 类型返回                                         |
-  | Bytes() []bytes          | 将值以字节数组 []bytes 类型返回                              |
-  | String() string          | 将值以字符串类型返回                                         |
-
-* 方法Elem，用于获取 `reflext.Ptr`类型（通过指针类型）对应的值
-
-  v持有的值必须是指针，否则调用会导致panic
-
-  一般写成一个参数是空接口的函数，可以接收任何值
-
-  ```go
-  //获取到reflect.Value类型的v后
-  package main
-  
-  import (
-  	"fmt"
-  	"reflect"
-  )
-  
-  type Stu struct {
-  	name  string  
-  	age   int      
-  	score int      
-  	hobby []string 
-  }
-  
-  func reflectSetValue(x interface{}) {
-  	v := reflect.ValueOf(x)
-  	// 反射中使用 Elem()方法获取指针对应的值
-  	if v.Elem().Kind() == reflect.Int64 {
-  		v.Elem().SetInt(200) //指针才能设置传入变量的值
-  	}
-  }
-  func main() {
-  	var a int64 = 100
-  	reflectSetValue(&a) //传入的也是指针
-  	fmt.Printf("%v\n", a)
-  }
-  ```
-
-  如果想要调用`Set*`来转换值，必须得提前知道类型，才能使用对应的方法转换
-
-  | 方法                | 描述                                                         |
-  | ------------------- | ------------------------------------------------------------ |
-  | Set(x Value)        | 将值设置为传入的反射值对象的值                               |
-  | Setlnt(x int64)     | 使用 int64 设置值。当值的类型不是 int、int8、int16、 int32、int64 时会发生宕机 |
-  | SetUint(x uint64)   | 使用 uint64 设置值。当值的类型不是 uint、uint8、uint16、uint32、uint64 时会发生宕机 |
-  | SetFloat(x float64) | 使用 float64 设置值。当值的类型不是 float32、float64 时会发生宕机 |
-  | SetBool(x bool)     | 使用 bool 设置值。当值的类型不是 bod 时会发生宕机            |
-  | SetBytes(x []byte)  | 设置字节数组 []bytes值。当值的类型不是 []byte 时会发生宕机   |
-  | SetString(x string) | 设置字符串值。当值的类型不是 string 时会发生宕机             |
-
-* 方法Kind，与reflect.Type的Kind相同。(注意：reflect.Value没Name方法)
-
-* 方法IsNil常被用于判断指针是否为空，返回布尔值
-
-  v持有的值的分类必须是通道、函数、接口、映射、指针、切片之一,否则会导致panic【这几种类型的零值是nil】
-
-* IsValid常被用于判定返回值是否有效，返回布尔值
-
-  如果v是Value的零值会返回假，这时候只有IsValid、String、Kind的方法能调用，其他方法都会导致panic【可类比JS中的null对象，如果调用方法就会报错】
-
-  ```go
-  //方法会在后面提到
-  reflect.ValueOf(b).FieldByName("abc").IsValid()
-  reflect.ValueOf(b).MethodByName("abc").IsValid()
-  reflect.ValueOf(c).MapIndex(reflect.ValueOf("娜扎")).IsValid()
-  ```
-
-例子
-
-```go
-package main
-
-import (
-	"fmt"
-	"reflect"
-)
-
-type Stu struct {
-	name       string
-	age, score int
-	hobby      []string
-}
-
-func (s *Stu) run() {
-	fmt.Println("学生跑步")
-}
-func main() {
-	s := Stu{
-		name:  "jack",
-		age:   18,
-		score: 100,
-		hobby: []string{"唱歌", "学习"},
+  //MethodByName的参数指定的方法不存在，返回零值，即<invalid reflect.Value>，在调用Call回触发panic
+	methodValue2 := value.MethodByName("Say")
+  if methodValue2.Kind() != reflect.Func {
+		return
 	}
+	fmt.Printf("Value的类型是：%v，Value的Type实例%v\n", methodValue2.Kind(), methodValue2.Type()) //Value的类型是：func，Value的Type实例func(string, string)
+	//有参数的需要以切片的形式传入。切片元素的类型为reflect.Value
+	methodValue2.Call([]reflect.Value{
+		reflect.ValueOf("你好"),
+		reflect.ValueOf("世界"),
+	}) //say 你好 世界
 
-	v := reflect.ValueOf(s)
-	fmt.Printf("%+v\n", v) //{name:jack age:18 score:100 hobby:[唱歌 学习]}
-	
-	//方法Kind返回类型
-	fmt.Printf("%v\n", v.Kind()) //struct
 }
-```
 
-### 结构体补充
-
-**reflect.Value**还有一些方法，能够帮助我们读取结构体信息
-
-|                            方法                             |                             说明                             |
-| :---------------------------------------------------------: | :----------------------------------------------------------: |
-|                        **通用字段**                         |                                                              |
-|                       NumField() int                        |          返回结构体成员字段数量【可以使用for遍历】           |
-|                  Field(i int) StructField                   |           根据索引，返回索引对应的结构体字段的信息           |
-|        FieldByName(name string) (StructField, bool)         |       根据给定字符串返回字符串对应的结构体字段的信息。       |
-|            FieldByIndex(index []int) StructField            | 多层成员访问时，根据 []int 提供的每个结构体的字段索引，返回字段的信息 |
-|                          **函数**                           |                                                              |
-|                       NumMethod() int                       |                返回该类型的方法集中方法的数目                |
-|                     Method(int) Method                      |                返回该类型方法集中的第i个方法                 |
-| FieldByNameFunc(match func(string) bool) (StructField,bool) |               根据传入的匹配函数匹配需要的字段               |
-|             MethodByName(string)(Method, bool)              |              根据方法名返回该类型方法集中的方法              |
-
-返回的StructField类型的组成：
-
-```go
-type StructField struct {
-    Name    string //Name是字段的名字
-    PkgPath string //PkgPath是非导出字段的包路径，对导出字段该字段为""
-    Type      Type      // 字段的类型
-    Tag       StructTag // 字段的标签
-    Offset    uintptr   // 字段在结构体中的字节偏移量
-    Index     []int     // 用于Type.FieldByIndex时的索引切片
-    Anonymous bool      // 是否匿名字段
-}
-```
-
-返回的Method类型的组成
-
-```go
-type Method struct {
-    Name    string
-    PkgPath string
-    Type    Type
-    Func    Value
-    Index   int
-}
 ```
 
 
@@ -4463,64 +4798,6 @@ func main() {
 	//name:hobby ,type:[]string -- tag: json:"stuHobby" -- PkgPath:main -- Offset:32 -- Anonymous:false
 
 }
-```
-
-**方法**
-
-注意想要调用Method，需要使用的是reflect.Value的Call方法
-
-方法首字母必须大写，否则NumMethod获取不到这个方法
-
-```go
-package main
-
-import (
-	"fmt"
-	"reflect"
-)
-
-type Stu struct {
-	name  string   `json:"stuName"`
-	age   int      `json:"stuAge"`
-	score int      `json:"stuScore"`
-	hobby []string `json:"stuHobby"`
-}
-
-func (s Stu) Run() {
-	fmt.Println("学生跑步")
-}
-
-func (s Stu) Study() {
-	fmt.Println("学生学习")
-}
-func main() {
-	s := Stu{
-		name:  "jack",
-		age:   18,
-		score: 100,
-		hobby: []string{"唱歌", "学习"},
-	}
-
-	t := reflect.TypeOf(s)
-	fmt.Printf("%v\n", t.NumMethod()) //2
-	for i := 0; i < t.NumMethod(); i++ {
-		typeField := t.Method(i) //field是 StructField 类
-		fmt.Printf("name:%v -- type:%v -- PkgPath:%v -- Index:%v -- Func:%v\n", typeField.Name, typeField.Type, typeField.PkgPath, typeField.Index, typeField.Func)
-	}
-	//name:Run -- type:func(main.Stu) -- PkgPath: -- Index:0 -- Func:0x10bb500
-	//name:Study -- type:func(main.Stu) -- PkgPath: -- Index:1 -- Func:0x10bb5e0
-
-	v := reflect.ValueOf(s)
-	fmt.Printf("%v\n", v.NumMethod()) //2
-	for i := 0; i < v.NumMethod(); i++ {
-		valueField := v.Method(i)
-		var args []reflect.Value //Call的参数必须是reflect.Value的切片，这里不用参数所以传个空的
-		valueField.Call(args)     //Call必须要传入，如果没有参数，出入空的切片
-	}
-	//学生跑步
-	//学生学习
-}
-
 ```
 
 ### 反射的缺点
@@ -5607,11 +5884,9 @@ default://可以没有default
 
   
 
+### time库通道相关函数
 
-
-
-
-### <span id='time库中与通道相关的函数'>time库中与通道相关的函数</span>
+<span id='time库中与通道相关的函数'></span>
 
 Timer相关的几个方法：
 
@@ -5718,137 +5993,7 @@ for temp := range time.Tick(time.Second) {
 
 
 
-例子
-
-下面这个例子，实际上会被分配给多个操作系统线程（GOMAXPROCS肯定不为1，毕竟很少见到1核的CPU了），两个进程同时对ch1进行读写，但是不要担心，***如果ch1空了，读goroutine就会阻塞等待；如果ch1满了，写goroutine就会阻塞等待；***
-
-注意：这里为什么不再使用sync.WaitGroup来阻塞main goroutine退出？因为main函数中有读通道的操作，所以产生了阻塞，for range只有读到管道关闭，才会结束
-
-```go
-package main
-
-import (
-	"fmt"
-)
-
-//向管道内存数据
-func f1(ch chan int) {
-	for i := 0; i < 10; i++ {
-		ch <- i
-	}
-	close(ch)
-}
-
-//从管道读数据，把数据*2后放入另一个管道
-func f2(ch1 chan int, ch2 chan int) {
-	//取出channel中的值
-	for {
-		x, ok := <-ch1  //方式1
-		if !ok {
-			fmt.Println("channel读取完毕")
-			break
-		}
-		ch2 <- x*2
-	}
-	close(ch2)
-}
-
-func main() {
-	ch1 := make(chan int, 100)
-	ch2 := make(chan int, 100)
-
-	go f1(ch1)
-	go f2(ch1, ch2)
-
-	for item := range ch2 { //方式2
-		fmt.Println(item)
-	}
-
-}
-```
-
-**并非n个任务就要启动n个goroutine**
-
-```text
-1个通道中有10个任务（ch1）
-
-现在有3个goroutine处理任务，在每个任务里循环的去读ch1处理(for range在发现管道了没有数据了，就停了。实际上ch1没有了)
-```
-
-使用WaitGroup实现
-
-```go
-package main
-
-import (
-	"fmt"
-	"sync"
-)
-
-func f1(i int, taskList <-chan int) {
-	for task := range taskList {
-		fmt.Printf("第%d个线程，完成任务%d\n", i, task)
-	}
-	wg.Done()
-
-}
-
-var wg sync.WaitGroup
-
-func main() {
-
-	taskList := make(chan int, 10)
-	//写入10个任务,并关闭通道
-	for i := 0; i < 10; i++ {
-		taskList <- i
-	}
-	close(taskList)
-
-	//创建3个人来处理任务
-	for j := 0; j < 3; j++ {
-		wg.Add(1)
-		go f1(j, taskList)
-	}
-	wg.Wait()
-}
-```
-
-
-
-
-
-**多路复用**
-
-如果多个 case 同时满足，select 会**随机**选择一个执行。全不满足，则走默认
-
-select可以用来同时等待多个通道操作
-
-```go
-select {
-  case data:=<-ch1: //ch1	可读取
-	//操作
-	case data := <-ch2: //ch2	可读取
-	//操作
-  case data:=ch3 <- 10: //ch3	可读取
-	//操作
-	default:
-	//默认操作
-}
-```
-
-假设场景：
-
-可处理多个 channel 的读操作
-
-```text
-我们向3个通道中写数据(ch1、ch2、ch3)
-
-现在有1个进程读数据并处理
-
-我们就需要使用select来控制，3个通道哪个有数据就读哪个，如果3个通道中都有数据，就随机选择一个读取数据
-```
-
-具体例子
+**超时处理**
 
 ```go
 package main
@@ -5858,40 +6003,35 @@ import (
 	"time"
 )
 
-func main() {
-	// 在我们的例子中，我们将从两个通道中选择。
-	c1 := make(chan string, 1)
-	c2 := make(chan string, 1)
+var ch chan bool
 
-	go func() {
-		time.Sleep(time.Second * 1)
-		c1 <- "one"
-	}()
-
-	go func() {
-		time.Sleep(time.Second * 2)
-		c2 <- "two"
-	}()
-
-	//我们使用 `select` 关键字来同时等待这两个值，并打印各自接收到的值。
-	for i := 0; i < 2; i++ {
-		select {
-		case c1 <- "1":
-			fmt.Println("received case1")
-		case c2 <- "2":
-			fmt.Println("received case2")
-		default:
-			fmt.Println("No data received")
-		}
-	}
+func doSomething() {
+	time.Sleep(10 * time.Second)
+	ch <- true
+	return
 
 }
 
+func main() {
+	ch = make(chan bool, 1)
+	startTime := time.Now()
+  //这里必须使用goroutine，如果直接调用函数就会Sleep到10s后才会执行select
+	go doSomething()
+	select {
+	case <-time.After(15 * time.Second):
+		curTime := time.Now()
+		fmt.Println("任务超时,耗时", curTime.Sub(startTime))
+	case <-ch:
+		curTime := time.Now()
+		fmt.Println("完成任务,耗时", curTime.Sub(startTime))
+	}
+}
 
-//输出的先后顺序不一定
-//received case1
-//received case2
 ```
+
+### context包（待补充）
+
+这部分涉及到context提供的功能
 
 
 
@@ -6011,6 +6151,14 @@ func main() {
 这篇[文章](https://www.liwenzhou.com/posts/Go/15_socket/)的开篇部分，对计算机网络基础做了概述
 
 [代码仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/TCP)
+
+### 发起HTTP请求
+
+
+
+
+
+
 
 ### TCP
 
@@ -6935,7 +7083,7 @@ func main() {
   //读取
 	file.Seek(1, 0)//指定游标起始位置是文件开头，向后移动1字节。应输出b
 	temp := make([]byte, 1)
-	file.Read(buffer)
+	file.Read(temp)
 	fmt.Println(string(temp)) //b
   
   //写入
@@ -7212,6 +7360,12 @@ bufio包中，最重要的两个类型（仔细看，这两个不是接口类型
   
   ```
 
+  还有一个很好用的函数，前面的函数读取后，读取位置都会后移。Peek可以指定当前读取位置之后的n个字节（Byte），但是不移动读取位置。这个函数可以先判断后面的是不是自己需要的内容，如果是才读取
+
+  ```go
+  func (b *Reader) Peek(n int) ([]byte, error)
+  ```
+
   实践例子
 
   ```go
@@ -7347,17 +7501,8 @@ bufio包中，最重要的两个类型（仔细看，这两个不是接口类型
   
   
   
-  
 
-
-
-
-
-
-
-
-
-## 日志库作业
+## 实战之实现日志库
 
 实现代码，[仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/Logger)
 
@@ -7425,6 +7570,114 @@ func NewLoger(logStartLevel LogLevel, outputMode outputMode) *Logger {
 	}
 }
 ```
+
+## 实战之BT下载器（待补充）
+
+B站的[Go手写BT下载器](https://www.bilibili.com/video/BV13P4y1378F/?spm_id_from=333.999.0.0&vd_source=e46d9099be60057b5a16a45fac0d5248)
+
+### BT下载原理概述
+
+
+
+![image-20221121235542516](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221121235542%20.png)
+
+
+
+![image-20221121235610001](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221121235610%20.png)
+
+**问题1**
+
+tracker(一个中心化的站点)，存储着某个资源的peer（每个下载过资源的用户信息）的列表
+
+早期的BT网站站点，就是tracker，其中存储着众多的peer的列表
+
+**问题2**
+
+把一个资源分成若干个piece，每个peer下载不同的piece，最后组装成一个完整的资源，还要提供一个完整性校验的功能
+
+### Torrent File格式
+
+Torrent File（种子文件）的格式：
+
+![image-20221122000436548](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221122000436%20.png)
+
+Bencode协议，其规定了4中类型。Torrent File字段中的值都是这4种类型之一
+
+* string类型
+
+  ```
+  格式：len:xxxx
+  
+  例如：10:helloworld
+  ```
+
+* int类型
+
+  ```
+  格式：ixxxe
+  
+  例如：i789e
+  ```
+
+* list类型
+
+  想象成切片
+
+  ```
+  格式：
+  l 
+  	xxx 
+  e
+  
+  例如：
+  l
+  	i123e 
+  	i456e 
+  e
+  ```
+
+* dict类型
+
+  想象成map类型，值为多个key和value
+
+  ```
+  格式：
+  d
+   xxx xxx
+  e
+  
+  例如：
+  d
+   4:name 
+   	3:Tom
+   6:length 
+   	i789e
+  e
+  
+  上面例子可以看成
+  {
+  	name:Tom,
+  	length:789
+  }
+  ```
+
+  下面是一个Torrent File的例子：
+
+  ![image-20221122002350870](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221122002351%20.png)
+
+### 实现思路
+
+![image-20221122000934600](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221122000934%20.png)
+
+1. 实现一个Bencode库，实现一个序列化（将Torrent File中的内容序列化为Go语言的结构）与反序列化（将Go语言的结构生成一个Torrent File）
+2. 实现一个torrent的解析库，用于解析经过Bencode库序列化后的Torrent File数据，比如：获取tracker和info字段
+3. 实现tracker模块，用来获取peer信息列表
+4. downloadd模块，用来下载每一个piece和校验每一个piece
+5. assembler模块，组装所有piece成完整的文件
+
+## 超时设置
+
+
 
 
 
