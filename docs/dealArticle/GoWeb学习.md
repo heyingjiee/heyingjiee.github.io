@@ -1433,7 +1433,7 @@ Post请求将传递的数据放在请求体中
   </script>
   ```
 
-  自动构造FormData，通过指定enctype为`multipart/form-data`
+  自动构造FormData，通过指定enctype为`multipart/form-data`（默认值为**x-www-from-urlencoded**）
 
   ```html
   <!DOCTYPE html>

@@ -83,6 +83,10 @@ killall Finder
 export PATH=～/Documents/test/flutter/flutter/bin:$PATH
 ```
 
+## MAC应用无法打开或文件损坏的处理方法
+
+https://xclient.info/a/74559ea2-7870-b992-ed53-52a9d988e382.html
+
 ## Mac推荐软件
 
 ### 免费下载网站
