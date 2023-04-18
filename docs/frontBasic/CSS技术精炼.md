@@ -1241,7 +1241,7 @@ white-space: nowrap;
 
 ### sticky
 
-使用`display:sticky`，给需要吸附效果的元素设置，以父容器为参考系，必须设置`top|bottom|left|right`，否则无效果。
+使用`display:sticky`，给需要吸附效果的元素设置，以父容器为参考系(父元素不必设置position)，必须设置`top|bottom|left|right`，否则无效果。
 
 例如：`top:10px`即元素上顶部到距离父容器顶部`10px`的位置就吸附
 
@@ -1776,7 +1776,7 @@ grid-column: 1/2; /*或者使用偏移量 grid-column:1/span 2*/
 
 ## 网格布局（新版）
 
-### 网格
+### 网格基础
 
 这里写一个Html模版，父元素里有6个子元素。后面的样式都是添加到这里，查看效果
 
@@ -1804,8 +1804,6 @@ grid-column: 1/2; /*或者使用偏移量 grid-column:1/span 2*/
 </html>
 ```
 
-
-
 **网格布局**
 
 父级元素设置display属性为grid，则其子元素变为网格子元素
@@ -1817,15 +1815,30 @@ display:grid;
 **网格间距**
 
 ```css
-/*列、行间距*/
-grid-gap:10px;
-
 /*列间距*/
 grid-column-gap:10px;
 
 /*行间距*/
 grid-row-gap:10px;
+
+/*列、行间距*/
+grid-gap:10px;
 ```
+
+以上写法已经不推荐了
+
+```css
+/*列间距*/
+columns-gap 
+
+/*行间距*/
+row-gap  
+
+/*列、行间距*/
+gap 
+```
+
+
 
 **网格分为显式网格、隐式网格**
 
@@ -1834,12 +1847,15 @@ grid-row-gap:10px;
   通过下面属性显式的设置行、列
 
   ```css
+  /*设置两行，第一行的高为50px，第二行的高为50px*/
+  grid-template-rows:50px 50px; 
+  
   /*设置两列，第一列宽为100px，第二列宽为100px*/
   grid-template-columns:100px 100px; 
   
   
-  /*设置两行，第一行的高为50px，第二行的高为50px*/
-  grid-template-rows:50px 50px; 
+  /*简写,行列之间用斜杠分隔*/
+  grid-template:50px 50px/100px 100px
   ```
 
   实际例子:
@@ -1923,7 +1939,7 @@ grid-row-gap:10px;
 
   
 
-**网格列、行宽高单位**
+**（显、隐）网格列、行宽高单位**
 
 设置值可以使用像素、百分比
 
@@ -2004,9 +2020,100 @@ auto-fill、auto-fit
 
 
 
+### 网格主轴
+
+grid-auto-flow：row（默认）、column
+
+例子：主轴水平，子元素大于定义的网格数量会自动增加行（隐式行）
+
+```css
+grid-auto-flow: row; /*默认值，可以不写*/
+```
+
+![image-20230322100003994](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322100004%20.png)
+
+例子：主轴竖直，子元素大于定义的网格数量会自动增加列（隐式列）
+
+```
+grid-auto-flow: column;
+```
+
+ ![image-20230322095752363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322095752%20.png)
+
+### 子网格分布
+
+注意Grid网格放置方式，与主轴无关。例如：不会像Flex布局，在Flex布局中justify-content指定主轴分布，主轴会变化。而Grid中永远指定的是水平方向的布局
+
+`justify-*`水平分布
+
+`align-*`竖直分布
+
+`place-*`简写
+
+* **justify-item、align-item、place-item（前两个的简写）属性**
+
+  子元素在所属网格中的位置
+
+  ```
+  值：start | end | center | stretch
+  ```
+
+  水平、竖直都是start
+
+  ![image-20230323003750945](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323003751%20.png)
+
+  水平、竖直都是center
+
+  ![image-20230323003846741](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323003847%20.png)
+
+  
+
+- **justify-content、align-content、place-content（前两个的简写）属性**
+
+  所有网格在Grid父元素中的位置
+
+  ```
+  值：start | end | center | stretch | space-around | space-between | space-evenly
+  ```
+
+  水平、竖直居中
+
+  ![image-20230323004851619](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323004851%20.png)
+
+  水平、竖直都是space-around
+
+  ![image-20230323005005540](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323005005%20.png)
+
+  水平space-between
+
+  ![image-20230317140954614](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230317140955%20.png)
+
+  一行内的两个子网格，靠两边
+
+  ```
+  .good-container{
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2,328rpx);
+    justify-item: space-between;
+  }
+  ```
+
+  
+
+### 默认放置子元素
+
+`grid-auto-flow`默认为row时：子元素会按照水平方向，一行一行的放置
+
+![image-20230322100003994](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322100004%20.png)
 
 
-### 放置元素
+
+`grid-auto-flow`默认为column时：子元素会按照竖直方向，一列一列的放置
+
+![image-20230322095752363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322095752%20.png)
+
+### 按区域放置子元素
 
 定义完网格，我们就可以在其中放置元素了。（可以指定多个相邻的网格为一个区域，放置元素）
 
@@ -2073,6 +2180,127 @@ auto-fill、auto-fit
 效果：
 
 ![image-20230119164536215](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119164536%20.png)
+
+### 按网格编号放置子元素
+
+![image-20230404170612696](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404170613%20.png)
+
+网格水平和竖直的编号从1开始
+
+如果指定的元素区域刚好覆盖网格间距，则占用间距，否则不占用。例如：
+
+```
+元素放置在：水平1到3，竖直1到4
+
+中间的间距会被占用
+```
+
+![image-20230404171059738](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404171100%20.png)
+
+```css
+/*水平开始、结束编号*/
+grid-row-start:1;
+grid-row-end: 3;
+
+/*竖直开始、结束编号*/
+grid-column-end:1;
+grid-column-end:4;
+```
+
+简写：
+
+```css
+/*
+grid-area: grid-row-start / grid-column-start / grid-row-end / grid-column-end | itemname;
+*/
+grid-area: 4/1/3/4;
+```
+
+span关键字
+
+```css
+/*span 2表示跨越2个网格，因为在参数grid-row-end的位置，所以是从上到下*/
+/*span 3表示跨越3个网格因为在参数grid-column-end的位置，所以是从左到右*/
+grid-area: 2 / 1 / span 2 / span 3;
+```
+
+
+
+
+
+### 网格中使用定位
+
+经过测试对网格中的子元素使用absolut、fixed，使得定位的盒子脱离文档流想当于该子元素脱离了网格，不再占据网格中的位置
+
+经过测试sticky属性，能更简单实现下面的布局。而不必给中间主体内容div设置上下padding
+
+![image-20230322104006628](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322104007%20.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">header</div>
+        <div class="content">
+盒子垂直外边距重叠垂直方向上，两个盒子的上下外边距如果挨上，就会发生重叠，间距变为其中最大的那个外边距值。注意：BFC容器内：如果情况一中的两个盒子处于BFC（后面会讲到）中时，会继续存在盒子外边距重叠的情况。但是在情况二中，如果父盒子是BFC容器，子盒子的撒上边框和父盒子的上边框不会出现外边距重叠的情况
+FFC容器内：不存在盒子垂直外边距重叠的情况情况一：两个盒子相离的关系，上下边距会合并
+outer display type对外显示方面，盒子类型可以分成 2 类：块级盒子 和行内级盒子
+块级盒子：display 为 block、list-item、table、flex、grid、flow-root 等；所有块级盒子都会对外参与 BFC，呈现垂直排列
+行内级盒子：display 为 inline、inline-block、inline-table 等；所有行内级盒子都会对外参与 IFC，呈现水平排列
+#html元素html元素都有默认的display值，基本分为三类：block占满一行，默认继承父元素的宽度；多个块元素将从上到下进行排列
+设置 width/height 将会生效设置 padding 和 margin 将会生效不会占满一行，宽度随着内容而变化；多个 inline 元素将按照从左到右的顺序在一行里排列显示，如果一行显示不下，则自动换行
+设置 width/height 将不会生效
+设置竖直方向上的 padding 和 margin 将不会生效
+是行内块元素，不单独占满一行，可以看成是能够在一行里进行左右排列的块元素
+设置 width/height 将会生效
+设置 padding 和 margin 将会生效
+元素默认值对应的视觉模型
+        </div>
+        <div class="footer">footer</div>
+    </div>
+</body>
+<style>
+    div{
+        font-size: 100px;
+    }
+    .container {
+        min-height: 100vh;
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: 100%;
+      	/*min-content代表按照内容撑起来*/
+        grid-template-rows: min-content 1fr min-content; 
+      	/*这句可有可无，因为grid-auto-flow为column，网格默认按照子元素顺序从上至下放置元素*/
+        grid-template-areas: 
+                        "header"
+                        "content"
+                        "footer";
+
+    }
+    .header{
+        width: 100%;  
+        background-color: red;
+        position: sticky;
+        top: 0;
+        left: 0;
+    }
+    .footer{
+        
+        position: sticky;
+        bottom: 0;
+        background-color: blue;
+    }
+</style>
+
+</html>
+```
 
 
 
@@ -3664,7 +3892,39 @@ draw();
 
 ![img](https://www.runoob.com/wp-content/uploads/2018/12/2805401035-5b74dd8e6833c_articlex.png)
 
+
+
 ## 小知识点 
+
+### 强烈安利的sticky属性
+
+sticky有一个特点是其他所有定位属性，不具备的点，非常重要的点：
+
+**可被普通元素感知**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body style="font-size: 100px">
+  <div style="height:20vh;position:sticky;top:0;background: red">header</div>
+  <div style="height:200vh;background: yellow">body</div>
+</body>
+</html>
+```
+
+![image-20230317174135823](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230317174136%20.png)
+
+换成fixed吸顶的话，头部脱离文档流漂浮了起来，会压住底部的黄色。过去的解决方案通常是，给黄色加个`padding-top`撑开一定的空间
+
+sticky在实现类似下面这种吸顶组件时，省去了通过js获取吸顶栏高度的过程
+
+![image-20230317174321958](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230317174322%20.png)
+
+
 
 ### 被撑起来的高度
 
@@ -3746,21 +4006,31 @@ draw();
 
 
 
-### 被撑起来的宽度
+### flex中的文本省略
 
-当宽度是被子元素撑起来的，子元素设置高度100%是不生效的
+大前提：
+
+```
+想要文本省略... ，必须要求盛放文字的盒子有宽度
+```
+
+
 
 情景1：
 
-![image-20221012181546119](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221012181546%20.png)
+右侧固定宽高、左侧占据剩余宽度。***文字超出省略***
+
+可是，左测flex子元素是通过设置flex-grow实现自动占据空余空间的，并没有设置宽度
+
+![image-20230323180047341](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323180047%20.png)
 
 
 
-要求底部区域的社区超出显示`...`
 
-可是，左测flex子元素并没有设置宽度，都是通过设置flex-grow实现自动占据空余空间的
 
-可以设置通过下面的方式解决
+
+
+可以设置通过下面的方式左侧的盒子默认为最大宽度，且子元素能感知到其宽度
 
 ```
 左flex子元素设置 width:1px;flex-grow: 1;
@@ -3772,7 +4042,8 @@ view是小程序的标签与div一样
 
 ```html
 <view class="container">
-    <view s-if="{{isDaily}}" class="left-right-box">
+    <view class="left-right-box">
+      	<!--左侧盒子-->
         <view class="left-part">
             <view class="left-part__title">{{title}}</view>
             <view class="extra-info">
@@ -3783,6 +4054,7 @@ view是小程序的标签与div一样
                 </view>
             </view>
         </view>
+      	<!--右侧侧盒子-->
         <view class="right-part">
             <image src="xxxx" />
         </view>
@@ -3804,14 +4076,17 @@ view是小程序的标签与div一样
   justify-content: space-between;
   align-items: stretch;
 }
+/*左侧盒子设置 flex-grow: 1; display: flex;*/
 .left-part{
   height: auto;
+  width:1px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
 }
+
 .left-part__title{
   font-family: PingFangSC-Regular;
   font-size: 34rpx;
@@ -3891,20 +4166,35 @@ view是小程序的标签与div一样
 
 情景2：
 
-微信小程序组件默认会占满父组件宽度，子组件的最外层div设置宽度设置为50%，并不生效。也就是子组件不能感知所在父组件的父级元素的宽度
+还是左右布局，右侧固定，左侧第一行【文字】+【标签】，标签靠左挨着文字。文字占据标签剩余的空间，超出隐藏
 
-父组件：
+![image-20230323194100352](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323194100%20.png)
 
-```html
-<view style="width:50vw;">
-  <commit-list-v2></commit-list-v2> 
-</view>
-```
-
-子组件
+![image-20230323191331863](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230323191332%20.png)
 
 ```html
-<view style="50%">111</view>
+<view class="m-flex-row m-flex-row--bottom coupon-list_top-block">
+  	<!--左侧盒子=> flex-grow:1;width: 1px;-->
+    <view class="m-flex-col m-flex-col--start m-flex-col--bottom m-flex-grow-1 coupon-item__title-detail">
+      <!--核心1：第一行内容，宽度设置100%，占据左侧盒子全部宽度；子元素flex布局靠左-->
+      <view class="m-flex-row m-flex-row--left" style="width: 100%;">
+        <!--white-space: nowrap;overflow: hidden;text-overflow: ellipsis;-->
+       	<view class="coupon-item__title"> {{优惠券标题}}</view>
+        <!--核心3：标签设置不可以压缩；flex-shrink -->
+       	<view class="m-flex-no-shrink feature-label">首单券</view>
+       	<view class="m-flex-no-shrink feature-label">x天后过期</view>
+      </view>
+      <view class="coupon-item_desc" style="margin-top: 36rpx;">优惠券的描述优</view>
+      <view class="coupon-item_desc" style="margin-top: 20rpx;">
+      	2023.03.023-2023.04.01
+      </view>
+    </view>
+  
+  	<!--右侧盒子=> 不可压缩-->
+    <view class="display:flex;flex-shrink:0;">
+     	xxxx忽略
+    </view>
+  </view>
 ```
 
 

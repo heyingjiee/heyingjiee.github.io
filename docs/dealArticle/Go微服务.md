@@ -66,7 +66,7 @@
 
 IPC： 进程间通信
 
-RPC：远程进通信 —— 应用层协议（http协议同层）。底层使用 TCP 实现。
+RPC：远程进通信 —— 应用层协议（与http协议同层）。底层使用 TCP 实现。
 
 Go官方的`net/rpc`库使用`encoding/gob`进行编解码，支持TCP、HTTP数据传输方式，但是由于其他语言不支持gob编解码方式，所以无法法进行跨语言调用
 
@@ -342,7 +342,7 @@ source .zshrc
 ```protobuf
 syntax = "proto3"; //指定版本信息，不指定会报错，默认是proto2 
 
-option go_package = "./userService"; //'./proto;helloworld'=> 分号前面的表示编译生成文件放置的路径， 分号后面表示生成go文件的包名 。 分号也可以省略，'./userService'表示编译后的文件放在userService目录下，包名为userService
+option go_package = "./userService"; //'./proto;helloworld'=> 分号前面的表示编译生成文件放置的路径， 分号后面表示生成go文件的包名 。 一般将分号省略，'./userService'表示编译后的文件放在userService目录下，包名为userService
 
 //message定义一种消息类型，关键字message定义结构,并且结构中可以嵌套定义结构,message定义的内容可以生成一个结构体 UserInfo，字段首字母自动大写
 message UserInfo{ 
@@ -412,139 +412,954 @@ func main() {
 }
 ```
 
-### 高级
+### proto文件的类型
 
 **简单类型**
 
-| proto类型 | Go类型 |
-| --------- | ------ |
-|           |        |
-
-
-
-double 64位浮点数
-
-flfloat flfloat32 32位浮点数
-
-int32 int32
-
-使用可变长度编码。编码负数效率低下——如果你的字段可能有负值，
-
-请改用sint32。
-
-int64 int64
-
-使用可变长度编码。编码负数效率低下——如果你的字段可能有负值，
-
-请改用sint64。
-
-uint32 uint32 使用可变长度编码。
-
-uint64 uint64 使用可变长度编码。
-
-sint32 int32 使用可变长度编码。符号整型值。这些比常规int32s编码负数更有效。
-
-sint64 int64 使用可变长度编码。符号整型值。这些比常规int64s编码负数更有效。
-
-fifixed32 uint32 总是四字节。如果值通常大于228，则比uint 32更有效
-
-fifixed64 uint64 总是八字节。如果值通常大于256，则比uint64更有效
-
-sfifixed32 int32 总是四字节。
-
-sfifixed64 int64 总是八字节。
-
-bool bool 布尔类型
-
-string string 字符串必须始终包含UTF - 8编码或7位ASCII文本
-
-bytes []byte 可以包含任意字节序列
+| proto类型                                          | Go类型         |                                                              |
+| -------------------------------------------------- | -------------- | ------------------------------------------------------------ |
+| double                                             | float64        |                                                              |
+| float                                              | float 32       |                                                              |
+| int32、int64\|sint32、sint64 \|sfixed32 、sfixed64 | int32、int64   | 如果字段可能有负值，使用sint32、sint64，效率更高<br />总是四字节用sfixed32、总是八字节用sfixed64，效率更高 |
+| uint32、uint64\|fixed32 、fixed64                  | uint32、uint64 | 总是四字节用fixed32、总是八字节用fixed64，效率更高           |
+| bool                                               | bool           |                                                              |
+| string                                             | string         | 只能是UTF - 8编码或7位ASCII码                                |
+| bytes                                              | []byte         |                                                              |
 
 **复杂类型**
 
+* 嵌套结构体
 
+  **写法一**
 
-**写法一**
-
-```protobuf
+  ```protobuf
 syntax = "proto3";
-option go_package = "./orderService";
+  option go_package = "./orderService";
+  
+  message Order{
+    int64 id =1;
+    double price=2;
+    string name=3;
+    string tel=4;
+    string addTime=5;
+    message OrderItem{
+      int64 id=1;
+      string title =2;
+      double price=3;
+      int32 num=4;
+    }
+    OrderItem orderItem=6;
+  }
+  
+  ```
+  
+  编译成Go中的结构体（注意：message字段无论是否大小写，转化为结构体都会变成首字母大写）
 
-message Order{
-  int64 id =1;
-  double price=2;
-  string name=3;
-  string tel=4;
-  string addTime=5;
+  ```go
+type Order struct {
+  	Id        int64      
+  	Price     float64   
+  	Name      string    
+  	Tel       string    
+  	AddTime   string     
+  	OrderItem  *Order_OrderItem
+  }
+  
+  type Order_OrderItem struct { //子结构体，会拼上父结构体名字
+  	Id    int64   
+  	Title string  
+  	Price float64
+  	Num   int32   
+  }
+  ```
+  
+  **写法二**
+
+  ```protobuf
+syntax = "proto3";
+  option go_package = "./orderService";
+  
+  message Order{
+    int64 id =1;
+    double price=2;
+    string name=3;
+    string tel=4;
+    string addTime=5;
+    OrderItem orderItem=6;
+  }
   message OrderItem{
     int64 id=1;
     string title =2;
     double price=3;
     int32 num=4;
   }
-  OrderItem orderItem=6;
-}
-
-```
-
-编译成Go中的结构体
-
-```go
+  ```
+  
+  ```go
 type Order struct {
-	Id        int64      
-	Price     float64   
-	Name      string    
-	Tel       string    
-	AddTime   string     
-	OrderItem  *Order_OrderItem
-}
+  	Id        int64      
+  	Price     float64   
+  	Name      string    
+  	Tel       string    
+  	AddTime   string     
+  	OrderItem *OrderItem 
+  }
+  
+  type OrderItem struct {
+  	Id    int64   
+  	Title string  
+  	Price float64
+  	Num   int32   
+  }
+  ```
+  
+  两种方式仅仅是子结构体类型的名字有所不同
 
-type Order_OrderItem struct { //子结构体，会拼上父结构体名字
-	Id    int64   
-	Title string  
-	Price float64
-	Num   int32   
-}
-```
+  
 
-**写法二**
+* repeated
+
+  对应Go中的切片类型
+
+  ```go
+  repeated string hobby = 3
+  
+  //对应Go中的 var hobby []string
+  ```
+
+* enum
+
+  枚举类型
+
+  ```go
+  syntax = "proto3"; 
+  option go_package = "./orderService";
+  
+  message Person{ 
+    string name = 1; 
+    int32 age = 2 ;
+    //使用枚举类型
+    PhoneType type = 2;
+  }
+  
+  //enum为关键字，作用为定义一种枚举类型 
+  enum PhoneType { 
+    MOBILE = 0; //每个枚举必须包含一个映射到零的常量,作为默认是
+    HOME = 1; 
+    WORK = 2; 
+  }
+  ```
+
+* 默认值
+
+  如果编码的消息不包含值，则按照字段的类型使用不同的默认值，具体如下：
+
+  ```
+  对于字符串，默认值为空字符串。
+  
+  对于字节，默认值为空字节。
+  
+  对于bools，默认值为false。
+  
+  对于数字类型，默认值为零。
+  
+  对于枚举，默认值是第**一个定义的枚举值**，该值必须为0。 
+  
+  repeated字段默认值是空列表
+  
+  message字段的默认值为空对象
+  ```
+
+
+
+## GRPC
+
+[中文GRPC官网](http://doc.oschina.net/grpc?t=60133)
+
+[GitHub官网提供的示例](https://github.com/grpc/grpc-go/tree/master/examples/helloworld)
+
+### 在proto文件中注册RPC服务
 
 ```protobuf
 syntax = "proto3";
-option go_package = "./orderService";
+option go_package= './hello';
 
-message Order{
-  int64 id =1;
-  double price=2;
-  string name=3;
-  string tel=4;
-  string addTime=5;
-  OrderItem orderItem=6;
+
+service Hello {
+	//服务暴露出SayHello方法，入参HelloReq，返参HelloRes 
+  rpc SayHello(HelloReq) returns (HelloRes);
 }
-message OrderItem{
-  int64 id=1;
-  string title =2;
-  double price=3;
-  int32 num=4;
+
+//---------服务端：注册一个Rpc服务---------
+// 1、【编译后生成方法RegisterHelloServer，用于服务端注册RPC服务（格式：RegisterXXXServer）】
+// 2、【生成HelloServer接口，里面有GetGood函数签名（格式：XXXServer接口）
+//   		type HelloServer interface {
+//				SayHello(context.Context, *HelloReq) (*HelloRes, error)
+//	 		}
+//   		用法：我们要在服务端建一个结构体，并实现GoodServer接口，将这个结构体绑定在RPC服务上。客户端才可以访问到这个方法
+//		】
+
+//---------客户端：调用一个Rpc服务---------
+// 1、编译后生成方法NewHelloClient（格式：NewXXXClient），在客户端调用返回client对象
+// 2、client.SayHello(xxx),clinet对象可以直接调用远程方法
+
+
+//--------proto文件正客户端、服务端都需要存在，并编译生成Go文件的原因---------
+//Go文件中包含一些方法，还有RPC方法的入参、返参的struct类型，这些在服务端、客户端都要用到
+//1、服务端RPC方法的入参、返参类型
+//2、客户端实例化入参、接收返参时需要用到
+
+message HelloReq{
+  string name =1;
 }
+
+message HelloRes{
+  string message =1;
+}
+```
+
+编译生成Go文件
+
+```shell
+protoc --go_out=plugins=grpc:. *.proto 
+//需指定使用在protoc-gen-go中集成的grpc插件，生成Go文件
+```
+
+Go文件中引入了大量的包，需要安装下
+
+```
+go mod tidy
+```
+
+### 服务端
+
+服务端新建proto目录，放入proto文件，并编译生成Go文件
+
+![image-20230325233020484](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230325233020%20.png)
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"google.golang.org/grpc"
+	"net"
+	"server/proto/hello"
+)
+
+//实现proto文件中定义的RPC接口：HelloServer。
+type Hello struct {
+}
+
+func (h Hello) SayHello(ctx context.Context, req *hello.HelloReq) (res *hello.HelloRes, err error) {
+	return &hello.HelloRes{
+		Message: "你好" + req.GetName(),
+	}, nil
+}
+
+func main() {
+	//1、创建grpc服务对象
+	grpcServer := grpc.NewServer()
+	//2、注册服务
+	//把实现了接口的结构体和grpc服务对象绑定在一起(使用proto文件编译生成的Go文件中的 RegisterXXXServer 函数 )
+	hello.RegisterHelloServer(grpcServer, &Hello{})
+	//3、监听
+	listener, err := net.Listen("tcp", "127.0.0.1:8900")
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
+	}
+  //4、关闭监听
+  defer listener.Close()
+	//5、启动grpc服务对象，并传入监听对象
+	grpcServer.Serve(listener)
+
+}
+
+```
+
+### 客户端
+
+与服务端相同，新建proto目录，放入proto文件，并编译生成Go文件
+
+```go
+package main
+
+import (
+	"client/proto/hello"
+	"context"
+	"fmt"
+	"google.golang.org/grpc"
+  "google.golang.org/grpc/credentials/insecure"
+)
+
+
+func main() {
+  //1、-------创建RPC客户端实例-------
+	//grpc.WithTransportCredentials ：配置连接级别的安全凭证（例如，TLS/SSL），返回一个 DialOption，用于连接服务器
+	//credentials.NewClientTLSFromFile ：使用输入的证书文件作为客户端构造TLS凭证
+	//insecure.NewCredentials：返回禁用传输安全性的TLS凭证
+	grpcClient, err := grpc.Dial("127.0.0.1:8900", 				grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
+	}
+  
+ 
+  //2、使用proto文件编译生成的Go文件中的 NewXXXClient 函数 ，注册客户端实例
+	client := hello.NewHelloClient(grpcClient)
+  
+  //3、使用客户端实例，调用远程函数（函数的入参、返参结构体类型，已经在proto生成的GO文件中定义好了）
+	res, err := client.SayHello(context.Background(), &hello.HelloReq{
+		Name: "hedaodao",
+	})
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
+	}
+	fmt.Printf("%#v\n", res)
+}
+
+```
+
+
+
+## 微服务发现consul
+
+通常业务中，一个项目中往往使用多个服务端提供的RPC服务。上面客户端的代码中
+
+```go
+grpcClient, err := grpc.Dial("127.0.0.1:8900", xxxx)
+```
+
+可以发现每链接一个微服务都需要指定IP和端口。
+
+* 如果PRC服务更换地址
+* 如果同一个RPC服务负载在多个服务器上
+
+将IP和端口写在项目中，往往不太灵活
+
+**服务发现**：
+
+项目与服务发现服务器连接，获取当前所需RPC服务的地址。
+
+* 这样即使RPC服务更换地址，项目也无需修改代码，即可获知最新的RPC服务地址
+* 同一个服务，可以注册多个RPC服务地址，负载在多个服务器
+
+![image-20230326002217354](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230326002217%20.png)
+
+**常见的服务发现框架**:
+
+* **consul**： Go语言编写，常应用于grpc 、 go-micro 中
+
+* **mdns**：过去go-micro中默认自带的服务发现是mdns，现在是consul
+
+* **etcd**：k8s 内嵌的服务发现
+
+* **zookeeper**：java中较常用
+
+
+
+### consul详细介绍
+
+Consul是Go语言写的开源的服务器发现软件，用于实现分布式系统的服务发现与配置。包含多个组件,
+
+但是作为一个整体,为你的基础设施提供服务发现和服务配置的工具.他提供以下关键特性:
+
+**服务发现**：consul通过DNS或者HTTP接口使服务注册和服务发现变的很容易，一些外部服务，例如
+
+saas提供的也可以一样注册。
+
+**健康检查**：健康检测使consul可以快速的告警在集群中的操作。和服务发现的集成，可以防止服务转发
+
+到故障的服务上面。(心跳机制) 
+
+**键/值存储**：一个用来存储动态配置的系统。提供简单的HTTP接口，可以在任何地方操作。
+
+**多数据中心**：无需复杂的配置，即可支持任意数量的区域。
+
+官方建议：最好是三台或者三台以上的consul在运行，同名服务最好是三台或三台以上，默认可
+
+以搭建集群
+
+**Web管理界面**：官方提供web管理界面
+
+官网：https://www.consul.io/
+
+Git地址：https://github.com/hashicorp/consul
+
+
+
+### 安装
+
+[官网安装介绍](https://developer.hashicorp.com/consul/downloads)
+
+![image-20230326003251308](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230326003251%20.png)
+
+查看安装版本
+
+```shell
+consul --version
+```
+
+在本地启动consul服务
+
+```shell
+consul agent -dev
+```
+
+查看WEB管理界面
+
+```text
+ http://localhost:8500
+```
+
+其中的consul服务是默认的实例
+
+![image-20230402011020682](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230402011021%20.png)
+
+### 使用
+
+本地启动consul的WEB服务，默认地址为127.0.0.1:8500
+
+```
+consul agent -dev
+```
+
+服务端和客户端均需要使用consul库
+
+```shell
+go get -u -v github.com/hashicorp/consul
+```
+
+**服务端**
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/hashicorp/consul/api"
+	"google.golang.org/grpc"
+	"net"
+	"server/proto/hello"
+)
+
+type Hello struct {
+}
+
+func (h Hello) SayHello(ctx context.Context, req *hello.HelloReq) (res *hello.HelloRes, err error) {
+	return &hello.HelloRes{
+		Message: "你好" + req.GetName(),
+	}, nil
+}
+
+func main() {
+	//------服务端在consul中注册一个服务-------
+	// 1、consul的web页面配置
+	consulWebConfig := api.DefaultConfig()
+	//consulConfig.Address = "127.0.0.1:8500" //指定使用哪个consul web服务。默认为127.0.0.1:8500
+
+	// 2、创建consul的web服务对象实例
+	consulWebClient, _ := api.NewClient(consulWebConfig)
+
+	// 3、创建 微服务的配置
+	serviceConfig := api.AgentServiceRegistration{
+		ID:      "1",
+		Tags:    []string{"test"},//tag字段（见下图），比如HelloService，我们启用了一个测试服务，就可以将tag指定为test。正式服务指定为pord。在`客户端`的例子中，可以看到查找服务时，需要指定服务名还有tag，才会返回其对应的IP和端口
+		Name:    "HelloService",//服务名（见下图）
+		Address: "127.0.0.1", //微服务的地址、端口
+		Port:    8900,
+		Check: &api.AgentServiceCheck{ //健康检查
+			TCP:      "127.0.0.1:8900", //这里写微服务的运行地址
+			Timeout:  "5s",
+			Interval: "30s",
+		},
+	}
+
+	//4、在consul的web服务客户端上，注册第三方的微服务
+	consulWebClient.Agent().ServiceRegister(&serviceConfig)
+
+	//------服务端注册rpc服务，和原来一样-------
+	//1、创建grpc服务对象
+	grpcServer := grpc.NewServer()
+	//2、注册服务
+	//把实现了接口的结构体和grpc服务对象绑定在一起(使用proto文件编译生成的Go文件中的 RegisterXXXServer 函数 )
+	hello.RegisterHelloServer(grpcServer, &Hello{})
+	//3、监听
+	listener, err := net.Listen("tcp", "127.0.0.1:8900")
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
+	}
+	//4、启动grpc服务对象，并传入监听对象
+	grpcServer.Serve(listener)
+
+}
+```
+
+![image-20230402021533182](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230402021533%20.png)
+
+**客户端**
+
+```go
+package main
+
+import (
+	"client/proto/hello"
+	"context"
+	"fmt"
+	"github.com/hashicorp/consul/api"
+	"google.golang.org/grpc"
+  "google.golang.org/grpc/credentials/insecure"
+	"strconv"
+)
+
+func main() {
+	// ----发现服务----
+	// 1、consul的web页面配置
+	consulWebConfig := api.DefaultConfig()
+	//consulConfig.Address = "127.0.0.1:8500" //指定使用哪个consul web服务。默认为127.0.0.1:8500
+
+	// 2、创建consul的web服务对象实例
+	consulWebClient, _ := api.NewClient(consulWebConfig)
+
+	// 3、传入参数，服务名：HelloService、tag：test。获取对应服务的IP和端口
+	serviceEntry, _, _ := consulWebClient.Health().Service("HelloService", "test", false, nil)
+	fmt.Printf("地址：%v\n", serviceEntry[0].Service.Address)
+	fmt.Printf("端口：%v\n", serviceEntry[0].Service.Port)
+
+	// 4、拼接IP和端口
+
+	//------客户端调用远程rpc服务，基本原来一样（仅仅将grpc.Dial第一参数替换为，consul返回的服务真实地址）-------
+	rpcAddress := serviceEntry[0].Service.Address + ":" + strconv.Itoa(serviceEntry[0].Service.Port)
+	//grpc.WithTransportCredentials ：配置连接级别的安全凭证（例如，TLS/SSL），返回一个 DialOption，用于连接服务器
+	//credentials.NewClientTLSFromFile ：使用输入的证书文件作为客户端构造TLS凭证
+	//insecure.NewCredentials：返回禁用传输安全性的TLS凭证
+	grpcClient, err := grpc.Dial(rpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
+	}
+	client := hello.NewHelloClient(grpcClient)
+	res, err := client.SayHello(context.Background(), &hello.HelloReq{
+		Name: "hedaodao",
+	})
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
+	}
+	fmt.Printf("%#v\n", res)
+}
+```
+
+**注销服务**
+
+服务端可以注册一个服务
+
+```go
+consulWebClient.Agent().ServiceRegister(&serviceConfig)
+```
+
+也可以注销一个服务
+
+```
+registerClient.Agent().ServiceDeregister("1")
+```
+
+
+
+### GRPC微服务集群
+
+即同一个服务，在多台机器部署。consul会自动分配到哪个机器上
+
+**服务端改造**
+
+下面是前面服务端在consul中注册HelloService服务的代码
+
+现在需要将多个服务端程序部署在多个机器上，每台机器仅需要保持Name字段都是HelloService，ID字段不同即可（注意：Address、Port、Check字段中的配置，要改为每个服务运行的本机地址）
+
+![image-20230403002710360](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230403002710%20.png)
+
+在consul的WEB端查看，HelloService有多少台机器
+
+![image-20230403002836744](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230403002836%20.png)
+
+![image-20230403003052963](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230403003053%20.png)
+
+**客户端改造方案1**
+
+当一个服务下有多个机器时，serviceEntry字段返回的就是所有机器的地址，这时候就不能仅仅用第一个元素的IP和端口了。需要做自己实现一个方法来随机轮询serviceEntry切片，并拼接IP和端口
+
+`grpc.Dail`方法使用随机地址，就可以实现负载均衡，每次请求都会使用随机机器上的HelloService服务了
+
+![image-20230403003947947](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230403003948%20.png)
+
+**客户端改造方案2**
+
+使用第三方库简化方案1的过程
+
+[grpc-consul-resolver GitHub地址](https://github.com/mbobakov/grpc-consul-resolver)
+
+```
+import _ "github.com/mbobakov/grpc-consul-resolver" // 非常重要
+```
+
+图中绿框中获取consul微服务地址的代码可全部省略
+
+![image-20230403005036943](/Users/yc/Library/Application Support/typora-user-images/image-20230403005036943.png)
+
+仅需将下一步替换为如下代码
+
+```go
+conn, err := grpc.Dial(
+  			//consul:consul服务的IP和端口/consul上注册的服务名
+        "consul://192.168.234.132:8500/HelloService"",
+        grpc.WithInsecure(),
+        grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`),
+)
+```
+
+
+
+### consul集群（略）
+
+角色：
+
+**client客户端**: 将 HTTP 和 DNS 接口请求转发给局域网内的Server服务端集群
+
+**server服务端** :保存配置信息、实现高可用集群、在局域网内与本地客户端通讯、通过广域网与其他数
+
+据中心通讯等。 每个数据中心的 server 数量推荐为 3 个或是 5 个
+
+**开发模式：**主要用于开发阶段（dev模式属于server模式）
+
+## Go-Micro
+
+Go-Micro是一个简化的微服务生态系统，提供管理微服务环境的工具和功能，默认实现了consul作为服务发现（过去曾使用mdns），通过http进行通信，通过protobuf和json进行编解码
+
+[GitHub地址](https://github.com/go-micro/go-micro)
+
+### Go Micro CLI
+
+[GitHub地址](https://github.com/go-micro/cli)
+
+下载CLI工具
+
+```shell
+go install github.com/go-micro/cli/cmd/go-micro@latest
+```
+
+### 服务端
+
+**流程**
+
+创建服务端Hello服务
+
+```shell
+go-micro new service Hello
+```
+
+生成项目
+
+![image-20230406235613270](/Users/yc/Library/Application Support/typora-user-images/image-20230406235613270.png)
+
+删除`go.mod`、`go.sum`文件，初始化项目并安装依赖
+
+```shell
+go mod init xxx
+go mod tidy
+```
+
+执行makefile文件中工作完成初始化
+
+```shell
+make proto update tidy
+```
+
+![image-20230415131403386](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230415131452%20.png)
+
+注意：（go mod tidy）自动安装依赖时，会有一个依赖安装失败，请手动安装
+
+```shell
+go get "go-micro.dev/v4"
+```
+
+
+
+**CLI生成的项目结构**
+
+proto目录下的proto文件中注册了一个Hello服务，其中有一个Call方法
+
+`Hello.pb.go`是proto文件编译生成的
+
+![image-20230415130026079](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230415130026%20.png)
+
+handler目录中的`Hello.go`定义好了结构体，并实现了Call方法
+
+![image-20230415130243400](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230415130243%20.png)
+
+在main中将该结构体注册为微服务
+
+![image-20230415130756447](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230415130756%20.png)
+
+
+
+**服务端接入Consul**
+
+启动本地开发环境的consul（亦可以使用consul集群），打开http://localhost:8500
+
+```
+consul agent -dev
+```
+
+GO-Micro生成的项目默认是没有使用服务发现的
+
+但是可以使用下面的插件快速接入
+
+```sehll
+go get "github.com/go-micro/plugins/v4/registry/consul"
+```
+
+main文件中，仅需修改两处即可
+
+```go
+package main
+
+import (
+	"Hello/handler"
+	pb "Hello/proto"
+
+	"github.com/go-micro/plugins/v4/registry/consul"
+	"go-micro.dev/v4"
+	"go-micro.dev/v4/logger"
+)
+
+var (
+	service = "hello"
+	version = "latest"
+)
+
+func main() {
+  //--------------- 1、创建consule实例 ---------------
+	consulReg := consul.NewRegistry()
+  
+	// Create service
+	srv := micro.NewService()
+	srv.Init(
+		micro.Name(service),
+		micro.Version(version),
+    --------------- //2、在micro中使用 ---------------
+		micro.Registry(consulReg),
+	)
+
+	// Register handler
+	if err := pb.RegisterHelloHandler(srv.Server(), new(handler.Hello)); err != nil {
+		logger.Fatal(err)
+	}
+	// Run service
+	if err := srv.Run(); err != nil {
+		logger.Fatal(err)
+	}
+}
+
+```
+
+补充
+
+```shell
+srv.Init(
+		//也可以在micro中配置微服务的IP和端口。不配置则默认本机IP地址，随机指定端口
+		micro.Address("127.0.0.1:8080"),
+)
+```
+
+### 客户端
+
+创建客户端项目，生成Hello-client目录
+
+```
+go-micro new client Hello 
+```
+
+![image-20230417232259639](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230417232300%20.png)
+
+将服务端的proto目录拷贝到项目下
+
+![image-20230417232400951](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230417232401%20.png)
+
+安装项目依赖
+
+```shell
+go mod tidy
+```
+
+注意：（go mod tidy）自动安装依赖时，会有一个依赖安装失败，请手动安装
+
+```shell
+go get "go-micro.dev/v4"
+```
+
+修改main文件
+
+```text
+找到引入名为 pb 的依赖。这个依赖应该指向我们拷贝进来的proto文件，注意下依赖路径是否正确
+```
+
+![image-20230417232738075](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230417232738%20.png)
+
+![image-20230417233932511](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230417233932%20.png)
+
+
+
+客户端引入consul：在main文件中
+
+```
+go get "github.com/go-micro/plugins/v4/registry/consul"
 ```
 
 ```go
-type Order struct {
-	Id        int64      
-	Price     float64   
-	Name      string    
-	Tel       string    
-	AddTime   string     
-	OrderItem *OrderItem 
+package main
+
+import (
+	"context"
+	"time"
+
+	pb "Hello-client/proto"
+
+	"go-micro.dev/v4"
+	"go-micro.dev/v4/logger"
+)
+
+var (
+	service = "hello"
+	version = "latest"
+)
+
+func main() {
+  //-------------1、创建consul注册实例-------------
+  consulReg:=consul.NewRegistry()
+	// Create service
+  //-------------2、在微服务实例中添加consul实例------------
+	srv := micro.NewService(micro.Registry(consulReg))
+
+	srv.Init()
+
+	// Create client
+	c := pb.NewHelloService(service, srv.Client())
+
+	for {
+		// Call service
+		rsp, err := c.Call(context.Background(), &pb.CallRequest{Name: "John"})
+		if err != nil {
+			logger.Fatal(err)
+		}
+
+		logger.Info(rsp)
+
+		time.Sleep(1 * time.Second)
+	}
 }
 
-type OrderItem struct {
-	Id    int64   
-	Title string  
-	Price float64
-	Num   int32   
-}
 ```
 
-两种方式仅仅是子结构体的名字有所不同
+### 使用
+
+本地启动consul的WEB服务，默认地址为127.0.0.1:8500。也可以使用搭建的集群
+
+```
+consul agent -dev
+```
+
+启动**服务端**，启动**客户端**
+
+
+
+实战场景下，我们可以通过修改proto目录下的proto文件，来定义微服务，以及增加自己需要的远程调用的函数
+
+然后在makefile文件，运行编译proto文件的命令
+
+![image-20230418000108096](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230418000108%20.png)
+
+就会生成相应的Go的结构
+
+例如：服务端增加新的微服务远程方法GetGoodInfo
+
+```protobuf
+syntax = "proto3";
+
+package Hello;
+
+option go_package = "./proto;Hello";
+
+service Hello {
+	rpc Call(CallRequest) returns (CallResponse) {}
+	//-----------1、新增一个GetGoodInfo方法-----------
+	rpc GetGoodInfo(goodRequest) returns (goodResponse){}
+}
+
+message CallRequest {
+	string name = 1;
+}
+
+message CallResponse {
+	string msg = 1;
+}
+
+//-----------2、定义GetGoodInfo方法入参结构-----------
+message goodRequest{
+	string name =1;
+}
+
+//-----------3、定义GetGoodInfo方法返参结构-----------
+message goodResponse{
+	string name=1;
+	double price=2;
+	string Msg=3;
+
+```
+
+然后在makefile文件，运行编译proto文件的命令。
+
+在handler目录下，编写新的函数
+
+```go
+package handler
+
+import (
+	"context"
+	"go-micro.dev/v4/logger"
+
+	pb "Hello/proto"
+)
+
+type Hello struct{}
+
+func (e *Hello) Call(ctx context.Context, req *pb.CallRequest, rsp *pb.CallResponse) error {
+	logger.Infof("Received Hello.Call request: %v", req)
+	rsp.Msg = "Hello " + req.Name
+	return nil
+}
+
+//------------这里写 GetGoodInfo 方法。------------
+//入参*pb.GoodRequest，返参*pb.GoodResponse。是编译proto生成的Go数据结构
+func (e *Hello) GetGoodInfo(ctx context.Context, req *pb.GoodRequest, rsp *pb.GoodResponse) error {
+	//函数体
+	rsp.Msg = "Hello " + req.Name
+	return nil
+}
+
+```
+
+
+
+## 客户端使用Gin
+
+在Gin中如何调用Go-Micro微服务
+
+就是在接口触发的函数中，创建Consul实例，把Consul注册到Micro实例中，通过Micro实例调用远程的方法
+
+
+

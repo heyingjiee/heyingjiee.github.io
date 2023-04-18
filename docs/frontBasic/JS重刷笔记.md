@@ -2090,7 +2090,7 @@ obj.name = 33; // TypeError:Cannot assign to read only property 'name' of object
 
 
 
-## 数组对象
+## 数组
 
 ### 声明数组
 
@@ -2719,9 +2719,9 @@ console.log(res)
 
 与reduce一样，只不过方向是从右向左
 
-## 字符串对象
+## 字符串
 
-### 数组对象的属性
+### 属性
 
 属性
 
@@ -2731,7 +2731,7 @@ console.log(res)
 | [length](https://www.runoob.com/jsref/jsref-length-string.html) | 字符串的长度               |
 | [prototype](https://www.runoob.com/jsref/jsref-prototype-string.html) | 允许您向对象添加属性和方法 |
 
-### 数组对象的方法
+### 方法
 
 静态方法
 
@@ -2788,9 +2788,7 @@ str.length //显示的是码元的个数 ，
 Array.from("😊").length //1
 ```
 
-
-
-## 数组与字符串对比
+### 数组与字符串对比
 
 数组和字符串有很多方法十分相似，这里整理下
 
@@ -5639,6 +5637,230 @@ static race(promises) {
 
 
 
+## 面向对象编程
+
+在很长一段时间，我都很排斥面向对象编程的开发方式
+
+可能是由于在我的视角来看，面向过程编程已经能够解决日常开发中遇到的极大多数问题，也有可能是由于我对于面向对象编程本身的理解不到位，也有可能是因为我觉得JS中的面向对象编程是使用原型链来模拟的（其中充斥了一些大坑，甚至兼容性问题）
+
+总之，
+
+* 在我开始接触Dart与TS后
+* 看到公司大佬编写的一些工具库源码后
+
+开始愈发的觉得存在既有其必要性，必须要要开始学习了，学如逆水行舟不进则退
+
+所以，这一部分开始，我将尝试学习面向对象编程的这种方式，并希望能应用到项目之中
+
+​																																																																																																																																																																																																																																																																																																																																																																																																												
+
+
+
+
+
+## JSDocs
+
+### JSDoc 注释规则
+
+JSDoc注释一般应该放置在方法或函数声明之前，它必须以`/**`开始
+
+```js
+/**
+* JSDoc 注释写在这里
+*/
+```
+
+### @type
+
+**写在变量前一行，指定变量类型。格式：**
+
+```js
+/** @type {xxx} */
+```
+
+**基本类型**
+
+指定变量为string类型
+
+```js
+/** @type {string} */
+var a;
+```
+
+![image-20230404140752941](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404140753%20.png)
+
+数组类型
+
+```js
+/** @type {number[]} */
+
+/** @type {Array<number>} */
+
+/** @type {Array.<number>} */
+```
+
+指定对象字面量类型
+
+```js
+/** @type {{name:string,age:number}} */
+```
+
+![image-20230404141245902](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404141246%20.png)
+
+指定函数类型【推荐第一种形式，形参名和类型更加清晰。更推荐@param方式】
+
+```js
+//---箭头函数形式，必须指定形参名a、b---
+/** @type {(a:number,b:number)=>number} */
+var a;
+```
+
+![image-20230404142316939](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404142317%20.png)
+
+```js
+//---function形式，不指明形参，不推荐---
+/** @type {function(number,number):number} */
+var b;
+```
+
+![image-20230404141836954](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404141837%20.png)
+
+```js
+/** @type {Function} */
+var a;
+```
+
+![image-20230404142502342](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404142502%20.png)
+
+不指定类型默认为any类型，或者手动声明
+
+```js
+/** @type {*} */
+/** @type {?} */
+```
+
+![image-20230404142812303](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230404142812%20.png)
+
+**字面量**
+
+```js
+/**
+ * @type {1}
+ */
+let a;
+```
+
+
+
+**联合类型**
+
+```js
+/** @type {string|number} */
+var a;
+```
+
+**断言**
+
+```js
+/**
+ * @type {number | string}
+ */
+var numberOrString = Math.random() < 0.5 ? "hello" : 100;
+
+//将numberOrString断言为number类型
+var typeAssertedNumber = /** @type {number} */ (numberOrString)
+```
+
+
+
+### @param、@return
+
+函数形参注释
+
+```js
+/**
+ * @param {string} p1   参数p1类型为string
+ * @param {string} [p2] 参数p2类型为string,可选参数
+ * @return {string}     返回值类型
+ */
+function a(p1, p2, p3, p4){
+ 
+}
+```
+
+### @typedef、@property
+
+声明新的类型
+
+下面使用@type直接声明对象的结构
+
+```js
+/** @type {{name:string,age:number}} */
+let a;
+```
+
+也可以定义新的类型，在声明变量属于新的类型
+
+```js
+/** @typedef {{name:string,age:number}} student */
+
+/**@type {student}*/
+let a;
+```
+
+也可以分开定义每一个对象的属性（使用@property字段）
+
+```js
+/**
+ * 定义新类型student
+ * @typedef {object} student
+ * @property {string} name
+ * @property {number} age
+ */
+
+/**@type {student}  */
+let a;
+```
+
+可以在第一行上使用`object`或`Object`
+
+### @enum
+
+枚举类型（其实就是对象）
+
+```js
+/**
+ * @enum {number}
+ */ 
+const gender ={
+    male:0,
+    female:1
+}
+
+/**
+ * @type {gender.male}
+ */
+let a;
+```
+
+
+
+### @template
+
+声明泛型
+```js
+/**
+ * @template T
+ * @param {T} x - A generic parameter that flows through to the return type
+ * @return {T}
+ */
+function id(x){ return x }
+```
+
+
+
+
+
 ## 模块化规范
 
 ### 模块化的最佳实现
@@ -6629,6 +6851,14 @@ app.listen('8099',()=>{
 
 ### sessionStorage、LocalStotage
 
+```JS
+localStorage.setItem('token', res.data); //如果key存在时，就更新value
+
+localStorage.getItem(key) //如果key不存在就返回null
+```
+
+
+
 
 
 ## 前端攻击
@@ -7612,6 +7842,180 @@ NewGetCity(){
 
 ```
 
+### 回调风格的深层次思考
+
+**场景1**
+
+下面的是微信提供的弹窗API
+
+```js
+wx.showModal({
+  title: '提示',
+  content: '这是一个模态弹窗',
+  success (res) {
+    if (res.confirm) {
+      console.log('用户点击确定')
+    } else if (res.cancel) {
+      console.log('用户点击取消')
+    }
+  }
+})
+```
+
+在函数中调用即可在页面展现弹窗，同时当点击确定或取消按钮触发success回调函数
+
+![image-20230407181359902](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230407181400%20.png)
+
+
+
+**场景2**
+
+这是element UI提供的调用方式
+
+```js
+this.$alert('这是一段内容', '标题名称', {
+    confirmButtonText: '确定',
+    callback: action => {
+    console.log('点击了确定')
+  	}
+});
+```
+
+![image-20230407182007902](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230407182008%20.png)
+
+**实现**
+
+我一直十分好奇上面两种方式的实现，如何能够做到在一个函数中，调用API打开弹窗，点击按钮后还能在同一个函数中接收返回值
+
+直到我在网上偶然间看到了大佬的实现（微信小程序代码片段：https://developers.weixin.qq.com/s/UmDTWhmu7Vgk，需下载微信开发者工具w），才从另一个角度重新认识了回调函数
+
+小程序实现
+
+子组件JS逻辑：
+
+```js
+Component({
+  data:{
+    visible:false
+  },
+  methods: {
+    cancel() {
+      this.data.success({confirm:false})
+      this.close()
+    },
+    confirm() {
+      this.data.success({confirm:true})
+      this.close()
+    },
+    close() {
+      this.setData({
+        visible:false
+      })
+    },
+
+    //打开弹窗函数
+    open(params={}){
+      const {success,title='提示',desc='描述',cancelText='取消',confirmText='确定'}=params
+      
+      //设置弹窗展示
+      this.setData({
+        visible:true
+      })
+      
+      //设置弹窗的参数
+      this.setDialogData('title',title)
+      this.setDialogData('desc',desc)
+      this.setDialogData('cancelText',cancelText)
+      this.setDialogData('confirmText',confirmText)
+
+      //------关键：将参数success函数，保存下来，在点击确定/取消按钮时在调用-----
+      this.data.success=success
+      
+    },
+    
+    //设置数据的函数
+    setDialogData(key,value){
+      this.setData({
+        [`${key}`]:value
+      })
+    }
+  }
+});
+
+```
+
+父级引入子组件后：
+
+```html
+<view class="intro" bindtap="tap">点击</view>
+```
+
+```js
+open(){
+  	//获取子组件实例
+    let dialog=this.selectComponent('#dialog')
+    //弹窗open方法
+    dialog.open({
+      title:'提示',
+      desc:'描述描述描述描述描述',
+      success:(res)=>{
+        if(res.confirm){
+          console.log('点击了确定')
+        }else{
+          console.log('点击了取消')
+        }
+      }
+    })
+},
+```
+
+
+
+**Promise风格**
+
+回调函数在逻辑处理上很同意造成嵌套。比如弹窗点击确定执行逻辑A，取消执行逻辑B
+
+就必须写在success的回调函数中
+
+我更喜欢同步化，给人一种代码在的等待用户做出选择的感觉
+
+```js
+ promisfyOpen(){
+    return new Promise((resolve,reject)=>{
+      let dialog=this.selectComponent('#dialog')
+      dialog.open({
+        title:'提示',
+        desc:'描述描述描述描述描述',
+        success:(res)=>{
+          if(res.confirm){
+            //console.log('点击了确定')
+            resolve(true)
+          }else{
+            //console.log('点击了取消')
+            resolve(false)
+          }
+        }
+      })
+    })
+}
+
+//调用open，会给人一种代码在的等待用户做出选择的感觉
+async open(){
+    let res=await this.promisfyOpen()
+    console.log('用户点击了',res)//true是确定，false是取消
+},
+```
+
+
+
+**感悟**
+
+第一次知道，作为参数的回调函数可以被保存下来，在任意时机调用传参
+
+当调用时，会在传入处立即触发执行
+
+
+
 ### Promise的一些细节
 
 resolve和reject并不会结束函数
@@ -7821,6 +8225,23 @@ function f3(params){
   
 
 * 一般的错误处理逻辑：在await后直接catch处理已知的错误，不能识别的错误，直接throw再次抛出，最后在全局try...catch错误做一错误的兜底逻辑
+
+* try...catch无法捕获到异步的错误
+
+  这是我经常犯得一个错误，必须在异步函数前加上await，使得函数同步化，否则无法捕获到错误
+
+  ```js
+  async openScanCode() {
+      try {
+         await openWxScanCode(); //异步任务
+      } catch (err) {
+        console.log('openScanCode err-->', err);
+        
+      }
+    },
+  ```
+
+  
 
 **错误处理**
 
@@ -8782,9 +9203,15 @@ export default {
 
 ```
 
+## NPM资源
+
+[现代流行的 npm包大全（上）](https://www.toutiao.com/article/7207053502298735104/?log_from=0f5da930bcb02_1679501507497)
+
+[现代流行的 npm包大全（下）](https://www.toutiao.com/article/7207424244949549620/?log_from=0e3bc3913b8e4_1679501583380)
 
 
-## 参考
+
+## 参考资源
 
 - [现代 JavaScript 教程](https://zh.javascript.info/)——我心中排名第一的JS教程
 - 红宝书

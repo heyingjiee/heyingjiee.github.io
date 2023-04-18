@@ -300,7 +300,7 @@ type user struct{
 
 
 
-**补充下**：import导入语法
+### import导入包
 
 ```go
 //导入1个库
@@ -318,6 +318,23 @@ import (
 	_ "xxxx"
 )
 ```
+
+import导入的是路径
+
+```go
+import  "a/b/c"   // a/b/c是包所在的路径。一般情况下，包名与文件夹名一样。所以会给人import后是包的错觉
+
+c.xxx() //调用包c中的xxx方法
+```
+
+如果路径和路径下的包名不一致如何？
+
+```go
+import d "a/b/c"   //使用别名d
+d.xxx() //使用别名d调用包中的xxx方法
+```
+
+
 
 ### init函数
 
@@ -2950,6 +2967,26 @@ Go中没有提供切片和数组的删除，我们只能自己实现
 
 思路就是： 数组——>切片——>截取需要保留的切片部分——>append拼接
 
+
+
+
+
+**补充**
+
+入参
+
+```go
+func f(args ...string){
+  //args未切片，[]string
+}
+```
+
+展开
+
+```go
+res"=append(args...) //展开切片args
+```
+
 ## 指针类型
 
 Go语言中指针没有指针的运算
@@ -3642,36 +3679,42 @@ p.name="tom"
 fmt.Printf("%v\n", p.name) //tom
 ```
 
-### 结构体指针
-
-使用new关键字，为结构体开辟内存空间
-
-按道理必须 (*p)才是变量值，才能使用`.`取成员，但是Go语言做了简化，允许直接使用指针使用`.`取成员
+### 结构体指针类型
 
 ```go
-package main
-
 type Stu struct {
-	name string
-	age  int
+	scoreinfo *score //结构体指针类型
 }
-
-func main() {
-	p := new(Stu)
-	//(*p).name="jack"
-  p.name = "jack"
+type Score struct {
+	Math    int
+	English int
 }
 ```
 
-使用`&`返回指针
+### 结构体指针实例
+
+`&`取实例地址
 
 ```go
-p := &Stu{
-		"jack",
-		14,
-	}
-fmt.Printf("%T\n", p) //*main.Stu
+var a = Stu{
+	scoreinfo: &Score{
+		Math:    100,
+		English: 100,
+	},
+}
 ```
+
+new关键字（为结构体开辟内存空间），创建空实例
+
+```go
+var a = Stu{
+	scoreinfo: new(Score),
+}
+```
+
+注意：按道理必须 (*p)才是变量值，才能使用`.`取成员，但是Go语言做了简化，允许直接使用指针使用`.`取成员
+
+
 
 ### 构造函数
 
@@ -6942,8 +6985,12 @@ Go语言中的I/O相关的功能大部分都在`io`包中，`io`包中最重要�
   os.Stdout
   ```
 
-* `bytes.Buffer`实现了io.Reader、io.Writer
+* `bytes.Buffer`与`strings.Builder`实现了io.Reader、io.Writer
 
+  Go1.10后加入了`strings.Builder`，性能获得极大提升[好文](https://blog.csdn.net/chushoufengli/article/details/115051337)
+  
+  两个都是为了进行字符串拼接
+  
   ```go
   package main
   
@@ -6971,10 +7018,8 @@ Go语言中的I/O相关的功能大部分都在`io`包中，`io`包中最重要�
   
   ```
   
-* `strings.Builder`实现了io.Writer
-
   函数是为了将数字转化为16位的二进制形式，涉及到位运算相关知识
-
+  
   ```go
   package main
   
@@ -7003,9 +7048,9 @@ Go语言中的I/O相关的功能大部分都在`io`包中，`io`包中最重要�
   }
   
   ```
-
   
-
+  
+  
 * `strings.NewReader`返回的strings.Reader，实现了io.Reader
 
   ```go
@@ -9005,6 +9050,12 @@ func main() {
 }
 
 ```
+
+## 实践：ORM工具（待补充）
+
+[好文](https://www.toutiao.com/article/7202803761163584056/?app=news_article&timestamp=1679489696&use_new_style=1&req_id=20230322205456D023EF99A27FDA2FA047&group_id=7202803761163584056&share_token=239F5B4A-3989-4055-B495-273EE8AC4185&tt_from=weixin&utm_source=weixin&utm_medium=toutiao_ios&utm_campaign=client_share&wxshare_count=1&source=m_redirect)
+
+
 
 ## 实践：BT下载器（待补充）
 
