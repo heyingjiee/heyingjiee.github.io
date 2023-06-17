@@ -5806,7 +5806,7 @@ help:
 	@echo "make gotool - 运行 Go 工具 'fmt' and 'vet'"
 ```
 
-## 热加载
+## 热加载(Air)
 
 Air 是为 Go 应用开发设计的另外一个热重载的命令行工具
 
@@ -5897,7 +5897,7 @@ go install github.com/cosmtrek/air
 
   仅用在启动测试环境进行开发时使用Air实现热加载
 
-## 自动生成接口文档
+## 自动生成接口文档(swager)
 
 gin-swager是一个自动成RESTful API文档的gin中间件
 

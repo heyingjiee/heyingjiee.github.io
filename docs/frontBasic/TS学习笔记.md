@@ -145,62 +145,415 @@ let a  //any
 
 函数类型未在其中，待补充：https://juejin.cn/book/7086408430491172901/section/7086436622425653285?enter_from=course_center&utm_source=course_center
 
-## 内置类型
+## 原始类型
 
-TS相比与JS来说，最大的不同就是类型标注
+```ts
+const name: string = 'linbudu';
+const age: number = 24;
+const male: boolean = false;
+const undef: undefined = undefined;
+const nul: null = null;
+const obj: object = { name, age, male };
+const bigintVar1: bigint = 9007199254740991n;
+const bigintVar2: bigint = BigInt(9007199254740991);
+const symbolVar: symbol = Symbol('unique');
+```
 
-可以提示开发者变量的类型
+补充
+
+**undefined、null**
+
+undefined表示这里没有值；null表示这里有值，但是个空值
+
+```ts
+const tmp1: null = null;
+const tmp2: undefined = undefined;
+```
+
+仅在关闭 strictNullChecks 配置时成立，undefined、null被视为其他类型的子类型
+
+```ts
+const tmp3: string = null; 
+const tmp4: string = undefined;
+```
 
 
 
-类型按照层级划分：
+**void**
 
-- 最顶级的类型，any 与 unknown
-- 特殊的 Object ，它也包含了所有的类型，但和 Top Type 比还是差了一层
-- String、Boolean、Number 这些装箱类型
-- 原始类型与对象类型
-- 字面量类型，即更精确的原始类型与对象类型嘛，需要注意的是 null 和 undefined 并不是字面量类型的子类型
-- 最底层的 never
+只需记住以下场景即可
 
-因为还有联合类型、交叉类型、函数类型的情况
+```ts
+//返回值被推导为void
+function func1() {}
 
-### 基本类型
+//返回值被推导为void
+function func2() {
+  return;
+}
+
+//返回值类型为undefined
+function func3() {
+  return undefined;
+}
+```
+
+## 复杂类型
+
+### 数组与元组
+
+**数组**
+
+```ts
+let arr:string[]
+```
+
+```go
+//TS与Go相反，Go的切片如下
+var slice []string 
+```
+
+泛型数组
+
+```ts
+let arr:Array<string>
+```
+
+**元组**
+
+元组是固定元素的数组，如下是有两个元素的元组（元素都是字符串类型）
+
+```ts
+let arr:[string,string]
+```
+
+### 函数
+
+**函数声明**
+
+入参列表标注类型，对于返参可以指定类型，不指定也会自动推断
+
+```ts
+function add(a:number,b:number):number{
+    return a+b
+}
+```
+
+**函数表达式**
+
+入参列表标注类型，对于返参可以指定类型，不指定也会自动推断
+
+```ts
+let add=(a:number,b:number):number=>{
+    return a+b
+}
+```
+
+**关于函数入参的补充**
+
+TS中支持了，可选参数`param ?`。可选参数必须放在最后
+
+```ts
+function f1(name:string,age?:number){
+    console.log(name,age);
+    
+}
+f1('tom')//tom undefined
+```
+
+JS中由于并不支持可选参数，我们只能利用解构赋值
+
+```js
+function f1(params){
+ 	 	const {name,age}=params
+  	console.log(name,age);    
+}
+f1('tom')//tom undefined
+```
 
 
 
-### 字面量类型
+**函数签名**
+
+前两种方式，本质都是声明了一个函数，必须实现函数体
+
+而函数签名则不用实现函数体，相当于定义了一个函数模版（function关键字用来声明函数，必须实现函数体。所以签名没有使用function的形式）
+
+```ts
+//指定变量为函数签名类型（注意f1后是冒号，这里箭头后是类型）
+let f1:(a:number,b:number)=>number
+//对比记一下，f1后如果是等于号则是函数表达式，箭头后是函数体
+let f1=(a:number,b:number):number=>{
+    return a+b
+}
+```
+
+在接口中使用函数签名用，可以用来实现面向接口编程，如何实现具体函数的方式参见<a href="#函数签名">这里</a>
+
+```ts
+interface a{
+  	f1:(a:number,b:number)=>number
+  
+  	f2(a:number,b:number):number
+  
+  	f3(): Promise<void> {}
+}
+```
+
+**函数重载**
+
+TypeScript 中的重载是伪重载，如下代码。前两个是函数签名，最后是函数实现，即虽然入参不同，但其实只有一种函数实现
+
+其他语言中，可以对每一种入参，定义一种具体实现
+
+```ts
+//计算数组平均值
+function getAverage(arr: number[]): number; // 函数签名1
+function getAverage(arr: string[]): number; // 函数签名2
+function getAverage(arr: any[]): number { // 函数实现
+  let sum = 0;
+  arr.forEach(num => {
+    sum += Number(num);
+  });
+  return sum / arr.length;
+}
+
+const nums = [1, 2, 3, 4, 5];
+const strs = ['1', '2', '3', '4', '5'];
+
+const result1 = getAverage(nums);
+console.log(result1); // Output: 3
+
+const result2 = getAverage(strs);
+console.log(result2); // Output: 3
+```
+
+TS中函数重载更多的作用还是用来处理一个函数，但是需要传入不同类型入参的情况
+
+所以，我们其实可以使用泛型来约束入参
+
+```ts
+//约束泛型为字符串数组或数字数组
+function getAverage<T extends Array<string> | Array<number>>(arr: T): number {
+    let sum = 0;
+    for (let i = 0; i < arr.length; i++) {
+        sum += Number(arr[i]);
+    }
+    return sum / arr.length;
+}
+
+const nums = [1, 2, 3, 4, 5];
+const strs = ['1', '2', '3', '4', '5'];
+
+const result1 = getAverage(nums);
+console.log(result1); // Output: 3
+
+const result2 = getAverage(strs);
+console.log(result2); // Output: 3
+```
 
 
 
-### undefined、null、void
+### 枚举
 
-### Top Type
+enum枚举类型，注意：每个枚举项用逗号分隔（不可省略），键与值用等于号分隔（对象用逗号）
 
-Top Type表示在它们包含了所有可能的类型：
+```ts
+enum sex{
+    man=0,
+    woman=1
+}
+```
 
-any、unknown
+仅不指定枚举值，默认从0开始
 
-### Bottom Type
+```ts
+enum sex{
+    man, //0
+    woman //1
+}
+```
 
-Bottom Type表示在它是一个虚无的、不存在的类型：
+指定部分枚举值为数字，如B字段是数字，则下面的字段可以不指定值，继续累加
 
-nerver
+```ts
+enum Items {
+  A, //0
+  B=10, //10
+  C, //11 ====>从上一个项+1
+  D //12 
+}
+```
 
-### enum
+指定部分枚举值为非数字，其后的字段必须指定值
 
-枚举类型
+```ts
+enum Items {
+  A, //0
+  B='test', //10
+  C,  //报错！
+}
+```
 
-### interface
+![image-20230516181233506](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230516181233%20.png)
+
+### 接口
+
+**基础**
 
 接口类型，描述对象和类（与Go中接口不同，Go中的接口类型类似于TS中的any类型）
 
 ```ts
-interface AgeStruct {
+interface Stu {
+  name:string;
   age: number;
 }
 ```
 
-### Class
+注意：接口字段可以用分号、逗号分隔，也可以不用任何符号
+
+```ts
+interface Stu {
+  name:string,
+  age: number,
+}
+
+interface Stu {
+  name:string
+  age: number
+}
+```
+
+**同名接口类型会被合并**
+
+````ts
+interface a {
+    name:string;
+    age:number;
+}
+interface a{
+    score:number;
+}
+
+//接口a是两个接口的合并
+let b:a={
+    name:'tom',
+    age:20,
+    score:100
+}
+````
+
+**<span id="函数签名">函数签名</span>**
+
+前两种方式，本质都是声明了一个函数，必须实现函数体
+
+而，函数签名相当于定义了一个函数模版，具体实现
+
+```ts
+interface a{
+    name(a:number,b:number):number
+}
+```
+
+面向接口编程。类可以使用implements实现接口中定义中的函数签名
+
+```ts
+interface Animal {
+  name: string;
+  move(distance: number): void;
+}
+
+class Dog implements Animal {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  move(distance: number) {
+    console.log(`${this.name} moved ${distance} meters.`);
+  }
+}
+
+let dog = new Dog("Buddy");
+dog.move(10); // Output: "Buddy moved 10 meters."
+```
+
+
+
+### 类(待补充)
+
+JS中的面向对象机制并不健全，TS也完善了JS中关于面向对象的部分
+
+```
+```
+
+### 顶部、底部类型
+
+Top Type表示在它们包含了所有可能的类型：
+
+* **any**
+
+  无拘无束的“任意类型”，它能接受所有类型，也能够被所有类型兼容
+
+  ```ts
+  //它能接受所有类型
+  let a:any='jack';
+  
+  //也能够被所有类型兼容
+  let b:number=a;
+  ```
+
+* **unknown**
+
+  它能接受所有类型，只能被unknown类型接受
+
+  ```ts
+  //它能接受所有类型
+  let a:unknown='jack';
+  
+  //报错，只能被unknown类型接受
+  let b:number=a;
+  ```
+
+Bottom Type表示在它是一个虚无的、不存在的类型：
+
+* **nerver**
+
+  表示没有类型，即**不携带任何的类型信息**
+
+  它只能接受nerver类型，但能够被所有类型兼容
+
+  ```ts
+  declare let v1: never;
+  declare let v2: number;
+  
+  v1 = v2; //报错，类型 void 不能赋值给类型 never
+  
+  v2 = v1;
+  ```
+
+  
+
+**类型断言**
+
+上面三个类型都没有具体的字段类型定义。如果我们定义一个变量是上面的类型，当访问它的某个属性或方法，TS就会报错提示没有该属性或方法。这里我们可以使用断言处理，强制告诉编译器该变量的详情
+
+```ts
+interface user{
+    name:string;
+}
+let stu:any
+
+//as语法
+console.log((stu as user).name)
+```
+
+
+
+非空类型断言
+
+```ts
+stu1!.info.score
+```
 
 
 
@@ -230,7 +583,13 @@ function ensureArray<T>(input: MaybeArray<T>): T[] {
 }
 ```
 
+### 字面量类型
 
+```js
+type Code = 10000;
+
+type str = 'hello';
+```
 
 ### 联合类型、交叉类型
 
@@ -464,6 +823,27 @@ type关键字命名新类型时，可以在类型名后的`<>`中，指定入参
 ```ts
 type Factory<T> = T;
 var a:Factory<string> //声明变量a的类型时，必须指定传入得泛型。a是string类型
+```
+
+
+
+**字符串字面量**
+
+这个很特殊，其他形式都是定义类型时使用泛型
+
+注意而这里，泛型定义
+
+```
+名<泛型约束>=`xxx {泛型}`
+```
+
+例子
+
+```ts
+Greet<T extends string | number> = `Hello ${T}`;
+
+//注意这里才是定义
+type Greet1 = Greet<"tom">; // "Hello tom"
 ```
 
 
@@ -905,7 +1285,7 @@ TS内置了一些泛型工具，类似于JS中的内置函数，这些泛型工�
 
   目前，提供的三个内置操作对象的类型，只能操作对象的第一层，如果是比较深的对象该如何处理？
 
-#### **集合**
+#### **集合工具**
 
 求交集、并集、差集、补集
 
@@ -945,7 +1325,19 @@ TS内置了一些泛型工具，类似于JS中的内置函数，这些泛型工�
   type NonNullable<T> = T extends null | undefined ? never : T;
   ```
 
-  
+
+
+
+#### 模版字符串工具
+
+```ts
+Greet<T extends string | number> = `Hello ${T}`;
+
+//注意这里才是定义
+type Greet1 = Greet<"tom">; // "Hello tom"
+```
+
+
 
 
 
@@ -1118,9 +1510,215 @@ feedCat(new Dog())
 
 
 
+## 工程方面
+
+### TS指令
+
+通过TS指令可以指定在某一部分关闭TS类型检查
+
+**单行指令**
+
+作用范围仅仅是下一行
+
+* **@ts-ignore**：忽略下一句中的类型检查错误
+
+  ```ts
+  //@ts-ignore
+  var a:number="hello"
+  ```
+
+* **@ts-expect-error**：忽略下一句中的类型检查错误，前提是必须真的有错误时才能使用
+
+  ```ts
+  //@ts-expect-error
+  var b:number='hello'
+  ```
+
+  否则提示未使用的指令
+
+  ![image-20230425194936900](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230425194937%20.png)
 
 
 
+**文件指令**
+
+作用范围是整个文件，其必须写在文件的最顶部
+
+* **@ts-nocheck**：关闭整个文件的TS类型检查
+
+  ```ts
+  //@ts-nocheck
+  var a:number='hello'
+  
+  var b:number='world'
+  ```
+
+* **@ts-check**：开启整个文件的TS类型检查
+
+  TS文件默认开启检查。JS文件可以通过JSDoc来添加类型标注，通过这个指令可以开启JS文件的类型检查
+
+  ![image-20230425200400518](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230425200400%20.png)
+
+### 类型声明
+
+TS项目中，有单独的类型标注文件（即`*.d.ts`文件，这个文件一般是TS代码文件编译生成），这个文件独立于TS逻辑代码文件
+
+编辑器会自动加载这个文件，实现对引入包的类型提示
+
+为什么这么代码文件和类型文件独立设计？
+
+早期的npm包大部分没有携带类型信息，可以通过编写`*.d.ts`文件，来实现类型提示，或者通过编写`*.d.ts`文件来扩充新的类型标注
+
+**类型标注包**
+
+`@types/xxx` 开头的这一类 npm 包是 TypeScript 维护的，专用于为社区存在的**无类型定义的 JavaScript 库**添加类型支持
+
+通过 DefinitelyTyped 来提供类型定义的包常见的有几种情况
+
+* 例如，Lodash 这样的库仍然有大量 JavaScript 项目使用，将类型定义内置在里面不一定是所有人都需要的，反而会影响包的体积
+* 例如，React 这种不是用纯 JavaScript / TypeScript 书写的库，需要自己来手写类型声明
+
+
+
+
+
+```ts
+//declare module定义模块名
+declare module 'fs' { 
+   //模块中的类型定义需要导出
+    export function readFileSync(/** 省略 */): Buffer;
+}
+```
+
+
+
+**declare关键字**
+
+通过declare声明的类型或者变量或者模块，在include包含的文件范围内，都可以直接引用而不用去import或者import type相应的变量或者类型。
+
+* 场景一：声明全局类型（可在其他TS文件中使用该类型）
+
+  **定义新的类型**
+
+  将类型定义在`typings/global.ts`
+
+  ```ts
+  //注意：这里要export，其他文件才能用这个类型
+  declare interface Stu {
+    name: string;
+    age:number
+  }
+  ```
+
+  在其他TS文件中，可以引入使用类型
+
+  ```ts
+  let a:Stu
+  ```
+
+  **扩展已有类型**
+
+  浏览器环境下已有window对象，其类型是Window类型的接口
+
+  我们在代码中再次定义一个Window接口，TS对于同名接口，会进行自动合并，所以达到了扩展字段的作用
+
+  ```ts
+  //global.ts
+  interface Window {
+    userTracker: (...args: any[]) => Promise<void>;
+  }
+  
+  window.userTracker("click!")
+  
+  ```
+
+  
+
+* 场景二：声明全局变量（可在其他TS文件中使用该变量）
+
+  声明全局变量$，注意这种和`场景一`不一样，$并不是类型，而是可以使用的变量
+
+  ```ts
+  // global.ts
+  declare var $: (selector: string) => any;
+  
+  // index.ts
+  $('body').css('background-color', '#f0f0f0');
+  ```
+
+  我常用的情况是：
+
+  ```ts
+  // global.ts
+  declare var wx:Record<any, any>;
+  
+  // index.ts
+  wx.showToast({
+    title:'hello'
+  })
+  ```
+
+  
+
+* 场景三：声明全局模块
+
+  项目中使用import引入静态资源`.css`、`md`、`.png`等等。这个必须export导出
+  
+  ```ts
+  //global.d.ts
+  declare module '*.md'{
+      const raw: string;
+      export default raw; //这里必须导出，才能在ts中import
+  }
+  
+  //index.ts
+  import raw from './README.md'
+  ```
+  
+  
+
+* 场景四：补充第三方模块
+
+  ```shell
+  //安装axios
+  npm i axios
+  ```
+
+  项目中，定义`typings/axios.d.ts`。这个不用export
+
+  ```ts
+  declare module 'axios' {
+    interface AxiosInstance {
+      <T = any>(config: AxiosRequestConfig): Promise<AxiosResponse<T>>;
+      // ...
+    }
+    interface AxiosRequestConfig {
+      // ...
+    }
+  	interface AxiosResponse {
+      // ...
+    }
+  }
+  ```
+
+  使用
+
+  ```ts
+  import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+  
+  async function getData() {
+    const result: AxiosResponse = await axios.get('https://jsonplaceholder.typicode.com/todos/1');
+    console.log(result.data);
+  }
+  ```
+
+  
+
+
+
+
+
+### TS配置
 
 
 

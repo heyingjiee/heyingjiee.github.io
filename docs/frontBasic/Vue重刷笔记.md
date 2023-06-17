@@ -360,6 +360,73 @@ export default {
 
 `*.vue`页面中的this是当前vue文件的实例，可以通过this获取页面中定义的变量和方法，后面的例子中会提到
 
+## Vue实例
+
+通过`Vue.prototype`获取全局的Vue实例，在其上挂载全局变量、函数
+
+role.js
+
+```js
+import Vue from 'vue';
+
+//RoleScopeList是角色列表，如果当前用户在其中，返回true，否则false
+Vue.prototype.$verifyRoleScope = function (RoleScopeList) {
+  let curRole = localStorage.getItem('curRole');
+  return RoleScopeList.indexOf(curRole) !== -1;
+};
+```
+
+main.js
+
+```js
+import Vue from 'vue';
+import App from './App.vue';
+import router from './router';
+
+//一定要在main.js中引用。Vue启动时，会先执行main.js
+import './utils/role';
+
+
+new Vue({
+  router,
+  render: (h) => h(App),
+}).$mount('#app');
+```
+
+在页面中使用
+
+```vue
+<template>
+  <div class="container">
+    <!------------可直接使用全局函数-------------->
+    <div v-if="$verifyRoleScope(['OrdinaryMember', 'FirstLeader', 'SecondLeader'])">有权限</div>
+  </div>
+  </div>
+</template>
+
+<script>
+export default {
+  
+  methods: {
+    //-----------js中使用this.xxx()访问，无需import-----------
+    getRole(){
+      if(this.$verifyRoleScope(['OrdinaryMember', 'FirstLeader', 'SecondLeader'])){
+       console.log(' 有权限')
+      }
+    }
+    
+  },
+};
+</script>
+```
+
+在其他js文件中使用
+
+```
+```
+
+
+
 ## Vue选项
 
 ```vue
@@ -1357,24 +1424,32 @@ export default {
 1、绑定的一个对象。（注意：动态绑定的class会与写死的class合并，并不会覆盖其值）
 
 ```vue
-<div class="static" :class="classObject"></div>
-```
+<template>
+	<!--key是class名，value是true代表添加该类-->
+	<div class="static" :class="{ active: true,'text-danger': isHas  }"></div>
+</template>
 
-```vue
-data: {
-  classObject: {
-    active: true
+<script>
+export default{
+  data(){
+    return {
+      isHas:false //不添加css类:text-danger
+    }
   }
 }
+</script>
+
+<style>
+  /* active类*/
+  .active{
+    color:red;
+  }
+</style>
 ```
 
 上面class绑定的是一个对象，其中key是class名，value是该class是否生效。通过控制value的值，来控制class是否生效（ value的值为：[truthiness](https://developer.mozilla.org/zh-CN/docs/Glossary/Truthy) ）
 
-注意：对象字符串也是可以的，但是实际场景下肯定是通过上面的方式，使用变量去干预页面的样式
 
-```vue
-<div class="static" :class="{active: true}"></div>
-```
 
 2、和计算属性结合
 
@@ -1568,8 +1643,8 @@ v-on:绑定处理事件=“处理函数”，`v-on:`简写`@`
 
   **事件修饰符**
 
-  - `.stop`
-  - `.prevent`
+  - `.stop `：阻止事件冒泡
+  - `.prevent`：阻止默认行为
   - `.capture`
   - `.self`
   - `.once`（除了支持原生Dom事件外，还是支持Vue的自定义事件）
@@ -1588,7 +1663,10 @@ v-on:绑定处理事件=“处理函数”，`v-on:`简写`@`
   <div @click.capture="doThis">...</div>
   
   <!-- 提交事件不再重载页面 -->
-  <form @submit.prevent="onSubmit"></form>
+  <form @submit.prevent="onSubmit"></form><form @submit.prevent="onSubmit"></form>
+  <!-- 可以防止遮罩层滚动击穿 -->
+  <div @touchmove.prevent>遮罩层</div>
+  
   
   <!-- 点击事件将只会触发一次 -->
   <a @click.once="doThis"></a>
@@ -2836,7 +2914,44 @@ v-if在页面中进行判断，显示对应的组件
 
 
 
-## Vue响应式
+### 覆盖子组件样式
+
+在父级组件中，使用深度选择器覆盖子组件样式
+
+```vue
+<template>
+	<div>
+    <!--子组件 -->
+		<child class='child'></child>
+	</div>
+</template>
+
+<style scoped>
+
+/* 通过 /deep/ 开头的深度作用选择器来达成穿透 */
+.child /deep/ .child {
+  color: red;
+}
+
+
+/* 通过 >>> 选择器来达成穿透 */
+.child >>> .child {
+  color: red;
+}
+
+
+/* 通过 ::v-deep 选择器来达成穿透 */
+.child ::v-deep .child {
+  color: red;
+}
+</style>
+```
+
+
+
+
+
+## Vue响应式原理
 
 官方文档：https://v2.cn.vuejs.org/v2/guide/reactivity.html
 
@@ -2972,33 +3087,32 @@ const routes = [
 
 注意：
 
-* 生命周期
+* 生命周期不触发（采用监听路由变化，改变页面）
 
   ```js
   //URL从`userCenter/jack`跳转到`userCenter/tom`，相同的组件实例将被重复使用，生命周期钩子不会被触发。
   //解决方案：可以通过watch监听路由对象或者路由守卫，来知道URL发生了变化，来触发查询用户（jack、tom）的信息
   
-  const User = {
-    template: '...',
-    created() {
-      this.$watch(
-        () => this.$route.params,
-        (toParams, previousParams) => {
-          // 对路由变化做出响应...
+  export default{
+  	watch: {
+      //这里的$route就是我们用的this.$route。newValue就是最新的路由对象
+      $route(newValue) {
+        if (newValue.path === '/index') {
+          this.active = 0;
+        } else if (newValue.path === '/my') {
+          this.active = 1;
         }
-      )
-    },
-  }
-  
-  
-  const User = {
-    template: '...',
-    async beforeRouteUpdate(to, from) {
-      // 对路由变化做出响应...
+      },
     },
   }
   ```
-
+  
+  实际工作中遇到的一个问题：点击"我的"后，进入新页面，再按浏览器返回键返回"地推"页。tab高亮不会仍然是"我的"
+  
+  解决：可以监听页面route对象
+  
+  ![image-20230424191313110](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230424191313%20.png)
+  
 * 同名动态参数
 
   无论是哪个

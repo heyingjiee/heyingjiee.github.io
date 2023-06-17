@@ -274,7 +274,7 @@ git会在本地有一个远程仓库列表，git clone 下来的项目，git软�
 在本地项目的目录下
 
 ```shell
-git init //先初始化本地项目
+git init --inital-branch=master //先初始化本地项目
 touch README.md //添加readme文件（可不添加）
 git add .
 git commit -m "提交备注"
@@ -283,13 +283,26 @@ git commit -m "提交备注"
 然后再GitHub上新建一个仓库，复制项目地址
 
 ```shell
-git remote add 仓库别名 仓库地址
+git remote add 仓库别名 远程仓库地址
 git push  -u 仓库别名 分支名 //给本地分支和远程分支建立关联，以后就可以直接用git push，不必指定分支名了
 
 //仓库别名一般是origin
 //master是主分支名，一个新仓库默认只有master分支
 //我们在本地仓库创建新的分支后，必须用上面的命令才能，把新分支推送到远程仓库
 ```
+
+例如：
+
+```shell
+git remote add origin xxxx.git  //为xxxx.git仓库起个别名origin
+git push -u origin master
+```
+
+
+
+![image-20230607181510265](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230607181510%20.png)
+
+
 
 ```sh
 //补充:查看本地仓库列表

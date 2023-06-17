@@ -2114,7 +2114,7 @@ func main() {
 
 **Go语言的字符**有以下两种：
 
-- 一种是 byte 类型（1字节，byte是uint8类型的别名）
+- 一种是 byte 类型（1字节，byte是uint8类型的别名。byte类型为啥本质是uint8呢？想下8个bit位刚好是一个字节大小）
 - 另一种是 rune 类型（1～4字节，rune是 int32 类型的别名），代表一个 UTF-8 字符，当需要处理中文、日文或者其他复合字符时，则需要用到 rune 类型
 
 日常我们处理的字符串往往是 **汉字和字母** 的，所以全部使用rune
@@ -3693,26 +3693,94 @@ type Score struct {
 
 ### 结构体指针实例
 
-`&`取实例地址
+`&`取具体的实例地址
 
 ```go
-var a = Stu{
-	scoreinfo: &Score{
-		Math:    100,
-		English: 100,
-	},
-}
+s :=&Stu{
+  	name:"tom",
+		age: 20,
+},
 ```
 
-new关键字（为结构体开辟内存空间），创建空实例
+`new`关键字（为结构体开辟内存空间），创建空的实例，然后取其地址
 
 ```go
-var a = Stu{
-	scoreinfo: new(Score),
-}
+s :=new(Stu)
+
+//等价于
+s :=&Stu{},
+
+//等价于
+var temp Stu //创建一个空的实例
+var a = &temp //取地址
 ```
 
 注意：按道理必须 (*p)才是变量值，才能使用`.`取成员，但是Go语言做了简化，允许直接使用指针使用`.`取成员
+
+
+
+### 拷贝
+
+赋值
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	type Stu struct {
+		name string
+		age  int
+	}
+
+  //实例tom
+	tom := &Stu{
+		name: "tom",
+		age:  20,
+	}
+
+  //赋值tom实例的地址
+	temp := tom
+
+  //修改temp，tom也会一起更改
+	temp.name = "jack"
+
+	fmt.Printf("%v,%v\n", tom, temp) //&{jack 20},&{jack 20}
+
+}
+
+```
+
+浅拷贝。仅仅拷贝值类型，如果结构体存在指针字段则仍然是赋值地址
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	type Stu struct {
+		name string
+		age  int
+	}
+
+	tom := &Stu{
+		name: "tom",
+		age:  20,
+	}
+
+	temp := new(Stu)
+  //赋值tom实例的值
+	*temp = *tom
+
+  //修改temp，tom不会变化
+	temp.name = "jack"
+
+	fmt.Printf("%v,%v\n", tom, temp) //&{tom 20},&{jack 20}
+
+}
+```
 
 
 
@@ -3743,6 +3811,8 @@ func main() {
 	fmt.Printf("%T\n", res) //*main.Stu
 }
 ```
+
+
 
 ### 方法
 
@@ -5717,6 +5787,41 @@ func main() {
 
 
 
+**struct字段为锁类型最为常见**
+
+这个例子中，定义了一个名为`Counter`的结构体，其中`mu`字段是一个`sync.Mutex`类型的值，对`mu`加锁就是对整个结构体加锁
+
+```go
+type Counter struct {
+    count int
+    mu    sync.Mutex
+}
+
+//增加count值
+func (c *Counter) Increment() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count++
+}
+
+//减少count值
+func (c *Counter) Decrement() {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    c.count--
+}
+
+//读取count值
+func (c *Counter) Value() int {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    return c.count
+}
+
+```
+
+
+
 ### 通道channel
 
 Go社区中有一句十分经典的语录
@@ -7086,6 +7191,65 @@ Go语言中的I/O相关的功能大部分都在`io`包中，`io`包中最重要�
   http.Response.Body 实现了io.Reader接口
   ```
   
+* net.Conn连接
+
+  ```go
+  //server.go
+  package main
+  
+  import (
+  	"bufio"
+  	"fmt"
+  	"net"
+  	"sync"
+  )
+  
+  func process(conn net.Conn) {
+  	defer conn.Close()
+  	for {
+      reader := bufio.NewReader(conn) //接收连接的内容，也可以不用bufio，而是直接使用conn.Read([]byte)
+  		var buf [1000]byte
+  
+  		n, err := reader.Read(buf[:])
+  		if err != nil {
+  			fmt.Printf("读取失败%v\n", err)
+  			continue
+  		}
+  		fmt.Printf("接收到：%s\n", string(buf[:n]))
+  		conn.Write([]byte("服务端已收到")) //写入连接内容
+  	}
+  
+  	wg.Done()
+  }
+  
+  var wg sync.WaitGroup
+  
+  func main() {
+  	// 1. 监听端口
+  	listener, err := net.Listen("tcp", "127.0.0.1:9090")
+  	if err != nil {
+  		fmt.Printf("监听失败,%v\n", err)
+  		return
+  	}
+    defer listener.Close()
+  	// 2. 循环监听建立的连接
+  	for {
+  		conn, err := listener.Accept()
+  		if err != nil {
+  			fmt.Printf("监听连接失败%v\n", err)
+  			continue
+  		}
+  		// 3. 处理连接
+  		wg.Add(1)
+  		go process(conn)
+  	}
+  	wg.Wait()
+  }
+  
+  ```
+  
+  
+  
 * hash.Hash
 
   这个类型实现了io.Writer
@@ -7107,7 +7271,9 @@ Go语言中的I/O相关的功能大部分都在`io`包中，`io`包中最重要�
 
 **注意**：后面的IO操作基本都以读写文件对象作为例子，但是实际上可以读取 支持任何实现了`io.Reader`和`io.Writer`的对象
 
-### 读文件数据
+### 读文件数据(UTF-8编码的文本)
+
+注意GO语言默认支持UTF-8编码的文本。读取方法，读取的文本也需要是UTF-8的
 
 **方式1**
 
@@ -7150,7 +7316,9 @@ func main() {
 
 
 
-### 写文件数据
+### 写文件数据（UTF-8编码的文本）
+
+Go语言默认支持UTF-8，写入方法写入的也是UTF-8编码的文本
 
 file对象还实现了WriteString方法，参数为字符串，可向文件中直接写入字符串
 
@@ -7250,6 +7418,19 @@ func main() {
 
 
 
+### 读取指定字节
+
+从r中读取buf大小的数据。如果r中的数据不够则返回错误。ReadFull读取后游标后移，再次读取从游标的位置继续读取
+
+```go
+func ReadFull(r Reader, buf []byte) (n int, err error)
+```
+
+这个函数非常好用
+
+```go
+```
+
 
 
 ### 复制文件
@@ -7264,6 +7445,51 @@ func Copy(dst Writer, src Reader) (written int64, err error)
 
 ```go
 tempSlice := make([]byte, 32*1024)
+```
+
+
+
+Copy用于将src复制到dst，他的场景不仅仅是我们常规意义上的复制。例如：
+
+**输出到控制台**
+
+```go
+io.Copy(os.Stdout,r) //
+```
+
+**下载**
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+)
+
+func download(url, fileName string) {
+	response, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("请求失败，err-->%v", err)
+		return
+	}
+	file, err := os.Create(fileName)
+	if err != nil {
+		fmt.Printf("创建文件失败，err-->%v", err)
+		return
+	}
+  defer func(){
+    response.Body.Close()
+    file.Close()
+  }()
+	io.Copy(file, response.Body)
+}
+
+func main() {
+	download("https://heyingjiee.github.io/logo.png", "avatar.png")
+}
 ```
 
 
@@ -7655,122 +7881,529 @@ bufio包中，最重要的两个类型（仔细看，这两个不是接口类型
   ```
   
 
+### 读写其他文件（非UTF-8的文本）
+
+前面已经学习过读取UTF-8编码的文本文件了，如果不是UTF-8编码方式的，则使用解码器指定编码方式
+
+```go
+import (
+    "encoding/encoding"
+    "io"
+    "os"
+)
+func main() {
+    // 打开文件
+    f, err := os.Open("file.txt")
+    if err != nil {
+        panic(err)
+    }
+    defer f.Close()
+    // 创建解码器
+    decoder := encoding.NewDecoder("gbk")
+    // 使用解码器读取文件
+    reader := decoder.Reader(f)
+    io.Copy(os.Stdout, reader)
+}
+```
+
+
+
+实际编程中，我们更多遇到的是：读取特定格式的文本、二进制（自定义编码、解码规则）
+
+**自定义的二进制格式**
+
+参考：http://c.biancheng.net/view/4570.html
+
+使用encoding/binary 包中的：
+
+```
+func Write(w io.Writer, order ByteOrder, data interface{}) error
+
+func Read(w io.Writer, order ByteOrder, data interface{}) error
+```
+
+第二个参数，涉及到大端和小端模式的区别，参考这个https://www.cnblogs.com/sunlong88/p/13419715.html
+
+所有网络协议都是采用big endian的方式来传输数据的，而在Intel CPU平台下使用的little endian，所以涉及**网络编程**时需要使用这个encoding/binary这个包，且第二个参数使用`binary.BigEndian`，表示将数据xxx转化为大端模式写入w中
+
+```go
+binary.Write(w, binary.BigEndian, xxx)
+```
+
 
 
 ## 网络编程
 
-这里的很多内容，其实都是《计算机网络》这门课程中的内容
-
-这篇[文章](https://www.liwenzhou.com/posts/Go/15_socket/)的开篇部分，对计算机网络基础做了概述
-
 [代码仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/TCP)
 
-### Http服务
+### 网络基础知识
 
-默认的Http服务，访问`http://localhost:8000/hi`会看到文字**"你好"**
+这里的很多内容，其实都是《计算机网络》这门课程中的内容
+
+#### 代码层面的网络通讯
+
+在应用程序中，无论是使用WebSocket还是TCP协议，都是通过Socket来编码，**Socket（套接字）不是协议**，而是不同主机上的应用进程之间进行双向通信的端点的抽象
+
+可以想象，Socket是一个类型，该类型实现了下面方法
+
+![image-20230514001434745](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230514001435%20.png)
+
+通过这些方法，实现网络数据通讯
+
+通讯的两端是对等的。但是实际场景下，客户端与服务端的Socket是有区别的，服务端存在一个特殊的Socket，通过监听客户端的握手包，成功之后就会创建一个新的Socket
+
+通常我们所说TCP、UDP使用的哪种套接字？
+
+* TCP：使用的是Stream Socket，特点是面向连接的流式传输套接字，安全，可靠。
+
+* UDP：使用的是Datagram Socket，特点是面向消息的套接字，不保持可靠性，简单，速度快。
+
+
+
+#### TCP三次握手与四次挥手
+
+**TCP报文的标志位**
+
+- SYN：SYN标志表示请求建立连接，只有在第一次握手时才置为1；
+- Seq：Seq标志表示这是TCP报文段中的第一个序号，用于可靠传输的序号控制，其值随机产生；
+- FIN：FIN标志表示客户端无需关闭通信，因此这个标志位不会被置为1。
+
+**三次握手**
+
+TCP的三次握手目的是保证连接是全双工的
+
+![image-20230514000316684](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230514000317%20.png)
+
+**四次挥手**
+
+TCP的四次挥手是因为连接是全双工的，需要确认双方都收到FIN包才能关闭
+
+![image-20230513003314040](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513003314%20.png)
+
+#### TCP在应用层的实现
+
+经历过三次握手后，客户端与服务器之间建立了一个TCP连接（这是逻辑上的连接）
+
+选取其中一个通讯端：
+
+* 它的操作系统需要在`内核内存`中分配`两个缓冲`区（读、写buffer，大小由系统参数决定）
+
+  内核内存只有核心态才能读取
+
+* 通讯的应用程序是在`用户态`，用户态进程是无法直接访问`内核内存`空间的。因此通过Socket接口我们Write数据到底层的过程中，就要涉及一次数据的`拷贝`，也就是把数据从进程内存中拷贝到TCP写缓冲，这就是一次IO操作
+
+  ![image-20230514020813274](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230514020813%20.png)
+
+### HTTP
+
+#### HTTP服务端
+
+使用`net/http`包创建一个HTTP服务。运行下面代码，访问`127.0.0.1:8800`会被重定向到百度
 
 ```go
 package main
 
-import (
-	"fmt"
-	"net/http"
-)
+import "net/http"
 
 func main() {
-  //向默认的DefaultServeMux处理器中，添加路由处理 
-	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+	//创建路由器
+	mux := http.NewServeMux()
+  //在路由器上挂载处理器（请求命中路由后，则执行第二个参数指定的功能）
+	mux.Handle("/", xxx)//参数2：为Handler接口类型（即实现ServeHTTP方法）。例子在`处理器Handler`不分
+  mux.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
 	})
-  
-  //启动默认服务：监听8000端口，DefaultServeMux作为处理器
-	err := http.ListenAndServe(":8000", nil) //第二个参数为nil，表示采用包变量DefaultServeMux作为处理器
-	if err != nil {
-		fmt.Printf("监听出错:%v", err)
+
+	//创建服务对象（Addr指定服务运行端口，Handler字段指定挂载的`处理器`）
+	server := &http.Server{
+		Addr:    ":8800",
+		Handler: mux,
+	}
+
+	//服务对象，监听端口接收连接
+	if err := server.ListenAndServe(); err != nil {
+		panic(err)
 	}
 }
 
 ```
 
-自定义Http服务
+概念讲解
 
-其实默认Http服务中的`http.ListenAndServe(":8000", nil)`等价于
+* **服务器server**
 
-```go
-customServe := &http.Server{
-		Addr:           ":8000",
-		Handler:        nil,
-}
-```
+  指定服务器的基础配置，其中最重要的是**挂载路由器**，来处理请求。该字段为nil，表示采用包变量默认处理器DefaultServeMux
+
+  创建服务器有两种方式：
+
+  * ListenAndServe快捷创建服务器
+
+    ```go
+    //参数1：监听端口
+    //参数2：处理器mux。如果为nil，则使用默认处理器DefaultServeMux
+    
+    http.ListenAndServe(":8800", nil)
+    ```
+
+    源码，启动Server仅配置了Addr、Handler两个字段（指定处理器mux的字段）
+
+    ```go
+    func ListenAndServe(addr string, handler Handler) error {
+    	server := &Server{Addr: addr, Handler: handler}
+    	return server.ListenAndServe()
+    }
+    ```
+
+  * 手动配置Server，可以指定更多配置字段
+
+    ```go
+    customServe := &http.Server{
+    		Addr:           ":8000",
+    		Handler:        nil,//参数为nil，表示采用包变量DefaultServeMux作为处理器
+    		ReadTimeout:    10 * time.Second,
+    		WriteTimeout:   10 * time.Second,
+    		MaxHeaderBytes: 1 << 20,
+    }
+    err := customServe.ListenAndServe() 
+    if err != nil {
+    		fmt.Printf("监听出错:%v", err)
+    }
+    ```
+
+    
+
+* **路由器（也叫多路复用器）mux**
+
+  当请求过来时，在处理器中查找请求对应的路由，并执行该路由对应的处理器
+
+  有两中方式创建：
+
+  * 默认路由器DefaultServeMux
+
+    仅需要创建服务器时，不指定路由器，就会默认使用DefaultServeMux
+
+    ```go
+    http.ListenAndServe(":8800", nil)
+    ```
+
+    使用DefaultServeMux最大的好处，就是net/http包中为默认处理器提供了HandleFunc方法，来简化注册处理器的流程
+
+    ```go
+    package main
+    
+    import (
+    	"fmt"
+    	"net/http"
+    )
+    
+    func main() {
+      //Handle、HandleFunc会向默认路由器DefaultServeMux上注册处理器
+      http.Handle('/',http.RedirectHandler("http://www.baidu.com", 307))
+    	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+    		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
+    	})
+      
+      
+    	err := http.ListenAndServe(":8800", nil)
+    	if err != nil {
+    		panic(err)
+    	}
+    }
+    
+    ```
+
+    Handle源码：
+
+    ```go
+    //DefaultServeMux.Handle是想默认路由器，注册handler
+    func Handle(pattern string, handler Handler) { DefaultServeMux.Handle(pattern, handler) }
+    
+    //Handler是个接口类型，其实现ServeHTTP方法
+    func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+        f(w, r)
+    }
+    ```
+
+    源码：
+
+    ```go
+    func HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
+    	DefaultServeMux.HandleFunc(pattern, handler)
+    }
+    ```
+
+    两者的区别就是：handler接口类型的实现，HandleFunc第二个参数直接就实现了ServeHTTP方法
+
+    
+
+  * mux使用NewServeMux创建
+
+    ```go
+    例子中注册了 : '/'对应的处理函数是重定向到百度
+    
+    当请求127.0.0.1:8800时，查找并命中路由'/'
+    ```
+
+    
+
+* **处理器Handler**
+
+  函数Handle、HandleFunc可以在路由器上注册不同路由对应的处理器，即<路由，处理器Handler>
+
+  当命中路由时，路由器会执行对应的处理器的ServeHTTP方法
+
+  Handle例子：
+
+  ```go
+  package main
+  
+  import (
+  	"net/http"
+  )
+  
+  //---------我们可以从customerHandler函数传入一些参数，存入customer实例中，在ServeHTTP中使用-----
+  type customer struct {
+  }
+  
+  func (c *customer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+  	w.Write([]byte("你好"))
+  }
+  
+  func customerHandler() http.Handler {
+  	return &customer{}
+  }
+  //---------
+  
+  func main() {
+  	mux := http.NewServeMux()
+    
+  	//在路由器上挂载处理器（请求命中路由后，则执行第二个参数指定的功能）
+  	mux.Handle("/", customerHandler()) //参数2：为Handler接口类型（实现ServeHTTP方法）
+  
+  	server := &http.Server{
+  		Addr:    ":8800",
+  		Handler: mux,
+  	}
+  	if err := server.ListenAndServe(); err != nil {
+  		panic(err)
+  	}
+  }
+  
+  ```
+
+  上面代码中Handle函数、Handler类型的源码
+
+  ```go
+  func (mux *ServeMux) Handle(pattern string, handler Handler) 
+  //参数1：路由
+  
+  //参数2：处理器。是一个接口类型，参数需要实现ServeHTTP方法
+  type Handler interface {
+  	ServeHTTP(ResponseWriter, *Request)
+  }
+  ```
+
+  HandleFunc例子：
+
+  ```go
+  mux.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+  		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
+  })
+  ```
+
+  
+
+* 补充：路由器如何调用处理器？
+
+  路由器的结构体定义，其中muxEntry存储着所有注册在路由器上的处理器
+
+  ```go
+  type ServeMux struct {
+      mu    sync.RWMutex//读写互斥锁，并发请求需锁机制
+      m     map[string]muxEntry//路由规则，一个路由表达式对应一个复用器实体
+      es    []muxEntry // slice of entries sorted from longest to shortest.
+      hosts bool       // 是否在任意路由规则中携带主机信息
+  }
+  
+  
+  //pattern是路由，h是路由对应的处理器
+  type muxEntry struct {
+  	h       Handler
+  	pattern string
+  }
+  ```
+
+  
+
+  路由器也实现了Handler接口的ServeHTTP方法。处理器实现Handler接口，是用于处理路由请求
+
+  而路由器实现Handler接口，用于匹配路由。下面是路由器的源码
+
+  ```go
+  func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
+    //当路由器接收到请求后若请求的URI为`*`则会关闭连接
+  	if r.RequestURI == "*" {
+  		if r.ProtoAtLeast(1, 1) {
+  			w.Header().Set("Connection", "close")
+  		}
+  		w.WriteHeader(StatusBadRequest)
+  		return
+  	}
+    //如果不是`*`，则`Handler()`来获取对应路由的处理器
+  	h, _ := mux.Handler(r)
+    //指定处理的ServeHTTP来处理请求
+  	h.ServeHTTP(w, r)
+  }
+  ```
+
+
+#### HTTP客户端
+
+这里简单的实现一个客户端，发起Get请求。（后面会详细介绍Get、Post、Put、Delete）
 
 ```go
 package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 )
 
-type httpServer struct {
+func main() {
+	//1、创建连接池
+	transport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second, //连接超时时间
+			KeepAlive: 30 * time.Second, //长连接超时时间
+		}).DialContext,
+		MaxIdleConns:          100, //最大空闲连接
+		IdleConnTimeout:       0,   //空闲连接超时时间
+		TLSHandshakeTimeout:   0,   //tls握手超时间
+		ExpectContinueTimeout: 0,   //100-continue状态超时时间
+	}
+
+	//2、创建客户端
+	client := &http.Client{
+		Transport: transport, //如果为nil，采用默认连接池DefaultTransport
+		Timeout:   30 * time.Second, //客户端请求的超时时间
+	}
+
+	//3、客户端发起 Get 请求
+	resp, err := client.Get("http://httpbin.org/get")
+	if err != nil {
+		fmt.Printf("请求失败, err:%v\n", err)
+		return
+	}
+	//关闭response.Body响应
+	defer resp.Body.Close()
+
+	//读取响应体，可以使用多种方式读取，这里使用的是ioutil方式，b是返回的内容
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("get resp failed, err:%v\n", err)
+		return
+	}
+	fmt.Println(string(b))
 }
 
-func (server httpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("服务器启动")
+```
+
+不使用Http.Get，也使用http.NewRequest创建请求器，Client调用Do方法，参数传入请求器
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+)
+
+func readBody(response *http.Response) []byte {
+	reader := bufio.NewReader(response.Body)
+	var res []byte
+	for {
+		temp := make([]byte, 100)
+		_, err := reader.Read(temp)
+		if err == io.EOF {
+			break
+		}
+		res = append(res, temp...)
+	}
+	return res
 }
 func main() {
-	//向默认的DefaultServeMux处理器中，添加路由处理
-	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
-	})
-
-  //启动默认服务：配置信息就是下面http.Serve实例
-	customServe := &http.Server{
-		Addr:           ":8000",
-		Handler:        nil,//参数为nil，表示采用包变量DefaultServeMux作为处理器
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+	proxyUrl, _ := url.Parse("http://10.168.124.17:8080/charge-attract-customer-platform/")
+	t := &http.Transport{
+		Proxy: http.ProxyURL(proxyUrl),
 	}
-	err := customServe.ListenAndServe() //第二个参数为nil，表示采用包变量DefaultServeMux作为处理器
+	client := &http.Client{
+		Transport: t,
+	}
+	request, err := http.NewRequest(http.MethodGet, "http://www.baidu.com", nil)
 	if err != nil {
-		fmt.Printf("监听出错:%v", err)
+		fmt.Printf("err-->%v", err)
+		return
 	}
-}
-```
-
-**核心理解**
-
-在 http 包中
-
-所有的 HTTP 请求都需要经过HandleFunc处理，第二个参数是自定义的handler处理对应的url。其源码显示，实际调用的是DefaultServeMux（默认处理器）的HandleFunc处理
-
-```go
-func HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
-	DefaultServeMux.HandleFunc(pattern, handler)
-}
-```
-
-```go
-func (mux *ServeMux) HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
-	if handler == nil {
-		panic("http: nil handler")
+	response, err := client.Do(request)
+	if err != nil {
+		fmt.Printf("err-->%v", err)
+		return
 	}
-	mux.Handle(pattern, HandlerFunc(handler))
+	res := readBody(response)
+	fmt.Println(string(res))
+
 }
 ```
 
-ServeMux 实现了 Handler 接口，DefaultServeMux是默认的ServeMux实例
+**请求流程**
 
-```go
-type Handler interface {
-    ServeHTTP(ResponseWriter, *Request)
+![image-20230601010927174](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230601010927%20.png)
+
+**默认连接池、客户端**
+
+例如，http.Get就是采用默认的连接池、客户端
+
+```Go
+package myGet
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+)
+
+func SendGetRequest(path string, m map[string]string) {
+  //
+	resp, err := http.Get(u.String())
+	if err != nil {
+		fmt.Printf("请求失败, err:%v\n", err)
+		return
+	}
+	//关闭response.Body响应
+	defer resp.Body.Close()
+
+	//读取响应体，可以使用多种方式读取，这里使用的是ioutil方式，b是返回的内容
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("get resp failed, err:%v\n", err)
+		return
+	}
+	fmt.Println(string(b))
 }
 ```
 
 
 
-### HTTP请求
+
+
+#### **HTTP客户端请求**
 
 http://httpbin.org/，这是一个用于测试HTTP请求的网站，请求的返回值就是请求时的相关信息，方便调试
 
@@ -7985,7 +8618,7 @@ func main() {
 
 
 
-**请求参数**
+**Get请求传参**
 
 方式一：直接在参数里拼接
 
@@ -8060,7 +8693,9 @@ func main() {
 }
 ```
 
-### HTTP请求之POST
+
+
+**POST请求传参**
 
 前面已经讲过POST请求了，但是例子中的POST请求未传递参数。
 
@@ -8070,183 +8705,190 @@ http.POST(接口地址，请求的Content-Type，发送的数据类型是io.Read
 
 这里详细讲解下，POST传参的几种格式
 
-**x-www-from-urlencoded**
+* **x-www-from-urlencoded**
 
-可以传递多条键值对数据，数据值只能是字符串。所以，不能上传文件
+  可以传递多条键值对数据，数据值只能是字符串。所以，不能上传文件。仍然是使用`url.Values`
 
-仍然是使用`url.Values`
+  ```go
+  package main
+  
+  import (
+  	"bufio"
+  	"fmt"
+  	"io"
+  	"net/http"
+  	"net/url"
+  	"strings"
+  )
+  
+  func readBody(response *http.Response) []byte {
+  	reader := bufio.NewReader(response.Body)
+  	var res []byte
+  	for {
+  		temp := make([]byte, 100)
+  		_, err := reader.Read(temp)
+  		if err == io.EOF {
+  			break
+  		}
+  		res = append(res, temp...)
+  	}
+  	return res
+  }
+  
+  func postForm() {
+  	params := make(url.Values)
+  	params.Add("name", "hedaodao")
+  	params.Add("age", "18")
+  
+  	response, err := http.Post("http://httpbin.org/post", "application/x-www-form-urlencoded", strings.NewReader(params.Encode()))
+  	if err != nil {
+  		fmt.Printf("请求失败，err-->%v", err)
+  		return
+  	}
+    defer response.Body.Close()
+  	res := readBody(response)
+  	fmt.Println(string(res))
+  }
+  
+  func main() {
+  	postForm()
+  }
+  
+  ```
 
-```go
-package main
+  
 
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"strings"
-)
+* **raw**
 
-func readBody(response *http.Response) []byte {
-	reader := bufio.NewReader(response.Body)
-	var res []byte
-	for {
-		temp := make([]byte, 100)
-		_, err := reader.Read(temp)
-		if err == io.EOF {
-			break
-		}
-		res = append(res, temp...)
-	}
-	return res
-}
+  传递文本数据，可以发送任意格式的文本，对应不同的Content-Type值
 
-func postForm() {
-	params := make(url.Values)
-	params.Add("name", "hedaodao")
-	params.Add("age", "18")
+  ```text
+  `text ` content-type=text/plain
+  
+  `js` application/javascript
+  
+  `css` text/css
+  
+  `json` application/json
+  
+  `html`  text/html
+  
+  `xml` text/xml
+  ```
 
-	response, err := http.Post("http://httpbin.org/post", "application/x-www-form-urlencoded", strings.NewReader(params.Encode()))
-	if err != nil {
-		fmt.Printf("请求失败，err-->%v", err)
-		return
-	}
-  defer response.Body.Close()
-	res := readBody(response)
-	fmt.Println(string(res))
-}
+  常用其实只有JSON这一种格式，所以这里的例子也是使用JSON
 
-func main() {
-	postForm()
-}
+  ```go
+  package main
+  
+  import (
+  	"bufio"
+  	"encoding/json"
+  	"fmt"
+  	"io"
+  	"net/http"
+  	"net/url"
+  	"strings"
+  )
+  
+  func readBody(response *http.Response) []byte {
+  	reader := bufio.NewReader(response.Body)
+  	var res []byte
+  	for {
+  		temp := make([]byte, 100)
+  		_, err := reader.Read(temp)
+  		if err == io.EOF {
+  			break
+  		}
+  		res = append(res, temp...)
+  	}
+  	return res
+  }
+  
+  
+  
+  func postJSON() {
+  	stu := struct {
+  		Name string
+  		Age  int
+  	}{
+  		Name: "hedaodao",
+  		Age:  18,
+  	}
+  	bytes, err := json.Marshal(stu)
+  	if err != nil {
+  		fmt.Printf("序列化错误，err-->%v", err)
+  		return
+  	}
+  	response, err := http.Post("http://httpbin.org/post", "application/json", strings.NewReader(string(bytes)))
+    defer response.Body.Close()
+  	res := readBody(response)
+  	fmt.Println(string(res))
+  }
+  
+  func main() {
+  	postJSON()
+  }
+  
+  ```
 
-```
+  运行结果
 
-**raw**
+  ![image-20230124114128559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230124114129%20.png)
 
-传递文本数据，可以发送任意格式的文本，对应不同的Content-Type值
+* **form-data**
 
-* `text ` content-type=text/plain
-* `js` application/javascript
-* `css` text/css
-* `json` application/json
-* `html`  text/html
-* `xml` text/xml
+  form-data可以传递多条键值对数据，数据值可以是字符串/文件，所以form-data是可以上传多个文件的
 
-常用其实只有JSON这一种格式，所以这里的例子也是使用JSON
+  ```go
+  func postFormData() {
+  	//1、构造一个缓冲区（所有的信息都是写入这里面）
+  	body := &bytes.Buffer{} //body实现了io.Reader、io.Writer
+  	writer := multipart.NewWriter(body)
+  
+  	//提交的FormData是key-value形式的。value可以是字符串也可以是文件
+  	//2、写入数据：value为字符串。key为word，value为123
+  	writer.WriteField("word", "123")
+  
+  	//3、写入数据：value为文件。key为uploadFile1，value为要上传的文件名
+  	uploadWriter, err := writer.CreateFormFile("uploadFile1", "avatar") //uploadWriter实现了io.Writer
+  	if err != nil {
+  		fmt.Printf("创建uploadWriter失败，err-->%v", err)
+  		return
+  	}
+  	file, err := os.Open("../download/avatar.png")
+  	if err != nil {
+  		fmt.Printf("打开文件失败，err-->%v", err)
+  		return
+  	}
+  
+  	io.Copy(uploadWriter, file) //相当于把打开的文件，写入了uploadWriter
+  
+  	//4、写完数据，一定要记得关闭writer。否则无法发送数据
+  	writer.Close()
+  
+  	//fmt.Printf("%v\n", body.String()) //bytes.Buffer需要使用String方法才能转换为string类型
+  
+  	//5、发起请求
+  	//fmt.Println(writer.FormDataContentType()) writer.FormDataContentType()是FormData的类型
+  	response, err := http.Post("http://httpbin.org/post", writer.FormDataContentType(), body)
+  	if err != nil {
+  		fmt.Printf("post请求失败，err-->%v", err)
+  		return
+  	}
+  	defer func() {
+  		response.Body.Close()
+  		file.Close()
+  	}()
+  	res := readBody(response)
+  	fmt.Println(string(res))
+  
+  }
+  ```
 
-```go
-package main
+  
 
-import (
-	"bufio"
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"strings"
-)
-
-func readBody(response *http.Response) []byte {
-	reader := bufio.NewReader(response.Body)
-	var res []byte
-	for {
-		temp := make([]byte, 100)
-		_, err := reader.Read(temp)
-		if err == io.EOF {
-			break
-		}
-		res = append(res, temp...)
-	}
-	return res
-}
-
-
-
-func postJSON() {
-	stu := struct {
-		Name string
-		Age  int
-	}{
-		Name: "hedaodao",
-		Age:  18,
-	}
-	bytes, err := json.Marshal(stu)
-	if err != nil {
-		fmt.Printf("序列化错误，err-->%v", err)
-		return
-	}
-	response, err := http.Post("http://httpbin.org/post", "application/json", strings.NewReader(string(bytes)))
-  defer response.Body.Close()
-	res := readBody(response)
-	fmt.Println(string(res))
-}
-
-func main() {
-	postJSON()
-}
-
-```
-
-运行结果
-
-![image-20230124114128559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230124114129%20.png)
-
-**form-data**
-
-form-data可以传递多条键值对数据，数据值可以是字符串/文件，所以form-data是可以上传多个文件的
-
-```go
-func postFormData() {
-	//1、构造一个缓冲区（所有的信息都是写入这里面）
-	body := &bytes.Buffer{} //body实现了io.Reader、io.Writer
-	writer := multipart.NewWriter(body)
-
-	//提交的FormData是key-value形式的。value可以是字符串也可以是文件
-	//2、写入数据：value为字符串。key为word，value为123
-	writer.WriteField("word", "123")
-
-	//3、写入数据：value为文件。key为uploadFile1，value为要上传的文件名
-	uploadWriter, err := writer.CreateFormFile("uploadFile1", "avatar") //uploadWriter实现了io.Writer
-	if err != nil {
-		fmt.Printf("创建uploadWriter失败，err-->%v", err)
-		return
-	}
-	file, err := os.Open("../download/avatar.png")
-	if err != nil {
-		fmt.Printf("打开文件失败，err-->%v", err)
-		return
-	}
-
-	io.Copy(uploadWriter, file) //相当于把打开的文件，写入了uploadWriter
-
-	//4、写完数据，一定要记得关闭writer。否则无法发送数据
-	writer.Close()
-
-	//fmt.Printf("%v\n", body.String()) //bytes.Buffer需要使用String方法才能转换为string类型
-
-	//5、发起请求
-	//fmt.Println(writer.FormDataContentType()) writer.FormDataContentType()是FormData的类型
-	response, err := http.Post("http://httpbin.org/post", writer.FormDataContentType(), body)
-	if err != nil {
-		fmt.Printf("post请求失败，err-->%v", err)
-		return
-	}
-	defer func() {
-		response.Body.Close()
-		file.Close()
-	}()
-	res := readBody(response)
-	fmt.Println(string(res))
-
-}
-```
-
-
-
-### HTTP下载
+#### **HTTP客户端下载**
 
 `response.Body`实现了io.Reader，`file`实现了io.Writer
 
@@ -8351,7 +8993,7 @@ func main() {
 
 ```
 
-### HTTP重定向
+#### **HTTP客户端重定向**
 
 这里的内容涉及到自定义服务`http.Client`，前面最多也就是用到了默认的服务`http.DefaultClient`。他们都有Do方法，用于发起请求
 
@@ -8440,7 +9082,7 @@ func redirectForbidden() {
 
 ```
 
-### HTTP超时处理
+#### **HTTP客户端超时处理**
 
 https://colobu.com/2016/07/01/the-complete-guide-to-golang-net-http-timeouts/
 
@@ -8506,9 +9148,7 @@ func main() {
 
 ```
 
-
-
-### HTTP代理
+#### **HTTP客户端请求代理**
 
 ```go
 package main
@@ -8638,7 +9278,7 @@ import (
 
 func main() {
 	conn, err := net.Dial("tcp", "127.0.0.1:9090")
-	defer conn.Close()
+	defer conn.Close()//必须关闭
 	if err != nil {
 		fmt.Printf("连接服务器失败%v\n", err)
 		return
@@ -8767,666 +9407,92 @@ func main() {
 }
 ```
 
+### 网络代理
 
+学习项目地址：https://github.com/solozyx/gateway_demo-1
 
-## 实践：日志库
+ 转发：路由器对包的转发
 
-[Gitee仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/Logger)
+![image-20230604205121746](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604205122%20.png)
 
-通过这个项目学习到几点简单的经验，在这里做一个简单的记录
+代理：客户端连接代理服务器，代理服务器和服务端通信
 
-![image-20220602234740750](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/2022060300:38:55%20.png)
+![image-20230604205308619](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604205309%20.png)
 
-**文件的结构**
+代理又分为：
 
-```
-myLoger文件下的文件，都属于myLoger包
-		myLoger.go 日志包的主要核心代码
-		logerConsole.go 日志输出到控制台
-		logerFile.go    日志输出到文件
+* 正向代理
 
-main.go 使用myLoger库中的功能
-```
+  例如，连接VPN服务器上网
 
-**结构体的设计**
-
-在`myLoger.go`文件中，设计了Logger结构体。设计结构体核心是把公用的属性写入结构体，每一个结构体的方法都能方便的使用
-
-```go
-// Logger  日志类型
-type Logger struct {
-	curLogLevel   LogLevel   //错误等级
-	logStartLevel LogLevel   //设置监控等级，大于这个等级的日志才会输出
-	curOutputMode outputMode //输出的方式（输出到文件、输出到控制台）
-}
-```
-
-**常量（枚举）**
-
-上面结构体中常量LogLevel类型是一个常量类型，对于一些常量定义成一个新的类型，是一种常见的手段，比如：time包中的duration
-
-```go
-const (
-	Info LogLevel = iota //数字越大越严重
-	Warning
-	Error
-)
-```
-
-**接口的使用**
-
-上面结构体中常量outputMode类型是一个接口类型，这个接口有一个output方法，用于输出日志。
-
-```go
-// outputMode 定义一个输出接口，输出到文件和输出到控制台两个结构体都会实现这个接口的output方法
-type outputMode interface {
-	output(logger *Logger, curTime string, file string, line int)
-}
-```
-
-`logerConsole.go `、`logerFile.go `   就是定义两个结构体类型，同时都实现了output方法
-
-在`myLoger.go`中的构造方法把outputMode接口最为参数，那么就可以同时传入两种结构体，在`myLoger.go`只需要调用，参数的output方法就能实现对应的输出方式了
-
-```go
-//构造函数
-func NewLoger(logStartLevel LogLevel, outputMode outputMode) *Logger {
-	return &Logger{
-		logStartLevel: logStartLevel,
-		curOutputMode: outputMode,
-	}
-}
-```
-
-## 实践：JWT库
-
-JWT官网：https://jwt.io/
-
-### JWT基础
-
-JWT（JSON Web Tokens），其形式
-
-```
-xxxxx.yyyyy.zzzzz
-```
-
-以点分隔为3部分结构，分别为：
-
-- alg指定签名时使用的哈希算法，typ指定令牌的类型。这部分base64编码为第一部分
-
-  ```
-  {
-    "alg": "HS256",
-    "typ": "JWT"
+  ```go
+  package main
+  
+  import (
+  	"fmt"
+  	"io"
+  	"net"
+  	"net/http"
+  	"strings"
+  )
+  
+  type Pxy struct{}
+  
+  func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+  	fmt.Printf("Received request %s %s %s\n", req.Method, req.Host, req.RemoteAddr)
+  	transport := http.DefaultTransport
+  	// step 1，浅拷贝对象，然后就再新增属性数据
+  	outReq := new(http.Request)
+  	*outReq = *req
+  	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+  		if prior, ok := outReq.Header["X-Forwarded-For"]; ok {
+  			clientIP = strings.Join(prior, ", ") + ", " + clientIP
+  		}
+  		outReq.Header.Set("X-Forwarded-For", clientIP)
+  	}
+  
+  	// step 2, 请求下游
+  	res, err := transport.RoundTrip(outReq)
+  	if err != nil {
+  		rw.WriteHeader(http.StatusBadGateway)
+  		return
+  	}
+  
+  	// step 3, 把下游请求内容返回给上游
+  	for key, value := range res.Header {
+  		for _, v := range value {
+  			rw.Header().Add(key, v)
+  		}
+  	}
+  	rw.WriteHeader(res.StatusCode)
+  	io.Copy(rw, res.Body)
+  	res.Body.Close()
   }
-  ```
-
-- Payload
-
-  载荷，放置数据。这部分base64编码为第二部分
-
-  ```
-  //例如：
-  {
-    "sub": "1234567890",
-    "name": "John Doe",
-    "admin": true
+  
+  func main() {
+  	fmt.Println("Serve on :8080")
+  	http.Handle("/", &Pxy{})
+  	http.ListenAndServe("0.0.0.0:8080", nil)
   }
-  ```
-
-- Signature
-
-  签名，对编码后的Header、Payload计算签名
-
-### 实现
-
-[Gitee仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/jwt-hs256)
-
-```go
-//jwt.go
-package jwt_hs256
-
-import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"strings"
-)
-
-type header struct {
-	Alg string `json:"alg"`
-	Typ string `json:"typ"`
-}
-
-var Secret string
-
-// hmacSHA256 签名使用的 sha256 作为散列函数的hmac算法
-func hmacSHA256(secret, message string) string {
-	hasher := hmac.New(sha256.New, []byte(secret))
-	hasher.Write([]byte(message))
-	return base64.RawURLEncoding.EncodeToString(hasher.Sum(nil))
-}
-
-// GeneratorJWT 生成JWT
-func GeneratorJWT(payload interface{}) (JWTStr string, err error) {
-	//头base64Url编码
-	header := header{
-		Alg: "HS256",
-		Typ: "JWT",
-	}
-	strHeader, err := json.Marshal(header)
-	if err != nil {
-		return
-	}
-	encodeHeader := base64.RawURLEncoding.EncodeToString(strHeader)
-
-	//载荷base64Url编码
-	strPayload, err := json.Marshal(payload)
-	if err != nil {
-		return
-	}
-	encodePayload := base64.RawURLEncoding.EncodeToString(strPayload)
-
-	signStr := hmacSHA256(Secret, fmt.Sprintf("%s.%s", encodeHeader, encodePayload))
-	JWTStr = fmt.Sprintf("%s.%s.%s", encodeHeader, encodePayload, signStr)
-	return
-
-}
-
-// VerifyJWT 验证JWT是否被篡改
-func VerifyJWT(JWTstr string) (isVerifyPassed bool, err error) {
-	JWTSlice := strings.Split(JWTstr, ".")
-	if len(JWTSlice) != 3 {
-		return false, errors.New("JWT格式不正确")
-	}
-
-	res := hmacSHA256(Secret, fmt.Sprintf("%s.%s", JWTSlice[0], JWTSlice[1]))
-	if hmac.Equal([]byte(res), []byte(JWTSlice[2])) {
-		return true, nil
-	} else {
-		return false, nil
-	}
-}
-
-```
-
-## 实践：协程池
-
-这块是并发编程相关知识的实践
-
-[Gitee仓库地址](https://gitee.com/hyj1270433876/GoProjectByHDD/tree/master/routinePool)
-
-```go
-package main
-
-import (
-	"fmt"
-)
-
-//--------Task相关--------
-
-// Task 任务类型，其中f字段存任务的函数
-type Task struct {
-	f func() error
-}
-
-// NewTask 创建Task实例
-func NewTask(argFunc func() error) *Task {
-	return &Task{
-		f: argFunc,
-	}
-}
-
-// Execute 调用Task实例中的任务函数
-func (t *Task) Execute() {
-	t.f()
-}
-
-//--------Pool协程池--------
-
-// Pool 协程池类型
-type Pool struct {
-	EntryChannel chan *Task //暴露出来的外部队列
-	JobChannel   chan *Task //内部任务队列
-	MaxWorkNum   int        //最大worker数
-}
-
-// NewPool 实例化Pool
-func NewPool(MaxWorkNum int) *Pool {
-	return &Pool{
-		EntryChannel: make(chan *Task),
-		JobChannel:   make(chan *Task),
-		MaxWorkNum:   MaxWorkNum,
-	}
-}
-
-// worker 相当于创建一个消者
-func (p *Pool) worker(ID int) {
-	for task := range p.JobChannel {
-		task.Execute() //
-		fmt.Printf("worker ID:%v\n", ID)
-	}
-}
-
-// run 启动协程池
-func (p *Pool) run() {
-	//1、运行maxWorkNum个的worker(消费者)
-	for i := 0; i < p.MaxWorkNum; i++ {
-		go p.worker(i)
-	}
-	//2、从入口EntryChannel取出任务，放入内部的JobChannel
-	//（这部分可以实现更加复杂的逻辑，例如按照某种权重或规则取出任务，再放入JobChannel）
-	for task := range p.EntryChannel {
-		p.JobChannel <- task
-	}
-}
-
-func main() {
-	//创建任务
-	t := NewTask(func() error {
-		fmt.Println("运行任务")
-		return nil
-	})
-
-	//创建协程池
-	p := NewPool(4)
-
-	//向协程池写入30个任务
-	go func() {
-		for i := 0; i < 30; i++ {
-			p.EntryChannel <- t
-		}
-		defer close(p.JobChannel)
-		defer close(p.EntryChannel)
-
-	}()
-
-	//运行协程池的任务
-	p.run()
-
-}
-
-```
-
-## 实践：ORM工具（待补充）
-
-[好文](https://www.toutiao.com/article/7202803761163584056/?app=news_article&timestamp=1679489696&use_new_style=1&req_id=20230322205456D023EF99A27FDA2FA047&group_id=7202803761163584056&share_token=239F5B4A-3989-4055-B495-273EE8AC4185&tt_from=weixin&utm_source=weixin&utm_medium=toutiao_ios&utm_campaign=client_share&wxshare_count=1&source=m_redirect)
-
-
-
-## 实践：BT下载器（待补充）
-
-B站的[Go手写BT下载器](https://www.bilibili.com/video/BV13P4y1378F/?spm_id_from=333.999.0.0&vd_source=e46d9099be60057b5a16a45fac0d5248)
-
-### BT下载原理概述
-
-
-
-![image-20221121235542516](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221121235542%20.png)
-
-
-
-![image-20221121235610001](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221121235610%20.png)
-
-**问题1**
-
-tracker(一个中心化的站点)，存储着某个资源的peer（每个下载过资源的用户信息）的列表
-
-早期的BT网站站点，就是tracker，其中存储着众多的peer的列表
-
-**问题2**
-
-把一个资源分成若干个piece，每个peer下载不同的piece，最后组装成一个完整的资源，还要提供一个完整性校验的功能
-
-### Torrent File格式
-
-Torrent File（种子文件）的格式：
-
-![image-20221122000436548](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221122000436%20.png)
-
-Bencode协议，其规定了4中类型。Torrent File字段中的值都是这4种类型之一
-
-* string类型
-
-  ```
-  格式：len:xxxx
   
-  例如：10:helloworld
   ```
 
-* int类型
-
-  ```
-  格式：ixxxe
   
-  例如：i789e
-  ```
 
-* list类型
+* 反向代理
 
-  想象成切片
+  例如，服务器负载均衡、缓存、安全校验
 
-  ```
-  格式：
-  l 
-  	xxx 
-  e
+  反向代理的思路：
   
-  例如：
-  l
-  	i123e 
-  	i456e 
-  e
-  ```
-
-* dict类型
-
-  想象成map类型，值为多个key和value
-
-  ```
-  格式：
-  d
-   xxx xxx
-  e
+  * 接收客户端请求（对请求做一些处理）
+  * 通过一定的负载均衡算法，获取下游服务器地址
+  * 将收到的请求发送到下游服务器
+  * 接收下游服务器返回的响应（对响应做一些处理），返回给客户端
   
-  例如：
-  d
-   4:name 
-   	3:Tom
-   6:length 
-   	i789e
-  e
   
-  上面例子可以看成
-  {
-  	name:Tom,
-  	length:789
-  }
-  ```
-
-  下面是一个Torrent File的例子：
-
-  ![image-20221122002350870](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221122002351%20.png)
-
-### 实现思路
-
-![image-20221122000934600](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221122000934%20.png)
-
-1. 实现一个Bencode库，实现一个序列化（将Torrent File中的内容序列化为Go语言的结构）与反序列化（将Go语言的结构生成一个Torrent File）
-2. 实现一个torrent的解析库，用于解析经过Bencode库序列化后的Torrent File数据，比如：获取tracker和info字段
-3. 实现tracker模块，用来获取peer信息列表
-4. downloadd模块，用来下载每一个piece和校验每一个piece
-5. assembler模块，组装所有piece成完整的文件
-
-
-
-## 实践：工业级搜索引擎
-
-### 生成倒排索引
-
-转换效果：
-
-```text
-{1, "算法工程师", "腾讯"},
-{2, "算法工程师", "阿里"},
-{3, "后端工程师", "腾讯"},
-
- ===>
- 
-算法-->[1 2]
-工程师-->[1 2 3]
-腾讯-->[1 3]
-阿里-->[2]
-后端-->[3]
-```
-
-代码：
-
-```go
-package main
-
-import (
-	"fmt"
-	jieba "github.com/yanyiwu/gojieba"
-	"sync"
-)
-
-// Resume 简历结构体类型
-type Resume struct {
-	UserID            int    //简历ID
-	Position, Company string //职位、公司
-}
-
-// resumeCollection 所有简历
-var resumeCollection = []Resume{
-	{1, "算法工程师", "腾讯"},
-	{2, "算法工程师", "阿里"},
-	{3, "后端工程师", "腾讯"},
-}
-
-// InvertedIndex 存储倒排索引
-var InvertedIndex sync.Map
-
-// generatorInvertedIndex 用于生成的倒排索引
-// {1, "算法工程师", "腾讯"},
-// {2, "算法工程师", "阿里"},
-// {3, "后端工程师", "腾讯"},
-// ===>
-//算法-->[1 2]
-//工程师-->[1 2 3]
-//腾讯-->[1 3]
-//阿里-->[2]
-//后端-->[3]
-
-func generatorInvertedIndex() {
-	segger := jieba.NewJieba() //分词器
-	defer segger.Free()
-
-	for _, resume := range resumeCollection {
-		positionSlice := segger.Cut(resume.Position, true)
-		words := append(positionSlice, resume.Company)
-
-		for _, word := range words {
-			if value, ok := InvertedIndex.Load(word); !ok {
-				InvertedIndex.Store(word, []int{resume.UserID})
-
-			} else {
-				InvertedIndex.Store(word, append(value.([]int), resume.UserID)) //value是any类型，这里需要断言为[]int,才能使用append函数
-			}
-		}
-
-	}
-
-}
-
-func main() {
-	generatorInvertedIndex()
-	InvertedIndex.Range(func(key, value any) bool {
-		fmt.Printf("%v-->%v\n", key, value)
-		return true
-	})
-}
-```
-
-### 二进制知识补充
-
-**进制**
-
-常用的就是二进制、十进制、十六进制
-
-十进制：我们日常生活中采用的
-
-```text
-每一位由0-9表示，满10进一位
-
-在代码中，数字默认为十进制，
-例如：100
-```
-
-二进制：
-
-```text
-每一位仅有0、1两种表示，满2进一位
-
-在代码中，不使用二进制位，比如表示十进制数字1024，需要写10000000000，这会很长，所以我们通常用十六进制表示二进制（后面讲到）
-
-在计算机底层是使用二进制的
-```
-
-十六进制：
-
-```text
-每一位仅有0-9、A（10）、B（11）、C（12）、D（13）、E（14）、F（15）表示，满16进一位
-
-在代码中，0x开头代表是十六进制数字，
-例如：0x1B
-
-使用十六进制表示二进制会十分简洁，二进制、十六进制如何转换？
-
-二进制数 1111 ，对应十进制数8 4 2 1，刚好加起来是15。十六进制的一位的范围是0-15的，刚好是4个二进制位表示的范围。所以：
-二进制11111000 => 0xF8 (高四位都是1，对应15（即F）；低四位对应8)
-十六进制0x7F => 01111111（高四位0111，即4+2+1=7；低四位1111，即8+4+2+1=15即F）
-```
-
-
-
-**位运算**
-
-数字260、-260的二级制表示：
-
-![image-20230218155336327](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230218155336%20.png)
-
-Go语言中的位运算总结：
-
-![image-20230218155419810](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230218155420%20.png)
-
-`负数`：将正数的二进制每一位取反，然后在最后一位+1。也等价为，正数最后一个1及其往后的部分不变，往前的部分取反
-
-`&`（与）：对应位都为1，结果为1。否则为0
-
-`|`（或)：对应位只要一个为1，结果为1。否则为0
-
-`^`（异或）：位于两数之间，对应位不相同，结果为1.否则为0； 位于一个数之前，则按位取反
-
-`>>` (右移)：x>>y，表示x的二进制位右移y位，正数高位补0，负数高位补1。结果正数仍然为正数，负数仍然为负数
-
-`<<` (左移)：x<<y，表示x的二进制位右移y位,低位补0。
-
-
-
-位运算技巧：
-
-0x7F是十六进制数7F，转化为二进制是`01111111`（7个1）
-
-```
-&
-1、用于判断是否存在1
-将n&(二进制位全是1的数字),如果不等于0，即n的对应二进制位中存在1
-例子：n&0x7F!=0，代表数字n的低7位，存在1
-
-2、整理数字
-n&1结果保留n的对应位，n&0结果变为0
-例子：假设n是int64类型，即64位二进制位，则n&(111)的结果是，保留n的低3位，将n的高61位全部变为0
-```
-
-```
-|
-1、整理数字
-n|1结果变为1，n|0结果变保留n的对应位
-例子：假设n是int64类型，即64位二进制位，则n|(111)的结果是，保留n的高61位，将n的低3位全部变为1
-```
-
-
-
-### 更新索引
-
-倒排索引的key是文本，value是一个切片，切片的子元素是数字（int64）
-
-int64用8个字节表示一个数字，对于绝大多数索引来说浪费空间，可以通过位运算来压缩空间
-
-
-
-**变长int**
-
-通过位运算压缩int64，可极大的节省空间
-
-规则如下图展示的，260这个数字仅用2个字节就可以存储
-
-![image-20230218155918293](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230218155918%20.png)
-
-```go
-package main
-
-import (
-	"bytes"
-	"math"
-	"strings"
-)
-
-// binaryFormat 将十进制数字（int64）转换为对应的64位二进制形式
-func binaryFormat(n int64) string {
-	c := int64(math.Pow(2, 31))
-	var res strings.Builder
-	for i := 0; i < 32; i++ {
-		if n&c != 0 {
-			res.WriteString("1")
-		} else {
-			res.WriteString("0")
-		}
-		c >>= 1
-	}
-	return res.String()
-}
-
-// encodeVint 将int64类型的数字，按照如下规则编码，输出编码后的数字（64位的int64将做多编码为8个uint8数字,byte是uint8的别名）
-// 规则：依次取出低7位，如果剩余高位上还有1，则把第8位置为1；否则 第8位置为0，退出循环
-func encodeVint(n int64) []byte {
-	buffer := bytes.Buffer{}
-	for n&^0x7F != 0 { //高位存在1
-		buffer.WriteByte(byte((uint(n) & 0x7F) | 0x80))
-		n >>= 7
-	}
-
-	buffer.WriteByte(byte(n)) //高位不存在1的，这里需要写入下
-	return buffer.Bytes()
-}
-
-func decodeVint(bs []byte) int {
-	var n int = 0
-	shift := 0
-	i := 0
-	for ; (bs[i]&0x80) != 0 && i < 8; i++ {
-		n |= int(bs[i]) & 0x7F << shift
-		shift += 7
-	}
-	//第8位是0的，在这里写入
-	n |= int(bs[i]) & 0x7F << shift
-	return n
-}
-
-```
-
-
-
-**集合求交**
-
-
-
-跳表
-
-![image-20230226011617060](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230226011617%20.png)
-
-```go
-```
-
-
-
-
-
-
+  
+  
 
 ## 代码测试（待补充）
 
@@ -10005,6 +10071,50 @@ peekfunc
 
 web
 ```
+
+### 如何读Go源码
+
+if语句不读，因为有if代表这句可能执行/不执行
+
+![image-20230513231905954](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513231906%20.png)
+
+有一种if除外，Go语言中if内部可以执行函数，只有后面的err才是进行判断的地方。这种还是要读
+
+![image-20230513232029575](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513232030%20.png)
+
+变量声明不要读
+
+![image-20230513234612532](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234613%20.png)
+
+重点读必会执行的函数调用，记住几个快捷键
+
+* command+左键点击函数，跳转函数定义
+
+* command+光标悬浮在变量/函数上，显示其类型定义
+
+* option+command+向左/向右，上一个/下一个
+
+  
+
+如果函数是结构体实现的接口方法，如下：
+
+![image-20230513232842188](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513232842%20.png)
+
+则会进入接口定义的函数签名处。点击前面的图标
+
+![image-20230513233733050](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513233733%20.png)
+
+提示所有实现该接口的类型，我们要在其中找到实例rt是那个类型。这里rt是属于红框中的类型
+
+![image-20230513234926050](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234926%20.png)
+
+如何找到属于哪个类型？这个比较难找，将鼠标放在rt变量上，显示其是接口类型RoundTripper
+
+![image-20230513234029666](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234030%20.png)
+
+所以，我们必须一路向上层追踪变量实例化的地方，才能知道该变量的具体类型
+
+![image-20230513235450426](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513235451%20.png)
 
 ## 协程排查工具trace
 

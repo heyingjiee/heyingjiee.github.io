@@ -1096,6 +1096,438 @@ a===b //将左右变量都转化为布尔值
 
   这里注意下，`parseInt('123a')`的结果是`123`，当你不确定数据的具体形式时，这会带来很大的潜在问题。所以转换数字使用`Number()`，`Number('123a')`会直接返回`NaN`
 
+## 对象(待完成)
+
+### 数据属性
+
+我们最为常见的就是对象的数据属性，键值对的形式。key必须是字符串或symbol，value可以是任何类型。
+
+**赋值**
+
+字面量赋值(常使用)
+
+如果通过**中括号**语法传入的key不会被直接转化字符串
+
+```js
+let b="爱好"
+
+let obj= {
+    //1、key不包含空格，不以数字开头，也不包含特殊字符（允许使用 $ 和 _），默认转化为字符串。所以，一般省略引号
+    name: "jack",
+
+    //2、key不满足上述要求，这种必须用引号印起来
+    "l-name": "tom",
+
+    //3、默认key是字符串，如果希望把key当做是变量，使用方括号 
+    [b]:"tony"
+  
+  	//4、使用模板字符串，必须用中括号
+  	[`${b}`]:3
+  
+
+}
+console.log(obj) //{ name: 'jack', 'l-name': 'tom', '爱好': 'tony' }
+```
+
+**点方法**
+
+点后跟着的是key值（与字面量相同，key默认转化为字符串类型）
+
+```js
+let obj={}
+
+//1、设置：key是字符串a，value是数字1
+obj.a=1
+
+//2、读取：key为字符串a的值
+console.log(obj.a) //1
+
+//3、删除
+delete obj.a
+```
+
+**方括号**
+
+中括号中是key值（并不会像字面量中默认转化为字符串）
+
+```js
+let obj={}
+
+
+//1、设置：key是字符串a，value是数字1
+obj["a"]=1
+
+
+//2、读取：key为字符串a的值
+console.log(obj["a"]) //1
+
+
+//3、删除
+delete obj["a"]
+```
+
+补充提示
+
+```js
+let b="name"
+obj[b]=1  //设置： key是字符串name，value是数字1
+```
+
+**简写**
+
+```js
+let obj={
+  //1、key和value同名，可简写
+	name:name,
+  //简写
+  name
+  
+  //2、value是函数类型，可简写
+  getSome:function(){}
+	//简写
+	getSome(){}
+}
+```
+
+### 访问器属性
+
+也就是对象的getter与setter用法
+
+在对象字面量中，它们用 `get` 和 `set` 表示
+
+属性的setter、getter，不必全部存在
+
+**字面量设置访问器属性**
+
+```js
+let obj={
+    name:"will",
+    subName:"smith",
+  
+    // 可以看做是获取fullName属性的值（必须return一个值）
+    get fullName(){
+        return `${this.name} ${this.subName}`
+    },
+    // 可以看做是给fullName属性设置值（参数就是传入的新值）
+    set fullName(value){
+        this.name=value.split(" ")[0]
+        this.name=value.split(" ")[1]
+    }
+}
+
+//自动调用get
+console.log(obj.fullName)//will smith
+
+//自动调用set
+obj.fullName="tom cruise"
+console.log(obj.name,obj.subName)//cruise smith
+
+```
+
+用途：访问器属性中的getter可以是将其他数据属性运算后的结果的，setter可以在赋值之前做一些限制操作，符合才给数据属性赋
+
+### 属性描述符（待补充）
+
+对象的每一个属性都存在一些隐形的描述符，来描述该属性的特性。我们通过字面量方式建立的对象，所有描述符属性都是true，我们也可以使用defineProperty来手动指定
+
+**数据属性的属性描述符**
+
+（待补充）
+
+**访问器属性的属性描述符**
+
+以上一节的fullName属性为例子，其属性描述符为
+
+```
+set函数
+get函数
+enumerable:true
+configurable:true
+```
+
+手动指定属性描述符
+
+```JS
+let obj={
+    name:"will",
+    subName:"smith",
+
+}
+
+Object.defineProperty(obj,"fullName",{
+    get (){
+        return `${this.name} ${this.subName}`
+    },
+    set (value){
+        this.name=value.split(" ")[0]
+        this.name=value.split(" ")[1]
+    }
+
+})
+
+console.log(obj.fullName)//will smith
+
+obj.fullName="tom cruise"
+console.log(obj.name,obj.subName)//cruise smith
+```
+
+
+
+### 原型链
+
+记住一点，原型链是对象的
+
+**1、[[Prototype]]**
+
+每个对象中都有一个内部的而且是隐藏的属性`[[Prototype]]`,
+
+* 这个属性的值只能是null或者另一个对象的引用
+* 一个对象只能有一个 `[[Prototype]]`属性
+
+如果我们访问对象A中不存在的属性（方法），就会去`[[Prototype]]`属性指向的对象B中查找，如果找不到就会去对象B的`[[Prototype]]`指向的对象中查找，直到找到该属性（方法），或者找到`[[Prototype]]`为null的对象作为终点。这条查找的链条叫做原型链
+
+我们也可以说是对象A继承了原型链上其他对象的属性、方法
+
+**2、\_\_proto\_\_**
+
+因为Prototype这个属性我们不能直接访问到，所以需要借助一个访问器属性（getter/setter）去设置Prototype属性。`__proto__`的存在是出于历史的原因，现代编程语言建议我们应该使用函数 `Object.getPrototypeOf/Object.setPrototypeOf`
+
+```go
+let animal={
+    sleep:"动物睡觉"
+}
+
+let dog={
+    say:"汪汪",
+    __proto__:animal
+}
+console.log(dog.sleep) //动物睡觉
+```
+
+如果dog属性存在sleep，就不会再沿着原型链查找了
+
+```js
+let animal={
+    sleep:"动物睡觉"
+}
+
+let dog={
+    say:"汪汪",
+    sleep: "狗睡觉",
+    __proto__:animal
+}
+console.log(dog.sleep) //狗睡觉
+```
+
+**3、原型链中的this**
+
+可以参照后面的章节【this的指向】，属于其中的【规则3】的情况，`对象.函数（）`其中this指向的都是调用他的对象
+
+**形式1：**
+
+`dog.getThis()`，虽然getThis方法是在原型链上的animal中找到的，但是由于是dog调用的，所有其this指向dog
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    getThis(){
+        console.log(this)
+        this.sleep='animal中修改'
+    }
+}
+
+let dog={
+    sleep: "狗睡觉",
+    __proto__:animal
+}
+
+dog.getThis() //{ sleep: '狗睡觉' }
+
+//下面能看出，getThis修改的是dog中的sleep
+console.log(dog.sleep) //animal中修改
+console.log(animal.sleep) //动物睡觉
+```
+
+**形式2**
+
+changeSleep中的this指向的应该是dog，相当于在dog中新增了sleep属性
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    upgradeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    __proto__:animal
+}
+
+dog.upgradeSleep()
+console.log(animal.sleep) //动物睡觉
+console.log(dog.sleep) //升级版睡眠
+```
+
+**形式3**
+
+dog和cat调用eat方法，虽然也是在animal中找到，并且其中的this指向dog和cat，但是this.stomach.push并不是直接新建一个stomach属性，而是找到animal中的stomach在push
+
+```js
+let animal={
+    stomach:[],
+    eat(food) {
+        this.stomach.push(food);
+    }
+}
+
+let dog={
+    __proto__:animal
+}
+let cat={
+    __proto__:animal
+}
+
+dog.eat("苹果")
+console.log(animal.stomach) //[ '苹果' ]
+console.log(dog.stomach) //[ '苹果' ]
+```
+
+如何解决dog、cat共用一个stomach。参照前两种方式
+
+```js
+let animal={
+    stomach:[],
+    eat(food) {
+        this.stomach.push(food);
+    }
+}
+
+let dog={
+  	stomach:[],
+    __proto__:animal
+}
+let cat={
+  	stomach:[],
+    __proto__:animal
+}
+
+dog.eat("苹果")
+console.log(animal.stomach) //[ '苹果' ]
+console.log(dog.stomach) //[ '苹果' ]
+```
+
+
+
+**4、for in 遍历**
+
+`for..in` 循环也会遍历到原型链上其他对象的属性（前提是该属性的描述符enumerable必须是true）
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    changeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    say:"汪汪",
+    __proto__:animal
+}
+for(let key in dog){
+    console.log(key)
+}
+// say
+// sleep
+// changeSleep
+```
+
+如果不希望遍历其他对象的属性，可以使用hasOwnProperty
+
+```js
+let animal={
+    sleep:"动物睡觉",
+    changeSleep(){
+        this.sleep="升级版睡眠"
+    }
+}
+
+let dog={
+    say:"汪汪",
+    __proto__:animal
+}
+for(let key in dog){
+    if(dog.hasOwnProperty(key)){
+        console.log(key)
+    }
+}
+// say
+```
+
+**其他对象方法**
+
+除for in外，其他的方法都是只能获取对象自身的属性
+
+例如
+
+```
+Object.keys 和 Object.values
+```
+
+**5、new一个函数**
+
+new 函数会返回一个对象，这对象的`[[Prototype]]`属性（原型链）上会自动添加一个对象
+
+详情见【函数】-【new关键字】章节
+
+### 静态方法
+
+| 方法           | 描述                                                         |
+| -------------- | ------------------------------------------------------------ |
+| keys()         | 返回所有key组成的数组                                        |
+| values()       | 返回所有value组成的数组                                      |
+| entries()      | 返回所有[key,value]组成的数组                                |
+| assign         | 合并对象，返回合并后新的对象                                 |
+| hasOwnProperty | 判断是否存在某属性，返回布尔值                               |
+| freeze         | **冻结**一个对象。该对象不能被修改，即不能添加新的属性，不能删除已有属性，不能修改属性的值。此外，冻结一个对象后该对象的原型也不能被修改 |
+
+```js
+let obj={name:'jack',age:12}
+Object.keys(obj) //['name', 'age']
+Object.values(obj) //['jack', 12]
+Object.entries(obj) //[['name':'jack'], ['age',12]]
+```
+
+assign
+
+```js
+let res=Object.assign({},{name:"jack"},{age:18}) 
+console.log(res)//{name: 'jack', age: 18}
+```
+
+hasOwnProperty 
+
+```js
+let obj={
+    name:'jack',
+    age:19
+}
+console.log(obj.hasOwnProperty('name')) //true    //注意参数带引号
+```
+
+freeze
+
+```js
+const obj = {name:'jack'};
+
+Object.freeze(obj);
+
+obj.name = 33; // TypeError:Cannot assign to read only property 'name' of object
+```
+
+
+
 ## 函数
 
 ### 函数的声明
@@ -1373,7 +1805,7 @@ show(1,2,3)// 输出1,2,3
 
 ### new关键字
 
-用new关键字调用函数会返回一个对象，如果一个函数使用new调用，我们称为构造函数
+使用new调用函数，我们称为这个函数为构造函数
 
 注意：
 
@@ -1446,6 +1878,107 @@ Student.prototype.getAge =function (){ //一定要注意，这里不能用箭头
 let stu1=new Student('jack',18) 
 console.log('stu1 --> ',stu1.getName(),stu1.getAge()) //stu1 -->  jack 18
 ```
+
+**函数默认的prototype属性**
+
+只有函数才有prototype属性（Class是个语法糖，本质上也是个函数，所以Class也有prototype属性），其值默认为`{constructor: ƒ}`，即key是constructor，value就是函数本身（注意，prototype就是一个属性而已，不是对象的`[[prototype]]`）
+
+```js
+let f=function(){
+    let name='jack'
+}
+console.log(f.prototype);  //{constructor: ƒ}
+```
+
+**new function的原理**
+
+使用new function创建新对象时，就会自动调用该对象的`__proto__`访问器属性，用来设置对象的`[[prototype]]`属性为函数的prototype属性，即`{constructor: ƒ}`
+
+例子：
+
+```js
+/* 
+	 默认的prototype
+	 即：Rabbit.prototype = { constructor: Rabbit };
+*/
+function Rabbit() {}
+
+
+/*
+	rebbit的`[[prototype]]`是{ constructor: Rabbit }
+*/
+let rebbit=new Rabbit()
+
+
+/*
+	对象rabbit没有constructor方法，但是其原型链上有{ constructor: Rabbit }对象
+*/
+console.log(rabbit.constructor == Rabbit)//true
+```
+
+**自定义prototype**
+
+prototype就是一个普通属性，所以是可以覆盖的。如果被覆盖就不是默认指向`{constructor:Rabbit}`了
+
+```js
+function Rabbit() {}
+Rabbit.prototype={
+  name:"tom"
+}
+```
+
+所以，为了不覆盖对象的constructor属性，我们常用的方式是添加新的属性
+
+这样在new function时，创建的对象可以在其原型链上（`[[prototype]]`）找到name属性
+
+```js
+function Rabbit() {}
+Rabbit.prototype.name="tom"
+
+let rabbit=new Rabbit
+console.log(rabbit.name); //tom
+```
+
+**回顾下JS的内建函数**
+
+以Object为例子
+
+**函数Object的prototype属性**
+
+```js
+{ 
+  //1、构造函数
+  constructor:Object,
+   
+  //2 、其他函数  
+  toString() {
+  	//toString的具体实现
+	}
+  
+ 	//3、其上一级原型对象就是null
+  [[prototype]]:null
+}
+```
+
+**o=new Object()**
+
+新对象的上一级原型对象就是上面的这个对象，所以能直接使用原型上的toString方法
+
+```js
+o.toString()
+```
+
+
+
+**总结**
+
+将函数A创建的对象，按照原型链一步一步捋到null
+
+![image-20220701000233640](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220701000233%20.png)
+
+或者看这个实际的图，我们应该知道JS所有的内建方法，其实都在其对应函数的prototype对象里。比如，数组的slice方法，就是在Array.prototype里
+
+![image-20220630233506414](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220630233506%20.png)
 
 
 
@@ -1548,547 +2081,6 @@ function ab(){
    js1.show()//输出 执行1.js中的show函数	
    js1.ab()//输出 执行1.js中的ab函数
 ```
-
-## 对象(待完成)
-
-### 数据属性
-
-我们最为常见的就是对象的数据属性，键值对的形式。key必须是字符串或symbol，value可以是任何类型。
-
-**赋值**
-
-字面量赋值(常使用)
-
-如果通过**中括号**语法传入的key不会被直接转化字符串
-
-```js
-let b="爱好"
-
-let obj= {
-    //1、key不包含空格，不以数字开头，也不包含特殊字符（允许使用 $ 和 _），默认转化为字符串。所以，一般省略引号
-    name: "jack",
-
-    //2、key不满足上述要求，这种必须用引号印起来
-    "l-name": "tom",
-
-    //3、默认key是字符串，如果希望把key当做是变量，使用方括号 
-    [b]:"tony"
-  
-  	//4、使用模板字符串，必须用中括号
-  	[`${b}`]:3
-  
-
-}
-console.log(obj) //{ name: 'jack', 'l-name': 'tom', '爱好': 'tony' }
-```
-
-**点方法**
-
-点后跟着的是key值（与字面量相同，key默认转化为字符串类型）
-
-```js
-let obj={}
-
-//1、设置：key是字符串a，value是数字1
-obj.a=1
-
-//2、读取：key为字符串a的值
-console.log(obj.a) //1
-
-//3、删除
-delete obj.a
-```
-
-**方括号**
-
-中括号中是key值（并不会像字面量中默认转化为字符串）
-
-```js
-let obj={}
-
-
-//1、设置：key是字符串a，value是数字1
-obj["a"]=1
-
-
-//2、读取：key为字符串a的值
-console.log(obj["a"]) //1
-
-
-//3、删除
-delete obj["a"]
-```
-
-补充提示
-
-```js
-let b="name"
-obj[b]=1  //设置： key是字符串name，value是数字1
-```
-
-**简写**
-
-```js
-let obj={
-  //1、key和value同名，可简写
-	name:name,
-  //简写
-  name
-  
-  //2、value是函数类型，可简写
-  getSome:function(){}
-	//简写
-	getSome(){}
-}
-```
-
-### 访问器属性
-
-也就是对象的getter与setter用法
-
-在对象字面量中，它们用 `get` 和 `set` 表示
-
-属性的setter、getter，不必全部存在
-
-**字面量设置访问器属性**
-
-```js
-let obj={
-    name:"will",
-    subName:"smith",
-  
-    // 可以看做是获取fullName属性的值（必须return一个值）
-    get fullName(){
-        return `${this.name} ${this.subName}`
-    },
-    // 可以看做是给fullName属性设置值（参数就是传入的新值）
-    set fullName(value){
-        this.name=value.split(" ")[0]
-        this.name=value.split(" ")[1]
-    }
-}
-
-//自动调用get
-console.log(obj.fullName)//will smith
-
-//自动调用set
-obj.fullName="tom cruise"
-console.log(obj.name,obj.subName)//cruise smith
-
-```
-
-用途：访问器属性中的getter可以是将其他数据属性运算后的结果的，setter可以在赋值之前做一些限制操作，符合才给数据属性赋
-
-### 属性描述符（待补充）
-
-对象的每一个属性都存在一些隐形的描述符，来描述该属性的特性。我们通过字面量方式建立的对象，所有描述符属性都是true，我们也可以使用defineProperty来手动指定
-
-**数据属性的属性描述符**
-
-（待补充）
-
-**访问器属性的属性描述符**
-
-以上一节的fullName属性为例子，其属性描述符为
-
-```
-set函数
-get函数
-enumerable:true
-configurable:true
-```
-
-手动指定属性描述符
-
-```JS
-let obj={
-    name:"will",
-    subName:"smith",
-
-}
-
-Object.defineProperty(obj,"fullName",{
-    get (){
-        return `${this.name} ${this.subName}`
-    },
-    set (value){
-        this.name=value.split(" ")[0]
-        this.name=value.split(" ")[1]
-    }
-
-})
-
-console.log(obj.fullName)//will smith
-
-obj.fullName="tom cruise"
-console.log(obj.name,obj.subName)//cruise smith
-```
-
-
-
-### 对象的原型
-
-**1、Prototype**
-
-每个对象中都有一个内部的而且是隐藏的属性`[[Prototype]]`,
-
-* 这个属性的值只能是null或者另一个对象的引用
-* 一个对象只能有一个 `[[Prototype]]`属性
-
-如果我们访问对象A中不存在的属性（方法），就会去`[[Prototype]]`属性指向的对象B中查找，如果找不到就会去对象B的`[[Prototype]]`指向的对象中查找，直到找到该属性（方法），或者找到`[[Prototype]]`为null的对象作为终点。这条查找的链条叫做原型链
-
-我们也可以说是对象A继承了原型链上其他对象的属性、方法
-
-**2、\_\_proto\_\_**
-
-因为Prototype这个属性我们不能直接访问到，所以需要借助一个访问器属性（getter/setter）去设置Prototype属性。`__proto__`的存在是出于历史的原因，现代编程语言建议我们应该使用函数 `Object.getPrototypeOf/Object.setPrototypeOf`
-
-```go
-let animal={
-    sleep:"动物睡觉"
-}
-
-let dog={
-    say:"汪汪",
-    __proto__:animal
-}
-console.log(dog.sleep) //动物睡觉
-```
-
-如果dog属性存在sleep，就不会再沿着原型链查找了
-
-```js
-let animal={
-    sleep:"动物睡觉"
-}
-
-let dog={
-    say:"汪汪",
-    sleep: "狗睡觉",
-    __proto__:animal
-}
-console.log(dog.sleep) //狗睡觉
-```
-
-**3、原型链中的this**
-
-可以参照后面的章节【this的指向】，属于其中的【规则3】的情况，`对象.函数（）`其中this指向的都是调用他的对象
-
-**形式1：**
-
-`dog.changeSleep()`，虽然dog中没有changeSleep方法，但是它可以查找到原型链上的animal中有这个方法，这时changeSleep中的this指向的应该是dog，相当于修改了dog的sleep属性
-
-```js
-let animal={
-    sleep:"动物睡觉",
-    upgradeSleep(){
-        this.sleep="升级版睡眠"
-    }
-}
-
-let dog={
-    sleep: "狗睡觉",
-    __proto__:animal
-}
-
-dog.upgradeSleep()
-console.log(animal.sleep) //动物睡觉
-console.log(dog.sleep) //升级版睡眠
-```
-
-**形式2**
-
-changeSleep中的this指向的应该是dog，相当于在dog中新增了sleep属性
-
-```js
-let animal={
-    sleep:"动物睡觉",
-    upgradeSleep(){
-        this.sleep="升级版睡眠"
-    }
-}
-
-let dog={
-    __proto__:animal
-}
-
-dog.upgradeSleep()
-console.log(animal.sleep) //动物睡觉
-console.log(dog.sleep) //升级版睡眠
-```
-
-**形式3**
-
-dog和cat调用eat方法，虽然也是在animal中找到，并且其中的this指向dog和cat，但是this.stomach.push并不是直接新建一个stomach属性，而是找到animal中的stomach在push
-
-```js
-let animal={
-    stomach:[],
-    eat(food) {
-        this.stomach.push(food);
-    }
-}
-
-let dog={
-    __proto__:animal
-}
-let cat={
-    __proto__:animal
-}
-
-dog.eat("苹果")
-console.log(animal.stomach) //[ '苹果' ]
-console.log(dog.stomach) //[ '苹果' ]
-```
-
-如何解决dog、cat共用一个stomach。参照前两种方式
-
-```js
-let animal={
-    stomach:[],
-    eat(food) {
-        this.stomach.push(food);
-    }
-}
-
-let dog={
-  	stomach:[],
-    __proto__:animal
-}
-let cat={
-  	stomach:[],
-    __proto__:animal
-}
-
-dog.eat("苹果")
-console.log(animal.stomach) //[ '苹果' ]
-console.log(dog.stomach) //[ '苹果' ]
-```
-
-
-
-**4、for in 遍历**
-
-`for..in` 循环也会遍历到原型链上其他对象的属性（前提是该属性的描述符enumerable必须是true）
-
-```js
-let animal={
-    sleep:"动物睡觉",
-    changeSleep(){
-        this.sleep="升级版睡眠"
-    }
-}
-
-let dog={
-    say:"汪汪",
-    __proto__:animal
-}
-for(let key in dog){
-    console.log(key)
-}
-// say
-// sleep
-// changeSleep
-```
-
-如果不希望遍历其他对象的属性，可以使用hasOwnProperty
-
-```js
-let animal={
-    sleep:"动物睡觉",
-    changeSleep(){
-        this.sleep="升级版睡眠"
-    }
-}
-
-let dog={
-    say:"汪汪",
-    __proto__:animal
-}
-for(let key in dog){
-    if(dog.hasOwnProperty(key)){
-        console.log(key)
-    }
-}
-// say
-```
-
-**其他对象方法**
-
-除for in外，其他的方法都是只能获取对象自身的属性
-
-例如
-
-```
-Object.keys 和 Object.values
-```
-
-**5、new一个函数**
-
-【函数】-【new关键字】这部分，已经介绍了一些内容，这里继续补充原型相关的内容
-
-**函数的prototype属性**
-
-函数的prototype属性（这就是一个数据属性，是可以直接访问的，不是`[[prototype]]`），属性值是对象，使用new关键字创建新对象时，就会自动调用`__proto__`访问器属性，进而设置新对象的`[[prototype]]`属性
-
-还有一点需要注意，函数的prototype才有这些功能，对象请使用`__proto__`
-
-```js
-let animal = {
-    eats: true
-};
-
-function Dog(name) {
-    this.name = name;
-}
-
-Dog.prototype = animal;
-
-let wang = new Dog("旺财"); //  wang.__proto__ == animal
-
-console.log( wang.eats ); // true
-```
-
-> 注意：
-> `F.prototype` 属性仅在 `new F` 被调用时使用，它为新对象的 `[[Prototype]]` 赋值。
->
-> 如果在创建之后，`F.prototype` 属性有了变化（`F.prototype = <another object>`），那么通过 `new F` 创建的新对象也将随之拥有新的对象作为 `[[Prototype]]`，但已经存在的对象将保持旧有的值
-
-**函数默认的prototype属性**
-
-默认的 `"prototype"` 是一个对象，这个对象只有一个属性 `constructor` ，值是自己
-
-例如：
-
-```js
-function Rabbit() {}
-
-/* 默认 prototype
-Rabbit.prototype = { constructor: Rabbit };
-*/
-```
-
-所以，也就是说，new 函数创建出来的实例化对象rebbit的`[[prototype]]`就是对象 { constructor: Rabbit }
-
-所以，函数Rabbit的prototype属性=新对象rabbit的`[[prototype]]`/\_\_proto\_\_/原型 = { constructor: Rabbit }
-
-```js
-function Rabbit() {}
-
-rabbit=new Rabbit()
-
-//函数的默认prototype属性为{ constructor: Rabbit }
-console.log(Rabbit.prototype.constructor == Rabbit)//true
-
-//rabbit没有constructor方法，但是其原型链上有{ constructor: Rabbit }对象
-console.log(rabbit.constructor == Rabbit)//true
-```
-
-**自定义prototype**
-
-prototype就是一个属性，所以是可以覆盖的。如果被覆盖就不是默认指向`{constructor:Rabbit}`了
-
-```js
-function Rabbit() {}
-Rabbit.prototype={
-  name:"tom"
-}
-```
-
-所以，为了破坏原本原型链上的对象，我们常用的方式是直接向对象`{constructor:Rabbit}`添加新的属性
-
-```js
-function Rabbit() {}
-Rabbit.prototype.name="tom"
-```
-
-**回顾下JS的内建函数**
-
-以Object为例子
-
-**函数Object的prototype属性**
-
-```js
-{ 
-  //1、构造函数
-  constructor:Object,
-   
-  //2 、其他函数  
-  toString() {
-  	//toString的具体实现
-	}
-  
- 	//3、其上一级原型对象就是null
-  [[prototype]]:null
-}
-```
-
-**o=new Object()**
-
-新对象的上一级原型对象就是上面的这个对象，所以能直接使用原型上的toString方法
-
-```js
-o.toString()
-```
-
-
-
-**总结**
-
-将函数A创建的对象，按照原型链一步一步捋到null
-
-![image-20220701000233640](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220701000233%20.png)
-
-或者看这个实际的图，我们应该知道JS所有的内建方法，其实都在其对应函数的prototype对象里。比如，数组的slice方法，就是在Array.prototype里
-
-![image-20220630233506414](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20220630233506%20.png)
-
-### 静态方法
-
-| 方法           | 描述                                                         |
-| -------------- | ------------------------------------------------------------ |
-| keys()         | 返回所有key组成的数组                                        |
-| values()       | 返回所有value组成的数组                                      |
-| entries()      | 返回所有[key,value]组成的数组                                |
-| assign         | 合并对象，返回合并后新的对象                                 |
-| hasOwnProperty | 判断是否存在某属性，返回布尔值                               |
-| freeze         | **冻结**一个对象。该对象不能被修改，即不能添加新的属性，不能删除已有属性，不能修改属性的值。此外，冻结一个对象后该对象的原型也不能被修改 |
-
-```js
-let obj={name:'jack',age:12}
-Object.keys(obj) //['name', 'age']
-Object.values(obj) //['jack', 12]
-Object.entries(obj) //[['name':'jack'], ['age',12]]
-```
-
-assign
-
-```js
-let res=Object.assign({},{name:"jack"},{age:18}) 
-console.log(res)//{name: 'jack', age: 18}
-```
-
-hasOwnProperty 
-
-```js
-let obj={
-    name:'jack',
-    age:19
-}
-console.log(obj.hasOwnProperty('name')) //true    //注意参数带引号
-```
-
-freeze
-
-```js
-const obj = {name:'jack'};
-
-Object.freeze(obj);
-
-obj.name = 33; // TypeError:Cannot assign to read only property 'name' of object
-```
-
-
 
 ## 数组
 
@@ -2241,7 +2233,7 @@ console.log(Array.from(obj)) // [ 'tom', 'jake' ]
 
 ### 操作数组元素——>增删
 
-pop、push、shift、unshift（略）
+略：pop、push、shift（队首出队）、unshift（队尾出队）
 
 **splice（index[,howmany][,item1,item2,...itemX）**
 
@@ -3410,18 +3402,94 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
 
 
 
-| 规则编号 | 规则                    | 当前作用域的上下文（this指向）                               |
+**前置知识**
+
+* 在一个JS文件中定义函数，命名函数会被挂载到window上（匿名函数不会挂载到window上）
+
+  ```js
+  function f1(){
+  	//xxxx
+  }
+  ```
+
+  ESM是一种标准化的JavaScript模块化方式
+
+  不同模块下的 `window` 是独立的，每个模块都有自己的全局作用域，同名函数不会相互污染
+
+  早期没有ESM时，使用匿名的立即执行函数，也可以做到避免全局污染。这是因为匿名函数不会挂载在window上的
+
+  ```js
+  (function() {
+    var x = 1;
+    var y = 2;
+  
+    console.log(x + y); // 输出 3
+  })();
+  
+  console.log(x + y); // 抛出错误，因为 x 和 y 不在全局作用域中
+  ```
+
+  
+
+  
+
+  调用函数实际上是由window调用，下面这两种形式是等价的
+
+  ```js
+  f1() 
+  
+  //上面是最常见的写法，实际上应该是这么写
+  window.f1()
+  ```
+
+  所以，上面两种形式调用函数，函数this都是window的
+
+  
+
+* 块级作用域
+
+  函数的花括号内部属于块级作用域
+
+  ```js
+  function xx{
+    
+  }
+  ```
+
+  函数入参、对象的花括号都不是块级作用域，块级作用域入参是回调函数
+
+  ```js
+  f1({
+    name:'tom',
+    age:20,
+    callback1(){
+      //回调函数this取决于谁调用了函数f1。例如window对象调用了函数A，A又调用B，B又调用了f1,则f1中的this就是window对象。即向上寻找调用关系，直到找到`最终调用者`（`最终调用者`不是函数，是对象）
+      
+    },
+    callback2:()=>{
+      //这里使用箭头函数，this指向函数所在上下文，上下文是f1做在作用域的this指向。即查看f1做在作用域就能知道this指向了，不用再一直向上找了。所以分析this指向也更加简单清晰
+  	}
+  })
+  ```
+
+  函数f1的入参是对象，对象中有两个回调函数，因为对象的花括号不是块级作用域，所以this不会指向这个入参对象
+
+
+
+**this指向总结的表格**
+
+| 规则编号 | 规则                    | 当前作用域的上下文（函数体中的thisthis指向）                 |
 | -------- | ----------------------- | ------------------------------------------------------------ |
-| 规则1    | 函数（）                | window                                                       |
-| 规则2    | new 函数（）            | 秘密创建出的那个对象                                         |
-| 规则3    | 对象.函数（）           | 该对象                                                       |
+| 规则1    | 函数名（）              | window                                                       |
+| 规则2    | new 函数名（）          | 秘密创建出的那个对象                                         |
+| 规则3    | 对象.函数名（）         | 该对象                                                       |
 | 规则4    | 数组[索引]（）          | 该数组                                                       |
 | 规则5    | 定时器                  | window                                                       |
 | 规则6    | Dom事件处理函数         | window                                                       |
-| 规则7    | IIFE                    | window                                                       |
+| 规则7    | IIFE立即执行函数        | window                                                       |
 | 规则8    | call、apply、bind       | 可指定this指向                                               |
 | 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文（注意前面提到的所以函数，都不是箭头函数） |
-| 规则10   | class                   | 指向的是新创建出来的对象（与new 函数相同）                   |
+| 规则10   | class中的函数           | 指向的是实例化的对象（与new 函数相同）                       |
 | 规则11   | 模块中                  | undefined                                                    |
 
 注意：
@@ -3481,6 +3549,32 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
   //输出 120   window对象
   ```
   
+* 解构对象
+
+  例子中解构出来的函数getThis的最终调用者是window
+
+  ```js
+  let obj={
+    getThis(){
+      console.log(this)
+    }
+  }
+  const {getThis}=obj
+  getThis() //window
+  ```
+  
+  因为函数getThis直接被window调用了，箭头函数的当前作用域就是window
+  
+  ```js
+  let obj={
+     getThis:()=>{
+       console.log(this)
+     }
+  }
+  const {getThis}=obj
+  getThis() //window
+  ```
+  
 * 定时器
 
   定时器函数比较特殊，他会把函数内部的this重写为window【在node环境下，会重写成 Timer对象】
@@ -3528,6 +3622,77 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
   console.log(lesson.show()()) 
   //输出 hedaodao
   ```
+  
+* 入参是回调函数
+
+  块级作用域
+  
+  ```js
+  function xx{
+    
+  }
+  ```
+  
+  函数f1的入参是对象，对象中有两个回调函数，因为对象的花括号不是块级作用域，所以this不会指向这个入参对象
+  
+  ```js
+  f1({
+    name:'tom',
+    age:20,
+    callback1(){
+      //回调函数this取决于谁调用了函数f1
+    },
+    callback2:()=>{
+      //这里使用箭头函数，this指向函数所在上下文，上下文是f1做在作用域的this指向
+  	}
+  })
+  ```
+  
+  一个完整的例子
+  
+  ```js
+  function Page(params) {
+    const { onLoad } = params;
+    if (onLoad instanceof Function) {
+      //onLoad的this取决于谁调用了Page。后面可以看到Page是直接调用的，this指向window
+      //call强制指定this为{name:'jack'}
+      onLoad.call({name:'jack'})
+    }
+  }
+  
+  function test(params) {
+    const { success, fail } = params;
+    if (success) {
+      success({ msg: "success" });
+    }
+    if (fail instanceof Function) {
+      fail();
+    }
+  }
+  
+  
+  //Page是直接调用的
+  Page({
+    onLoad() {
+      //call绑定了{name:'jack'}，当前块级作用域this就是{name:'jack'}
+      console.log('1',this) //{name:'jack'}
+      
+      test({
+        name: "tom",
+        //注意下面是简写，实际是=》success:function(){ xxx }
+        success() {
+          console.log('2',this); //window。fail是test调用的，test是onLoad调用的，onLoad的是Page调用的，window调用的Page，所以this指向window
+        },
+        fail:()=> {
+          console.log('2',this); //{name:'jack'} 。test所在作用域this是{name:'jack'}
+        },
+      });
+    },
+  });
+  
+  ```
+  
+  
   
 * call apply bind
 
@@ -3845,7 +4010,13 @@ obj.run()
   var today = new Date() //获取设备当前的时间
   ```
 
-* 参数是数字
+* 参数是时间戳
+
+  ```js
+  var today = new Date(1681975460517) 
+  ```
+  
+* 参数是年月日时分秒毫秒
 
   ```js
   new Date(year, monthIndex [, day [, hours [, minutes [, seconds [, milliseconds]]]]]);
@@ -3859,7 +4030,7 @@ obj.run()
   new Date(2022,0) //Sat Jan 01 2022 00:00:00 GMT+0800 (中国标准时间)
   ```
 
-* 参数是字符串
+* 参数是日期字符串
 
   ```js
   new Date(dateString);
@@ -3904,7 +4075,7 @@ new Date()*1
 ```
 
 ```js
-Date.now()//直接用Date对象，返回当前时间的时间戳
+Date.now()//直接用Date对象，返回当前时间的时间戳(毫秒)
 ```
 
 ### 实践
@@ -4129,6 +4300,10 @@ console.log(/\w+/i.toString())   //输出 /\w+/i
 
   Error是错误的**基类型**，其他错误类型继承自该类型 。一般是开发者抛出
 
+  ```js
+  throw Error('错误提示文案')
+  ```
+
 * **ReferenceError**
 
   使用了未声明的变量
@@ -4264,13 +4439,27 @@ try{
 
   JS允许将 `throw` 与任何参数一起使用，比如抛出一个字符串，catch中的参数就是这个字符串，一般还是建议throw一个错误对象
   
+  入参一般是字符串，放置在错误对象的message字段中
+  
   ```js
   try{
-      throw TypeError("这里是TypeError的message") // name:TypeError ,  message: 传入的参数
+      throw Error("这里是错误") // name:Error ,  message: 传入的参数
   }catch (err){
-      console.log(err) //TypeError: 这里是TypeError的message
+      console.log(err.message) //这里是错误
   }
   ```
+  
+  入参可以是对象，但是不建议这么做
+  
+  ```js
+  try{
+      throw Error({name:'tom'}) // name:Error ,  message: 传入的参数
+  }catch (err){
+      console.log(err.message) // [object Object]
+  }
+  ```
+
+
 
 **如何在catch中处错误**
 
@@ -5631,13 +5820,123 @@ static race(promises) {
 
 
 
+## 事件循环
+
+[目前，为止找到的最正确的答案](https://www.bbsmax.com/A/A2dmD4AW5e/)
+
+[演示事件循环的可视化工具：loupe](http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D)
+
+[Philip Roberts的视频](https://www.bilibili.com/video/av413179257/)
+
+### 事件循环涉及的概念
+
+* **主线程**：用于执行JS任务的线程
+
+* **执行栈（call stack）**：放入执行栈中的任务，会被***主线程***执行
+
+* **任务**：分为宏任务（task queue，有些文章也直接称为`任务`）、微任务（Microtask Queue）
+
+  * 宏任务：
+
+    ```text
+    script(主代码)
+    
+    setTimeout()
+    setInterval()
+    postMessage
+    I/O
+    UI交互事件
+    requestAnimationFrame(浏览器) 
+    setImmediate(Node.js)
+    ```
+
+  * 微任务 
+
+    ```text
+    Promise的resolve、reject、then函数，注意回调结果才放入微任务队列
+    
+    MutationObserver(html5 新特性)
+    
+    process.nextTick（Node.js）
+    ```
+
+  注意
+
+  * 主代码属于宏任务，将主代码放入执行栈执行
+
+  * 宏任务产生微任务（setTimeout等宏任务的回调结果属于微任务）
+
+    微任务也会产生微任务+宏任务（promise的then方法能一直添加，即一直增加微任务）；
+
+  * 微任务不可能凭空出现，第一个微任务一定是宏任务的回调产生的。例如主代码执行到发起网络请求的部分，发起请求后挂起，等待请求结果返回后浏览器会将回调结果放入微任务（并不是把异步任务放入微任务队列，而是异步有结果后，将回调结果放入微任务队列）
+
+### 事件循环
+
+![image-20230428013631363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230428013631%20.png)
+
+事件循环流程如下：
+
+* JS引擎中存在一个`monitoring process`的进程，这个进程会循环不断的检查主线程的执行情况，一旦主线程空闲，就会去检查宏任务队列
+
+  
+
+* 在执行宏任务之前，浏览器会检查是否需要渲染UI界面，如果需要则在宏任务队列中添加一个**渲染的任务**。该宏任务比较特殊，由GUI线程接管渲染
+
+  
+
+* 如果宏任务队列有任务，则将宏任务放入执行栈。主线程执行完后，继续读取宏任务，直至宏任务队列为空（执行宏任务过程中，如果有回调，待回调有结果，则加入微任务队列），主线程空闲才会检查微任务队列
+
+  
+
+* 如果存在微任务，则将其添加至执行栈，主线程开始执行其中的微任务
+
+  微任务执行过程中如果产生微任务，则添加至微任务队尾(promise的有多个then链式调用，假设一直产生微任务，则就会一直执行微任务)
+
+  微任务执行过程中如果产生宏任务，则添加至宏任务队尾，待微任务队列执行执行完毕，才会进入下一轮循环，即读取宏任务
+
+  一直读取微任务，直至微任务队列为空，开启下一轮循环，即主进程执行：渲染-宏任务-微任务
+
+  
+
+### 渲染任务
+
+前面提到的**渲染任务**比较特殊，这里做出解释
+
+下面是浏览器渲染引擎的工作过程
+
+![image-20230504153232765](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230504153233%20.png)
+
+渲染引擎和 JS引擎是两个不同的引擎
+
+* HTML 和 CSS 文件的解析由渲染引擎的 HTML 解析器和 CSS 解析器负责，它们会分别生成文档对象模型（DOM）和 CSS 对象模型（CSSOM）【但是这些 DOM 和 CSSOM 并不能直接被渲染引擎使用的，而是先传递给 JS 引擎】
+* JS引擎将它们合并成为渲染树（Render Tree）【将Render Tree传递给渲染引擎】
+* 渲染引擎完成Style、Layout、Paint、Composite
+
+所以说，渲染任务是一个特殊的宏任务（因为其需要渲染引擎的参与）
+
+浏览器渲染引擎和 JS引擎都是运行在主线程上的，它们共享主线程资源。因此，如果 JS引擎执行的任务过于耗时，会影响到浏览器渲染引擎的正常工作，从而导致页面卡顿、响应迟缓等问题
+
+补充：使用 `v-if` 隐藏的 DOM 仍然会被解析并构建成 DOM 树，因此它会影响 Parse HTML 的时间。但是不会影响 Layout 和 Paint 的时间
 
 
 
+### await是否阻塞
+
+当一个函数含有await关键字时，它将被认为是异步函数，并在遇到await语句时暂停执行异步函数后的代码，等待Promise对象的解析结果。但是，使用await并不会阻塞JS执行线程，。
 
 
 
-## 面向对象编程
+**结论**：
+
+await操作并不会阻塞JS线程，但它可以暂停异步函数的执行。当Promise对象解析完成后，事件循环会将await之后的代码放入微任务队列，等待执行，其他的JS代码仍然可以继续执行。直到同步代码执行完毕再去执行微任务队列
+
+**举例**
+
+如果有一个async函数中包含了await操作，当代码执行到await操作时，这个函数会被暂停，等待await操作所在的Promise对象返回结果。在此期间，JS引擎会在事件循环队列中继续执行其他任务，这些任务可以是其他异步操作的回调函数，也可以是同步代码。
+
+
+
+## Class
 
 在很长一段时间，我都很排斥面向对象编程的开发方式
 
@@ -5652,11 +5951,497 @@ static race(promises) {
 
 所以，这一部分开始，我将尝试学习面向对象编程的这种方式，并希望能应用到项目之中
 
-​																																																																																																																																																																																																																																																																																																																																																																																																												
+
+
+**class中的this指向问题，会逐步在每一部分讲解**
+
+### 类的定义
+
+```js
+// 类声明
+class Person {}
+ 
+// 类表达式
+const TestPerson = class {}
+```
+
+区别：**类声明**不会有提升现象，使用**类表达式**如果使用变量var接收，则会出现变量提升
+
+### 构造函数
+
+类的数据类型就是函数（所以才有函数的prototype属性），类本身指向构造函数
+
+```js
+class Person {}
+
+console.log(typeof Person) // function
+console.log(Person === Person.prototype.constructor) // true
+```
+
+所以，使用new关键字创建一个实例对象，实际会调用类的构造函数constructor
+
+构造函数的**this指向创建的实例**
+
+```js
+class Person {
+  //构造函数
+  constructor(name){
+    this.name=name
+  }
+}
+
+new Person()
+```
+
+不定义构造函数时，会默认生成一个空的构造函数
+
+```js
+class Person {}
+ 
+// 等于
+ 
+class Person {
+    constructor () {}
+}
+```
 
 
 
+**new class的过程**
 
+class本质上就是**new function**的语法糖，下面的过程也与其一致
+
+```text
+1、在内存中创建一个新对象
+
+2、这个新对象内部的[[Prototype]]属性，被赋值为构造函数的prototype属性
+
+3、构造函数内部的this被赋值为这个新对象（即this指向新对象）；
+
+4、执行构造函数内部的代码（给新对象添加属性）；
+
+5、如果构造函数返回非空对象，则返回该对象；否则，返回刚创建的新对象；
+```
+
+函数才有prototype属性，因为class底层也是函数，所以也有prototype属性，其值也是一个对象，键名为constructor，值为类的构造函数constructor
+
+```js
+class Person {
+    constructor (name) {
+        this.name=name
+    }
+}
+console.log(Person.prototype); //{constructor: ƒ}
+```
+
+如果存在普通成员，则也会加到实例的原型链上，如下：所有Person的实例都可以访问到getName方法。静态成员不会被添加进去，这也是为什么实例不能访问到静态方法的原因
+
+```js
+class Person {
+    constructor (name) {
+        this.name=name
+    }
+    getName(){
+        console.log(this)
+    }
+  	static getName(){
+        console.log(this)
+    }
+}
+console.log(Person.prototype) //{constructor: ƒ, getName: ƒ}
+```
+
+我们可以在创建函数时，传入初始化的一些参数，new返回的对象会带着这些数据（初始化实例对象）
+
+```js
+class Person {
+    constructor (name,age) {
+        this.name=name //this指向new创建出的实例对象，即向实例对象添加属性name
+      	this.age=age
+    }
+}
+let p = new Person('jack',20)
+console.log(p.name,p.age);//jack 20
+```
+
+### 类的普通成员
+
+普通方法：**this指向创建的实例**，可以用来操作实例对象的数据。
+
+```js
+class Person {
+    constructor (name) {
+        this.name=name
+    }
+  	//普通方法，其中this指向创建的实例对象
+    getName(){
+        console.log(this)
+    }
+  	//箭头函数语法
+  	getName=()=>{
+        console.log(this)
+    }
+  	//类不是对象，`函数名：`的写法在类里都是错的
+  	getName:()=>{
+        console.log(this)
+    }
+
+}
+let p = new Person('jack',20)
+p.getName() //Person { name: 'tom' }
+```
+
+实例对象的属性。可直接通过点语法读写实例属性
+
+```js
+class Person {
+    constructor (name) {
+        this.name=name
+    }
+}
+let p = new Person('jack',20)
+
+//取值
+console.log(p.name);//jack
+
+//赋值
+p.name='tom'
+
+//取值
+console.log(p.name);//tom
+```
+
+前面学习对象时，我们直到对象能直接通过点方法完成读写属性，是因为setter和getter。在class中我们可直接定义setter和getter来实现读写的拦截
+
+```js
+class Person {
+    constructor (name) {
+        this.name=name
+    }
+  	//属性名
+    get propName(){
+      	//这里可以做拦截处理
+        return this.name
+    }
+		//属性名
+    set propName(value){
+      	//这里可以做拦截处理
+        this.name=value
+    }
+
+}
+let p = new Person('jack',20)
+
+// 读取 （实例.属性名）触发get
+console.log(p.propName);//jack
+
+// 赋值 （实例.属性名=xxx）触发set
+p.propName='tom'
+console.log(p.propName);//tom
+```
+
+解构类中的函数，通常我建议不要这样调用函数。但是，这在语法上是成立的，所以这里仍然需要提下这种用法造成的this指向问题
+
+this的调用者是window，但是由于class内部默认严格模式所以是undefined
+
+```js
+class Person {
+    constructor (name) {
+        this.name=name
+    }
+  	//普通方法，其中this指向创建的实例对象
+    getName(){
+        console.log(this)
+    }
+
+}
+let p = new Person('jack',20)
+const {getName} =p
+getName() //undefined 
+```
+
+解决this指向不是当前实例的问题
+
+* bind手动修改this指向
+
+  利用了创建实例时，构造函数执行的时机，获取方法并bind改变this指向为当前实例，最后赋值回去
+
+  ```js
+  class Person {
+      constructor (name) {
+          this.name=name
+          this.getName=this.getName.bind(this)
+      }
+    	//普通方法，其中this指向创建的实例对象
+      getName(){
+          console.log(this)
+      }
+  
+  }
+  let p = new Person('jack',20)
+  const {getName} =p
+  getName() //Person { getName: [Function: getName], name: 'jack' }
+  ```
+
+* 箭头函数（类中推荐使用箭头函数）
+
+  ```js
+  class Person {
+      constructor (name) {
+          this.name=name
+      }
+    	//普通方法，其中this指向创建的实例对象
+      getName=()=>{
+          console.log(this)
+      }
+  
+  }
+  let p = new Person('jack',20)
+  const {getName} =p
+  getName() //Person { getName: [Function: getName], name: 'jack' }
+  ```
+
+* 代理方案（网上抄来的）
+
+  ```js
+  function classProxy (target) {
+      const map = new Map()
+      
+      // 读取拦截配置, 只需要配置 get
+      const hanlder = {
+          get(target, key) {
+              const val = Reflect.get(target, key)
+              // 要获取的是函数执行, 如果不是函数就直接返回 val
+              if (typeof val !== 'function') return val
+   
+              if (!map.has(val)) {
+                  // 使用 bind改变运行函数的 this为拦截的实例对象
+                  map.set(val, val.bind(target))
+              }
+              return map.get(val)
+          }
+      }
+      const proxy = new Proxy(target, hanlder)
+      return proxy
+  }
+   
+  class Person {
+      constructor (text) {
+          this.text = text
+      }
+   
+      getText () {
+          console.log(this.text)
+          return this.text
+      }
+  }
+   
+  const person = classProxy(new Person('test'))
+   
+  const { getText } = person
+   
+  getText() // test
+  ```
+
+  
+
+
+
+### 类的静态成员
+
+包括静态变量、方法、块。静态成员是所有实例共享的
+
+静态成员是属于类的，只有静态成员中的**this指向当前类**
+
+```js
+class Person {
+  	//3、静态变量
+    static school ='默认值'
+  	//1、构造函数、普通方法中的this指向创建的实例对象。只能操作实例数据
+    constructor (name) {  
+       this.name=name
+    }
+  	getName(){
+      return this.name
+    }
+  	
+  	//2、静态方法中的this指向类，所以静态方法能访问其他所有成员，关键的是只要有他能才能操作静态变量
+    static getThis(){
+        console.log(this)
+      	//
+      	this.school='这有这里才能访问到静态变量'
+    }
+
+}
+
+//4、类调用静态方法
+console.log(Person.school) //默认值
+Person.getThis() //{ school: '默认值' }
+
+
+//5、实例调用普通方法
+let p=new Person()
+p.getName()
+```
+
+可以看到普通方法、静态方法的this不同，他们只能访问自己this范围内的数据
+
+### 类的私有成员
+
+this指向与**构造函数、普通方法**一样，都是当前实例。所有他们能互相访问到
+
+私有成员只能在定义类时，在构造函数、普通函数内部直接通过this访问，它的子类也不能访问
+
+```js
+class Person {
+    static school ='默认值'
+    //1、构造函数，通过this调用私有方法
+    constructor () {
+       this.#getThis()
+    }
+    f1(){
+        console.log('普通方法f1')
+    }
+    static f2(){
+        console.log('静态方法f2')
+    }
+
+  	//2、私有方法，通过this调用普通方法
+    #getThis(){
+        console.log(this) //Person {#getThis: ƒ}。为啥没有f1呢？前面提到过，f1是普通方法，要放在实例对象的[[Prototype]]原型链上
+        this.f1() //普通方法f
+       
+    }
+
+}
+let p = new Person()
+
+```
+
+### 继承
+
+通过extends关键字，继承父类的普通成员、静态成员
+
+子类（Child）如果设置了 constructor 方法就必须在函数开始调用 super() ，super()表示父级构造函数，如果父级构造函数需要参数，可以通过super(xxx)传入
+
+本质：new子类时，会调用子类的构造方法，其中的super方法创建一个父级实例，然后把父级实例赋值给this（指向子类的实例），所以子类有了父级的普通成员、静态成员
+
+```js
+class Person {
+    //静态属性
+    static school ='默认值'
+    //构造函数
+    constructor (text) {
+       console.log('父级构造函数，入参：',text)
+    }
+    //普通方法
+    f1(){
+        console.log('普通方法f1')
+    }
+    //静态方法
+    static f2(){
+        console.log('静态方法f2')
+    }
+
+  	//私有方法
+    #f3(){
+        console.log('私有方法f3')
+       
+    }
+}
+
+//------子类Child-------
+class Child extends Person{
+    constructor(){
+        super('子类调用')//
+    }
+}
+
+//1、可调用父类的静态方法
+Child.f2()//静态方法f2
+
+//2、可调用父类的普通方法
+let c=new Child() //父级构造函数，入参: 子类调用
+c.f1()//普通方法f1
+```
+
+如果子类没有指定构造函数
+
+```js
+class Person {
+    constructor (text) {
+        this.text = text
+    }
+}
+ 
+class Child extends Person {}
+ 
+const a = new Child('设置 text'); // Child { text: '设置 text' }
+```
+
+super还可以调用父级普通方法
+
+````js
+//------父类Person-------
+class Person {
+    //普通方法
+    f1(){
+        return '普通方法f1'
+    }
+}
+
+//------子类Child-------
+class Child extends Person{
+    constructor(){
+        super()
+    }
+    f4(){
+         return '通过super调用'+super.f1()
+    }
+}
+
+
+
+let c=new Child()
+c.f4()'通过super调用普通方法f1'
+
+````
+
+### 混入
+
+将多个模块代码混入到类中
+
+```js
+// 定义一个 Mixin 对象
+const Mixin = {
+  foo() {
+    console.log('foo');
+  },
+  bar() {
+    console.log('bar');
+  }
+};
+
+// 定义一个类
+class MyClass {
+  constructor() {
+    // 将 Mixin 合并到当前对象中
+    Object.assign(this, Mixin);
+  }
+}
+
+// 创建一个实例
+const obj = new MyClass();
+
+// 调用 Mixin 中的方法
+obj.foo(); // 输出 "foo"
+obj.bar(); // 输出 "bar"
+
+```
+
+
+
+​																																																																																																																																																																																																																																																																																																																																																																																																
 
 ## JSDocs
 
@@ -6645,6 +7430,461 @@ node.remove()
 node.replaceWith(...nodes or strings) —— 将 node 替换为给定的节点或字符串
 ```
 
+## Canvas
+
+MDN canvasAPI :https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API
+
+### 创建
+
+在canvas标签上指定width、height（单位px），或者获取canvas对象设置width、height（单位px）指定的是canvas画布大小。（不设置会初始化宽度为300像素和高度为150像素）
+
+使用CSS指定的是实际可视区大小，canvas画布会被强制拉伸为CSS指定的宽高。（不设置会以canvas画布的大小为可视区域）
+
+**Dom创建**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas width="600" height="400" id="canvas"></canvas>
+</body>
+<style>
+    
+</style>
+<script>
+    /** @type {HTMLCanvasElement} */
+    // 获取canvas对象
+    const canvas=document.getElementById('canvas')
+    // 获取context（画笔）对象，可以调用context的各种方法绘制
+    const context =canvas.getContext('2d')
+    // 绘制一个填充黑色的矩形
+    context.fillRect(100, 100, 150, 150)
+
+</script>
+</html>
+```
+
+
+
+**JS创建**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body></body>
+
+<script>
+    const canvas = document.createElement('canvas')
+    canvas.width = 400
+    canvas.height = 400
+  	
+    document.body.append(canvas)
+    const context = canvas.getContext('2d')
+    
+    context.fillRect(100, 100, 150, 150)
+</script>
+
+</html>
+```
+
+### 坐标
+
+canvas获取context后，可以调用context上的方法绘制各种图形、线条
+
+这些方法的参数很多都包含(x,y)坐标
+
+注意下，参数里的坐标都是相对于canvas画布的
+
+![image-20230506170146455](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506170147%20.png)
+
+
+
+### 线条
+
+使用获取的context对象，来调用它的相关方法绘制
+
+**开始、结束路径**
+
+```js
+context.beginPath() //开始
+
+//。。。绘制一条线段
+
+context.closePath() //结束
+```
+
+**直线**
+
+将起始点、中间点坐标按代码顺序链接起来
+
+```js
+context.beginPath() //开始
+
+
+context.moveTo(100,100) //起始坐标
+context.lineTo(300,100) //中间点
+context.lineTo(300,300) //中间点
+
+context.closePath() //结束
+
+context.stroke() //绘制线段。这个必须写，且需放置在最后
+```
+
+![image-20230506171243775](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506171244%20.png)
+
+**线段样式**
+
+```js
+context.lineWidth=50 // 线段宽度，单位px
+context.lineCap='round' //线段终点。 默认直角，round为圆角
+context.lineJoin='round' //线段连接点。 同上
+```
+
+代码
+
+```js
+context.beginPath() //开始
+
+
+context.moveTo(100,100) 
+context.lineTo(300,100) 
+context.lineTo(300,300) 
+
+context.lineWidth=50
+context.lineCap='round'
+context.lineJoin='round'
+
+context.closePath() //结束
+
+context.stroke() //绘制线段。这个必须写，且需放置在最后
+```
+
+
+
+![image-20230506172019317](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506172019%20.png)
+
+**线段颜色**
+
+```js
+context.strokeStyle='red'  //默认黑色
+```
+
+颜色支持 颜色字符串（例如：red）、 十六进制色值、渐变色
+
+渐变色比较复杂，放在最后讲
+
+### 填充
+
+**填充指定区域**
+
+前面讲了使用moveTo、lineTo指定点后，最后使用stroke绘制线段
+
+我们也可以使用fill填充点之间的区域，默认黑色
+
+```js
+context.moveTo(100,100)
+context.lineTo(300,100)
+context.lineTo(300,300)
+
+context.fill() 
+```
+
+![image-20230506172952018](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506172952%20.png)
+
+
+
+还有一个用于快捷填充矩形区域的函数**fillRect**
+
+```js
+context2.fillRect(矩形左上角x,矩形左上角y,宽,高)
+```
+
+注意：无论是stroke还是fill、fillRect都必须写在指定条件之后
+
+**填充颜色**
+
+与线段可指定颜色一样，填充区域也可以指定颜色
+
+```js
+context.fillStyle='red'
+```
+
+![image-20230506173431238](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506173431%20.png)
+
+
+
+### 渐变色
+
+线段和填充区域都可以使用渐变色，这里为了看的更清楚，在填充区域使用渐变色
+
+**线性渐变**
+
+```js
+const canvas = document.createElement('canvas')
+canvas.width = 400
+canvas.height = 400
+document.body.append(canvas)
+const context = canvas.getContext('2d')
+
+
+//创建渐变色起点(100,100),终点(300,100);
+let gradient = context.createLinearGradient(100, 100, 200, 100)//注意：只是渐变色的起点终点，具体线条呈现的颜色取决于它处于渐变对象起点到终点的哪个范围
+
+// 配置渐变色对象，第一个参数0-1之间，0是起点，1是终点。设置渐变开始的位置
+gradient.addColorStop(0, 'red')
+gradient.addColorStop(1, 'green')
+
+//指定填充区域颜色
+context.fillStyle = gradient
+
+//绘制矩形填充区域
+context.fillRect(100, 100, 200, 200)
+```
+
+![image-20230506175501589](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506175502%20.png)
+
+**径向渐变**
+
+```js
+const canvas = document.createElement('canvas')
+canvas.width = 400
+canvas.height = 400
+document.body.append(canvas)
+const context = canvas.getContext('2d')
+
+let radialGradient= context.createRadialGradient(200,200,0,200,200,150)//前三个参数是圆1的x坐标、y坐标、半径。后三个是第二个圆的x坐标、y坐标、半径。两个圆
+radialGradient.addColorStop(0,'red')
+radialGradient.addColorStop(1,'green')
+context.fillStyle=radialGradient
+
+context.fillRect(100, 100, 200, 200)
+```
+
+![image-20230506180727228](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506180727%20.png)
+
+**锥形渐变**
+
+```js
+const canvas = document.createElement('canvas')
+canvas.width = 400
+canvas.height = 400
+document.body.append(canvas)
+const context = canvas.getContext('2d')
+
+let conicGradient= context.createConicGradient(0*(Math.PI/180),200,200)//第一个参数是弧度（公式：PI/180*目标度数=目标弧度），中心x坐标、y坐标。
+conicGradient.addColorStop(0,'red')
+conicGradient.addColorStop(1,'green')
+context.fillStyle=conicGradient
+
+context.fillRect(100, 100, 200, 200)
+```
+
+
+
+![image-20230506182608800](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506182609%20.png)
+
+### 实践:绘制虚线框
+
+用 `setLineDash` 方法和 `lineDashOffset` 属性来制定虚线样式。 `setLineDash` 方法接受一个数组，来指定线段与间隙的交替；`lineDashOffset`属性设置起始偏移量。
+
+```js
+function draw(){
+    var canvas = document.getElementById('tutorial');
+    if (!canvas.getContext) return;
+    var ctx = canvas.getContext("2d");
+ 
+    ctx.setLineDash([20, 5]);  // [实线长度, 间隙长度]
+    ctx.lineDashOffset = -0;
+    ctx.strokeRect(50, 50, 210, 210);
+}
+draw();
+```
+
+![img](https://www.runoob.com/wp-content/uploads/2018/12/2805401035-5b74dd8e6833c_articlex.png)
+
+### 实践：绘制海报
+
+使用canvas的drawImage方法可以向canvas画布上绘制图片
+
+可多次调用drawImage，达到绘制不同图片叠加的效果，利用这种特性制作海报（后绘制的图层级高）
+
+toDataURL方法可以将canvas导出为base64格式的图片
+
+
+
+**过程中遇到两个问题**
+
+* canvas绘制的图片模糊的原因
+
+  绘制图像时，会出现加粗
+
+  ![image-20230423184442056](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423184442%20.png)
+
+  在高分辨率屏幕下（背景网格是实际像素），单位css像素会占据更多的实际像素，且不使用原本的颜色填充，而是使用了某种近似颜色算法
+
+  ![image-20230423184704055](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423184704%20.png)
+
+  解决
+
+  ```js
+  // 设备像素比=物理像素/css像素（即1个css像素，占据几个实际像素）
+  const ratio = window.devicePixelRatio || 1; 
+  
+  //将canvas尺寸设置为 原本正常尺寸的ratio倍
+  canvas.width = 315 * ratio;
+  canvas.height = 464 * ratio;
+  
+  // 绘制的内容 宽、高放大为ratio倍
+  context.scale(ratio, ratio);
+  
+  let imgQrcode = new Image();
+      imgQrcode.setAttribute("crossOrigin", "anonymous");//解决图片跨域问题
+  
+      imgQrcode.src = 'https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423190815%20.png';
+      
+  imgPost.onload = function () {//图片加载url后，触发
+    //canvas的确变大了ratio倍，
+    context.drawImage(imgPost,0,0,canvas.width / ratio,canvas.height / ratio);//在canvas容器的（0,0）位置放置图片左上角。裁切长度=canvas.width/ratio，高度=canvas.height/ratio这样尺寸的图片。所以图片是原本的尺寸
+  } 
+  ```
+
+  
+
+* canvas上绘制的图片需要是同源，否则就会报错提示跨域
+
+  ![image-20230423191020885](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423191021%20.png)
+
+  ```js
+  let imgQrcode = new Image();
+  
+  imgQrcode.setAttribute("crossOrigin", "anonymous"); //设置忽略同源
+  
+  imgQrcode.src = 'a.png';
+  ```
+
+  
+
+**生成海报**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+<style>
+
+</style>
+<script>
+    const ratio = window.devicePixelRatio || 1;
+   
+    const canvas = document.getElementById('canvas')
+    canvas.width = 315 * ratio;
+    canvas.height = 464 * ratio;
+    
+    console.log(canvas.width,canvas.height);
+    const context = canvas.getContext('2d')
+    
+   
+
+    let imgPost = new Image();
+    // imgPost.setAttribute("crossOrigin", "anonymous");
+    imgPost.src =
+        "https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423190645%20.png";
+    
+    let imgQrcode = new Image();
+    // imgQrcode.setAttribute("crossOrigin", "anonymous");
+    imgQrcode.src = 'https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423190815%20.png';
+    
+    imgPost.onload = function () {
+        context.drawImage(
+            imgPost,
+            0,
+            0,
+            canvas.width / ratio,
+            canvas.height / ratio
+        );
+        context.drawImage(
+            imgQrcode,
+            canvas.width / ratio / 2 - 85 / 2,
+            canvas.height / ratio - (52 + 85),
+            85,
+            85
+        );
+        
+        
+    };
+
+
+</script>
+```
+
+![image-20230423191206484](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423191207%20.png)
+
+
+
+**下载或保存**
+
+下载：目前发现通过a标签下载图片的方式，在PC端正常，而在移动端浏览器上存在兼容性问题。尤其是在微信中会直接弹窗toast提示，不允许下载。
+
+```js
+//转成base64编码的图片
+const canvasBase64 = canvas. toDataURL ({
+	format: 'image/png', 
+  quality: 1, 
+  width: canvas.width, 
+  height: canvas.height,
+});
+
+//下载
+const link = document. createElement('a');
+link.style.display = 'none';
+link.href = canvasBase64;
+link.setAttribute ('download', 'yc-qrcode.png'); 
+document.body.appendChild (link);
+link.click();
+```
+
+保存：
+
+移动端各个浏览器均实现了长按保存图片到相册的功能（微信也实现了），所以我们可以在合成海报后，直接将canvas元素的隐藏，仅仅在页面展示img图片（src可以是base64编码格式）
+
+这里有一个注意点：
+
+```
+drawImage绘制图片是一个异步操作，如果图片过大则会造成toDataURL转化时得到空图片、不全的图片
+
+目前，发现在Vue中，可以在页面加载时绘制canvas海报
+
+然后，使用nextTick(()=>{ 在这里toDataURL })
+```
+
+
+
+
+
 ## 前端数据存储
 
 ### Cookie
@@ -6912,7 +8152,7 @@ Cookie的`samesite`字段可以防止XSRF攻击
 https://zh.javascript.info/fetch-crossorigin
 ```
 
-### URL
+### URL对象
 
 一般使用字符串，使用`qs`这个库（https://www.npmjs.com/package/qs），或者当成字符串处理，但是使用URL对象会更加简单
 
@@ -7346,6 +8586,13 @@ console.log("Listening on port 3000...");
 </div>
 </body>
 </html>
+```
+
+## JS高级进阶
+
+### LRU缓存
+
+```
 ```
 
 
@@ -8239,6 +9486,41 @@ function f3(params){
         
       }
     },
+  ```
+
+* 函数内部捕获错误，无法使用try catch捕获失败的promise
+
+  ```js
+  async function f(){
+    try{
+  		//请求数据
+    	await apiResult()
+      //code为0，且data有数据，即为成功状态的Promise
+      if(res?.code===0&&res?.data){
+        return res.data
+      }
+      //code不为0，则是业务错误。
+      
+      //正确方式：这里抛出的错误也可以被catch捕获
+      throw Error('业务错误')
+      
+      //错误方式：这里是结束函数且结果是失败的Promim。并不会内部的catch捕获到
+      return Promise.reject()
+      
+    }catch(err){
+      //这里可以捕获到业务错误
+    }
+  }
+  ```
+
+  但是使用try catch捕获返回值是失败promise的函数
+
+  ```js
+  try{
+  	await f()
+  }catch(err){
+  
+  }
   ```
 
   

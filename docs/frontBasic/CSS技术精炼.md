@@ -1446,8 +1446,6 @@ white-space: nowrap;
   
   
 
-
-
 **z-index失效**
 
 https://blog.csdn.net/weixin_41342585/article/details/79484879
@@ -1457,324 +1455,6 @@ https://blog.csdn.net/weixin_41342585/article/details/79484879
 将页面划分为网格，分为行和列，就像一块地图，可以将元素任意放置在这些块或者块组成的区域中
 
 ![image-20220416173918496](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416173918496.png)
-
-### 基础知识
-
-* 父元素使用`display:inline-grid`（块级元素）或者`display:grid`（行内元素）
-
-* 使用
-
-  * **设置行和列**（父元素设置）
-
-    `grid-template-rows` 设置行
-
-    `grid-template-columns`设置列
-
-    以设置行，作为例子 
-
-    ```css
-    grid-template-rows:100px 200px; /*数字；两行/
-    grid-template-rows:25% 50% 25%; /*百分比；三行*/
-    grid-template-rows:1fr 2fr; /*两行，按照1:2分配元素空间*/
-    grid-template-rows:minmax(50px,100px) minmax(50px,100px); /*分成两份，每份会尽可能大的占用空间，但是不会超过各自的最大值*/
-    
-    
-    /*如果是同样的值，可以使用repeat函数，第一个参数：份；第二个参数：每份多大*/
-    grid-template-rows:repeat(3,1fr);/*三行，每行占1份；*/
-    grid-template-rows:repeat(auto-fill,100px) /*自动计算容器,高度能分为几份100px；注意这里，第二个参数如果是以fr为单位，则默认只分一份*/
-    ```
-
-  * **设置行和列间距**（父元素设置）
-
-    ```css
-    row-gap: 10px; /*行间距*/
-    column-gap: 20px;/*列间距*/
-    gap:10px 20px; /*复合属性*/
-    ```
-
-  * 父元素使用栅格布局，子元素如果不设置宽高，子元素宽高会默认为单元格宽高
-
-* 子元素，从左到右，从上到下放置（可以看例子中的子元素的编号）。如果子元素个数超过格子数量，可以给父元素设置`verflow:hidden`隐藏
-
-**例子**
-
-```html
-<div class="container">
-    <div>1</div>
-    <div>2</div>
-    <div>3</div>
-    <div>4</div>
-    <div>5</div>
-    <div>6</div>
-    <div>7</div>
-</div>
-
-<style>
-.container{
-    width: 300px;
-    height: 300px;
-    background-color: red;
-    display: grid;
-    grid-template-rows:repeat(3,1fr);
-    grid-template-columns:repeat(3,1fr);
-    row-gap: 10px;
-    column-gap: 10px;
-}
-.container div{
-    background-color: yellow;
-    border: solid 1px black;
-}
-</style>
-```
-
-![image-20220416234156688](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416234156688.png)
-
-### 默认栅格名
-
-（子元素设置）
-
-```text
-/*行开始和结束*/
-grid-row-start: 1;
-grid-row-end: 2;
-
-/*列开始和结束*/
-grid-column-start: 1;
-grid-column-end: 3;
-```
-
-这里以行为例子，属性的编号，就代表行上边线的编号，这里是从1开始的。**注意**：即设置了栅格边距，还是一样的
-
-![image-20220417000355769](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417000355769.png)
-
-![image-20220417000852239](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417000852239.png)
-
-例子如下
-
-![image-20220416234950556](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416234950556.png)
-
-```html
-<div class="container">
-    <div>1</div>
-    <div>2</div>
-    <div>3</div>
-    <div>4</div>
-    <div>5</div>
-    <div>6</div>
-    <div>7</div>
-</div>
-
-<style>
- .container{
-    width: 300px;
-    height: 300px;
-    background-color: red;
-    display: grid;
-    grid-template-rows:repeat(3,1fr);
-    grid-template-columns:repeat(3,1fr);
-    row-gap: 10px;
-    column-gap: 10px;
-    overflow:hidden;
-}
-.container div{
-    background-color: yellow;
-    border: solid 1px black;
-}
-
-.container div:first-child{ /*选中第一个子元素，然后控制这个元素占据格子，其他元素按照默认顺序继续排序*/
-    background-color: blue;
-  	/*网格边界，编号从1开始*/
-    grid-row-start: 1;
-    grid-row-end: 2;
-  	/*网格边界，编号从1开始*/
-    grid-column-start: 1;
-    grid-column-end: 3;
-}
-</style>
-```
-
-第一个子元素放置到中间，注意看其他元素还是按照默认顺序排序
-
-![image-20220416235304225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416235304225.png)
-
-```
-.container div:first-child{
-    background-color: blue;
-    grid-row-start: 2;
-    grid-row-end: 3;
-    grid-column-start: 2;
-    grid-column-end: 3;
-}
-```
-
-### 重命名栅格
-
-上面讲了，栅格默认的编号，以行为例子，如下图
-
-![image-20220417000355769](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417000355769.png)
-
-其实，我们可以手动指定名字（父元素设置）
-
-```
-grid-template-rows:[r1-start] 100px [r1-end r2-start] 100px [r2-end];
-grid-template-columns:[c1-start] 100px [c1-end c2-start] 100px [c2-end];
-```
-
-![image-20220417133739971](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417133739971.png)
-
-例子
-
-```html
-<style>
-.container{
-    width: 200px;
-    height: 200px;
-    display: grid;
-    grid-template-rows:[r1-start] 100px [r1-end r2-start] 100px [r2-end];
-    grid-template-columns:[c1-start] 100px [c1-end c2-start] 100px [c2-end];
-    overflow: hidden;/*栅格大小2*2的，如果子元素超过4个，就会超过4个*/
-}
-.container div{
-    background-color: yellow;
-    border: solid 1px black;
-}
-
-.container div:first-child{
-    background-color: blue;
-    grid-row-start: r2-start;
-    grid-row-end: r2-end;
-    grid-column-start: c1-start;
-    grid-column-end: c2-end;
-}
-</style>
-
-<div class="container">
-    <div>1</div>
-    <div>2</div>
-    <div>3</div>
-    <div>4</div>
-</div>
-```
-
-![image-20220417191031022](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417191031022.png)
-
-还可以简写，**使用repeat重命名**，效果相同
-
-```css
-.container{
-  grid-template-rows:repeat(2,[r-start] 100px [r-end]);
-	grid-template-columns:repeat(2,[c-start] 100px [c-end]);
-} 
-
-.container div:first-child{
-    background-color: blue;
-    grid-row-start: r-start 2; /*数字表示是第几个格*/
-    grid-row-end: r-end 2;
-    grid-column-start: c-start 1;
-    grid-column-end: c-end 2;
-}
-```
-
-### 偏移
-
-`span 数字`偏移几个格子，例子使用默认栅格名
-
-```
-.container div:first-child{
-    background-color: blue;
-    grid-row-start: 2; 
-    grid-row-end: 3;
-    grid-column-start: 1;
-    grid-column-end: span 2;/偏移2个格子/
-}
-```
-
-![image-20220417194928345](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417194928345.png)
-
-不写几句默认是原本的位置，比如第一个子元素默认在第一个格子，`grid-row-start`和`grid-row-column`默认都是1，我不需要改变就可以省略不写
-
-```css
-.container div:first-child{
-    background-color: blue;
-    grid-row-end: span 2;
-    grid-column-end: span 2;
-}
-```
-
-![image-20220417195617843](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220417195617843.png)
-
-### 选择栅格简写
-
-```css
-.container div:first-child{
-    background-color: blue;
-  
-    grid-row-start: 2; /*数字表示第几个单元格*/
-    grid-row-end: 3;
-  
-    grid-column-start: 1;
-    grid-column-end: 2;
-}
-/*简写*/
-grid-row:2/3;
-grid-column: 1/2; /*或者使用偏移量 grid-column:1/span 2*/
-```
-
-### 类似BootStrap的栅格系统
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style type="text/css">
-        .container {
-            width: 100vw;
-            display: grid;
-            grid-template-columns:repeat(12, 1fr);
-            border: solid 1px red;
-
-        }
-
-        .col-1 {
-            grid-column-end: span 1;
-        }
-
-        .col-2 {
-            grid-column-end: span 2;
-        }
-
-        .col-3 {
-            grid-column-end: span 3;
-        }
-
-        .col-4 {
-            grid-column-end: span 4;
-        }
-
-
-        .container div[class^='col'] {
-            background-color: yellow;
-            background-clip: content-box;
-            border: solid 1px black;
-            padding: 5px;
-            grid-row-end: span 2;
-            grid-column-end: span 2;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="col-2">1</div>
-    <div class="col-4">2</div>
-    <div class="col-4">3</div>
-    <div class="col-2">4</div>
-</div>
-</body>
-</html>
-```
-
-## 网格布局（新版）
 
 ### 网格基础
 
@@ -2038,7 +1718,7 @@ grid-auto-flow: row; /*默认值，可以不写*/
 grid-auto-flow: column;
 ```
 
- ![image-20230322095752363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322095752%20.png)
+![image-20230322095752363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230322095752%20.png)
 
 ### 子网格分布
 
@@ -2226,8 +1906,6 @@ grid-area: 2 / 1 / span 2 / span 3;
 
 
 
-
-
 ### 网格中使用定位
 
 经过测试对网格中的子元素使用absolut、fixed，使得定位的盒子脱离文档流想当于该子元素脱离了网格，不再占据网格中的位置
@@ -2292,13 +1970,66 @@ outer display type对外显示方面，盒子类型可以分成 2 类：块级�
         left: 0;
     }
     .footer{
-        
         position: sticky;
         bottom: 0;
         background-color: blue;
     }
 </style>
 
+</html>
+```
+
+### 类似BootStrap的栅格系统
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style type="text/css">
+        .container {
+            width: 100vw;
+            display: grid;
+            grid-template-columns:repeat(12, 1fr);
+            border: solid 1px red;
+
+        }
+
+        .col-1 {
+            grid-column-end: span 1;
+        }
+
+        .col-2 {
+            grid-column-end: span 2;
+        }
+
+        .col-3 {
+            grid-column-end: span 3;
+        }
+
+        .col-4 {
+            grid-column-end: span 4;
+        }
+
+
+        .container div[class^='col'] {
+            background-color: yellow;
+            background-clip: content-box;
+            border: solid 1px black;
+            padding: 5px;
+            grid-row-end: span 2;
+            grid-column-end: span 2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="col-2">1</div>
+    <div class="col-4">2</div>
+    <div class="col-4">3</div>
+    <div class="col-2">4</div>
+</div>
+</body>
 </html>
 ```
 
@@ -2785,7 +2516,7 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
   - n：取值范围从1开始到无穷，也就是所有位置中是E的选中（特别注意n从1开始）
   - 含n的表达：比如n+3，表示从3个开始都选中；-n+3，表示从1到选中
   - 1，2... ：指定第几个位置
-  -	odd：奇数位置，比如1、3、5，等同于2n+1
+  -	odd：奇数位置，比如1、3、5，等同于2n-1
   -	even：偶数位置，比如2、4、6，等同于2n
   
   E:nth-last-child 同理
@@ -3861,40 +3592,35 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 ```
 
-
-
 **背景颜色改变过渡效果**
 
+## 小知识点 
 
+### not选择器的使用
 
-## canvas
+最后一个子项没有下划线
 
-[学习 HTML5 Canvas 这一篇文章就够了](https://www.runoob.com/w3cnote/html5-canvas-intro.html)
+![image-20230616165222944](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230616165223%20.png)
 
-canvas就是使用js来绘制图片的方式
+使用伪类添加下划线
 
-**绘制虚线框**
+```css
+/*  E:not(:last-child) 表示选中，除去最后一个detail-list-item的其他子项 */
 
-用 `setLineDash` 方法和 `lineDashOffset` 属性来制定虚线样式。 `setLineDash` 方法接受一个数组，来指定线段与间隙的交替；`lineDashOffset`属性设置起始偏移量。
-
-```js
-function draw(){
-    var canvas = document.getElementById('tutorial');
-    if (!canvas.getContext) return;
-    var ctx = canvas.getContext("2d");
- 
-    ctx.setLineDash([20, 5]);  // [实线长度, 间隙长度]
-    ctx.lineDashOffset = -0;
-    ctx.strokeRect(50, 50, 210, 210);
+.detail-list-item:not(:last-child)::after{
+  content: '';
+  width:630rpx;
+  height: 2rpx;
+  background-color: #eeeeee;
+  position: absolute;
+  bottom:0;
+  left: 50%;
+  transform: translateX(-50%);
+  
 }
-draw();
 ```
 
-![img](https://www.runoob.com/wp-content/uploads/2018/12/2805401035-5b74dd8e6833c_articlex.png)
 
-
-
-## 小知识点 
 
 ### 强烈安利的sticky属性
 
@@ -4198,6 +3924,22 @@ view是小程序的标签与div一样
 ```
 
 
+
+情景3：
+
+在修改这块代码时出现过一种现象：绿色盒子区域正常，内部的两个蓝色盒子溢出了父级区域。后来发现，第一个绿色盒子加上
+
+```js
+width: 1px;
+flex-grow:1;
+flex-shrink:0;
+```
+
+就好了
+
+记住这种内部盒子溢出的场景
+
+![image-20230512162848121](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230512162848%20.png)
 
 ### 子元素的宽度
 

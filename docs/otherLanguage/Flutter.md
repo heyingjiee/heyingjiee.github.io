@@ -1235,35 +1235,61 @@ try {
 
 #### 函数类型
 
-在dart中，函数分为命名函数和匿名函数，函数属于`Function`类
+在dart中，函数分为命名函数和匿名函数，函数属于`Function`类。与JS不同，dart中无需function关键字
 
-* 命名函数
+* 函数声明
+
+  一般形式
 
   ```dart
-  void a(){
-  	print("1");
+  void main() {
+    void a() {
+      print("1");
+    }
+    a(); //1
   }
-  a(); //1
   ```
 
-* 匿名函数
-
-  顾名思义，就是没有名字的函数，这种函数一般是只使用一次，就不再使用了。或者将这个匿名函数赋值给一个`Function`类型的变量来存储，就可以继续使用了
+  箭头形式
 
   ```dart
-  Function a = () {
-    print("1");
-  };
-  a(); //1
+  //---命名箭头---
+  void main() {
+    void a() => print("1");
+    a(); //1
+  }
+  
+  
+  //---匿名箭头---（省略函数名、返回值类型）
+  void main() {
+    () => print(1);
+  }
   ```
 
-  匿名函数的简写（箭头函数）
+* 函数表达式
 
+  用变量存储匿名函数
+
+  匿名函数的一般形式
+  
+  ```dart
+  void main() {
+    var a = () {
+      print('Hello');
+    };
+    a();
+  }
+  ```
+  
+  匿名函数的箭头形式
+  
   ```text
-  如果函数体，只有"return xxx"这一句
-  ()=>xxxx
+  void main() {
+    var a = () => print('Hello');
+    a();
+  }
   ```
-
+  
   匿名参数的存在是有其必要性的，尤其是我们在后面讲到的**参数为函数**和**自执行方法**中
 
 #### 函数调用
@@ -1424,6 +1450,36 @@ life((param) => {print(param)}); //你好
 ((int n) => {print(n))(10); 
 //10
 ```
+
+### Dart注解
+
+在Dart中，@注解用于为类、方法、变量等添加元数据信息，以便于在运行时进行解析
+
+以下是一些常见的@注解：
+
+```text
+@override：用于重写父类的方法或属性。
+  
+@deprecated：用于标记已经过时或不推荐使用的方法或属性。
+  
+@immutable：用于标记一个类是不可变的，即所有属性都必须是final类型。
+  
+@required：用于标记一个参数是必须的，如果不传递该参数则会抛出异常。
+  
+@factory：用于标记一个类的工厂构造函数。
+  
+@literal：用于标记一个类可以被直接使用字面量方式创建。
+  
+@nullable：用于标记一个参数可以为null。
+  
+@optionalTypeArgs：用于标记一个类的泛型参数可以省略。
+
+@protected：用于标记一个方法或属性只能在当前类或子类中访问。
+
+@visibleForTesting：用于标记一个方法或属性是为了方便测试而暴露出来的。
+```
+
+
 
 ### Dart中的类
 
@@ -2449,61 +2505,94 @@ dart的库通过定义一系列类来实现了Dart语言的所有内置功能
 
 在flutter上安装`flutter`和`dart`插件后，我们很多操作可以直接使用插件实现，不必再使用flutter的命令
 
-### 示例项目
+### 创建+运行
 
-**使用flutter命令**
+**检查flutter环境安装是否正确**
 
-```
-flutter doctor -v
-```
+* 命令方式：
 
-或者
+  ```dart
+  flutter doctor -v
+  ```
 
-**使用flutter插件提供的功能**
+* 插件方式
 
-`shift`+`command`+`p`，打开命令面板，输入`flutter`后，出现所有flutter插件提供的命令,选择图里的命令，运行环境检测
+  `shift`+`command`+`p`，打开命令面板，输入`flutter`后，出现所有flutter插件提供的命令,选择图里的命令，运行环境检测
 
-![image-20220219213716222](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219213716222%20.png)
+  ![image-20220219213716222](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219213716222%20.png)
 
-#### 创建
+**新建项目**
 
-`shift`+`command`+`p`，打开命令面板，选择图里的命令，创建项目
+项目名，命名格式一般为：`xxx_yyy_zzz`（短横线相连，每部分小写）
 
-![image-20220219213305318](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219213305318%20.png)
+* 命令方式：
 
-选择项目放置在哪个目录，输入项目名，即可
+  ```dart
+  flutter create my_first_flutter_project //项目名
+  ```
 
-#### 运行
+* 插件方式：
 
-想要在iOS上运行，需要安装Xcode，启动Xcode，我们需要其中的iOS模拟器
+  `shift`+`command`+`p`，打开命令面板，选择图里的命令，创建项目，输入项目名
 
-启动iOS模拟器
+  ![image-20220219213305318](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219213305318%20.png)
 
-在终端输入命令启动
+**查看当前已连接的设备**
 
-```dart
-flutter run 
-```
+* 命令方式：
 
-![image-20220219222542911](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219222542911%20.png)
+  ```dart
+  flutter devices
+  ```
 
-确定哪个是模拟器，输入对应的数字，我这里是`2`
+* 插件方式：
 
-**注意**
+  ![image-20230602231928868](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230602231929%20.png)
 
-在运行后的终端中显示一些常用命令
+  
 
-![image-20220219223129817](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219223129817%20.png)
+**运行项目**
 
-比较重要的是：
+* 命令方式：
 
-`p`切换视图模式
+  ```dart
+  flutter run --d 设备名  
+    
+  //--release 发布版
+  //--debugger 调试版 ，默认值
+  ```
 
-`o`切换安卓和IOS模式
+  debugger模式启动后，终端中会显示一些常用命令
 
-`R`热重载 ：每次改完代码输入下 `shift`+`r`
+  ![image-20220219223129817](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219223129817%20.png)
 
-#### 项目目录结构
+  ```
+  重点记住：r是热加载，写完代码热加载后，页面才会刷新
+  ```
+
+  
+
+* 插件方式：
+
+  找到项目下的lib/main.dart文件，在main函数上有三种启动方式
+
+  Run、Debug，两者区别在于Debug模式支持一个热加载功能
+
+  Profile是打开性能相关工具
+
+  ![image-20230602232244074](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230602232244%20.png)
+
+  一般开发，使用Debug模式，点击后会提示选择运行的设备
+
+  ![image-20230602235013889](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230602235014%20.png)
+
+  选择设备后，项目会被启动，同时页面出现一个快捷操作区域
+
+  ![image-20230602232948060](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230602232948%20.png)
+
+  其中，**布局分析工具**，会在后面讲Flutter的布局逻辑时用到
+
+### 项目结构
 
 ![image-20220219223840661](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220219223840661%20.png)
 
@@ -2515,62 +2604,792 @@ void main() {
 }
 ```
 
-或者入口函数的另一种写法
+### 代码块插件
+
+帮助快速生成代码块
+
+![image-20230531222906057](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230531222906%20.png)
+
+**例如**
+
+输入`fstful`，生成有状态的组件模版
 
 ```dart
-void main()=>runApp();
+// custom_dialo.dart
+import 'package:flutter/material.dart';
+
+class CustomDialog extends StatefulWidget {
+  const CustomDialog({ Key? key }) : super(key: key);
+
+  @override
+  _CustomDialogState createState() => _CustomDialogState();
+}
+
+class _CustomDialogState extends State<CustomDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+     //return这里随意替换为一个组件，例如
+    //return const Text('测试');
+  }
+}
 ```
 
-### 基本模版
-
-main.dart基本模版，下面的组件除非特殊声明，否则都写在这个模版中，查看演示效果
-
-StatelessWidget无状态组件，所有不发生变化的组件都继承的这个抽象类，要实现其中的抽象方法build，方法return 一个Widget类
-
-**页面结构**
+输入`fstless`，生成无状态的组件模版
 
 ```dart
-import 'package:flutter/material.dart'; //android ui组件库
+import 'package:flutter/material.dart';
+
+class Aa extends StatelessWidget {
+const Aa({ Key? key }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context){
+    return Container();
+    //return这里随意替换为一个组件，例如
+    //return const Text('测试');
+  }
+}
+```
+
+
+
+## Flutter的布局逻辑
+
+### 布局约束
+
+![image-20230603001148734](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603001148%20.png)
+
+* 组件A生成什么样的新约束信息？
+
+  每个组件都不相同，后面会介绍常用组件生成约束信息的一些规则
+
+* 组件A的尺寸由谁决定？
+
+  首先明确，组件A受到的约束优先级>组件A本身属性
+
+  假如，A受到的约束（w=300，h=900），则组件A的宽=300，高=900；
+
+  假如，A受到的约束（0<=w<=300，0<=h<=900）,则组件A的实际宽高就由组件本身属性决定了
+
+  后面会介绍常用组件涉及宽高相关的属性
+
+### 约束的类型
+
+假设某组件A
+
+* 向子组件施加约束（w=300，h=900）,我们称这种约束为**紧约束**
+* 向子组件施加约束（0<=w<=300，0<=h<=900）,我们称这种约束为**宽松约束**（宽松约束就是一个范围）
+* 向子组件施加约束（0<=w<=infinity，0<=h<=infinity），我们称这种约束为**无约束**
+
+### 布局分析工具
+
+**例子**
+
+```dart
+//main.dart
+void main() {
+  runApp(
+    const SizedBox(
+      width: 100,
+      height: 100,
+      child: ColoredBox(color: Colors.blue),
+    ),
+  );
+}
+```
+
+**页面**
+
+![image-20230602235657140](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230602235657%20.png)
+
+**布局分析工具**
+
+![image-20230603000113831](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603000114%20.png)
+
+![image-20230603003124748](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603003125%20.png)
+
+手机屏幕尺寸(w=430,h=932)
+
+第二张图中，可以看到SizedBox受到约束为(w=430,h=932)，约束的优先级最高，所以，SizedBox属性(w=100,h=100)失效。组件SizedBox将自身受到的约束原样向下传递
+
+
+
+### 获取约束信息
+
+```dart
+import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp()); //1.创建MyApp实例
+  runApp(
+     MaterialApp(
+      home: LayoutBuilder(
+        builder: (context,constraints){
+          //获取ColoredBox受到的约束，就用LayoutBuilder把他包裹起来
+          print(constraints)
+          return const ColoredBox(color: Colors.blue);
+        }
+      )
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      //根组件，可以配置tabbar等属性
-      home: Scaffold(appBar: AppBar(title: Text("首页")), body: HomeContent()),//2.body指定页面主体区域为HomeContent实例
-      theme: ThemeData(primarySwatch: Colors.green),
-    );
-  }
-}
+---->[打印日志]----
+//BoxConstraints(w=360.0, h=800.0)
+```
 
-class HomeContent extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(//占据屏幕中心位置
-        child: Container(
-        width: 300.0,
-        height: 300.0,
-        decoration: BoxDecoration(
-            color: Colors.red,
-            border: Border.all(width: 1.0, color: Colors.black)),
-       // child: 后面的大部分组件写在这里
-    ));
-  }
-}
+
+
+## 组件尺寸特性、约束特性
+
+**组件尺寸特性**：
+
+组件受到约束后，如何确定自己的显示尺寸大小（明确下，组件受到紧约束，组件的宽高为紧约束大小。后面讲的都是受到宽松约束，子组件的尺寸如何确定）
+
+
+
+**组件约束特性**：
+
+组件按照什么规则，生成向子组件传递的约束信息
+
+
+
+### MaterialApp、Scaffold
+
+待补充
+
+### UnconstrainedBox
+
+* 组件尺寸特性
+
+  受到紧约束，组件的宽高为紧约束大小
+
+  受到宽松约束，取受到约束的最小值
+
+* 组件约束特性
+
+  向组件传递无约束信息(0<=w<=Infinity,0<=h<=Infinity)
+
+### BoxConstraints、SizedBox
+
+BoxConstraints可通过属性设置宽、高范围
+
+```dart
+//BoxConstraints构造函数
+const BoxConstraints({
+    this.minWidth = 0.0,
+    this.maxWidth = double.infinity,
+    this.minHeight = 0.0,
+    this.maxHeight = double.infinity,
+});
+```
+
+* 组件约束特性
+
+  受到紧约束时，原样传递给子组件
+
+  受到宽松约束时，会取**受到的宽松约束**与**属性定义的宽高范围**的交集
+
+  
+
+SizedBox等价于BoxConstraints.tightFor构造函数，传入属性width令最小、最大宽度相等，传入属性height令最小、最大高度相等
+
+```dart
+const BoxConstraints.tightFor({
+  double? width,
+  double? height,
+}) : minWidth = width ?? 0.0,
+     maxWidth = width ?? double.infinity,
+     minHeight = height ?? 0.0,
+     maxHeight = height ?? double.infinity;
 
 ```
 
-1. 运行MyApp实例
-2. 定义的MyApp类中，MaterialApp是整个页面的根组件，theme可配置风格 ，home可配置页面整体内容
-3. home中可指定appBar（页面顶部）和body（页面主体区域，HomeContent实例）
+* 组件尺寸特性
 
-![image-20220220014236974](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Flutter/image-20220220014236974%20.png)
+  受到紧约束，组件的宽高为紧约束大小
 
-### 组件
+  受到宽松约束，例子如下
+
+  ```
+  受到的约束为(0<=w<=100,0<=h<=100)
+  
+  如果，width=50,height=50，在约束范围内，则尺寸为自身设置尺寸，即(w=50,h=50)
+  如果，width=200,height=200，在约束范围外，则尺寸为约束最大值，即(w=100,1=200)
+  ```
+
+* 组件约束特性
+
+  与BoxConstraints一样，只不过SizedBox的宽高是一个确定值（不是范围），所以交集一定是紧约束
+
+  ```dart
+  //假设，受到的约束(0<=w<=300,0<=h<=300)
+  //width、height在范围内，向下施加紧约束(w=100,h=100)
+  SizedBox(
+    width:100,
+    height:100,
+    child: ColoredBox(color: Colors.red)
+  )
+  ```
+
+  技巧：width、height可以设置为double.infinity（无限），就一定不在父级施加约束的范围，即SizedBox会取受到约束的最大值生成一个紧约束，向下传递
+
+  
+
+### ColoredBox
+
+* 组件尺寸特性
+
+  受到紧约束，组件的宽高为紧约束大小
+
+  受到宽松约束，取受到约束的最小值
+
+* 组件约束特性
+
+  将受到约束，原样传递给子组件
+
+  
+
+### LimitedBox
+
+```dart
+//构造函数
+const LimitedBox LimitedBox({
+  Key? key,
+  double maxWidth = double.infinity,
+  double maxHeight = double.infinity,
+  Widget? child,
+})
+```
+
+* 组件约束特性
+
+  仅在受到的约束最大宽/高 为[无限时], 传递给子组件的最大宽/高会取 LimitedBox 中限制的宽高
+
+  其他情况下，均不改变约束，直接传递受到的约束给子组件
+
+  **实践**
+
+  ```
+  后面会提到Row组件，向下施加（0<=w<=infinity,0<=h<=受到的高约束）
+  
+  这会导致Row的子组件宽度可能会溢出屏幕，可将LimitedBox作Row的子组件，这样LimitedBox的maxWidth、maxHeight将作为新的约束传递给子组件
+  ```
+
+  
+
+
+
+### Flex、Column、Row
+
+Flex组件有一个direction属性，用来指定主轴方向
+
+```dart
+MaterialApp(//紧约束
+  home: Flex(
+    direction: Axis.horizontal, 
+    children: [
+      Container(
+        color: Colors.blue,
+        width: 100,
+        height: 100,
+      ),
+    ],
+  ),
+)
+```
+
+Column组件就本质就是属性设置为`direction: vertical`d的Flex组件
+
+Row组件就本质就是属性设置为`direction: horizontal`的Flex组件
+
+
+
+* 组件尺寸特性
+
+  受到紧约束，组件的宽高为紧约束大小
+
+  受到宽松约束时，会尽量取最大尺寸
+
+  
+
+* 组件约束特性
+
+  ```text
+  [1]: 默认情况下:crossAxisAlignment为CrossAxisAlignment.center
+  在 [主轴] 方向上 [无限约束，即>=0，<=infinity]；在 [交叉轴] 方向上 [放松约束，>=0,<=所受约束最大值]。
+    
+  [2]: crossAxisAlignment 为 CrossAxisAlignment.stretch 时: 
+  在 [主轴] 方向上 [无限约束]；在 [交叉轴] 方向上为 [紧约束]，其值为交叉轴方向上约束大小的 [最大值]。
+  
+  
+  [3]: Flex 的 children 列表中的组件，所受到的约束都是一致的。
+  ```
+
+  默认情况例子：
+
+  ```dart
+  MaterialApp(
+    home: Flex(
+      direction: Axis.horizontal,//水平方向为主轴
+      children: [
+        Container(
+          color: Colors.blue,
+          width: 100,
+          height: 100,
+        ),
+      ],
+    ),
+  )
+  
+  ```
+
+  屏幕w=300，h=800。由图可知，约束为 (0<=w<=infinity,0<=h<=800)，Container与SizedBox约束特性相同。width=10000也在约束范围，但是会超出屏幕，出行溢出错误。
+
+  **如何解决？请看下一个组件Wrap**
+
+  ![image-20230603222920063](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603222920%20.png)
+
+### Wrap
+
+Flex设置水平主轴，子组件受到的约束范围是0<=w<=infinity，所以子组件宽度可能会超出屏幕
+
+Wrap会自己拐弯，排不下会自动换行，同时Wrap组件也有一个direction属性，用来指定主轴方向
+
+![image-20230603224006229](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603224006%20.png)
+
+
+
+* 组件尺寸特性
+
+  同Flex组件
+
+* 组件约束特性
+
+  ```text
+  [1]: 默认情况下， 在 [主轴] 方向上 [放松约束,>=0,<=所受约束的最大值]，在 [交叉轴] 方向上 [无限约束]。
+  
+  [2]: Wrap 的 children 列表中的组件，所受到的约束都是一致的。
+  ```
+
+  
+
+### Stack 
+
+ 组件可以用于将多个组件进行叠放
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(
+    const MaterialApp(
+      home: Stack(//组件特性，无约束时，取自身width、height属性，传递给子级组件
+       children: [
+        SizedBox(width:300, height:300,child: ColoredBox(color:Colors.blue)),
+        SizedBox(width:200, height:200,child: ColoredBox(color:Colors.red))
+         //月靠后，层级越高
+
+       ],
+      ),
+    )
+   
+  );
+}
+```
+
+![image-20230603235005304](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603235005%20.png)
+
+Stack组件的fit属性，可以影响其向子组件施加的约束
+
+* 组件尺寸特性
+
+  同Flex组件
+
+* 组件约束特性
+
+  ```text
+  [1]: 默认情况下, 宽高尽可能 [放松约束]。
+  	  默认值为StackFit.loose 下,  宽高尽可能 [放松约束,>=0,<=所受约束的最大值]。
+  	  fit:StackFit.expand 下,  施加 [紧约束]，约束尺寸为自身受到约束的 [最大尺寸]。
+  		fit:StackFit.passthrough 下,  仅 [传递约束]，把自身受到的约束原封不动的施加给子级。
+  
+  [2]: Stack 的 children 列表中的组件，所受到的约束都是一致的。
+  ```
+
+  
+
+### Flexible、Expanded、Spacer
+
+Flexible会占据剩余空间，其fit属性会影响向子组件施加的约束
+
+Expanded等价于Flexible的fit属性设置为FlexFit.tight，即向子组件施加自紧约束
+
+![image-20230604000806930](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604000807%20.png)
+
+Spacer等价于Expanded，即占据剩余空间，但是该组件没有child属性，不能在其内部放置在其他组件，所以仅仅用来占据空位
+
+
+
+* 组件尺寸特性
+
+  占据宽、高剩余空间
+
+* 组件约束特性
+
+  ```text
+  [1]: 默认情况下,在主轴方向上施加 [松约束]
+  	  默认值为fit:FlexFit.loose 下,  向子组件施加宽、高 [松约束，>=0,<=占据的剩余空间]
+  	  fit:FlexFit.tight 下,  向子组件施加宽、高  [紧约束，=占据的剩余空间]
+  
+  [2]: Stack 的 children 列表中的组件，所受到的约束都是一致的。
+  ```
+
+### Align
+
+构造函数如下：
+
+```dart
+const Align({
+    super.key,
+    this.alignment = Alignment.center,
+    this.widthFactor,
+    this.heightFactor,
+    super.child,
+})
+```
+
+alignment属性，用于定位子组件所在的位置（蓝块是子组件）
+
+![image-20230604182850337](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604182850%20.png)
+
+widthFactor、heightFactor会影响组件尺寸特性
+
+* 组件尺寸特性
+
+  受到紧约束，组件的宽高为紧约束大小
+
+  受到宽松约束
+
+  ```text
+  组件宽=子组件宽*widthFactor
+  
+  组件高=子组件高*heightFactor
+  ```
+
+  结果如果超过了组件所受的宽松约束的范围，则取宽松约束的最大值，作为组件尺寸
+
+* 组件约束特性
+
+  为子组件提供宽松约束
+
+### Container
+
+非常特殊，其他所有组件均是根据自己受到的约束和自身属性，生成新的约束，并传递给子组件
+
+唯有Container组件是根据子元素的需求，生成约束
+
+* 组件尺寸特性
+
+  受到紧约束，组件的宽高为紧约束大小
+
+  受到宽松约束，取决于子组件大小
+
+* 组件约束特性
+
+  在布局时，向Container添加子元素后，Container会根据子元素的要求，自动为子元素分配空间并传递给子组件所需的约束条件
+
+  ```dart
+  import 'package:flutter/material.dart';
+  
+  void main() {
+    runApp(
+      MaterialApp(
+        home: Scaffold(//紧约束
+          body: Container(//mainAxisSize设置为主轴最小。所以Container根据子组件的需求生成约束
+            child:const Flex(
+              direction: Axis.horizontal,
+              mainAxisSize: MainAxisSize.min, // 将 mainAxisSize 设置为 MainAxisSize.min
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+               SizedBox(width:100,height:100,child: ColoredBox(color: Colors.red)),
+               SizedBox(width:100,height:100,child: ColoredBox(color: Colors.blue))
+              ]
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  ```
+
+  
+
+  ![image-20230604012259445](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604012259%20.png)
+
+
+
+## 特定布局
+
+### 打破紧约束
+
+```dart
+//main.dart
+void main() {
+  runApp(
+    const SizedBox(
+      width: 100,
+      height: 100,
+      child: ColoredBox(color: Colors.blue),
+    ),
+  );
+}
+```
+
+这是上一节的例子，手机屏幕尺寸(w=430,h=932)，root根组件向SizeBox施加了约束(w=430,h=932)
+
+我们管这种宽高等于固定值的约束，称为紧约束
+
+SizeBox尺寸也被固定在(w=430,h=932)，同时SizeBox组件会继续把自己受到的约束，原样传递下去（不传递其width、height属性）
+
+ColoredBox受到的约束也是(w=430,h=932)，所以，会出现全屏都是蓝色的现象
+
+
+
+SizeBox会原样将受到的紧约束传递下去，这样所有子组件都是全屏大小了
+
+所以，可以使用Flutter中的一些特定组件，这些组件受到紧约束后，传递给子组件的是放宽松的约束
+
+
+
+**解除紧约束：UnconstrainedBox**
+
+```dart
+void main() {
+  //屏幕尺寸：(w=430,h=932)
+  runApp(
+    //受到的约束：(w=430,h=932)。尺寸：(w=430,h=932)
+    const UnconstrainedBox( 
+      //受到的约束：(UnconstrainedBox)，即宽高不限。尺寸：(w=0,h=0)。ColoredBox尺寸规则：取约束的最小值
+      child: ColoredBox(color: Colors.blue),
+    ),
+  );
+}
+```
+
+![image-20230603005107276](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603005107%20.png)
+
+布局分析工具中，多了一个
+
+![image-20230603004157861](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603004158%20.png)
+
+如何显示ColoredBox？使用SizeBox可以根据width、height属性生成新的约束
+
+```dart
+void main() {
+  runApp(
+    const UnconstrainedBox(
+      child: SizedBox(//组件特性，无约束时，取自身width、height属性，生成紧约束，传递给子级组件
+        width: 100,
+        height: 100,
+        child: ColoredBox(color: Colors.blue),
+      ),
+    ),
+  );
+}
+```
+
+![image-20230603010112737](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603010113%20.png)
+
+
+
+
+
+### 三列布局，中间列自适应
+
+Expand
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MaterialApp(
+    home: Row(
+      //组件特性，无约束时，取自身width、height属性，传递给子级组件
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+            width: 100, height: 100, child: ColoredBox(color: Colors.blue)),
+        //占据剩余空间，并向下施加[约束]
+        Expanded( child: ColoredBox(color: Colors.red)),
+        SizedBox(
+            width: 100, height: 100, child: ColoredBox(color: Colors.green))
+      ],
+    ),
+  ));
+}
+```
+
+![image-20230603235745857](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230603235746%20.png)
+
+![image-20230604000025696](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604000026%20.png)
+
+两个SizedBox宽为100，Expanded占据了剩余空间，取剩余空间的最大值生成紧约束
+
+
+
+### 多列按比例布局
+
+Expanded组件默认flex属性为1。三列flex属性都是1，所以在主轴等比例分配
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MaterialApp(
+    home: Row(
+      //组件特性，无约束时，取自身width、height属性，传递给子级组件
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: ColoredBox(color: Colors.blue)),
+        Expanded( child: ColoredBox(color: Colors.red)),
+        Expanded(child: ColoredBox(color: Colors.green))
+      ],
+    ),
+  ));
+}
+```
+
+![image-20230604002611679](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604002612%20.png)
+
+主轴按照1:2:2的宽度分配
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MaterialApp(
+    home: Row(
+      //组件特性，无约束时，取自身width、height属性，传递给子级组件
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(flex:1,child: ColoredBox(color: Colors.blue)),
+        Expanded(flex:2, child: ColoredBox(color: Colors.red)),
+        Expanded(flex:2,child: ColoredBox(color: Colors.green))
+      ],
+    ),
+  ));
+}
+```
+
+![image-20230604002547739](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604002548%20.png)
+
+
+
+### 在自适应容器中使用Flex布局
+
+前面提到过，Flex布局的尺寸特性，必须受到紧约束，否则就会出现Size丢失的警告
+
+我们可以利用Expanded自适应占据剩余空间，又因为Expanded可以向下施加紧约束，就可以使用Flex布局了
+
+这样两者结合在一起，就相当于Flex布局的宽、高可以自适应
+
+
+
+### 布局实战
+
+
+
+## Flutter组件
+
+Flutter组件学习思路：
+
+* Flutter组件的宽高
+
+  组件的约束优先级高，比如：
+
+  组件约束宽=100，子组件的宽会被拉到100；
+
+  组件约束宽<=100，子组件的宽会由自己控制不得超过100；
+
+  组件约束宽无限，子组件的宽会完全由自己控制
+
+  
+
+  **如何设置组件对子组件的约束**：
+
+  ```text
+  ConstrainedBox组件：使用ConstrainedBox组件可以非常方便地设置组件的最大/最小宽度和高度。它接受一个BoxConstraints对象作为参数，在这个对象中可以设置最大最小宽度和高度等各种约束条件。
+  ```
+
+  ```text
+  SizedBox组件：使用SizedBox组件可以指定组件的精确宽度和高度。它的构造函数接受一个尺寸参数，用于指定组件的宽度和高度。
+  ```
+
+  ```
+  AspectRatio组件：使用AspectRatio组件可以指定组件的长宽比。如果要设置一个组件的宽度是高度的2倍，可以使用AspectRatio组件来实现，其中AspectRatio组件的构造函数接受一个宽高比参数。
+  ```
+
+  ```text
+  FractionallySizedBox组件：使用FractionallySizedBox组件可以根据父组件的大小来指定子组件的大小。例如，如果想让一个组件的宽度是父组件宽度的一半，可以使用FractionallySizedBox的widthFactor属性设置为0.5
+  ```
+
+  **指定容器对自己的约束条件**：
+
+  ```text
+  Container组件的width和height属性可以指定其精确宽度和高度，constraints属性可以用来设置多个约束条件，如最大宽度、最小宽度、最大高度、最小高度等。
+  ```
+
+  
+
+* 我更喜欢由内容撑起盒子宽高的思路。
+
+  Flutter组件有的是尽可能占据父级的宽高（如果父元素没有宽高，则撑起父元素尽可能占据祖先元素），有的是由内部撑起
+
+  ```dart
+  //内部文字撑开
+  Text('Text组件')
+  
+  
+  //Column、Row组件，默认在主轴的方向占据父组件的剩余空间，纵轴由内部撑开
+  //设置主轴尽可能小，mainAxisSize: MainAxisSize.min，则在主轴方向由内部撑开
+  Column(
+      mainAxisSize: MainAxisSize.min,//垂直方向由内部撑起
+      children: [
+        //水平方向由Text组件撑起
+        Text('子组件'),
+        Text('子组件')
+      ]
+  )  
+  ```
+
+* 与Web不同，Flutter并不是所有组件都有事件（比如，点击事件）
+
+  ```dart
+  ```
+
+* 层级定位
+
+  Stack组件，其子组件按照书写的顺序从上到下，在屏幕上从低到高堆叠
+
+  ```dart
+  Stack(
+  	children: [
+    	//居中显示文字
+    	const Align(
+      	alignment: Alignment.center,
+      	child: Text('提示1'),
+    	),
+    	//居右显示文字（层级高于前面的组件）
+    	Align(
+      	alignment: Alignment.centerRight,
+      	child: Text('提示2'),
+    )
+  ],
+  ),
+  ```
+
+  
 
 #### 布局组件
 
