@@ -117,7 +117,7 @@ Vite：
 * webpack倾向于关注兼容性
 * vite是基于ESM的，更关注浏览器端的开发
 
-## Vite
+## vite的简单例子
 
 vite库是一个构建工具库
 
@@ -209,17 +209,28 @@ yarn create vite
 
   这里一点知识，使用包管理器安装的依赖，都会在`node_modules/.bin`创建快捷方式，想调用必须使用下面的方式
 
-  ```
+  ```shell
   yarn vite
   ```
 
+  一般情况下，会在package.json中加脚本，使用yarn dev即可运行
+  ```json
+  "scripts": {
+      "dev": "vite"
+  }
+  ```
+  
+  
+  
   运行后，会运行dev-server。终端出现提示，运行的地址
-
+  
   ![image-20220925015232019](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Engineering/20220925015232%20.png)
-
+  
   打开就不会有报错了
-
+  
   ![image-20220925015157680](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Engineering/20220925015157%20.png)
+
+
 
 ## 依赖预构建<span id='依赖预构建'>
 
@@ -251,7 +262,7 @@ vite是开箱即用的，即有一套默认的配置规则
 
 如果，我们需要自定义配置，需要在项目下使用配置文件`vite.config.js`
 
-一般写成下面的形式，但是没有提示
+配置文件内容写成下面的形式，在webstorm中是有配置项提示的，但是在vscode中没有提示
 
 ```js
 export default {
@@ -300,35 +311,13 @@ defineConfig(({command})=>{
 
   command参数值为build
 
-**vite.config.js**
+添加到package.json中，使用yarn xxx即可运行
 
-主配置文件，最终导出vite配置的文件
-
-```js
-import {defineConfig} from 'vite'
-import viteBaseConfig from "./vite.base.config";
-import viteProdConfig from "./vite.prod.config";
-import viteDevConfig from "./vite.dev.config";
-
-//策略模式
-const envResolver={
-    'build':()=>{
-        console.log('生产环境') 
-        return {...viteBaseConfig,...viteProdConfig}
-    },
-    'serve':()=>{
-        console.log('测试环境')
-        return {...viteBaseConfig,...viteDevConfig}
-    }
-
-}
-
-//最终的vite配置
-export default defineConfig(({command})=>{
-    console.log('defineConfig --> ',command) //启动vite时，会输出到终端
-    return envResolver[command]()
-})
-
+```json
+"scripts": {
+    "dev": "vite dev",
+    "build": "vite build"
+},
 ```
 
 **vite.base.config**
@@ -364,6 +353,41 @@ export default defineConfig({
 })
 ```
 
+**vite.config.js**
+
+主配置文件，最终导出vite配置的文件
+
+代码运行时会首先执行主配置文件，所有导出的defineConfig函数中的打印会输出到终端后，项目启动
+
+```js
+import {defineConfig} from 'vite'
+import viteBaseConfig from "./vite.base.config";
+import viteProdConfig from "./vite.prod.config";
+import viteDevConfig from "./vite.dev.config";
+
+//策略模式
+const envResolver={
+    'build':()=>{
+        console.log('生产环境') 
+        return {...viteBaseConfig,...viteProdConfig}
+    },
+    'serve':()=>{
+        console.log('测试环境')
+        return {...viteBaseConfig,...viteDevConfig}
+    }
+
+}
+
+//最终的vite配置
+export default defineConfig(({command})=>{
+    console.log('defineConfig --> ',command) //启动vite时，会输出到终端
+    return envResolver[command]()
+})
+
+```
+
+
+
 **补充问题**
 
 启动vite的环境是Node环境，为啥其读取的配置文件`vite.config.js`中使用的是ESM规范的引入方式？
@@ -374,14 +398,18 @@ export default defineConfig({
 
 vite启动的环境是Node环境，Node的环境变量是存储在`process.env`这个对象下
 
-vite内置了dotenv这个第三方库，**默认情况**下，dotenv会自动读取项目下的.env文件, 并解析这个文件中的对应环境变量，并将其注入到process对象
+vite内置了dotenv这个第三方库
 
-```.env
-//.env文件
-APP_key=100
+**默认情况**下，dotenv会自动读取项目下的.env文件, 并解析这个文件中的对应环境变量，并将其注入到process对象中
+
+**但是**，如果直接注入，会与某些vite配置（例如，envDir用来配置当前环境变量文件的地址）产生冲突问题， 所以，vite需要手动配置读取哪个文件注入到process对象
+
+```js
 ```
 
-但是，考虑到**默认情况**下的处理方式，会与某些vite配置（envDir，用来配置当前环境变量文件的地址）产生冲突问题， 所以，vite也支持手动配置读取哪个文件注入到process对象
+
+
+但是，考虑到**默认情况**下的处理方式，会与某
 
 ```
 ```
@@ -434,6 +462,17 @@ export default defineConfig(({command,mode})=>{
 ```
 
 
+
+例子：区分生产、测试环境的baseUrl
+
+```text
+//.env.dev
+BASE_URL=http://127.0.0.1:8000
+
+
+//.env.prod
+BASE_URL=http://127.0.0.1:9000
+```
 
 
 

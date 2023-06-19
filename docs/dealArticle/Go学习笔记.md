@@ -7880,6 +7880,19 @@ bufio包中，最重要的两个类型（仔细看，这两个不是接口类型
   
   ```
   
+  WriteTo方法，常用在HTTP服务器中，将下游服务器的响应数据写入到HTTP响应中时使用（网络编程-反向代理部分章节就用到了）
+  
+  ```go
+  func (b *Reader) WriteTo(w io.Writer) (n int64, err error)
+  
+  //该方法将读取bufio.Reader对象中当前可读的所有数据，并将其写入到一个实现了io.Writer接口的对象中。WriteTo会一直读取直到bufio.Reader中没有可读数据、遇到错误或到达结尾。
+  ```
+  
+  
+
+
+
+
 
 ### 读写其他文件（非UTF-8的文本）
 
@@ -9419,80 +9432,346 @@ func main() {
 
 ![image-20230604205308619](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230604205309%20.png)
 
-代理又分为：
+代理又分为：正向、反向代理
 
-* 正向代理
+### 正向代理
 
-  例如，连接VPN服务器上网
+例如，连接VPN服务器上网
 
-  ```go
-  package main
-  
-  import (
-  	"fmt"
-  	"io"
-  	"net"
-  	"net/http"
-  	"strings"
-  )
-  
-  type Pxy struct{}
-  
-  func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-  	fmt.Printf("Received request %s %s %s\n", req.Method, req.Host, req.RemoteAddr)
-  	transport := http.DefaultTransport
-  	// step 1，浅拷贝对象，然后就再新增属性数据
-  	outReq := new(http.Request)
-  	*outReq = *req
-  	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
-  		if prior, ok := outReq.Header["X-Forwarded-For"]; ok {
-  			clientIP = strings.Join(prior, ", ") + ", " + clientIP
-  		}
-  		outReq.Header.Set("X-Forwarded-For", clientIP)
-  	}
-  
-  	// step 2, 请求下游
-  	res, err := transport.RoundTrip(outReq)
-  	if err != nil {
-  		rw.WriteHeader(http.StatusBadGateway)
-  		return
-  	}
-  
-  	// step 3, 把下游请求内容返回给上游
-  	for key, value := range res.Header {
-  		for _, v := range value {
-  			rw.Header().Add(key, v)
-  		}
-  	}
-  	rw.WriteHeader(res.StatusCode)
-  	io.Copy(rw, res.Body)
-  	res.Body.Close()
-  }
-  
-  func main() {
-  	fmt.Println("Serve on :8080")
-  	http.Handle("/", &Pxy{})
-  	http.ListenAndServe("0.0.0.0:8080", nil)
-  }
-  
-  ```
+客户端正向代理例子：
 
-  
+```go
+package main
 
-* 反向代理
+import (
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"strings"
+)
 
-  例如，服务器负载均衡、缓存、安全校验
+type Pxy struct{}
 
-  反向代理的思路：
+func (p *Pxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	fmt.Printf("Received request %s %s %s\n", req.Method, req.Host, req.RemoteAddr)
+	transport := http.DefaultTransport
+	// step 1，浅拷贝对象，然后就再新增属性数据
+	outReq := new(http.Request)
+	*outReq = *req
+	if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+		if prior, ok := outReq.Header["X-Forwarded-For"]; ok {
+			clientIP = strings.Join(prior, ", ") + ", " + clientIP
+		}
+		outReq.Header.Set("X-Forwarded-For", clientIP)
+	}
+
+	// step 2, 请求下游
+	res, err := transport.RoundTrip(outReq)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadGateway)
+		return
+	}
+
+	// step 3, 把下游请求内容返回给上游
+	for key, value := range res.Header {
+		for _, v := range value {
+			rw.Header().Add(key, v)
+		}
+	}
+	rw.WriteHeader(res.StatusCode)
+	io.Copy(rw, res.Body)
+	res.Body.Close()
+}
+
+func main() {
+	fmt.Println("Serve on :8080")
+	http.Handle("/", &Pxy{})
+	http.ListenAndServe("0.0.0.0:8080", nil)
+}
+
+```
+
+### 反向代理
+
+例如，服务器负载均衡、缓存、安全校验
+
+**实现一个简单的反向代理**
+
+反向代理的思路：
+
+* 接收客户端请求（对请求做一些处理）
+* 通过一定的负载均衡算法，获取下游服务器地址
+* 将收到的请求发送到下游服务器
+* 接收下游服务器返回的响应（对响应做一些处理），返回给客户端
+
+![image-20230617232559789](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230617232600%20.png)
+
+启动两个服务器在 8000、8001端口
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
+type RealServe struct {
+	Addr string
+}
+
+func (s *RealServe) Run() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", s.HelloHandler)
+	server := &http.Server{
+		Addr:         s.Addr,
+		WriteTimeout: time.Second * 3,
+		Handler:      mux,
+	}
+
+	go func() {
+		log.Fatal(server.ListenAndServe())
+	}()
+}
+
+func (s *RealServe) HelloHandler(w http.ResponseWriter, r *http.Request) {
+
+	io.WriteString(w, fmt.Sprintf("addr:%s , path:%s \n", s.Addr, r.URL.Path))
+	io.WriteString(w, fmt.Sprintf("RemoteAddr:%s , X-Forwarded-For:%s , X-Real-Ip:%s\n", r.RemoteAddr, r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-Ip")))
+	io.WriteString(w, fmt.Sprintf("%v\n", r.Header))
+
+}
+
+func main() {
+	s1 := &RealServe{
+		Addr: "127.0.0.1:8000",
+	}
+	s1.Run()
+
+	s2 := &RealServe{
+		Addr: "127.0.0.1:8001",
+	}
+	s2.Run()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+}
+
+```
+
+启动代理服务器，在8002端口。使用浏览器访问 http://127.0.0.1:8002/，页面显示的是 `addr:127.0.0.1:8000`
+
+```go
+package main
+
+import (
+	"bufio"
+	"net/http"
+	"net/url"
+)
+
+var proxy_addr = "http://127.0.0.1:8000"
+
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		//1、 解析目标机器的地址，并更改实际请求体的协议和主机为目标
+		proxy, _ := url.Parse(proxy_addr)
+		r.URL.Scheme = proxy.Scheme
+		r.URL.Host = proxy.Host
+
+		//2、请求代理的目标机器
+		transport := http.DefaultTransport
+		response, _ := transport.RoundTrip(r)
+
+		//3、将目标机器的返回值，返回给客户端
+		for k, vv := range response.Header { //vv都是切片类型的
+			for _, v := range vv {
+				w.Header().Add(k, v)
+			}
+		}
+		defer response.Body.Close()
+		bufio.NewReader(response.Body).WriteTo(w)
+
+	})
+
+	http.ListenAndServe(":8002", nil)
+}
+
+```
+
+
+
+**反向代理的增强功能**
+
+使用Go官方提供的ReverseProxy，并扩展以下功能
+
+* 错误回调和错误日志处理
+* 更改代理返回内容
+* 自定义负载均衡策略
+* URL重写
+* 限流、熔断、降级
+* 数据统计
+* 权限验证
+
+![image-20230618005029682](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230618005030%20.png)
+
+使用Go自带的ReverseProxy实现
+
+```go
+//浏览器访问127.0.0.1:8004/xxx，实际访问的是http://127.0.0.1:8000/base/xxx
+package main
+
+import (
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+)
+
+//真实的目标地址
+var proxyUrl = "http://127.0.0.1:8000/base"
+
+func main() {
+	proxy, _ := url.Parse(proxyUrl)
+
+	reverseProxy := httputil.NewSingleHostReverseProxy(proxy)
+	http.ListenAndServe("127.0.0.1:8004", reverseProxy) 
+}
+```
+
+补充下url.Parse函数，其返回值是URL实例（作用是：将string类型的url，转换为URL实例）
+
+```go
+//参数： "http://127.0.0.1:8000/a?name=jack&desc=ceshi%3A%3A%3A#first"
+type URL struct {
+	Scheme      string 		// 协议， http
+  Opaque      string    // 如果url格式是 'scheme:opaque[?query][#fragment]'，即协议后不是'://'，就会被解析为opaque字段
+	User        *Userinfo // url中的用户信息
+	Host        string    // 主机地址， 127.0.0.1:8000
+	Path        string    // 路径（最开始是斜杠）， /a
+	RawPath     string    // <不要使用这个字段，使用Path>
+	ForceQuery  bool      // <不要使用这个字段>
+	RawQuery    string    // 被编码的参数（不带?号）， name=jack&desc=ceshi%3A%3A%3A
+	Fragment    string    // 锚点（不带#号）， first
+	RawFragment string    // <不要使用这个字段，使用Fragment>
+}
+
+
+// 其实url中也可以添加用户信息，在host之前添加 username:password@
+// 例如 "http://hedaodao:password@127.0.0.1:8000"
+```
+
+
+
+Go文档[ReverseProxy](https://studygolang.com/static/pkgdoc/pkg/net_http_httputil.htm#ReverseProxy)
+
+![image-20230618095808334](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230618095808%20.png)
+
+ReverseProxy的类型定义
+
+```go
+type ReverseProxy struct {
+  // Director must be a function which modifies
+	// the request into a new request to be sent
+	// using Transport. Its response is then copied
+	// back to the original client unmodified.
+	// Director must not access the provided Request
+	// after returning.
+	//控制器，函数内部可以对请求进行修改
+	Director func(*http.Request)
+
+	//请求连接池。如果为nil，则使用http.DefaultTransport
+	Transport http.RoundTripper
+
+	// FlushInterval specifies the flush interval
+	// to flush to the client while copying the
+	// response body.
+	// If zero, no periodic flushing is done.
+	// A negative value means to flush immediately
+	// after each write to the client.
+	// The FlushInterval is ignored when ReverseProxy
+	// recognizes a response as a streaming response, or
+	// if its ContentLength is -1; for such responses, writes
+	// are flushed to the client immediately.
+  // 刷新间隔
+	FlushInterval time.Duration
+
+	// ErrorLog specifies an optional logger for errors
+	// that occur when attempting to proxy the request.
+	// If nil, logging is done via the log package's standard logger.
+	ErrorLog *log.Logger
+
+	// BufferPool optionally specifies a buffer pool to
+	// get byte slices for use by io.CopyBuffer when
+	// copying HTTP response bodies.
+  //错误记录器
+	BufferPool BufferPool
+
+	// ModifyResponse is an optional function that modifies the
+	// Response from the backend. It is called if the backend
+	// returns a response at all, with any HTTP status code.
+	// If the backend is unreachable, the optional ErrorHandler is
+	// called without any call to ModifyResponse.
+	//
+	// If ModifyResponse returns an error, ErrorHandler is called
+	// with its error value. If ErrorHandler is nil, its default
+	// implementation is used.
+  // 修改响应
+	ModifyResponse func(*http.Response) error
+
+	// ErrorHandler is an optional function that handles errors
+	// reaching the backend or errors from ModifyResponse.
+	//
+	// If nil, the default is to log the provided error and return
+	// a 502 Status Bad Gateway response.
+  // ModifyResponse函数返回错误时的错误回调。如果为nil，遇到错误时，返回502
+	ErrorHandler func(http.ResponseWriter, *http.Request, error)
+}
+```
+
+NewSingleHostReverseProxy函数源码：
+
+```go
+func NewSingleHostReverseProxy(target *url.URL) *ReverseProxy {
+	targetQuery := target.RawQuery
+  //这里创建一个director
+	director := func(req *http.Request) {
+    //把目标服务器的协议、主机，赋值给req对象（req就是代理服务器接收到的客户端请求）
+		req.URL.Scheme = target.Scheme
+		req.URL.Host = target.Host
+    
+    //如果 客户端请求127.0.0.1:8000/dir , 目标服务器target是127.0.0.1:8001/base，最后客户端实际访问的是127.0.0.1:8001/base/dir
+		req.URL.Path, req.URL.RawPath = joinURLPath(target, req.URL)
+    
+    // 拼接url参数
+		if targetQuery == "" || req.URL.RawQuery == "" {
+			req.URL.RawQuery = targetQuery + req.URL.RawQuery
+		} else {
+			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
+		}
+    
+    // 修改头的User-Agent
+		if _, ok := req.Header["User-Agent"]; !ok {
+			// explicitly disable User-Agent so it's not set to default value
+			req.Header.Set("User-Agent", "")
+		}
+	}
   
-  * 接收客户端请求（对请求做一些处理）
-  * 通过一定的负载均衡算法，获取下游服务器地址
-  * 将收到的请求发送到下游服务器
-  * 接收下游服务器返回的响应（对响应做一些处理），返回给客户端
   
-  
-  
-  
+	return &ReverseProxy{Director: director}
+}
+```
+
+
+
+
 
 ## 代码测试（待补充）
 

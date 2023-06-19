@@ -7269,6 +7269,89 @@ https://www.jianshu.com/p/bfa7e289303a
 
 
 
+### 发布订阅模式
+
+EventBus通常是指事件总线系统，可以在不同的组件和模块之间传递事件。它用于解耦不同组件之间的通信，各组件只需要关注自己需要的事件和数据
+
+```js
+class EventBus {
+  constructor() {
+    this.events = {}; // 存储事件及其对应的回调函数列表
+  }
+
+  // 订阅事件
+  subscribe(eventName, callback) {
+    this.events[eventName] = this.events[eventName] || []; // 如果事件不存在，创建一个空的回调函数列表
+    this.events[eventName].push(callback); // 将回调函数添加到事件的回调函数列表中
+  }
+
+  // 发布事件
+  publish(eventName, data) {
+    if (this.events[eventName]) {
+     this.events[eventName].forEach(callback => {
+        callback(data); // 执行回调函数，并传递数据作为参数
+      });
+    }
+  }
+
+  // 取消订阅事件
+  unsubscribe(eventName, callback) {
+    if (this.events[eventName]) {
+      this.events[eventName] = this.events[eventName].filter(cb => cb !== callback); // 过滤掉要取消的回调函数
+    }
+  }
+}
+
+```
+
+
+
+EventEmitter 是一个 Node.js 中的模块，使用它可以定义和触发事件
+
+```js
+class EventEmitter {
+  constructor() {
+    this.events = {}; // 用于存储事件及其对应的回调函数列表
+  }
+
+  // 订阅事件
+  on(eventName, callback) {
+    this.events[eventName] = this.events[eventName] || []; // 如果事件不存在，创建一个空的回调函数列表
+    this.events[eventName].push(callback); // 将回调函数添加到事件的回调函数列表中
+  }
+
+  // 发布事件
+  emit(eventName, data) {
+    if (this.events[eventName]) {
+      this.events[eventName].forEach(callback => {
+        callback(data); // 执行回调函数，并传递数据作为参数
+      });
+    }
+  }
+
+  // 取消订阅事件
+  off(eventName, callback) {
+    if (this.events[eventName]) {
+      this.events[eventName] = this.events[eventName].filter(cb => cb !== callback); // 过滤掉要取消的回调函数
+    }
+  }
+  
+  // 添加一次性的事件监听器 
+  once(eventName, callback) { 
+      const onceCallback = data => { 
+          callback(data); // 执行回调函数 
+          this.off(eventName, onceCallback); // 在执行后取消订阅该事件 
+      }; 
+      this.on(eventName, onceCallback); 
+  }
+}
+
+```
+
+
+
+
+
 ## Dom
 
 ### HTML结构
@@ -7780,65 +7863,62 @@ toDataURL方法可以将canvas导出为base64格式的图片
 
 **生成海报**
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-
-<body>
-    <canvas id="canvas"></canvas>
-</body>
-<style>
-
-</style>
-<script>
-    const ratio = window.devicePixelRatio || 1;
-   
-    const canvas = document.getElementById('canvas')
-    canvas.width = 315 * ratio;
-    canvas.height = 464 * ratio;
-    
-    console.log(canvas.width,canvas.height);
-    const context = canvas.getContext('2d')
-    
-   
-
-    let imgPost = new Image();
-    // imgPost.setAttribute("crossOrigin", "anonymous");
-    imgPost.src =
-        "https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423190645%20.png";
-    
-    let imgQrcode = new Image();
-    // imgQrcode.setAttribute("crossOrigin", "anonymous");
-    imgQrcode.src = 'https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423190815%20.png';
-    
+```js
+//创建图片对象，将其改造为同步方式
+function loadImageSync(imageUrl) {
+  let imgPost = new Image();
+  imgPost.setAttribute('crossOrigin', 'anonymous');
+  imgPost.src = imageUrl;
+  return new Promise((resolve, reject) => {
     imgPost.onload = function () {
-        context.drawImage(
-            imgPost,
-            0,
-            0,
-            canvas.width / ratio,
-            canvas.height / ratio
-        );
-        context.drawImage(
-            imgQrcode,
-            canvas.width / ratio / 2 - 85 / 2,
-            canvas.height / ratio - (52 + 85),
-            85,
-            85
-        );
-        
-        
+      return resolve(imgPost);
     };
+    imgPost.onerror = function () {
+      return reject(`加载失败，图片资源：${imageUrl}`);
+    };
+  });
+}
 
+//创建海报。入参是二维码url
+export async function createIndexSharePostImage(qrCode) {
+  const originWidth = 315;
+  const originHeight = 464;
+  const canvas = document.createElement('canvas');
+  canvas.style.display = 'none';
 
-</script>
+  const ratio = (window.devicePixelRatio || 1) * 2;
+  canvas.width = Math.round(originWidth * ratio);
+  canvas.height = Math.round(originHeight * ratio);
+  document.body.append(canvas);
+
+  const context = canvas.getContext('2d');
+  context.scale(ratio, ratio);
+
+  
+  let imgPost = await loadImageSync(
+    'https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423190645%20.png'
+  );
+  let qrCodePost = await loadImageSync(qrCode);
+  
+  //绘制背景
+  context.drawImage(imgPost, 0, 0, originWidth, originHeight);
+  //绘制二维码
+  context.drawImage(
+    qrCodePost,
+    originWidth / 2 - 85 / 2,
+    originHeight - (52 + 85),
+    85,
+    85
+  );
+
+  //转成base64编码的图片
+  return canvas.toDataURL({
+    format: 'image/png',
+    quality: 1,
+    width: canvas.width,
+    height: canvas.height,
+  });
+}
 ```
 
 ![image-20230423191206484](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423191207%20.png)
@@ -7850,14 +7930,6 @@ toDataURL方法可以将canvas导出为base64格式的图片
 下载：目前发现通过a标签下载图片的方式，在PC端正常，而在移动端浏览器上存在兼容性问题。尤其是在微信中会直接弹窗toast提示，不允许下载。
 
 ```js
-//转成base64编码的图片
-const canvasBase64 = canvas. toDataURL ({
-	format: 'image/png', 
-  quality: 1, 
-  width: canvas.width, 
-  height: canvas.height,
-});
-
 //下载
 const link = document. createElement('a');
 link.style.display = 'none';
@@ -7869,21 +7941,7 @@ link.click();
 
 保存：
 
-移动端各个浏览器均实现了长按保存图片到相册的功能（微信也实现了），所以我们可以在合成海报后，直接将canvas元素的隐藏，仅仅在页面展示img图片（src可以是base64编码格式）
-
-这里有一个注意点：
-
-```
-drawImage绘制图片是一个异步操作，如果图片过大则会造成toDataURL转化时得到空图片、不全的图片
-
-目前，发现在Vue中，可以在页面加载时绘制canvas海报
-
-然后，使用nextTick(()=>{ 在这里toDataURL })
-```
-
-
-
-
+移动端各个浏览器均实现了长按保存图片到相册的功能（微信也实现了），所以我们可以在合成海报后，直接使用image组件显示base64格式的图片。用户可以通过长按保存图片
 
 ## 前端数据存储
 
