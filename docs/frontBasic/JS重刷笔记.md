@@ -2451,6 +2451,8 @@ console.log(res) //输出d
 
   * end，结束截取元素的下一个索引，范围可正可负
 
+    (左闭，右开区间)
+
 * 返回值：
 
   返回被截取元素组成的数组
@@ -3633,7 +3635,11 @@ JS中this的指向是十分让人头秃的一个知识点，因为this的指向�
   }
   ```
   
-  函数f1的入参是对象，对象中有两个回调函数，因为对象的花括号不是块级作用域，所以this不会指向这个入参对象
+  函数f1的入参是对象，对象中有两个回调函数，因为对象的花括号不是块级作用域
+  
+  箭头函数callback2的this不会指向这个入参对象
+  
+  callback1由这个对象调用，f1调用这个对象
   
   ```js
   f1({
@@ -4022,8 +4028,8 @@ obj.run()
   new Date(year, monthIndex [, day [, hours [, minutes [, seconds [, milliseconds]]]]]);
   
   //注意：
-  //1. year, monthInde两个参数必传的，否则返回的Data对象是错误的
-  //2. 其中monthIndex=0，表示的是1月,11为12月。不传递的参数，默认为0
+  //1. year, monthInde两个参数必传的。如果只传入一个数，会被当成时间戳
+  //2. 其中monthIndex=0，表示的是1月,11为12月
   ```
 
   ```js
@@ -4032,23 +4038,53 @@ obj.run()
 
 * 参数是日期字符串
 
+  即将日期字符串转换为时间对象
+  
   ```js
   new Date(dateString);
   
-  //'yyyy-mm-dd HH:MM:SS'
-  //'yyyy/mm/dd HH:MM:SS'
+  // 入参格式建议为（年份为4位，其他必须为两位）：
+  //'yyyy-mm-dd HH:MM:SS' 、 'yyyy/mm/dd HH:MM:SS'
+  //'yyyy-mm-dd' 、 'yyyy/mm/dd'
+  
   //注意:
   //1. 当你使用字符串这个形式的时候, 1 表示 1 月, 12 表示 12 月
   //2. 年月日和时分秒中间有一个空格
   ```
-
+  
   ```js
   new Date("2022-01-20 14:30:00") //Thu Jan 20 2022 14:30:00 GMT+0800 (中国标准时间)
   
   new Date("2022/01/20 14:30:00") //Thu Jan 20 2022 14:30:00 GMT+0800 (中国标准时间)
   ```
-
   
+
+### Date对象的运算
+
+```js
+function getDates(startDate, endDate) {
+  const dates = [];
+  const currentDate = new Date(startDate);
+
+  //可比较大小
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+}
+
+// 示例用法
+const startDate = new Date('2023-01-01');
+const endDate = new Date('2023-01-10');
+const dates = getDates(startDate, endDate);
+
+dates.forEach(date => console.log(date.toISOString().split('T')[0]));
+
+```
+
+
 
 ### Date对象的方法
 
@@ -4064,6 +4100,8 @@ obj.run()
 | getMilliseconds() | 返回 Date 对象的毫秒(0 ~ 999)                     |
 | **时间戳**        |                                                   |
 | getTime()         | 返回 1970 年 1 月 1 日至今的毫秒数（时间戳）      |
+
+
 
 ### 时间戳 
 
@@ -6558,7 +6596,7 @@ var typeAssertedNumber = /** @type {number} */ (numberOrString)
 
 
 
-### @param、@return
+### @param、@returns
 
 函数形参注释
 
@@ -6566,7 +6604,7 @@ var typeAssertedNumber = /** @type {number} */ (numberOrString)
 /**
  * @param {string} p1   参数p1类型为string
  * @param {string} [p2] 参数p2类型为string,可选参数
- * @return {string}     返回值类型
+ * @returns {string}     返回值类型
  */
 function a(p1, p2, p3, p4){
  
@@ -6640,6 +6678,28 @@ let a;
  * @return {T}
  */
 function id(x){ return x }
+```
+
+### @example
+
+```js
+/**
+ * 计算两个数字的和
+ * @param {number} a - 第一个数字
+ * @param {number} b - 第二个数字
+ * @returns {number} 两个数字的和
+ * @example
+ * // 示例 1
+ * const result1 = add(2, 3);
+ * console.log(result1); // 输出: 5
+ *
+ * // 示例 2
+ * const result2 = add(5, -2);
+ * console.log(result2); // 输出: 3
+ */
+function add(a, b) {
+  return a + b;
+}
 ```
 
 
@@ -7350,7 +7410,50 @@ class EventEmitter {
 
 
 
+### 单例模式
 
+通过这种方式，无论多少次调用返回的函数，都只会创建一个 Location 实例并共享使用
+
+```js
+module.exports = (function () {
+  let location;
+  return function () {
+    if (location) {
+      return location;
+    }
+    location = new Location();
+    return location;
+  };
+})()();
+```
+
+分析：
+
+* return 函数，其中的location是闭包变量。这个变量不会随着函数运行被销毁
+
+* 立即执行函数（IIFE）
+
+  ```js
+  (function () {
+    xxxx
+  })()
+  ```
+
+  这个函数返回的也是函数，这个函数也要立即执行，所以需要再加一个括号
+
+  ```js
+  (function () {
+    xxxx
+  })()()
+  ```
+
+* 两个立即执行函数，最终返回的是一个Location实例
+
+  ```js
+  import Location from './xxx.js' //
+  ```
+
+  
 
 ## Dom
 
@@ -8653,22 +8756,54 @@ console.log("Listening on port 3000...");
 ```
 ```
 
+​	
 
+## Node
 
-## 疑惑
+### 路径
 
-奇怪：
-
-false 和 null 均有这个问题
+node中所有接收路径作为参数的函数，如果传入相对路径，默认都是会和`process.cwd()`做拼接
 
 ```js
-let b=false
-console.log(++b) //1
-
-//直接使用字面量语法报错
-console.log(++false)
-//SyntaxError: Invalid left-hand side expression in prefix operation
+fs.readFileSync('./data')
 ```
+
+我们可以在不同的目录执行同一个index文件，`process.cwd()`表示的是当前路径。这样会导致执行同一个文件，但是其中入参路径是根据执行目录而变化的
+
+```shell
+node ~/Document/test/index.js 
+
+node index.js
+```
+
+所以，我们推荐node中凡是传入路径的，都是使用resolve
+
+```js
+// path.resolve 拼接两个路径，最后返回一个绝对路径
+// __dirname表示的是当前文件所在目录
+// 使用resolve入参路径，不会随着执行目录变化
+
+const path =require('path')
+fs.readFileSync(path.resolve(__dirname,'./data'))
+```
+
+### 文件
+
+**fs.readFileSync**、**fs.writeFileSync**
+
+```js
+const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'))
+```
+
+
+
+**文件流**
+
+```
+https://juejin.cn/post/7190563380900397117
+```
+
+
 
 ## 解惑
 

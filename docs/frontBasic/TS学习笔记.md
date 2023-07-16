@@ -405,8 +405,9 @@ enum Items {
 
 ```ts
 interface Stu {
-  name:string;
-  age: number;
+  readonly name:string; //只读属性
+  age?: number; //可选属性
+  score:number
 }
 ```
 

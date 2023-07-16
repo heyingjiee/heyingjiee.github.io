@@ -1379,8 +1379,8 @@ v-on:绑定处理事件=“处理函数”，`v-on:`简写`@`
 * 遍历对象
 
   ```html
-  <!--还有第二个参数，即对象中的key值，v-for="(value, name) in object-->
-  <!--还有第三个参数，即索引index，v-for="(value, name, index) in object"-->
+  <!--还有第二个参数，即对象中的key值，v-for="(value, key) in object-->
+  <!--还有第三个参数，即索引index，v-for="(value, key, index) in object"-->
   <ul id="example2" class="demo">
     <li v-for="value in object">
       {{ value }}<!--是对象的值-->

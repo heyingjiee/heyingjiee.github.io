@@ -974,6 +974,34 @@ deactivated () {
 
 
 
+**页面路由（vue-router）对生命周期的影响**
+
+这里将按照[微信小程序-页面路由](https://developers.weixin.qq.com/miniprogram/dev/framework/app-service/route.html)的格式整理
+
+框架以栈的形式维护了当前的所有页面。 当发生路由切换的时候，页面栈的表现、路由前后触发的生命周期：
+
+| 路由方式                                                | 页面栈表现 | 当前页面 | 路由后页面 |
+| ------------------------------------------------------- | ---------- | -------- | ---------- |
+| router.push                                             |            |          |            |
+| router.go                                               |            |          |            |
+| router.replace                                          |            |          |            |
+| window.open                                             |            |          |            |
+| window.history.back                                     |            |          |            |
+| window.history.replaceState({}, '', document.referrer); |            |          |            |
+
+使用keep-alive包裹组件 ，会影响路由默认触发的生命周期：
+
+| 路由方式                                                | 页面栈表现 | 当前页面 | 路由后页面 |
+| ------------------------------------------------------- | ---------- | -------- | ---------- |
+| router.push                                             |            |          |            |
+| router.go                                               |            |          |            |
+| router.replace                                          |            |          |            |
+| window.open                                             |            |          |            |
+| window.history.back                                     |            |          |            |
+| window.history.replaceState({}, '', document.referrer); |            |          |            |
+
+
+
 ### directives
 
 自定义指令（后面会讲到Vue指令）
@@ -2784,7 +2812,7 @@ this.$emit('update:title', "新标题")
 
 ```vue
 <text-document
-  :title,sync="title"
+  :title.sync="title"
 ></text-document>
 ```
 
@@ -2848,7 +2876,7 @@ export default {
 
 
 
-**在动态组件上使用keep-alive**
+**在动态组件上使用<span id='keep-alive'>keep-alive</span>**
 
 使用is切换组件时，组件会被销毁重建，所以在组件中的状态会丢失。(例如，在组件A中选中某个checkbox，但是切换到组件B后再切换回组件A，组件A原来的选中状态就会丢失）
 
@@ -2888,7 +2916,7 @@ deactivated() {
 -->父级mounted
 ```
 
-切换另一个动态组件
+切换到另一个动态组件
 
 ```
 父级beforeUpdate
@@ -2908,9 +2936,25 @@ v-if在页面中进行判断，显示对应的组件
 
 动态组件在js中进行判断，然后设置对应的组件名。进一步与页面解耦
 
+### keep-alive
 
+keep-alive应该包裹组件，参照<a href="#keep-alive">动态组件</a>部分
 
-### 异步组件（待补充）
+keep-alive会影响组件生命周期
+
+### 异步组件
+
+异步组件是指在需要时才会被加载的组件。与传统的同步加载方式不同，异步组件的代码会被分割成小块，并在需要时动态加载。这种方式可以提高应用的初始加载速度，只有当组件需要被渲染到页面上时，才会进行加载。
+
+使用 `import()` 语法，在编译时会自动转换为异步加载的代码。一般，将异步组件定义为使用 `import()` 加载组件的函数，例如在router.js文件
+
+```js
+{
+    path: '/auth-status',
+    name: 'authStatus',
+    component: () => import('../views/authStatus.vue'),
+  },
+```
 
 
 

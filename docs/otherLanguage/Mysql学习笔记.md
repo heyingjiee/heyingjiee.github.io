@@ -30,5 +30,13 @@ CREATE TABLE chihiro_code_count (
 `update_time` datetime not null DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP comment '行修改时间',
 ```
 
+## 增加索引
+
+```shell
+ALTER TABLE chihiro_gitlab_detail ADD INDEX idx_group_id (group_id);
+
+# alter table 表名 add index 索引名(列明)
+```
+
 
 

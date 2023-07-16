@@ -1210,7 +1210,7 @@ npm list --depth=0
 
 ### 3.2 在Express中配置模板引擎art-template
 
-* 文档：http://aui.githb.io/art-template/express/
+* 文档：https://aui.github.io/art-template/zh-cn/docs/
 
 * ```shell
   npm install --save art-template

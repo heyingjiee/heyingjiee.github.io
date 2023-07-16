@@ -615,7 +615,160 @@ var findMinArrowShots = function(points) {
 
 
 
+## 数组 
 
+### 总结
+
+* 283 数组挑出2个阵营
+* 75 数组挑出3个阵营 
+
+### [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
+
+![image-20230625235011335](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20230625235011%20.png)
+
+考虑边界
+
+```
+输入：[1]
+
+输出：[1]
+```
+
+方式一：时间复杂度o(n)
+
+挑出非零值，由于[0,j-1]都是非零值，所以手动将[j,最后]补零
+
+```js
+var moveZeroes = function(nums) {
+    //i能按照顺序一直把非零的数放到最前面，这会导致前面的都是非零值，j记录了[0,j-1]都是非零值
+    let j=0 
+    let len=nums.length
+    for(let i=0;i<len;i++){
+        if(nums[i]!==0){ 
+            nums[j]=nums[i]
+            j++
+        }
+        
+    }
+
+    for(;j<=len-1;j++){
+        nums[j]=0
+    }
+
+    return nums
+};
+```
+
+方式二：**双指针法**。时间复杂度o(n)，但是只循环一次
+
+right按数组顺序遍历，找到第一个不为零的（right前都是零）和前面的零交换。交换后，left向后移1位，表示[0,j-1]都是交换过去的非零值
+
+```js
+let left=0,right=0
+while(right<nums.length){
+    if(nums[right]!==0){
+        let temp=nums[left]
+        nums[left]=nums[right]
+        nums[right]=temp
+
+        left++
+    }
+    right++
+
+}
+return nums
+```
+
+### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
+
+0向左放，2向右放，剩下1就在中间了
+
+**双指针法**
+
+```js
+```
+
+
+
+### [167.两数之和 II - 输入有序数组](https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/)
+
+循环解决
+
+```js
+var twoSum = function(numbers, target) {
+    let len=numbers.length
+    for(let i=0;i<len;i++){
+        for(let j=0;j<len;j++){
+            if(numbers[i]+numbers[j]===target&&i!==j){
+                return [i+1,j+1]
+            }
+        }
+    }
+};
+```
+
+**二分法**
+
+题目强调有序数组
+
+### [209. 长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/)
+
+滑动窗口
+
+```js
+```
+
+
+
+### [350. 两个数组的交集 II](https://leetcode.cn/problems/intersection-of-two-arrays-ii/)
+
+map计数器。原本想要将数据都放入map中计数，最后判断map[key]>0的元素，但是需要考虑下面的情况
+
+```text
+[1,1,2,3]与 [1,1]
+
+==>[1,1]
+```
+
+代码：
+
+```js
+/**
+ * @param {number[]} nums1
+ * @param {number[]} nums2
+ * @return {number[]}
+ */
+var intersect = function(nums1, nums2) {
+    let res=[]
+    //将长度小的赋值给num1.这里创建的map也小
+    if(nums1.length>nums2.length){
+        [nums1,nums2]=[nums2,nums1]
+    }
+
+    let map={}
+    //用num1建立计数器
+    for(value of nums1){
+        if(map[value]){
+            map[value]++
+        }else{
+            map[value]=1
+        }
+    }
+
+    //遍历nums
+    for(let value of nums2){
+        if(map[value]>0){ //num2中元素在map中有
+            map[value]-- //计数器减1
+            res.push(value) //加入res
+        }
+    }
+    return res
+};
+```
+
+
+
+### [905. 按奇偶排序数组](https://leetcode.cn/problems/sort-array-by-parity/)
 
 
 

@@ -55,6 +55,8 @@ npm init -y
 ```shell
 #全局修改源地址
 npm config set registry https://registry.npm.taobao.org
+#修改指定域地地址，从哪里拉取
+npm config set @armor:registry http://npm.yiche.com/registry/
 
 #临时修改
 npm install @vue/cli --registry=https://registry.npm.taobao.org
@@ -280,9 +282,13 @@ https://developers.weixin.qq.com/community/develop/article/doc/00064c9644c6201dc
 
 ## package配置文件
 
+### 字段含义
+
 package.json中各个字段的含义（仅name和version是必须的）
 
 [官方文档](https://docs.npmjs.com/cli/v8/configuring-npm/package-json)对各个字段的解释
+
+中文版参考：[中高级前端必须掌握的package.json最新最全指南](https://juejin.cn/post/7240805459288522808#heading-59)
 
 注意字段含义很大程度上读取该字段的程序，比如Node、Vue-cli，所以有很多非NPM官方的字段
 
@@ -329,9 +335,9 @@ package.json中各个字段的含义（仅name和version是必须的）
   "types": "./dist/index.d.ts", 
   
   //----入口文件----
-  "main": "./dist/index.js", // 加载包时的默认导出入口。比如你用 require/import 导入时，默认情况下都是从这里进入的。
+  "main": "./dist/index.js", // 用于 CommonJS 规范的模块加载器。比如你用 require/import 导入时，默认情况下都是从这里进入的。
   
-  "module": "./dist/esm/index.js", // ESM 格式文件的导出入口。非 NodeJS 官方的字段，所以 NodeJS 并不识别该字段。它主要被各大打包工具（比如 Rollup、Webpack）识别并使用。并且不支持 .mjs 后缀的文件。相关文档：https://github.com/rollup/rollup/wiki/pkg.module
+  "module": "./dist/esm/index.js", // 用于 ES Modules 规范的模块加载器。非 NodeJS 官方的字段，所以 NodeJS 并不识别该字段。它主要被各大打包工具（比如 Rollup、Webpack）识别并使用。并且不支持 .mjs 后缀的文件。相关文档：https://github.com/rollup/rollup/wiki/pkg.module
   
   "type": "module", //Node环境中支持该字。可选字段：module、commonjs 。描述该包的格式类型，决定是否将 .js 文件加载为 CJS 或 ESM 的格式
   
@@ -348,6 +354,8 @@ package.json中各个字段的含义（仅name和version是必须的）
   
 }
 ```
+
+
 
 **发布npm包相关**
 
@@ -386,11 +394,95 @@ package.json中各个字段的含义（仅name和version是必须的）
 
 执行`npm run hdd`的时候，会自动将`./node_modules/.bin/`加入系统的PATH变量，直接通过命令来调用`xxx/xxx.js`这个脚本
 
-脚本文件需以`#!/usr/bin/envnode`开头
+脚本文件需以`#!/usr/bin/env node`开头（#!/usr/bin/env node 到底是什么？https://juejin.cn/post/6844903826344902670）
 
-**入口文件相关**
+**workspace**
 
-Webpack配置中的`mainFields`就是用来解析模块的，默认会按照顺序解析browser、module、main字段
+```json
+"private":"true",
+
+"workspaces": [
+   "packages/*" 
+]
+```
+
+创建子包 p1
+
+```js
+npm init -w packages/p1 -y
+```
+
+在node_modules/.package-lock.json中可以看到 "link": true 链接符号信息
+
+新建packages/p1/index.js
+
+```js
+module.exports = "p1包";
+```
+
+创建子包p2
+
+```js
+npm init -w packages/p2 -y
+```
+
+将子包p1添加到p2中
+
+```js
+npm i p1 -w p2
+```
+
+安装，卸载等命令都是一样的，只是多了"--workspace="参数（简写-w），用来指定在哪个包中执行命令
+
+子包p2使用p1
+
+```js
+const p1 = require("p1");
+
+console.log("使用", p1);
+
+module.exports = "p2包";
+```
+
+### 简单案例
+
+```json
+{
+  "name": "tasks",
+  "version": "1.0.0",
+  "description": "自己的npm库",
+  
+  
+  "main": "dist/legacy/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/types/src/index.d.ts",
+  "type": "module",  //指定使用ESM。可以不设置main字段，main字段用来指定使用commandjs加载器进行加载的入口。设置了可以更好的提供commanjs的兼容性
+  
+  
+  "author": "hedaodao",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "h5",
+    "my"
+  ],
+  "scripts": {
+    "build": "xxx"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git仓库地址"
+  },
+  "homepage": "github主页"
+}
+```
+
+
 
 ## 模块化规范
 
@@ -533,6 +625,52 @@ Node端默认CJS，浏览器端通过main指定
   "main": "./dist/index.js" 
 }
 ```
+
+## npm create xxx
+
+我们常见的
+
+```
+npm create vite my-project-name
+```
+
+其中的`npm create`其实是`npm init`的别名
+
+`npm init xxx` 是一种约定的命令格式，用于初始化特定类型的项目或生成项目模板，这里的 `xxx` 是指特定的脚手架或工具名称。
+
+当运行 `npm init xxx` 命令时，它会查找名为 `create-xxx` 或 `generator-xxx` 的包，并执行其中的初始化脚本，从而生成项目文件结构、配置文件或其他相关内容。
+
+初始化脚本指的是package.json中的bin字段指定的脚本，如果没有则会执行 `main` (commonjs)、`module`(ESM)字段指定的脚本
+
+**例如**
+
+```
+npm create vite my-project-name
+```
+
+其实就是使用 `create-vite`工具，执行其入口脚本。`my-project-name`是脚本的参数，这部分就由你使用的工具来定义了
+
+
+
+**注意**
+
+create-xxx是包名部分
+
+如果是创建域名包，即`@yyy/create-xxx`。
+
+```shell
+npm init #创建项目，指定项目名：@hedaodao/create-scaffold
+```
+
+使用该包初始化项目
+
+```
+npm create @hedaodao/scaffold xxx
+```
+
+
+
+
 
 ## nvm
 
