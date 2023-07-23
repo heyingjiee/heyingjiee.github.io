@@ -127,7 +127,9 @@
 
    ![image-20220327170016269](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220327170016269.png)
 
-   能把html格式化分行显示![image-20210803214100321](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210803214100321%20.png)
+   能把html格式化分行显示
+
+   ![image-20210803214100321](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20210803214100321%20.png)
 
 3. **Prettier - Code formatter**：只关注格式化，并不具有eslint检查语法等能力，只关心格式化文件(最大长度、混合标签和空格、引用样式等)，包括JavaScript · Flow · TypeScript · CSS · SCSS · Less · JSX · Vue · GraphQL · JSON · Markdown
 

@@ -2971,20 +2971,27 @@ keep-alive会影响组件生命周期
 </template>
 
 <style scoped>
+  
+  
+/* :deep() */
+.child:deep(.child) {
+    color: #ccc;
+}
+  
 
-/* 通过 /deep/ 开头的深度作用选择器来达成穿透 */
+/*废弃 通过 /deep/ 开头的深度作用选择器来达成穿透 */
 .child /deep/ .child {
   color: red;
 }
 
 
-/* 通过 >>> 选择器来达成穿透 */
+/*废弃 通过 >>> 选择器来达成穿透 */
 .child >>> .child {
   color: red;
 }
 
 
-/* 通过 ::v-deep 选择器来达成穿透 */
+/*废弃 通过 ::v-deep 选择器来达成穿透 */
 .child ::v-deep .child {
   color: red;
 }

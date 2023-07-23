@@ -234,17 +234,19 @@ yarn create vite
 
 ## 依赖预构建<span id='依赖预构建'>
 
-> 预构建：
->
-> * vite启动时，发现import from不是路径，则会找到node_modules下的这个包
-> * 如果这个包是不是ESM，则会使用esbuild将该包转化为ESM
-> * 这个包本身可能依赖很多其他的模块（浏览器下载大量的依赖，会消耗很多时间）。vite将依赖集成为一个js文件
+预构建：
+
+* vite启动时，发现import from不是路径，则会找到node_modules下的这个包
+
+* 如果这个包是不是ESM，则会使用esbuild将该包转化为ESM
+
+* 这个包本身可能依赖很多其他的模块（浏览器下载大量的依赖，会消耗很多时间）。vite将依赖集成为一个js文件
 
 接着上一章节的例子讲解。项目成功启动并打印成功，说明vite解决了找不到loadsh包的问题。下面两个图解释了，vite预构建做了啥？
 
 **浏览器加载的`count.js`文件**
 
-会发现引入的loadsh库，实际加载的是`/node_modules/.vite/deps/loadsh.js`
+会发现引入的loadsh库，实际加载的是`/node_modules/.vite/deps/loadsh.js`，即依赖预构建缓存的位置
 
 ![image-20220925023932049](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Engineering/20220925023932%20.png)
 
@@ -252,7 +254,18 @@ yarn create vite
 
 ![image-20220925024534225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Engineering/20220925024534%20.png)
 
+**重新预构建的时机**
 
+Vite 将预构建的依赖项缓存到 `node_modules/.vite` 中。它会基于以下几个来源来决定是否需要重新运行预构建步骤：
+
+- 包管理器的锁文件内容，例如 `package-lock.json`，`yarn.lock`，`pnpm-lock.yaml`，或者 `bun.lockb`；
+- 补丁文件夹的修改时间；
+- `vite.config.js` 中的相关字段；
+- `NODE_ENV` 的值。
+
+上述其中一项发生更改时，就会重新运行预构建
+
+如果想要强制 Vite 重新构建依赖项，可以在启动开发服务器时指定 `--force` 选项，或手动删除 `node_modules/.vite` 缓存目录
 
 ## Vite配置文件格式
 
@@ -459,7 +472,7 @@ export default defineConfig(({command,mode})=>{
 
 
 
-获取环境变量
+JS中获取环境变量
 
 ```js
 // 所有的环境变量
@@ -468,6 +481,30 @@ console.log("环境变量",import.meta.env)
 
 // 设置 VITE_BASE_URL=http://127.0.0.1 ，获取该环境变量
 console.log("环境变量",import.meta.VITE_BASE_URL)
+```
+
+
+
+HTML中获取环境变量
+
+```html
+<h1>Vite is running in %VITE_BASE_URL%</h1>
+```
+
+
+
+内置的环境变量
+
+```
+import.meta.env.MODE: {string} 应用运行的模式。
+
+import.meta.env.BASE_URL: {string} 部署应用时的基本 URL。他由base 配置项决定。
+
+import.meta.env.PROD: {boolean} 应用是否运行在生产环境。
+
+import.meta.env.DEV: {boolean} 应用是否运行在开发环境 (永远与 import.meta.env.PROD相反)。
+
+import.meta.env.SSR: {boolean} 应用是否运行在 server 上
 ```
 
 
@@ -494,13 +531,17 @@ export default defineConfig({
 
 
 
+
+
 ## Vite的DevServer原理
 
 ### 原理
 
 执行`yarn vite dev`。Vite会启动一个服务器
 
-当访问`/`路径时，就会发起一个HTTP请求，路由是`/`，就返回了`index.html`文件。所以，`index.html`是项目的入口
+![image-20230719145200489](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230719145200%20.png)
+
+当访问`http://localhoost:5137`路径时，就会发起一个HTTP请求，路由是`/`，就返回了`index.html`文件。所以，`index.html`是项目的入口
 
 ```html
 <!--index.html-->
@@ -512,18 +553,63 @@ export default defineConfig({
     <title>Title</title>
 </head>
 <!--html文件是入口，在其中会加载main.js-->
-<script src="./main.js" type="module"></script>
+<script src="/main.js" type="module"></script>
 <body>
 
 </body>
 </html>
 ```
 
-HTML文件中使用module方式加载一个`main.js`文件，实际上会发起`/main.js`的请求（文件中的相对路径，都是相对网址的）
+HTML文件中使用module方式加载一个`/main.js`文件，实际上会发起`http://localhoost:5137/main.js`的请求（根路径是主机根目录，相对路径是相对于主机目录的）
 
-接下来分别讲下`main.js`不同部分的处理
+如果线上项目部署在`http://www.abc.com:5137/test`，这就需要设置vite的配置
 
-js文件中的每一个import都是一个http请求
+```js
+import { defineConfig } from 'vite'
+export default defineConfig({
+  base:'/test', //再次强调，base选项与其他配置项都不同，base是以部署主机的根目录为相对位置的
+})
+```
+
+这样的话打包后的index.html为下面的
+
+```html
+<!--index.html-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<!--html文件是入口，在其中会加载/test/main.js-->
+<script src="/test/main.js" type="module"></script>
+<body>
+
+</body>
+</html>
+```
+
+注意一点，打包后的文件也要放在test下才能找到的到。我们需要再服务器个目录建一个test目录，再把dist目录下的内容复制过去
+
+简单的办法，可以使用outDir配置自动在dist下生成一个test目录。部署时只需要把dist目录下的内容复制直接放到服务器根目录即可
+
+```js
+import { defineConfig } from 'vite'
+export default defineConfig({
+  build:{
+  	outDir:'dist/test' //默认为dist。这个路径是相对于vite.config.js所在位置的
+  }
+})
+```
+
+打包后的结果
+
+![image-20230720141635794](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230720141636%20.png)
+
+DevServer接到请求`/main.js`，服务器接到绝对路径请求，会以当前项目根目录为作为根。（注意/main.js并不会以机器的根目录作为根，而是项目根目录）
+
+接下来分别讲下`main.js`不同部分的处理，js文件中的每一个import也都是一个http请求
 
 ```js
 //main.js中加载JS。发起/count.js的请求
@@ -585,11 +671,35 @@ require还支持引入JSON格式的文件，并自动转换为JS对象
 
 所以无论是那种模块化方案，其最重要的是引入JS文件（require可以引入JSON）
 
-在前端开发中，我们常常再JS中直接引入css、less、sass、图片等等各种各样格式的文件
 
-这其实是DevServer为我们做了资源的处理（使用了loader，加载器），才能在开发环境被加载都项目中。
+
+**Vite内置支持处理的静态资源类型**
+
+[内置支持的资源类型](https://github.com/vitejs/vite/blob/main/packages/vite/src/node/constants.ts)
+
+在前端开发中，我们常常再JS中直接引入css、less、sass、图片等等格式的静态文件
+
+这其实是DevServer为我们做了资源的处理（使用了loader，加载器），才能在开发环境被加载都项目中
 
 打包工具为我们做了资源的处理，才能打包出最后的文件
+
+
+
+**无需处理的静态资源**
+
+publicDir配置用来指定开放目录（默认值`<root>/public`，就是根目录下的public目录）
+
+假设该目录下有个`logo.png`，代码中必须用`/xxx`引用，并不遵守实际路径，记住这个约定
+
+```
+import '/logo.png'
+```
+
+打包后，这个目录下的文件不会被命名为`[filename]-[hash].ext`，直接放置在dist根目录（outDir配置，其默认值为dist）
+
+
+
+
 
 
 
@@ -606,6 +716,32 @@ Vite与Webpack
 ###  注意
 
 后面看到import最直接引入了非JS文件，都是因为vite为我们提供了开箱即用的加载静态资源的能力
+
+
+
+vue不是vite支持的静态文件，可以安装下面的插件，该插件把`.vue`文件编译为JS模块，就可以正常加载了
+
+```shell
+#为 Vite 构建工具提供对 Vue 单文件组件 (SFC) 的支持
+yarn add @vitejs/plugin-vue -D 
+```
+
+在vite中配置插件
+
+```js
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [
+    vue()
+  ]
+});
+```
+
+
+
+
 
 
 
@@ -1131,6 +1267,16 @@ export default defineConfig({
 
 [Vite文档地址](https://cn.vitejs.dev/config/server-options.html#server-proxy)
 
+原理：
+
+项目中请求 `www.abc.com/api`接口，浏览器会直接发起访问，不会经过Dev Server。如果请求该接口出现了跨域问题
+
+首先明确，如果项目启动在` http://10.168.168.71:8080`，那就改成请求`http://10.168.168.71:8080/api`
+
+这时候请求就会走到Dev Server，我们配置以下内容会让Dev Server将匹配到的请求转发到真正的地址
+
+（如果使用axios请求，不设置请求baseUrl，则默认请求Dev Server地址）
+
 ```ts
 import { defineConfig, loadEnv } from 'vite'
 
@@ -1194,6 +1340,16 @@ export default {
   ]
 };
 ```
+
+### 插件设计
+
+一般情况下，插件导出的都是函数，函数的入参就是插件的配置，函数的返回值是一个vite的配置对象
+
+[Vite特有的钩子](https://cn.vitejs.dev/guide/api-plugin.html#vite-specific-hooks)
+
+* config
+
+
 
 ### 实现一个vite-plugin-aliases插件
 
@@ -1524,11 +1680,36 @@ export default defineConfig(({command,mode})=>{
 
 ![image-20230715191508324](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230715191508%20.png)
 
-### 多入口（待补充）
+### 多入口
 
 https://cn.vitejs.dev/guide/build.html#multi-page-app
 
+如下，定义了main、nested两个入口，值是入口文件的路径
 
+```js
+// vite.config.js
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        nested: resolve(__dirname, 'nested/index.html'),
+      },
+    },
+  },
+})
+
+```
+
+区分两个入口，对于开发没有影响。仅仅是打包时，将其作为两个入口文件
+
+如何做到提升性能？
+
+* 当用户访问一个入口时，浏览器会根据该入口的URL加载相应的输出文件和资源。而不是加载整个项目的资源
+* 如果多个入口有公用的资源，用户访问过入口A，再次访问入口B会直接使用该资源的缓存来提升速度
 
 ### gzip压缩
 

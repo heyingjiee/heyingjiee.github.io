@@ -7145,6 +7145,10 @@ export default name // 默认导出变量name
 export default {  //默认导出一个对象
 	xx:"xxx"
 }
+
+export default ()=>{ //默认导出一个箭头函数
+  return 'xxx'
+}
 ```
 
 默认导入模块内所有成员，导入名字可以任意起
@@ -8787,21 +8791,89 @@ const path =require('path')
 fs.readFileSync(path.resolve(__dirname,'./data'))
 ```
 
-### 文件
+### 文件与文件夹
 
-**fs.readFileSync**、**fs.writeFileSync**
+**fs.readFileSync**、**fs.writeFileSync ** 读写文件
 
 ```js
 const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'))
 ```
-
-
 
 **文件流**
 
 ```
 https://juejin.cn/post/7190563380900397117
 ```
+
+**fs.readdirSync** 读取目录下的文件夹名+文件名（仅仅返回第一层级）
+
+```js
+const resArr=fs.readFileSync(path.resolve(__dirname,'./src'))
+
+// [ 'assets', 'components', 'test.js' ]
+```
+
+**fs.statSync** 获取指定路径的文件夹、文件的描述信息
+
+```js
+let statInfo=fs.statSync(path.resolve(__dirname,'./src/test.js'))
+```
+
+查看test文件，返回的结构
+
+```
+statInfo Stats {
+  dev: 16777220,
+  mode: 16877,
+  nlink: 3,
+  uid: 503,
+  gid: 20,
+  rdev: 0,
+  blksize: 4096,
+  ino: 154375193,
+  size: 96,
+  blocks: 0,
+  atimeMs: 1689610080350.9265,
+  mtimeMs: 1689610078085.3977,
+  ctimeMs: 1689610078085.3977,
+  birthtimeMs: 1689609893659.2727,
+  atime: 2023-07-17T16:08:00.351Z,
+  mtime: 2023-07-17T16:07:58.085Z,
+  ctime: 2023-07-17T16:07:58.085Z,
+  birthtime: 2023-07-17T16:04:53.659Z
+}
+```
+
+判断是否为目录
+
+```js
+statInfo.isDirectory() //返回布尔值
+```
+
+### 执行Shell命令
+
+同步：**[`child_process.execSync(command[, options])`](http://nodejs.cn/api/child_process.html#child_process_child_process_execsync_command_options)**
+
+异步：**[`child_process.exec(command[, options][, callback])`](http://nodejs.cn/api/child_process.html#child_processexeccommand-options-callback)**
+
+Node会新开一个子线程调用shell命令
+
+```shell
+var process = require('child_process');  
+process.exec('shell命令', function(err, stdout, errout){  
+    // err是执行结果，是否有错  
+    // stdout是标准输出，即shell命令执行后的结果  
+    // errout是错误输出  
+});  
+ 
+```
+
+```js
+var process = require('child_process');  
+let res=process.exec('shell命令');  
+```
+
+
 
 
 
