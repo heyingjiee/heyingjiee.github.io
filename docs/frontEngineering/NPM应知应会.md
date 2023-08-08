@@ -335,13 +335,13 @@ package.json中各个字段的含义（仅name和version是必须的）
   "types": "./dist/index.d.ts", 
   
   //----入口文件----
-  "main": "./dist/index.js", // 用于 CommonJS 规范的模块加载器。比如你用 require/import 导入时，默认情况下都是从这里进入的。
+  "main": "./dist/index.js", // 用于 CommonJS 规范的模块加载器。比如你用 require 导入时，默认情况下都是从这里进入的。
   
   "module": "./dist/esm/index.js", // 用于 ES Modules 规范的模块加载器。非 NodeJS 官方的字段，所以 NodeJS 并不识别该字段。它主要被各大打包工具（比如 Rollup、Webpack）识别并使用。并且不支持 .mjs 后缀的文件。相关文档：https://github.com/rollup/rollup/wiki/pkg.module
   
   "type": "module", //Node环境中支持该字。可选字段：module、commonjs 。描述该包的格式类型，决定是否将 .js 文件加载为 CJS 或 ESM 的格式
   
-  "exports": { //Node环境中支持该字段。 条件导出。作用和 main/module 作用差不多，只不过支持条件导出和优先级大于 main 等高级用法
+  "exports": { //Node环境中支持该字段。 条件导出。作用和 main/module 作用差不多，只不过支持条件导出优先级大于 main 等高级用法
     ".": {
       "require": "./dist/index.js", // 当使用 CJS 导入模块时，会从此入口查找。
       "import": "./dist/esm/index.js" // 当使用 ESM 导入模块时，会从此入口查找。

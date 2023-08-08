@@ -6611,6 +6611,22 @@ function a(p1, p2, p3, p4){
 }
 ```
 
+如果形参是对象，可以用下面的结构描述
+
+```js
+/**
+ * @param {string} p1   参数param类型为string
+ * @param.name {string} 参数param.name类型为string
+ * @param.age {string} 参数param.age类型为string
+ * @returns {string}     返回值类型
+ */
+function a(params={}){
+ 
+}
+```
+
+
+
 ### @typedef、@property
 
 声明新的类型
@@ -6703,6 +6719,10 @@ function add(a, b) {
 ```
 
 
+
+### @see
+
+文档url地址
 
 
 
@@ -7048,29 +7068,152 @@ module.exports = "Hello world";
   import {} from "./a.js"; //a.js文件中的打印
   ```
 
-#### 导出和引入的模版
+* import 关键字不能直接在作用域种使用
 
-以下的内容，都可以在这个模版中，看效果。
+  ```js
+  if (true) {
+    import { name } from "./module.js"; // 这么写会报错的
+  }
+  // 动态导入模块就可以解决上面的问题
+  import("./module.js").then(function (module) {
+    console.log(module);
+  });
+  ```
 
-新建两个文件`a.js`、`b.js`，文件 a 作为导出模块，文件 b 引入 a 模块
+#### 导出和引入的方式
+
+**引入**
 
 ```js
-//a.js
-export let count = 1;
-export function countplus() {
-  count++;
-  console.log(count);
-}
+// 具名导入（named import）
+import { useRef } from "react";
+
+// 命名空间导入（namespace import）
+import * as ReactCopy from "react"; 
+
+// 默认导入（default import）
+import React from "react"; 
 ```
+
+**导出**
+
+* 多值导出
+
+  ```js
+  export let count = 1;
+  
+  export function countplus() {
+    count++;
+    console.log(count);
+  }
+  export class Person {} 
+  ```
+
+  也可以统一在最后导出
+
+  ```js
+  export { count, countplus, Person };
+  
+  //as关键字可以重命名
+  export { name as myName, hi as hello, Person as People };
+  ```
+
+  引入模块
+
+  ```js
+  //引入某个值
+  import { xxx } from "yyy"; 
+  
+  //引入命名空间，xxx是一个对象，包含所有使用“多值导出”的
+  import * as xxx from "yyy";
+  console.log(xxx.name)
+  ```
+
+  
+
+* 默认导出（仅导出一个值）
+
+  ```js
+  //默认导出一个对象
+  export default {
+  
+  }
+  
+  //默认导出一个函数
+  export default function add(){
+  
+  }
+  ```
+
+  默认导出后不能是表达式
+
+  ```js
+  //！！！！报错
+  export default const add= function(){}
+  
+  
+  // 可以zhe'yang'xie
+  const add = function(){}
+  export default add
+  ```
+
+  引入模块
+
+  ```js
+  //xxx是默认导出的值
+  import xxx from "yyy"; 
+  ```
+
+* 特殊写法（比较少用）
+
+  ```js
+  import { name } from "./module.js"
+  import { age } from "./module2.js"
+  
+  export { name age }
+  ```
+
+  在一个文件中导入又导出，可以直接这样写：
+
+  ```js
+  export { name } from "./module.js";
+  export { age } from "./module2.js";
+  ```
+
+**注意**
+
+这两种导出方式其实可以同时使用（并不推荐）
 
 ```js
-//b.js
-import { count, countplus } from "./a.js";
-console.log(count); //1
-countplus(); //2
+// 多值导出
+export const foo = "Hello";
+export const bar = "World";
+
+
+//默认导出
+export default { name: "John", age: 30 };
 ```
 
-运行 b.js 查看效果
+引入
+
+```js
+// 只能访问到多值导出的内容。 xxx.name是undefined
+import * as xxx from "yyy";
+console.log(xxx.foo); // "Hello"
+console.log(xxx.bar); // "World"
+
+
+// 使用只能访问到默认导出的内容
+import xxx from "yyy";
+console.log(xxx.name); // "John"
+console.log(xxx.age);  // 30
+```
+
+
+
+**补充**
+
+在b.js 写引入，查看效果
 
 ```js
 node b.js
@@ -7090,178 +7233,7 @@ node b.js
 
 输入 `node b.js`，重新运行，输出结果
 
-#### 导出和引入
 
-**使用`export`导出/引入**
-
-一个文件可多次导出
-
-```js
-export const name = "导出变量name";
-
-export function hi() {
-  console.log("导出一个函数 hi");
-}
-
-export class Person {} // 导出一个类
-```
-
-按名字引入，自己需要的模块
-
-```js
-import { name, hi, Perdon } from "xxx.js";
-```
-
-**使用`export{}`批量导出/引入**
-
-如果文件中，导出的内容很多，写多个`export`关键字太繁琐，可以采用下面的等价方式，批量导出
-
-```js
-const name = "导出变量name";
-
-function hi() {
-  console.log("导出一个函数 hi");
-}
-class Person {} // 导出一个类
-
-//方式一：
-export { name, hi, Person };
-
-//方式二：as关键词可以重命名
-export { name as myName, hi as hello, Person as People };
-```
-
-按名字引入，自己需要的模块
-
-```js
-import { xxx1, xxx2 } from "xxx.js"; //并不是解构赋值
-```
-
-**使用`export default`(默认导出)/引入**
-
-```js
-export default name // 默认导出变量name
-
-export default {  //默认导出一个对象
-	xx:"xxx"
-}
-
-export default ()=>{ //默认导出一个箭头函数
-  return 'xxx'
-}
-```
-
-默认导入模块内所有成员，导入名字可以任意起
-
-```js
-import xx from "xxx.js";
-```
-
-**注意**
-
-以下用法是导出/引入的固定用法
-
-```js
-export { name, age }; //并不是导出对象的简写
-import { name, age } from "./xxx.js"; //并不是解构赋值
-```
-
-如果想要到导出对象
-
-```js
-export let obj{
-
-}
-
-//或者
-let obj={}
-export {
-	obj
-}
-
-//或者
-export default {//默认导出一个对象
-
-}
-```
-
-**特殊情况**
-
-这种情况用的比较少，通常引入模块成员，不处理 ，直接再导出，一般会这么写
-
-```js
-import { name } from "./module.js"
-import { age } from "./module2.js"
-
-export { name age }
-```
-
-但实际上可以通过简写的方式直接导入再导出成员
-
-```js
-export { name } from "./module.js";
-export { age } from "./module2.js";
-```
-
-#### 引入的注意事项
-
-- 导入模块成员时，from 后面跟的字符串路径必须要使用完整的文件名称
-
-  ```js
-  import { name } from "./module"; // 会报错
-  import { name } from "./module.js"; // 正确
-  ```
-
-- index 的文件也必须填写不能省略(项目中通常引入一个文件夹实际上引的是文件夹内的 index)
-
-  ```js
-  import { name } from "./utils"; // 会报错
-  import { name } from "./utils/index.js"; // 正确
-  ```
-
-  注意：有时不遵守前两点要求，也是可以正常引入的，这是因为打包工具（webpack）在打包模块时进行的一些操作为我们节省的
-
-- 引入路径
-
-  ```js
-  import { name } from "module.js"; // 会认为引入第三方模块
-  import { name } from "./module.js"; // 相对路径
-  import { name } from "/src/module.js"; // 绝对路径 从项目根目录下开始
-  ```
-
-- 执行某个模块，但是不需要提取他内部成员
-
-  ```js
-  import {} from "./module.js"
-  import "./module.js
-  ```
-
-- 导入模块内所有的成员关键字\*
-
-  ```js
-  import * as obj from "./module.js";
-  // 模块module.js内部导出的所有成员将在obj对象内引用
-  ```
-
-- import 关键字不能直接在作用域种使用
-
-  ```js
-  if (true) {
-    import { name } from "./module.js"; // 这么写会报错的
-  }
-  // 动态导入模块就可以解决上面的问题
-  import("./module.js").then(function (module) {
-    console.log(module);
-  });
-  ```
-
-#### ESM 在 Node 环境中的注意事项
-
-- EMS 中可以导入 CommonJS 模块【module.exports 的模块能 import/require】
-
-- CommonJS 中不能导入 ESM 模块【export/export default 的模块，不能 require】
-- CommonJS 始终只会导出一个默认成员
-- ESM 中没有 CommonJS 中那些模块全局成员
 
 ### ESM 与 CJS 模块的差异
 
@@ -7311,9 +7283,6 @@ export { age } from "./module2.js";
 
   ES6 模块的 import 命令是异步加载，有一个独立的模块依赖的解析阶段
 
-- 语法上面，CommonJS 模块使用 require()和 module.exports，ES6 模块使用 import 和 export
-
-- 可以使用import的方式引入exports导出的模块，即ESM方式导入CommonJS的包，反之不行
 
 ### 参考
 
@@ -8782,14 +8751,33 @@ node index.js
 
 所以，我们推荐node中凡是传入路径的，都是使用resolve
 
-```js
-// path.resolve 拼接两个路径，最后返回一个绝对路径
-// __dirname表示的是当前文件所在目录
-// 使用resolve入参路径，不会随着执行目录变化
+一般分为下面两种情况
 
-const path =require('path')
-fs.readFileSync(path.resolve(__dirname,'./data'))
-```
+* `__dirname`
+
+  ```js
+  // path.resolve 拼接两个路径，最后返回一个绝对路径
+  // __dirname表示的是当前文件所在目录
+  // 使用resolve入参路径，不会随着执行目录变化
+  
+  const path =require('path')
+  fs.readFileSync(path.resolve(__dirname,'./data'))
+  ```
+
+* `process.cwd()` 执行脚本时，所在的目录
+
+  该目录会随着，执行脚本做在目录而变化，一般情况下并不实用。但是，有一种情况很有用，那就是执行目录不变。
+
+  比如vite.config.js中引入插件，所以其中的所有插件执行位置都是根目录。插件安装位置在node_module中，只有用`process.cwd()`才能准确定位到项目根目录，方便操作项目下的文件
+
+  ```js
+  const path =require('path')
+  fs.readFileSync(path.resolve(process.cwd(),'./data'))
+  ```
+
+  
+
+  
 
 ### 文件与文件夹
 
@@ -8805,7 +8793,7 @@ const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'))
 https://juejin.cn/post/7190563380900397117
 ```
 
-**fs.readdirSync** 读取目录下的文件夹名+文件名（仅仅返回第一层级）
+**fs.readdirSync** 读取目录下的目录名+文件名（仅仅返回第一层级）
 
 ```js
 const resArr=fs.readFileSync(path.resolve(__dirname,'./src'))
@@ -8871,6 +8859,13 @@ process.exec('shell命令', function(err, stdout, errout){
 ```js
 var process = require('child_process');  
 let res=process.exec('shell命令');  
+```
+
+同步方式
+
+```js
+execSync(`git log -1 HEAD --pretty='%s'`,{ encoding: 'utf-8' })
+//指定编码方式，才会输出文字
 ```
 
 

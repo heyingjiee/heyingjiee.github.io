@@ -716,74 +716,69 @@ interface AllStringTypes {
 
 ### 索引类型
 
-**索引类型key转化为联合类型**
+**数组类型**
 
-将复杂类型转化为联合类型。例子是把索引类型的key合并转化为联合类型
-
-```ts
-//接口形式,对象字面量形式省略
-interface Foo {
-   propA: number;
-   propB: boolean;
-   propC: string;
-}
-let b:keyof Foo //vscode显示keyof Foo，但实际上就是'propA'|'propB'|'propC'类型。注意：这里的'propA'、'propB'、'propC'是字符串字面量类型
-```
-
-interface和对象的key是string
-
-keyof any是一个特殊用法，生成如下的联合类型
+将数组类型转换为联合类型
 
 ```ts
-let a:keyof any //string | number | symbol
+type pickArr<T extends Array<string>> =  T[number]
+
+let a:pickArr<['a','b']> // "a" | "b"
 ```
 
 
 
-**索引类型通过key获取value**
+**对象类型**
 
-注意，一定得是使用了类型签名的接口/对象字面量**类型**，返回值才是类型（并不是字符串）
+* key转化为联合类型。例子是把索引类型的key合并转化为联合类型
 
-```ts
-//接口形式,对象字面量形式省略
+  ```ts
+  interface Foo {
+     propA: number;
+     propB: boolean;
+     propC: string;
+  }
+  
+  let b:keyof Foo 
+  //'propA'|'propB'|'propC'类型。注意：这里的'propA'、'propB'、'propC'是字符串字面量类型
+  ```
 
-//通过key类型访问value的类型
-interface Foo {
-    [key: string]: string;
-}
-let b:Foo[string] //string 
+  keyof any是一个特殊用法，生成如下的联合类型
 
+  ```ts
+  let a:keyof any //string | number | symbol
+  ```
 
-//通过key值访问value的类型。(注意：这里加引号是因为'propA'是字符串字面量)
-interface Foo {
-    propA: string;
-}
-let b:Foo['propA'] //string 
-```
+* 通过key获取，其对应的类型
 
-如果变量的话，返回对应的value值
+  ```ts
+  //通过key类型访问key的类型
+  interface Foo {
+      [key: string]: number;
+  }
+  let b:Foo[string] //number 
+  
+  
+  //通过key值访问value的类型。(注意：这里加引号是因为'propA'是字符串字面量)
+  interface Foo {
+      propA: string;
+  }
+  let b:Foo['propA'] //string 
+  ```
 
-```ts
-let stu={
-	name:'tom'
-}
+  更复杂的
 
-console.log(stu['name']) //tom
-```
-
-更复杂的
-
-```ts
-interface Foo {
-   propA: number;
-   propB: boolean;
-   propC: string;
-}
-
-//联合类型也可以，即将联合类型每个分支对应的类型进行访问后的结果，重新组装成联合类型
-type PropTypeUnion = Foo['propA'|'propB'|'propC']; // string | number | boolean
-type PropTypeUnion = Foo[keyof Foo]; // string | number | boolean
-```
+  ```ts
+  interface Foo {
+     propA: number;
+     propB: boolean;
+     propC: string;
+  }
+  
+  //联合类型也可以，即将联合类型每个分支对应的类型进行访问后的结果，重新组装成联合类型
+  type PropTypeUnion = Foo['propA'|'propB'|'propC']; // string | number | boolean
+  type PropTypeUnion = Foo[keyof Foo]; // string | number | boolean
+  ```
 
 ### 映射类型
 
@@ -1713,6 +1708,16 @@ declare module 'fs' {
   }
   ```
 
+  还有一个例子：在TS文件中引入vue文件会报错，加入下面内容
+  
+  ```ts
+  declare module "*.vue" {
+    import { DefineComponent } from "vue";
+    const component: DefineComponent<{}, {}, any>;
+    export default component;
+  }
+  ```
+  
   
 
 

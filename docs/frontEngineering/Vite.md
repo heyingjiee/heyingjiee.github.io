@@ -632,6 +632,23 @@ export default{
 
 https://gitee.com/hyj1270433876/example-learn/tree/master/vite-learn/dev-server
 
+
+
+### DevServer的配置
+
+```js
+export default defineConfig({
+    server:{
+      	//当需要在手机浏览器上访问当前项目，需要将host的值设置为true或0.0.0.0。
+        host:true
+    }
+}
+```
+
+host设置为true，就多个一个内网地址
+
+![image-20230801185627427](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230801185627%20.png)
+
 ## 关于静态资源的引入
 
 ### 前提
@@ -1042,6 +1059,33 @@ vite也支持自动读取`postcss.config.js`中的postcss配置，但是，`vite
 
 
 
+**postcss-px-to-viewport 插件**
+
+将px转换为vw，可以对不同设备进行布局适配
+
+```js
+import { defineConfig } from 'vite'
+import postcssPxToViewport from 'postcss-px-to-viewport'
+import { resolve } from 'path';
+
+export default defineConfig({
+    css: {
+        postcss: {
+            plugins: {
+                // viewport 布局适配
+                postcssPxToViewport({
+                    viewportWidth: 375
+                })
+            }
+        }
+    }
+})
+```
+
+
+
+
+
 ### CSS In JS
 
 CSS In JS方案: `styled-components`和`emotion`
@@ -1261,6 +1305,38 @@ export default defineConfig({
 
 ![image-20230709193703592](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230709193704%20.png)
 
+## Vite库配置
+
+```js
+export default defineConfig({
+
+  .....  
+
+  // 添加库模式配置
+
+  build: {
+    rollupOptions:{
+  		external: ["vue", "vue-router","lodash"], //配置的库 ，不会被打包到最终产物中
+  		output: {
+    		globals: {
+      		vue: "Vue", //这里配置 库名到全局变量的映射。代码中使用了全局变量Vue，就会被替换为使用vue包（需保证项目安装了vue包）
+          lodash: "_",
+    		},
+  		},
+		},
+    minify:false, //boolean | 'terser' | 'esbuild'；默认使用esbuild混淆压缩，也可以安装terser
+    
+  	lib: {
+      entry: "./src/entry.ts", //入口文件。因为库不能使用 HTML 作为入口
+      name: "SmartyUI", //暴露的全局变量
+      fileName: "smarty-ui", //输出的包名。（默认是 package.json 的 name 选项）
+      formats: ["es", "umd","iife"],// 导出模块格式（iife是立即执行函数的意思）
+    },
+  },
+});
+
+```
+
 
 
 ## Vite处理跨域问题
@@ -1302,13 +1378,149 @@ export default defineConfig(({ command, mode }) => {
 
 ## Vite插件（待补充）
 
-Vite存在生命周期
-
-我们可以指定在Vite的不同生命周期，使用不同的插件来达成我们的目标
-
 [插件官方页](https://cn.vitejs.dev/plugins/)
 
-### vite-aliases
+### 插件设计
+
+Vite存在生命周期，我们可以指定在Vite的不同生命周期，使用不同的插件来达成我们的目标
+
+[Vite特有的钩子](https://cn.vitejs.dev/guide/api-plugin.html#vite-specific-hooks)：
+
+* config
+
+  在解析 Vite 配置前调用
+
+* configResolved
+
+  在解析 Vite 配置后调用
+
+* configureServer
+
+  是用于配置开发服务器的钩子（ [ViteDevServer](https://cn.vitejs.dev/guide/api-javascript.html#vitedevserver)）
+
+* configurePreviewServer
+
+  用于预览服务器
+
+* transformIndexHtml
+
+  转换 `index.html` 的专用钩子
+
+* handleHotUpdate
+
+  执行自定义 HMR 更新处理
+
+一般情况下，插件导出的都是函数，函数的入参就是插件的配置，函数的返回值是一个vite的配置对象
+
+```js
+export default (customConfig)=>{
+  // customConfig 接收插件的配置。进行内部处理
+  
+  // 最终需要返回一个对象。里面是vite的配置，该配置会在特点的生命周期与Vite的配置合并
+  return {
+    name:'插件名字'
+    //yyy、xxx是生命周期钩子
+    yyy:()=>{
+      
+    },
+    xxx:()=>{
+      return { 
+      	//xxx钩子返回的vite的配置
+      }
+    }
+  }
+}
+```
+
+### vite-plugin-html插件
+
+[npm地址](https://www.npmjs.com/package/vite-plugin-html)
+
+vite.config.js
+
+```js
+import {defineConfig} from 'vite'
+import { createHtmlPlugin } from 'vite-plugin-html
+
+export default defineConfig({
+    plugins:[
+        //---------处理index.html----------
+        createHtmlPlugin({
+             inject: {//注入数据。HTML中的<%-xxxx %>显示数据
+                 data: {
+                 	title: '首页',
+                 	injectScript: `<script src="./inject.js"></script>`,
+                 }
+             }  
+         })   //第三方插件
+    ]
+})
+```
+
+index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%-title %></title>
+    <%- injectScript %>
+    <script src="/main.js" type="module"></script>
+</head>
+<body>
+    测试
+</body>
+</html>
+```
+
+**实现vite-plugin-html**
+
+插件代码
+
+```js
+export default (userOption={})=>{
+    const injectData=userOption?.inject?.data||{}
+    
+    return {
+      name:'create-html-plugin',
+      enforce:'post',
+      transformIndexHtml(html) {
+       for(let key in injectData){
+        // console.log(`<%-${key}%>`,injectData[key])
+        html=html.replace(`<%-${key}%>`,injectData[key])
+       }
+
+        // 在这里可以修改HTML的内容
+        return html
+      },
+    }
+}
+```
+
+配置vite.config.js
+
+```js
+import {defineConfig} from 'vite'
+import CreateHtmlPlugin  from './plugins/CreateHtmlPlugin'
+
+export default defineConfig({
+    plugins:[
+        CreateHtmlPlugin({
+            inject: {
+                data: {
+                    title: '首页',
+                }
+            }  
+        }),
+    ]
+})
+```
+
+
+
+### vite-aliases插件
 
 使用这个插件，就不必在项目中使用别名配置了
 
@@ -1341,26 +1553,145 @@ export default {
 };
 ```
 
-### 插件设计
+**实现vite-plugin-aliases插件**
 
-一般情况下，插件导出的都是函数，函数的入参就是插件的配置，函数的返回值是一个vite的配置对象
+```js
+import fs from "fs";
+import path from "path";
 
-[Vite特有的钩子](https://cn.vitejs.dev/guide/api-plugin.html#vite-specific-hooks)
+function getTotalFolder(basePath) {
+    let resAliasObj = {};
 
-* config
+    resAliasObj["@"] = path.resolve(__dirname, basePath);
 
+    const dirArr = fs.readdirSync(path.resolve(__dirname, basePath));
+    dirArr.forEach((fileOrDirName) => {
+        let statInfo = fs.statSync(
+            path.resolve(__dirname, basePath, fileOrDirName)
+        );
+        if (statInfo.isDirectory()) {
+            resAliasObj[`@${fileOrDirName}`] = path.resolve(
+                __dirname,
+                basePath,
+                fileOrDirName
+            );
+        }
+    });
+    return resAliasObj;
+}
 
+export default () => {
+    return {
+        //config钩子，在解析 Vite 配置前调用。将最终返回的对象与vite.config.js合并，作为最终的vite配置
+        config(config, env) {
+            //注意，插件是在Vite中处理（Node环境），所以这里的输出在Node的控制台
+            console.log("config-->", config); //vite.config.js中的配置对象
+            console.log("env-->", env); // { mode: 'development', command: 'serve', ssrBuild: false }
 
-### 实现一个vite-plugin-aliases插件
-
-[Vite插件的Api](https://cn.vitejs.dev/guide/api-plugin.html)
+            let aliasObj = getTotalFolder("../src");
+            console.log(aliasObj);
+            return {
+                resolve: {
+                    alias: aliasObj,
+                },
+            };
+        },
+    };
+};
 
 ```
+
+
+
+### vite-plugin-mock插件
+
+[插件GitHub文档](https://github.com/vbenjs/vite-plugin-mock/blob/main/README.zh_CN.md)
+
+安装：
+
+```shell
+yarn add vite-plugin-mock mockjs -D
+
+# vite-plugin-mock的mock功能依赖于mockjs，所以这里还需要安装mockjs
 ```
+
+使用：
+
+```js
+import { viteMockServe } from 'vite-plugin-mock'
+
+export default defineConfig({
+    plugins:[
+        viteMockServe({
+            
+        })
+    ]
+})
+```
+
+配置接口mock数据（mock文件，必须要放在根目录/mock下）
+
+```js
+//index.js
+import mockJS from 'mockjs'
+
+
+//使用mockJS生成的100条数据
+const userList=mockJS.mock({
+    //mockjs文档地址：http://mockjs.com/examples.html#Name
+    "data|100":[ //100条数据
+        {
+            cname:'@cname',//中文名
+            "id|+1":1, //递增的id
+            time:"@time", //'00:14:47'
+            data:'@date' //'1980-09-20'
+        }
+    ]
+})
+
+
+module.exports=[
+    {
+      	//定义一个接口
+        url:'/api/users',
+        method:'post',
+        response:({body})=>{ 
+            //body 请求体
+            console.log('body',body);
+            return {
+                code:0,
+                data:userList,
+                msg:'ok'
+            }
+        }
+    }
+]
+```
+
+测试插件功能
+
+```js
+//main.js
+fetch('/api/users',{
+  method:'post'  
+}).then(res=>{
+    console.log(res)
+}).catch(err=>{
+    console.log(err)
+})
+```
+
+![image-20230731182419704](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230731182420%20.png)
+
+**实现vite-plugin-mock插件**
+
+
 
 
 
 ### console消除插件（待补充）
+
+
 
 ### 打包后静态资源自动上传cdn插件（待补充）
 
@@ -2001,9 +2332,17 @@ yarn preview 预览打包后的项目。我们会发现script中使用CDN
 
 **补充**：
 
-这里的插件仅仅是帮助我们将npm包替换为指定的CDN，我们也可以将打包后的所有文件整体上传CDN，来提升整个项目的性能
+这里的插件仅仅是帮助我们将npm包替换为指定的CDN
 
-目前，公司内部使用内部部署平台时，可以指定编译脚本，我们实现了一个工具来上传整个dist目录
+目前，我们公司内部使用内部部署平台时，可以指定编译脚本，我们实现了一个工具来将打包后的assets文件整体上传CDN，并用项目名创建一个目录放在其下。将生产环境的base指定为我们的CDN地址
+
+项目部署在docker中的nginx下，用户其实只是访问了打包后的index.html，实际加载的文件都是从CDN加载的
+
+### 按需加载机制（待补充）
+
+
+
+
 
 
 

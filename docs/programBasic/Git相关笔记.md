@@ -585,6 +585,61 @@ git config --global credential.helper store
 git clone --depth 1  仓库地址 [克隆到指定文件夹]
 ```
 
+### commit hash
+
+```shell
+git rev-parse 分支 
+```
+
+例子
+
+```shell
+git rev-parse HEAD #HEAD指针指向节点的hash
+```
+
+```shell
+git rev-parse --short develop  # --short 输出短hash值
+```
+
+### 提交信息
+
+```shell
+git log 
+```
+
+![image-20230801172252025](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230801172252%20.png)
+
+```shell
+git log -1 HEAD --pretty='%ad,%s'
+# -1 输出1条记录
+# HEAD 查询指定分支
+# --pretty 指定输出的格式。 '%ad,%s' 输出： '时间,commit msg'
+```
+
+![image-20230801174642828](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230801174643%20.png)
+
+以下是一些常用的格式选项：
+
+```
+%H: 提交哈希值（完整的 40 位字符串）
+%h: 提交哈希值的缩写（通常使用 7 位字符串）
+%an: 作者姓名
+%ae: 作者邮箱
+%ad: 提交日期
+%s: 提交信息
+%cn: 提交者姓名
+%ce: 提交者邮箱
+%cd: 提交日期（格式化输出）
+%D: 所有引用（分支和标签）的名称
+%p: 父提交哈希值
+%P: 父提交哈希值（缩写）
+还有更多的格式选项可以参考 Git 官方文档中的说明：https://git-scm.com/docs/pretty-formats
+```
+
+
+
+
+
 ### 等待研究
 
 ```shell
