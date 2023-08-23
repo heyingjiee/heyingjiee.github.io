@@ -685,9 +685,6 @@ return nums
 
 **双指针法**
 
-```js
-```
-
 
 
 ### [167.两数之和 II - 输入有序数组](https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/)
@@ -710,6 +707,29 @@ var twoSum = function(numbers, target) {
 **二分法**
 
 题目强调有序数组
+
+### [1.两数之和](https://leetcode.cn/problems/two-sum/)
+
+```js
+/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number[]}
+ */
+var twoSum = function(nums, target) {
+    let m={}
+    for(let index in nums){
+        let curItem=nums[index]
+        if(m[target-curItem]!==undefined){
+            return [index,m[target-curItem]]
+        }else{
+            m[curItem]=index
+        }
+    }
+};
+```
+
+
 
 ### [209. 长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/)
 
@@ -766,9 +786,107 @@ var intersect = function(nums1, nums2) {
 };
 ```
 
+### [88. 合并两个有序数组](https://leetcode.cn/problems/merge-sorted-array/)
+
+双指针
+
+```js
+/**
+ * @param {number[]} nums1
+ * @param {number} m
+ * @param {number[]} nums2
+ * @param {number} n
+ * @return {void} Do not return anything, modify nums1 in-place instead.
+ */
+var merge = function(nums1, m, nums2, n) {
+    let i=m-1,j=n-1
+    let lateIndex=n+m-1
+    while(i>=0&&j>=0){
+        if(nums1[i]>nums2[j]){
+            nums1[lateIndex]=nums1[i]
+            i--
+        }else{
+            nums1[lateIndex]=nums2[j]
+            j--
+        }
+        lateIndex--
+    }
+
+
+    //num2剩下了
+    while(j>=0){
+            nums1[lateIndex]=nums2[j]
+            lateIndex--
+            j--
+    }
+    
+};
+```
+
+### [LCR 007. 三数之和](https://leetcode.cn/problems/1fGaJU/)
+
+想要用指针，数组先有序
+
+for循环，每次固定一个数据。x[左指针.....右指针]。两个指针对撞
+
+特征：数组+有序
+
+```js
+/**
+ * @param {number[]} nums
+ * @return {number[][]}
+ */
+var threeSum = function (nums) {
+  const len = nums.length;
+  //1、从小到大
+  num = nums.sort((a, b) => {
+    return a - b;
+  });
+
+  let left, right;
+  let res = [];
+  //2、例子：[1,1,1] i是第3个数，left=i+1就是第四个数，会出现数组越界。所以遍历到【0，len-2】
+  for (let i = 0; i < len - 1; i++) {
+    //3、重复跳过
+    if (i > 0 && nums[i] === nums[i - 1]) {
+      continue;
+    }
+    left = i + 1;
+    right = len - 1;
+    while (left < right) {
+      if (nums[i] + nums[left] + nums[right] > 0) {
+        right--;
+      } else if (nums[i] + nums[left] + nums[right] < 0) {
+        left++;
+      } else {
+        res.push([nums[i], nums[left], nums[right]]);
+        left++;
+        right--;
+
+        //3、 处理左指针元素重复的情况
+        while (left < right && nums[left] === nums[left - 1]) {
+          left++;
+        }
+
+        //3、 处理右指针元素重复的情况
+        while (left < right && nums[right] === nums[right + 1]) {
+          right--;
+        }
+      }
+    }
+  }
+
+  return res;
+};
+```
+
 
 
 ### [905. 按奇偶排序数组](https://leetcode.cn/problems/sort-array-by-parity/)
+
+
+
+## 字符串
 
 
 

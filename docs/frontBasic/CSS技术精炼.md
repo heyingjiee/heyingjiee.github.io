@@ -2772,11 +2772,7 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 </html>
 ```
 
-
-
-## 其他样式控制
-
-### table
+## table
 
 **table默认单元格之间有间距**
 
@@ -2863,6 +2859,10 @@ table-layout:fixed; //默认为auto
 </body>
 </html>
 ```
+
+## 图像
+
+
 
 ## 变形与透视
 
@@ -3592,9 +3592,45 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 ```
 
-**背景颜色改变过渡效果**
+
+
+**骨架屏幕**
+
+地址：https://codepen.io/hyj199678/pen/LYMEyMG
+
+效果图：
+
+![image-20230824014445238](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230824014445%20.png)
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="LYMEyMG" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/hyj199678/pen/LYMEyMG">
+  Untitled</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+
 
 ## 小知识点 
+
+### 计数器伪类
+
+```html
+<div class="suggest-item">第一段</div>
+<div class="suggest-item">第二段</div>
+<div class="suggest-item">第三段</div>
+<div class="suggest-item">第四段</div>
+```
+
+```css
+.suggest-item{
+  text-align: left;
+  counter-increment: row; /* 指定了自增变量row */
+}
+.suggest-item::before{
+  content: counter(row)'、'; /* counter(row) 对应每一个 1、2、3.... , 如需要拼接内容直接加引号  */
+}
+```
 
 ### not选择器的使用
 

@@ -18,12 +18,6 @@
 
 **`GOROOT`**：默认是我们安装Go开发包的路径，不需要配置（Mac/Linux默认安装到`usr/local/go`这个位置）
 
-GOPATH有什么用？ 
-
-src目录下就是Go语言的标准库，所以我们可以在自己的项目代码中，可以直接使用Go的标准库（Go的标准库就是一个module）
-
-![image-20220511125257255](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220511125257255.png)
-
 **`GOPATH`**：
 
 从Go 1.8版本开始，`GOPATH`默认为` ~/go `，不需要配置
@@ -35,6 +29,10 @@ export GOROOT=/usr/local/go #Go默认的安装位置
 GOPATH有什么用？ 
 
 Go项目中的依赖（module）并不会安装在项目下，而是默认安装到GOPATH下的目录。所以我们可以在自己的项目代码中，可以直接使用GOPATH下的目录中的模块（module）
+
+ 比如，src目录下就有Go语言的标准库，所以我们可以在自己的项目代码中，可以直接使用Go的标准库（Go的标准库就是一个module）
+
+![image-20220511125257255](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220511125257255.png)
 
 
 
@@ -1833,9 +1831,9 @@ var (
 )
 ```
 
-简短变量声明 
+简短变量初始化
 
-```
+```go
 name := "jack"
 ```
 
@@ -1843,7 +1841,7 @@ name := "jack"
 
 多用于接收，函数返回值中某个不想使用的值
 
-```
+```go
 var _ string = "jack"
 ```
 
@@ -1853,8 +1851,8 @@ var _ string = "jack"
 
 * 常量定义后不能修改
 * 常量声明时，必须初始化
-* 常量的批量声明
-* 常量不能使用 简短变量声明 
+* 常量的有''批量声明'语法
+* 常量不能使用' 简短变量声明 '语法
 
 **初始化**
 
@@ -1896,14 +1894,14 @@ const (
   这里列举的用法比较全面：https://zhuanlan.zhihu.com/p/372117921
   
   ```go
-  //iota=在const中第一次出现的值为0
+  //iota=行数-1
   //随后的每行iota的值加1
   const (
   	n1 = 10   //10
-  	n2 = iota //1
-  	n3 = 20   //20
+  	n2  			//10
+  	n3 = iota //2
   	n4        //20
-  	n5 = iota //默认为iota，其值为4，即第一出现位置为0后，每行累加1，这里正好是4
+  	n5 = iota //默认为iota，其值为4。第5行
   )
   ```
   
@@ -1934,7 +1932,7 @@ const (
 
 多用于接收，函数返回值中某个不想使用的值
 
-```
+```go
 const _ string = "jack"
 ```
 
@@ -1967,7 +1965,12 @@ uint64，有64个二进制位，
 
 
 
-我们通常使用int，其范围已经足够我们使用了，而且因为int变量占据的内存大小，会随着运行平台而变化。如果用了int64，运行在32位平台，那么存储的这个int64的变量在被读取时，只能读到存储的一半数据，导致与实际数值不同
+通常int的范围已经足够我们使用了，但是因为int变量占据的内存大小，会随着运行平台而变化，可能会出现平台运行差异
+
+- 在 32 位架构上，`int` 通常是 32位。
+- 在 64 位架构上，`int` 通常是64位。
+
+
 
 类型推断默认将整数推断为int
 
@@ -2640,7 +2643,7 @@ C语言中的`++i`、`--i`的用法，在Go中不存在
 ` [数组长度] 元素类型`
 
 ```go
-var arr [10]int //
+var arr [10]int 
 fmt.Printf("%T\n", arr) //[10]int
 ```
 
@@ -2869,7 +2872,9 @@ len() //切片的长度
 cap() //容量 底层数组的从截取开始位置到数组结束位置的大小
 ```
 
-举个例子，现在有一个数组`a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}`，切片`s1 := a[:5]`，相应示意图如下。![slice_01](https://www.liwenzhou.com/images/Go/slice/slice_01.png)切片`s2 := a[3:6]`，相应示意图如下：![slice_02](https://www.liwenzhou.com/images/Go/slice/slice_02.png)
+举个例子，现在有一个数组`a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}`，切片`s1 := a[:5]`，相应示意图如下。切片`s2 := a[3:6]`，相应示意图如下：
+
+![slice_02](https://www.liwenzhou.com/images/Go/slice/slice_02.png)
 
 **切片是引用类型**
 
@@ -2984,7 +2989,7 @@ func f(args ...string){
 展开
 
 ```go
-res"=append(args...) //展开切片args
+res=append(args...) //展开切片args
 ```
 
 ## 指针类型

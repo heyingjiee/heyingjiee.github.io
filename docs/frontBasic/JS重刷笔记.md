@@ -5142,7 +5142,7 @@ Promise.race([hdcms, houdunren])
 
 ![image-20210418105050836](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418105050836.png)
 
-### Promise分装AJAX异步请求
+### Promise封装AJAX异步请求
 
 原版的AJAX异步请求
 
@@ -6611,21 +6611,24 @@ function a(p1, p2, p3, p4){
 }
 ```
 
-如果形参是对象，可以用下面的结构描述
+如果形参是对象，可以用下面的结构描述。
 
 ```js
 /**
- * @param {string} p1   参数param类型为string
- * @param.name {string} 参数param.name类型为string
- * @param.age {string} 参数param.age类型为string
- * @returns {string}     返回值类型
- */
-function a(params={}){
- 
+   * 查询地锁状态
+   * @param {Object} data
+   * @param {string} data.connectorId 枪id
+   * @param {number} data.supplierId 供应商id
+   * @see [接口文档](http://xxxx)
+   */
+getInviteCode(data = {}) {
+    
 }
 ```
 
+缺点是只会提示形参类型。注释部分不会显示出来
 
+![image-20230817152211814](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230817152212%20.png)
 
 ### @typedef、@property
 
@@ -6723,6 +6726,16 @@ function add(a, b) {
 ### @see
 
 文档url地址
+
+```js
+/**
+  * 领取证书
+  * @param {Object} data
+  * @see [接口文档](http://xxxx)
+*/
+```
+
+
 
 
 
@@ -8768,15 +8781,16 @@ node index.js
 
   该目录会随着，执行脚本做在目录而变化，一般情况下并不实用。但是，有一种情况很有用，那就是执行目录不变。
 
-  比如vite.config.js中引入插件，所以其中的所有插件执行位置都是根目录。插件安装位置在node_module中，只有用`process.cwd()`才能准确定位到项目根目录，方便操作项目下的文件
+  如果你的程序是作为npm包发布的，例如：
 
+  vite.config.js中引入的插件，所有插件安装位置都在node_module中，vite.config.js调用插件函数，只有用`process.cwd()`才能准确定位到项目根目录的vite.config.js文件，方便插件来操作项目下的其他文件
+  
   ```js
   const path =require('path')
   fs.readFileSync(path.resolve(process.cwd(),'./data'))
   ```
 
   
-
   
 
 ### 文件与文件夹
@@ -8785,6 +8799,9 @@ node index.js
 
 ```js
 const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'))
+
+
+fs.writeFileSync(path.resolve(__dirname, '../data/audio.ass'), data) 
 ```
 
 **文件流**
@@ -9394,7 +9411,7 @@ this.$alert('这是一段内容', '标题名称', {
 
 我一直十分好奇上面两种方式的实现，如何能够做到在一个函数中，调用API打开弹窗，点击按钮后还能在同一个函数中接收返回值
 
-直到我在网上偶然间看到了大佬的实现（微信小程序代码片段：https://developers.weixin.qq.com/s/UmDTWhmu7Vgk，需下载微信开发者工具w），才从另一个角度重新认识了回调函数
+直到我在网上偶然间看到了大佬的实现（微信小程序代码片段：https://developers.weixin.qq.com/s/UmDTWhmu7Vgk，需下载微信开发者工具），才从另一个角度重新认识了回调函数
 
 小程序实现
 

@@ -1695,6 +1695,83 @@ fetch('/api/users',{
 
 ### 打包后静态资源自动上传cdn插件（待补充）
 
+
+
+### console徽章
+
+```js
+import { JSDOM } from "jsdom";
+import { execSync } from "child_process";
+
+function outputConsoleStr(output){
+    const styleArr=[
+        'background:green',
+        'color:#FFFFFF',
+        'font-weight: bold',
+        'padding:5px',
+        'border:1px solid #fff',
+    ]
+
+    return `console.log('%c${output}','${styleArr.join(';')}');`
+   
+}
+
+
+export default (userOption={}) => {
+    
+    const {
+        customExtendInfo=null //自定义字段
+    }=userOption
+
+    return {
+        name: "vite-plugin-mark-version",
+        transformIndexHtml(html) {
+            const commitInfo = execSync(`git log -1 HEAD --pretty='%cd,%an,%s,%h'`, {
+                encoding: "utf-8",
+            });
+           
+            //将html字符串转化为Dom
+            const dom = new JSDOM(html);
+            const document = dom.window.document;
+
+            //获取Git信息
+            const commitInfoList = commitInfo.split(",");
+            let infoMeta = document.createElement("meta");
+
+            infoMeta.setAttribute("time", new Date());
+            infoMeta.setAttribute("auth", commitInfoList[1]);
+            infoMeta.setAttribute("description", commitInfoList[2]);
+            infoMeta.setAttribute("hash", commitInfoList[3]);
+
+            if(customExtendInfo){
+                for(let key in customExtendInfo){
+                    infoMeta.setAttribute(key, customExtendInfo[key]);
+                }
+            }
+            //向HTML中插入信息
+            document.head.append(infoMeta)
+
+
+            //向浏览器控制台输出信息
+            let resOutput=''
+            const script=document.createElement('script')
+            resOutput+=outputConsoleStr(`作者: ${commitInfoList[1]}`)
+            resOutput+=outputConsoleStr(`提交msg: ${commitInfoList[2]}`)
+            resOutput+=outputConsoleStr(`环境: ${process.env.NODE_ENV}`)
+            script.textContent=resOutput
+            document.body.append(script)
+
+            return dom.serialize();
+        },
+    };
+};
+
+```
+
+这是简书的console种显示的徽章
+
+![image-20230823181316269](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230823181316%20.png)
+
 ## Vite集成TS
 
 Vite天生支持TS，但是其仅仅执行 `.ts` 文件的转译工作（TS类型检查不通过也能正常执行），**并不执行** 任何类型检查，并假定TS的类型错误已经被 IDE 显示出来，并被开发者处理了

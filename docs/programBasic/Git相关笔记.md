@@ -267,6 +267,8 @@ git会在本地有一个远程仓库列表，git clone 下来的项目，git软�
 
 ![image-20210108155149864](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108155149864.png)
 
+SSH登录方案： （https://blog.csdn.net/m0_46059399/article/details/126096247）
+
   
 
 **情况二：本地已有项目，托管到GitHub**【没有初始化Git，即根目录没有`.git`文件】
@@ -274,10 +276,16 @@ git会在本地有一个远程仓库列表，git clone 下来的项目，git软�
 在本地项目的目录下
 
 ```shell
-git init --inital-branch=master //先初始化本地项目
+git init --initial-branch=master //先初始化本地项目
 touch README.md //添加readme文件（可不添加）
 git add .
 git commit -m "提交备注"
+```
+
+可以直接在全局设置初始化git，使用的默认分支
+
+```shell
+git config --global init.defaultBranch <name>
 ```
 
 然后再GitHub上新建一个仓库，复制项目地址
@@ -415,7 +423,7 @@ git push --set-upstream 别名 分支名
 
 ![image-20210108230251049](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108230251049.png)
 
-### 3.6 Git工作流程
+## 4.Git工作流程
 
 详细内容查阅[Git工作流程](http://www.ruanyifeng.com/blog/2015/12/git-workflow.html?utm_source=tuicool&utm_medium=referral)
 
@@ -443,9 +451,9 @@ git push --set-upstream 别名 分支名
   >
   > 目前第三方代码仓库托管服务有很多，其中 Github 最火，但是如果想要托管私有项目收费比较高,而且在国内受限于网络环境影响,鲜少有公司使用。例如京东、淘宝这种级别的公司，也不太常用别的第三方的托管服务。Gitlab是一个开源的类似于Github的一个系统，且开源免费，可以部署自己的公司内容。
 
-## 4.GitHub搭建静态博客
+## 5.GitHub搭建静态博客
 
-### 4.1 必须注意
+### 5.1 必须注意
 
 本地初始化的是**Hexo的整个项目**，但是发布的是把本地项目变成**静态页面的项目**
 
@@ -455,7 +463,7 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 每次添加新的MarkDown文章后，先推送本地的**Hexo的整个项目**，然后再**发布**
 
-### 4.2 Hexo框架
+### 5.2 Hexo框架
 
 * [官网](https://hexo.io/zh-cn/)
 
@@ -539,7 +547,7 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 * 打开网页 https://heyingjiee.github.io/ ，就能显示博客了
 
-### 4.3 主题
+### 5.3 主题
 
 * 官网主题https://hexo.io/themes/
 * 选择需要的主题，进入对应的主题的github页，有对应的使用说明
@@ -563,7 +571,7 @@ cover:  # 标题背景图片,直接把图片网址放上去就行
 npm install --save hexo-browsersync
 ```
 
-## Git命令补充
+## 6.Git命令补充
 
 这一部分补充的是一些我用到过的非主要的Git命令
 
