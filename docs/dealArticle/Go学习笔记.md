@@ -4538,6 +4538,43 @@ fmt.Printf("%v\n", errors.Is(err, ErrorUserUnAuth))
 
 ## 类型声明总结
 
+### 关于nil
+
+nil 是Go语言中一个预定义好的标识符。其本身不是值，也不属于任何类型（注意：比如在JS中存在null类型，其只有一个值就是null）
+
+* nil不是值
+
+  变量比较，其实是比较其值，nil是标识符无法比较，会直接报错（就好像你在比较 int==int，这肯定是错误的）
+
+  ```go
+  package main
+  
+  import "fmt"
+  
+  func main() {
+  	fmt.Print(nil == nil)
+  }
+  
+  // 报错 ：invalid operation: nil == nil (operator == not defined on untyped nil)
+  ```
+
+  打印nil报错
+
+  ```go
+  package main
+  
+  import "fmt"
+  
+  func main() {
+  	print(nil)
+  }
+  //报错 ：use of untyped nil in argument to print
+  ```
+
+  
+
+
+
 主要记忆下：
 
 * 切片、map类型的变量是nil，需要在使用时，通过make创建
@@ -6570,7 +6607,7 @@ type Context interface {
 Background() //创建一个空的上下文
 ```
 
-**WitDeadline**
+**WithDeadline**
 
 指定最后的时间期限A，返回新的Context对象，如果给这个对象设置新的时间期限B，则新的Context以两个时间中最早的为准
 

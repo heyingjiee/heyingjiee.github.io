@@ -7602,6 +7602,43 @@ node.remove()
 node.replaceWith(...nodes or strings) —— 将 node 替换为给定的节点或字符串
 ```
 
+### 坐标相关
+
+明确几个位置
+
+* 视口左上角
+
+  即浏览器可是区域左上角
+
+  ![image-20230902013723460](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230902013724%20.png)
+
+* 文档左上角 
+
+  即HTML左上角
+
+  ![image-20230902013917445](/Users/yc/Library/Application Support/typora-user-images/image-20230902013917445.png)
+
+
+
+**元素相对视口距离**
+
+```
+var viewportOffset = el.getBoundingClientRect();
+var top = viewportOffset.top;
+var left = viewportOffset.left;
+```
+
+**元素相对文档距离**
+
+```
+var left = el.offsetLeft;
+var top = el.offsetTop;
+```
+
+**相对父元素**
+
+
+
 ## Canvas
 
 MDN canvasAPI :https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API

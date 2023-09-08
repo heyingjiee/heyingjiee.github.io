@@ -1447,7 +1447,14 @@ export default {
 
 **对象语法**
 
-控制class是否生效
+```html
+<div :class="{active:true}"></div>
+
+key 是类名
+value 可以是变量，true则显示该类，false不显示该类
+```
+
+
 
 1、绑定的一个对象。（注意：动态绑定的class会与写死的class合并，并不会覆盖其值）
 
@@ -1504,7 +1511,15 @@ computed: {
 
 **数组语法**
 
-切换class属性，可以放置三元表达式，切换两个不同属性，而对象是切换class某个属性是否存在
+对象语法只能简单的控制类是否存在，数组语法可以集成一些逻辑判断
+
+```html
+<div :class="[isActive ? activeClass : '']"></div>
+
+数组元素就是类名。例子集成了三元表达式
+```
+
+
 
 * 基础用法
 
@@ -3605,7 +3620,7 @@ window.open(routeData.href);
 
 
 
-## Vue-cli
+
 
 ## 其他
 

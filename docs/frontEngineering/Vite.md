@@ -1683,10 +1683,6 @@ fetch('/api/users',{
 
 ![image-20230731182419704](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230731182420%20.png)
 
-**实现vite-plugin-mock插件**
-
-
-
 
 
 ### console消除插件（待补充）

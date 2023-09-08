@@ -1669,30 +1669,50 @@ grid-template-rows: minmax(100px, auto);
 
 **repeat函数**
 
-auto-fill、auto-fit
+* 第一个参数：表示轨道个数
 
-```css
-/*含义：
-	auto-fill让一行内，尽可能有更多的列，这时是按照最小宽度200px分配空间的。
-	如果一行中最后剩余空间不足200px，即不能再放下一个列了，就会把剩余空间平均分配到每一列上（这是每列也就大于了200px）
-	
-	
-	auto-fill与auto-fit只有一个差别：
-	比如，我有3个网格元素，占据屏幕3*200 =600px；两个gap占据2*20=40px 。共计640px
-	如果，此时屏幕宽度为840px
-	auto-fill会有4列，只不过最后一列是空的
-	auto-fit会有3列，它会将没有被占用的列的宽，分配给已存在的3列
-*/
+  数字、auto-fill、auto-fit
 
-.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  grid-auto-rows: minmax(100px, auto);
-  grid-gap: 20px;
-}
-```
+  ```css
+  /*含义：
+  	auto-fill让一行内，尽可能有更多的列，这时是按照最小宽度200px分配空间的。
+  	如果一行中最后剩余空间不足200px，即不能再放下一个列了，就会把剩余空间平均分配到每一列上（这是每列也就大于了200px）
+  	
+  	
+  	auto-fill与auto-fit只有一个差别：
+  	比如，我有3个网格元素，占据屏幕3*200 =600px；两个gap占据2*20=40px 。共计640px
+  	如果，此时屏幕宽度为840px
+  	auto-fill会有4列，只不过最后一列是空的
+  	auto-fit会有3列，它会将没有被占用的列的宽，分配给已存在的3列
+  */
+  
+  .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-auto-rows: minmax(100px, auto);
+    grid-gap: 20px;
+  }
+  ```
 
-![2023-01-19 16.25.13](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119162624%20.gif)
+  ![2023-01-19 16.25.13](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20230119162624%20.gif)
+
+* 第二个参数：表示轨道尺寸
+
+  尺寸（10px、1fr）、minmax函数
+
+  minmax函数可以让轨道具有动态变化的尺寸，是一种更灵活的方式
+
+  ```
+  minmax(最小值，最大值)
+  
+  //参数取值：(参考：https://blog.csdn.net/taotaomin99/article/details/73076771)
+  //尺寸（10px、1fr）
+  //max-content  容纳全部内容的理想宽度（文字不会换行，而是直接撑起轨道）
+  //min-content  单元格最小宽度，可以不让内容溢出单元格
+  //auto  如果用于最大值，那么auto值相当于max-content值；如果用于最小值，那么auto值相当于min-content
+  ```
+
+  
 
 
 
@@ -2730,7 +2750,7 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 如果不写**被操作元素**，默认被操作元素就是目标元素
 
 ```
-目标元素选择器:hover被操作元素选择器{
+目标元素选择器:hover 被操作元素选择器{
 	控制被操作元素的css样式
 }
 ```
@@ -3426,6 +3446,16 @@ translateX(100px); /*参数正数：水平右移；负数：水平左移*/
 
 ## 动画
 
+### 参考
+
+B站这个UP发布了很多关于CSS动画效果的视频，推荐学习
+
+https://space.bilibili.com/451368848
+
+![image-20230827194520322](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230827194520%20.png)
+
+### 动画属性
+
 |                             属性                             | 版本 | 继承性 |                   描述                   |
 | :----------------------------------------------------------: | :--: | :----: | :--------------------------------------: |
 | [animation](http://css.doyoe.com/properties/animation/animation.htm) | CSS3 |   无   | 复合属性。检索或设置对象所应用的动画特效 |
@@ -3448,7 +3478,9 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 `1s 2s`，则第一个时间为animation-duration、第二个时间为animation-delay
 
-**元素上划动画的例子**
+
+
+### popup弹出动画案例
 
 ```html
 <!DOCTYPE html>
@@ -3494,7 +3526,7 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 
 
-**跳动动画**
+### 跳动动画案例
 
 ```html
 <!DOCTYPE html>
@@ -3533,11 +3565,7 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 ```
 
-
-
-
-
-**loading动画**
+### loading动画案例
 
 ![image-20221023145927157](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/20221023145927%20.png)
 
@@ -3594,7 +3622,7 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 
 
-**骨架屏幕**
+### 骨架屏幕案例
 
 地址：https://codepen.io/hyj199678/pen/LYMEyMG
 
@@ -3604,12 +3632,149 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 <p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="LYMEyMG" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
   <span>See the Pen <a href="https://codepen.io/hyj199678/pen/LYMEyMG">
+  骨架屏幕</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+### IOS卡片展开效果
+
+地址：https://codepen.io/hyj199678/pen/WNdMyGp
+
+效果图：
+
+![image-20230827183908188](/Users/yc/Library/Application Support/typora-user-images/image-20230827183908188.png)
+
+记录：
+
+```
+过渡贝塞尔曲线：cubic-bezier(0, 1, 0.95, 1.05)
+
+图片地址：https://source.unsplash.com/900x600/?nature,water,1
+```
+
+
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="WNdMyGp" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/hyj199678/pen/WNdMyGp">
+  iOS卡片展开特效</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+### 打字机效果
+
+知识点：
+
+```plain
+ch单位
+```
+
+地址：https://codepen.io/hyj199678/pen/zYyrGbJ
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="zYyrGbJ" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/hyj199678/pen/zYyrGbJ">
+  Untitled</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+### 文字弹出效果
+
+地址：https://codepen.io/hyj199678/pen/dywGMQE?editors=1111
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="dywGMQE" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/hyj199678/pen/dywGMQE">
+  弹出文字效果</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+### 高度展开动画
+
+* 利用`grid-template-row:0fr`
+* 子元素设置`min-height:0`
+
+```html
+<div class="question">
+  <div>问题？</div>
+  <div class="answer">
+    <!--
+				answer用的grid布局，通过改变grid-template-rows，可以触发动画
+				其子元素必须套一个盒子，指定min-height:0 ； overflow: hidden;
+		-->
+    <div class="fold-area">
+      <div>选项</div>
+      <div>选项</div>
+      <div>选项</div>
+    </div>
+  </div>
+</div>
+
+.question {
+  border-radius: 6px;
+  overflew: hidden;
+  padding: 5px 20px;
+  box-sizing: border-box;
+  background: #eee;
+}
+.question:hover .answer {
+  grid-template-rows: 1fr;
+}
+.answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: 1s;
+}
+.fold-area {
+  min-height: 0;
+}
+
+```
+
+
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="XWoKBYY" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/hyj199678/pen/XWoKBYY">
   Untitled</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
   on <a href="https://codepen.io">CodePen</a>.</span>
 </p>
 <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
 
 
+
+### 滚动视差
+
+本质：
+
+```css
+background: url("https://source.unsplash.com/900x600/?nature,water,1")
+    no-repeat center/cover;
+
+/*文字以外的部分裁剪掉*/
+-webkit-background-clip: text;
+
+/*文字内的部分，设置颜色透明，就会漏出背景图*/
+-webkit-text-fill-color: transparent;
+
+
+/*滚动时，修改背景图的background-position的水平、竖直值，就会出现文字内部是变化的*/
+```
+
+视差：
+
+正常情况下，向下滚动页面，页面元素随着页面向上滚动出屏幕。视差就是通过 获取 window.scrollTop 知道页面向上滚动了多少，同时设置页面元素的位置不等于该值（window.scrollTop），比如设置元素margin-top是window.scrollTop*2，那你就会发现该元素会不随着屏幕滚动，而是向下移动
+比如这个例子：https://www.bilibili.com/video/BV14A411o7Kd/?spm_id_from=333.999.0.0&vd_source=e46d9099be60057b5a16a45fac0d5248
+
+
+
+<p class="codepen" data-height="300" data-theme-id="dark" data-default-tab="html" data-slug-hash="VwqPMvv" data-user="hyj199678" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/hyj199678/pen/VwqPMvv">
+  滚动视差效果</a> by h (<a href="https://codepen.io/hyj199678">@hyj199678</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
 
 ## 小知识点 
 
