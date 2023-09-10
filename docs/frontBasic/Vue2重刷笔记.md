@@ -3117,12 +3117,12 @@ new Vue({
 
 App.vue
 
-routes数组的第一层映射关系，组件会被放置到顶层的`router-view`区域显示
+这里的router-view是第一层，对应routes数组的第一层映射关系。组件会被放置到在这里的`router-view`区域显示
 
 ```vue
 <template>
   <div id="app">
-    <router-view/>
+    <router-view/> 
   </div>
 </template>
 ```

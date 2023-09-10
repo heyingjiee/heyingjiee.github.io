@@ -3398,311 +3398,7 @@ for(let [key,value] of m){
 
 ## this的指向
 
-JS中this的指向是十分让人头秃的一个知识点，因为this的指向并不固定，不同的调用方式同一个this是不同的
 
-简单一句话概括就是：**this指向其调用者所在的上下文**
-
-
-
-**前置知识**
-
-* 在一个JS文件中定义函数，命名函数会被挂载到window上（匿名函数不会挂载到window上）
-
-  ```js
-  function f1(){
-  	//xxxx
-  }
-  ```
-
-  ESM是一种标准化的JavaScript模块化方式
-
-  不同模块下的 `window` 是独立的，每个模块都有自己的全局作用域，同名函数不会相互污染
-
-  早期没有ESM时，使用匿名的立即执行函数，也可以做到避免全局污染。这是因为匿名函数不会挂载在window上的
-
-  ```js
-  (function() {
-    var x = 1;
-    var y = 2;
-  
-    console.log(x + y); // 输出 3
-  })();
-  
-  console.log(x + y); // 抛出错误，因为 x 和 y 不在全局作用域中
-  ```
-
-  
-
-  
-
-  调用函数实际上是由window调用，下面这两种形式是等价的
-
-  ```js
-  f1() 
-  
-  //上面是最常见的写法，实际上应该是这么写
-  window.f1()
-  ```
-
-  所以，上面两种形式调用函数，函数this都是window的
-
-  
-
-* 块级作用域
-
-  函数的花括号内部属于块级作用域
-
-  ```js
-  function xx{
-    
-  }
-  ```
-
-  函数入参、对象的花括号都不是块级作用域，块级作用域入参是回调函数
-
-  ```js
-  f1({
-    name:'tom',
-    age:20,
-    callback1(){
-      //回调函数this取决于谁调用了函数f1。例如window对象调用了函数A，A又调用B，B又调用了f1,则f1中的this就是window对象。即向上寻找调用关系，直到找到`最终调用者`（`最终调用者`不是函数，是对象）
-      
-    },
-    callback2:()=>{
-      //这里使用箭头函数，this指向函数所在上下文，上下文是f1做在作用域的this指向。即查看f1做在作用域就能知道this指向了，不用再一直向上找了。所以分析this指向也更加简单清晰
-  	}
-  })
-  ```
-
-  函数f1的入参是对象，对象中有两个回调函数，因为对象的花括号不是块级作用域，所以this不会指向这个入参对象
-
-
-
-**this指向总结的表格**
-
-| 规则编号 | 规则                    | 当前作用域的上下文（函数体中的thisthis指向）                 |
-| -------- | ----------------------- | ------------------------------------------------------------ |
-| 规则1    | 函数名（）              | window                                                       |
-| 规则2    | new 函数名（）          | 秘密创建出的那个对象                                         |
-| 规则3    | 对象.函数名（）         | 该对象                                                       |
-| 规则4    | 数组[索引]（）          | 该数组                                                       |
-| 规则5    | 定时器                  | window                                                       |
-| 规则6    | Dom事件处理函数         | window                                                       |
-| 规则7    | IIFE立即执行函数        | window                                                       |
-| 规则8    | call、apply、bind       | 可指定this指向                                               |
-| 规则9    | 箭头函数，即 ()=>{this} | this指向箭头函数所在的上下文（注意前面提到的所以函数，都不是箭头函数） |
-| 规则10   | class中的函数           | 指向的是实例化的对象（与new 函数相同）                       |
-| 规则11   | 模块中                  | undefined                                                    |
-
-注意：
-
-除去**规则9**以外，前面提到的函数都不是箭头函数
-
-### 例子
-
-* 全局中的this指向window对象
-
-  ```js
-  console.log(this)//输出 window对象
-  ```
-
-* 直接调用函数，函数中的this指向window 
-
-  ```js
-  function func(){
-    console.log(this)//【规则1】
-  }
-  func()
-  ```
-
-  new关键调用函数（这个函数就称为构造函数，前面【函数】章节介绍了new关键字）
-
-  ```js
-  function stu(stunum){
-      this.stunum=stunum//【规则2】这里的this是指向的是创建的new关键字创建的空对象
-      this.show=function(){//【规则2】
-          console.log(this.stunum) //【规则3】
-          function func(){
-              console.log(this)//这里的this是指向window对象【规则1】
-          }
-          func()
-      }
-  }
-  let student=new stu("张三")
-  student.show()
-  //输出 张三 window对象
-  ```
-
-* 对象中的this
-
-  ```javascript
-  let stu={
-      stunum:120,
-      show:function(){   
-          console.log(this.stunum) //【规则3】
-    
-          function func(){
-              console.log(this)//指向window对象【规则1】
-          }
-          func()
-      }
-  } 
-  stu.show()
-  //输出 120   window对象
-  ```
-  
-* 解构对象
-
-  例子中解构出来的函数getThis的最终调用者是window
-
-  ```js
-  let obj={
-    getThis(){
-      console.log(this)
-    }
-  }
-  const {getThis}=obj
-  getThis() //window
-  ```
-  
-  因为函数getThis直接被window调用了，箭头函数的当前作用域就是window
-  
-  ```js
-  let obj={
-     getThis:()=>{
-       console.log(this)
-     }
-  }
-  const {getThis}=obj
-  getThis() //window
-  ```
-  
-* 定时器
-
-  定时器函数比较特殊，他会把函数内部的this重写为window【在node环境下，会重写成 Timer对象】
-
-  ```js
-  function f(){
-      console.log(this)
-  }
-  setTimeout(f,100) //【规则5】window 
-  ```
-  
-  举个例子
-  
-  ```JS
-  let User={
-      say(){
-          console.log(this)
-      }
-  }
-  User.say() // 【规则3】 User对象
-  
-  setTimeout(User.say,100) //【规则5】window 
-  ```
-  
-  
-  
-* 箭头函数
-
-  * 箭头函数中只是没有 `this`，但是`this` 的查找与常规变量的搜索方式完全相同：在外部词法环境中查找
-
-  - 没有 `arguments`
-  - 不能使用 `new` 进行调用
-  - 它们也没有 `super`
-  
-  ```javascript
-  let lesson={
-      site:"hedaodao",
-      show:function(){      
-        	//上下文:在这里this指向lesson
-          return ()=>{
-              return this.site //【规则9】，其所在的上下文属于【规则3】，指向lesson对象
-          }
-      }
-  }
-  console.log(lesson.show()()) 
-  //输出 hedaodao
-  ```
-  
-* 入参是回调函数
-
-  块级作用域
-  
-  ```js
-  function xx{
-    
-  }
-  ```
-  
-  函数f1的入参是对象，对象中有两个回调函数，因为对象的花括号不是块级作用域
-  
-  箭头函数callback2的this不会指向这个入参对象
-  
-  callback1由这个对象调用，f1调用这个对象
-  
-  ```js
-  f1({
-    name:'tom',
-    age:20,
-    callback1(){
-      //回调函数this取决于谁调用了函数f1
-    },
-    callback2:()=>{
-      //这里使用箭头函数，this指向函数所在上下文，上下文是f1做在作用域的this指向
-  	}
-  })
-  ```
-  
-  一个完整的例子
-  
-  ```js
-  function Page(params) {
-    const { onLoad } = params;
-    if (onLoad instanceof Function) {
-      //onLoad的this取决于谁调用了Page。后面可以看到Page是直接调用的，this指向window
-      //call强制指定this为{name:'jack'}
-      onLoad.call({name:'jack'})
-    }
-  }
-  
-  function test(params) {
-    const { success, fail } = params;
-    if (success) {
-      success({ msg: "success" });
-    }
-    if (fail instanceof Function) {
-      fail();
-    }
-  }
-  
-  
-  //Page是直接调用的
-  Page({
-    onLoad() {
-      //call绑定了{name:'jack'}，当前块级作用域this就是{name:'jack'}
-      console.log('1',this) //{name:'jack'}
-      
-      test({
-        name: "tom",
-        //注意下面是简写，实际是=》success:function(){ xxx }
-        success() {
-          console.log('2',this); //window。fail是test调用的，test是onLoad调用的，onLoad的是Page调用的，window调用的Page，所以this指向window
-        },
-        fail:()=> {
-          console.log('2',this); //{name:'jack'} 。test所在作用域this是{name:'jack'}
-        },
-      });
-    },
-  });
-  
-  ```
-  
-  
-  
-* call apply bind
-
-  会在后面详细介绍
 
 ### this指向的丢失
 
@@ -3767,45 +3463,199 @@ fn(lesson.show) //hedaodao
 
 
 
+### this指向规则
 
+* 对于普通函数
 
-### 箭头函数的由来
+  1、this指向最终调用者。最终调用者：调用链从右向左找到第一个对象，该对象就是最终调用者
 
-属性值的函数，该函数的子函数中出现this会指向window对象，而不是对象本身。以下是解决方案
-
-* 新方法：ES6出现了箭头函数，可以很好的解决这个问题
-
-  ```javascript
-  let lesson={
-      site:"hedaodao",
-      show:function(){      
-          return ()=>{
-              return this.site
-          }
-      }
+  ```js
+  //函数d中，this指向对象b（函数d由函数c调用，函数c由对象b调用）
+  a.b.c()
+  function c(){
+    d()
   }
-  console.log(lesson.show()()) //输出 hedaodao
+  function d(){
+    
+  }
   ```
 
-* 老方法：没有箭头函数之前，通常的做法是使用一个变量self保存下，指向对象的this
+  2、call、apply、bind会改变普通函数的this指向
 
-  ```javascript
-  let lesson={
-      site:"hedaodao",
-      show:function(){
-          var self=this//这里的this是指向lesson对象的，赋值给self，后面子函数里，用self
-          return function(){
-              return self.site
-          }
-      }
+* 对应箭头函数
+
+  this指向箭头函数所在的作用域。箭头函数的难点在于：其作用域的this可能还要沿着调用链找，才能找到
+
+  ```js
+  function xx(){
+    //作用域
   }
-  console.log(lesson.show()()) //输出 hedaodao
+  
+  if(){
+    //作用域
+  }
+  
+  for(){
+    //作用域
+  }
+  
+  while(){
+    //作用域
+  }
+  ```
+
+  注意，对象也是花括号，但是其内部不是作用域
+
+  ```js
+  const obj={
+    
+  }
+  ```
+
+
+
+### 补充实际场景
+
+this指向的规则只有上面两点，但是实际场景非常复杂，这部分是用来补充实际场景下this指向如何判断
+
+* 下面函数实际是挂在了window上
+
+  ```js
+  function f1(){
+    console.log(this)
+  }
+  
+  f1() //指向window
+  
+  //f1实际是挂在了window上。f1的最终调用者是window
+  window.f1()
+  ```
+
+* this在入参的函数中。注意：f1的入参是对象，但是这个对象不是一定是最终调用者
+
+  ```js
+  function f1(params){
+      params.callback1() // this指向params对象。（调用关系:callback1<=params对象 ）
+      params.callback2() // this指向window。callback2所在作用域是f1的函数作用域，这里的this是指向window的
+    	params.action.getInfo()//this指向action对象。（调用关系:callback3<=action对象<=params对象 ）
+  }
+  
+  
+  
+  f1({
+    name:'tom',
+    age:20,
+    callback1(){
+      //普通函数this取决于谁调用了函数callback1
+      console.log(1,this)
+    },
+    callback2:()=>{
+      //箭头函数this指向，其自身函数所在上下文中的this
+      console.log(2,this)
+  	},
+    action:{
+      getInfo(){
+        //普通函数this取决于谁调用了函数callback1
+        console.log(3,this)
+      }
+    }
+  })
+  
+  ```
+
+  完整的例子
+
+  ```js
+  function Page(params) {
+    const { onLoad } = params;
+    if (onLoad instanceof Function) {
+      //onLoad的this取决于谁调用了Page。后面可以看到Page是直接调用的，this指向window
+      //call强制指定this为{name:'jack'}
+      onLoad.call({name:'jack'})
+    }
+  }
+  
+  function test(params) {
+    const { success, fail } = params;
+    if (success) {
+      success({ msg: "success" });
+    }
+    if (fail instanceof Function) {
+      fail();
+    }
+  }
+  
+  
+  //Page是直接调用的
+  Page({
+    onLoad() {
+      //call绑定了{name:'jack'}，当前块级作用域this就是{name:'jack'}
+      console.log('1',this) //{name:'jack'}
+      
+      test({
+        name: "tom",
+        //注意下面是简写，实际是=》success:function(){ xxx }
+        success() {
+          console.log('2',this); //window。fail是test调用的，test是onLoad调用的，onLoad的是Page调用的，window调用的Page，所以this指向window
+        },
+        fail:()=> {
+          console.log('2',this); //{name:'jack'} 。test所在作用域this是{name:'jack'}
+        },
+      });
+    },
+  });
+  
+  ```
+
+* 构造函数
+
+  这个需要特殊记忆，前面学过构造函数会创造新的对象，this就指向这个新对象
+
   ```
   
+  ```
+
+* 定时器
+
+  定时器函数比较特殊，他会把函数内部的this重写为window【在node环境下，会重写成 Timer对象】
+
+  ```js
+  function f(){
+      console.log(this)
+  }
+  setTimeout(f,100) //【规则5】window 
+  ```
+
+
+* 解构对象
+
+  例子中解构出来的函数getThis的最终调用者是window
+
+  ```js
+  let obj={
+    getThis(){
+      console.log(this)
+    }
+  }
+  const {getThis}=obj
+  getThis() //window
+  ```
+
+  因为函数getThis直接被window调用了，箭头函数的当前作用域就是window
+
+  ```js
+  let obj={
+     getThis:()=>{
+       console.log(this)
+     }
+  }
+  const {getThis}=obj
+  getThis() //window
+  ```
 
 ### call apply bind
 
-用于设置函数中的this的指向
+用于设置普通函数中的this的指向
 
 构造函数中this，this指向的是本身,是空白的。new新的对象后，传入参数那么，对象内部才有的`name: "张三"`
 
