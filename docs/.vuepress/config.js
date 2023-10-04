@@ -45,6 +45,7 @@ module.exports = {
       {
         text: "其他语言",
         items: [
+          { text: "Redis7", link: "/otherLanguage/Redis.md" },
           { text: "Go语言", link: "/dealArticle/Go学习笔记.md" },
           { text: "Go Web（持续更新）", link: "/dealArticle/GoWeb学习.md" },
           { text: "Flutter（持续更新）", link: "/otherLanguage/Flutter.md" },

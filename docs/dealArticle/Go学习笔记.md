@@ -748,7 +748,7 @@ func main() {
 如果某个发布的版本存在致命缺陷不再想让用户使用时，我们可以使用`retract`声明废弃的版本。修改项目下的`go.mod`文件，并打包推送到GitHub仓库
 
 ```go
-module github.com/q1mi/hello
+module github.com/用户名/项目名
 
 go 1.16
 
@@ -2900,6 +2900,12 @@ fmt.Println(slice1) //[100 2 3 4]
 
 依然是for和for range两种
 
+```go
+for index, value := range slice {
+    // 在这里处理每个元素的索引和值
+}
+```
+
 **append：切片的追加**
 
 下面的例子可以看出来，追加函数并不是改变原本的切片，而是函数返回了新的追加后的切片，这个新的切片的底层数组对应原来的底层数组，只不过进行了扩容
@@ -4660,6 +4666,49 @@ func main() {
 
 }
 ```
+
+## panic
+
+在Go语言中，异常是指会引发程序崩溃无法继续运行的错误，比如数组越界或者空指针引用等情况，这时候会触发 `panic`异常。（注意：无论是在主协程还是子协程中，一旦触发 `panic`异常，整个程序都会终止运行）
+
+除了自动触发，我们也可以手动调用 `panic`函数触发异常来终止程序的运行
+
+```
+panic("出现了错误")
+```
+
+不过，一个良好的程序最好不要主动调用 `panic`函数，尤其是开发类库的时候，最好通过返回 `error`类型来告诉调用者发生了什么错误，而不是触发 `panic`导致程序终止运行
+
+**recover函数**
+
+发生 `panic`异常时，如果不捕获得异常，那么程序就是终止运行，在Go语言中，可以用 `defer`语句和 `recover`函数的模式来捕获 `panic`异常：
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+)
+
+func main() {
+  // 数组越界
+	n1 := FindElementByIndex(10)
+}
+
+func FindElementByIndex(index int) int {
+  // 一般写在函数的efer中
+	defer func() {
+		if e := recover(); e != nil {
+			log.Fatal(e)
+		}
+	}()
+	s := []int{1, 2, 3, 4}
+	return s[index]
+}
+```
+
+
 
 
 

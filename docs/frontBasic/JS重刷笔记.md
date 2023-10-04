@@ -3467,17 +3467,22 @@ fn(lesson.show) //hedaodao
 
 * 对于普通函数
 
-  1、this指向最终调用者。最终调用者：调用链从右向左找到第一个对象，该对象就是最终调用者
+  1、this指向调用者（调用链从右向左找到第一个调用者，如果是对象this指向这个对象，如果是函数this指向window）
 
   ```js
   //函数d中，this指向对象b（函数d由函数c调用，函数c由对象b调用）
-  a.b.c()
-  function c(){
-    d()
+  function b(){
+    console.log(this)
   }
-  function d(){
-    
+  function a(){
+    b()
   }
+  
+  const obj={
+  	a
+  }
+  
+  obj.a() //window
   ```
 
   2、call、apply、bind会改变普通函数的this指向
@@ -9253,7 +9258,7 @@ NewGetCity(){
 
 ```
 
-### 回调风格的深层次思考
+### 回调风格的深层次思考一
 
 **场景1**
 
@@ -9424,6 +9429,90 @@ async open(){
 第一次知道，作为参数的回调函数可以被保存下来，在任意时机调用传参
 
 当调用时，会在传入处立即触发执行
+
+### 回调风格的深层次思考二
+
+在我彻底接受了同步风格后，我尝试将所有场景的回调风格代码promisify
+
+刚开始一切都很顺利，将代码优化为同步形式，使得页面逻辑更加清晰
+
+但是，我慢慢的遇到了一些场景，在这些场景下根本无法使用同步风格。我将这些场景分为两类
+
+* 从嵌套函数中拿取结果到外层
+
+* 介入主逻辑的钩子
+* 等待未来的某个时机触发（重点）
+
+### 从嵌套函数中拿取结果到外层
+
+这种最常见
+
+```js
+function f1(callBack){
+	f2(callBack)
+}
+function f2(callBack){
+	callBack(data)
+}
+
+f1((data)=>{
+  //拿到数据
+})
+```
+
+
+
+### 介入主逻辑的钩子
+
+最常见的就是生命周期钩子
+
+```js
+function mainProcess({preLoad,afetrLoad}){
+ 	//钩子
+  if(preLoad  instanceof Function){
+    	preLoad()
+	}
+  
+  //主流程
+  if(afetrLoad  instanceof Function){
+    	afetrLoad()
+	}
+}
+```
+
+同理，也可以作为兜底逻辑，来介入主逻辑
+
+```js
+function mainProcess({handleException}){
+ 	
+  if(主流程出现了特殊场景 && handleException instanceof Function){
+    handleException()
+  }
+ 
+}
+```
+
+
+
+### 等待未来的某个时机触发
+
+讲一个目前遇到的案例吧
+
+```js
+request({
+	data,
+  success(data){
+    //请求成功的数据
+  },
+  fail(){
+    
+	}
+})
+```
+
+
+
+
 
 
 

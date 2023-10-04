@@ -644,7 +644,14 @@ git log -1 HEAD --pretty='%ad,%s'
 还有更多的格式选项可以参考 Git 官方文档中的说明：https://git-scm.com/docs/pretty-formats
 ```
 
+### 文件名大小写
 
+默认 git 是忽略文件名大小写的
+
+```
+# 禁止忽略大小写，会修改.git/config配置文件
+git config core.ignorecase false
+```
 
 
 

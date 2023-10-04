@@ -317,7 +317,11 @@ package.json中各个字段的含义（仅name和version是必须的）
 	 },
   //----发布npm包相关----
   "private":true, //设置true时，该npm包不会被发布
-   publishConfig:{},
+   publishConfig:{
+     	//发布到npm上后，发布的文件中package.json的main、typings字段下，会被替换为下面的字段
+      "main": "dist/index.js", //发布后的包的入口文件（比如，项目打包后再dist文件夹，这里就设置dist文件夹下的入口）
+      "typings": "lib/index.d.ts" //类型文件
+   },
   
   //----自定义脚本相关----
   "scripts": {
@@ -332,7 +336,7 @@ package.json中各个字段的含义（仅name和version是必须的）
   "peerDependencies": {},//同级依赖。比如包A依赖于包B，可以在包A中设置包B为同级依赖，当用户下载包A，必须要单独下载包B才行
   
   //typescript 的声明文件(非 NodeJS 官方的字段)
-  "types": "./dist/index.d.ts", 
+  "typings": "./dist/index.d.ts", 
   
   //----入口文件----
   "main": "./dist/index.js", // 用于 CommonJS 规范的模块加载器。比如你用 require 导入时，默认情况下都是从这里进入的。
@@ -837,6 +841,21 @@ packages:
   # 使用！排除包目录中的文件夹
   - '!**/test/**'
 ```
+
+
+
+```shell
+# -f指定子包，在子包中安装依赖h-ui-plus-components。如果workspace有这个包直接安装本地包，没有去npm下载安装
+pnpm add  h-ui-plus-components --filter h-ui-plus-docs (package的name字段)
+
+#在path下执行命令，可以在不切换目录的情况下，执行子包的命令。commond是在script字段下定义的命令
+pnpm -C <path> <command> 
+pnpm --filter h-ui-plus-components <command> # 也可以直接用子包名
+ 
+pnpm up #升级依赖
+```
+
+
 
 ### pnpm常用命令
 

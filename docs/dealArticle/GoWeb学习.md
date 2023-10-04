@@ -1108,7 +1108,7 @@ func transaction() {
 
 这部分介绍go-redis这个第三方库
 
-[文档地址](https://pkg.go.dev/github.com/go-redis/redis)
+[文档地址](https://pkg.go.dev/github.com/go-redis/redis/v9)
 
 因为我电脑里没有安装redis
 
@@ -3114,7 +3114,8 @@ func main() {
 	//5、查询 (First、Last、Take如果查不到数据就是错误，即ErrRecordNotFound，而Find找不到也不会报错)
 	//查询会将结果放入查询函数（First、Last、Take、Find）的参数中（一个结构体指针），这里有一个隐藏的知识点，查询函数会在schema中找到参数这个空结构体对应的表。如果找不到就需要先用Model指定下是哪个表
 	//5-1 First、Last，按照主键排序（没有主键，则按照第一个字段进行排序），然后查询第一个、最后一个数据。
-	// 只有在目标 struct 是指针或者通过 db.Model() 指定 model 时，该方法才有效。Model指定了当前查询的是User这个模型，即其对应的数据库表
+	//注意：函数 db.Model(xxx) 用于指定执行操作的表，这里Model指定了当前查询的是User对应的数据库表。由于这里查询函数指定了入参&u，GORM会自动推导用户查询的为User对应的表，所以可以省略db.Model(xxx)。
+  //推断失败需要手动指定表的情况，例如结构体User对应表名users,但是First入参使用了NewUser结构体类型接收，这时候GORM会去找new_users表，而不是users表
 	//var u User
 	//if err := db.Model(&User{}).Where("name=?", "jack3").First(&u).Error; err != nil {
 	//	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -3177,6 +3178,8 @@ func main() {
 	//db.Offset(3).Find(&u)
 	//fmt.Printf("查询的数据：%#v\n", u)
 	//5-9 Select指定查询结果的某些字段，Omit忽略查询结果中的某些字段
+  //db.Select("name", "age").Find(&u)
+	//SELECT name, age FROM users;
 
 	//5-10 智能查询（如果多次查询，每次都使用Select指定要哪些字段，有些臃肿）
 	//type newUser struct {
@@ -3207,7 +3210,7 @@ func main() {
 	//6-2-2 参数为Map（可以更新零值）
 	//var uList []User
 	//db.First(&uList).Updates(map[string]interface{}{
-	//	"name": "", //map的key可以是结构体字段名Name，也可以是数据库字段名name，没影响
+	//	"name": "", //map的key需要是数据库的字段名name，不是结构体名Name
 	//	"age":  0,
 	//})
 
@@ -3290,7 +3293,14 @@ SELECT * FROM users WHERE is_del = 0;
 UPDATE users SET is_del = 1 WHERE ID = 1;
 ```
 
+### 临时表
 
+创建一个临时表u，用于查询
+
+```go
+db.Table("(?) as u", db.Model(&User{}).Select("name", "age")).Where("age = ?", 18).Find(&User{})
+// SELECT * FROM (SELECT `name`,`age` FROM `users`) as u WHERE `age` = 18
+```
 
 
 
@@ -3369,28 +3379,11 @@ https://blog.csdn.net/m0_67316550/article/details/124288116
 
 ![image-20220731224859022](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220731224859%20.png)
 
-一对一关系可以将一方主键、两个实体关系都归到另一方
+数据库知识：一对一关系转换为表结构时，可以将一方主键放到到另一方作为外键
 
-这里把学校属性ID和关系属性，分配给校长作为例子：
-
-* 校长表是参照表，有外键学校
-
-* 学校表是被参照表
-
-**其表结构为**：
-
-使用belongs to和has one 创建的表相同，两种方式都是使用一个结构体创建两个有关联关系的表（两个表以school_id作为外键联系起来）
-
-![image-20220731225911632](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220731225911%20.png)
-
-![image-20220731230015899](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220731230016%20.png)
+使用belongs to和has one 两种方式，区别就是把A的主键放到B，还是把B的主键放到A
 
 **belongs to**
-
-* 学校结构体只保留自己的字段（被参照表）
-* 校长结构体中需要加入外键SchoolID，还有School两个字段（参照表）
-
-创建数据时，只需要**校长实体**即可创建两个表
 
 ```go
 package main
@@ -3398,7 +3391,6 @@ package main
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 type School struct {
@@ -3408,18 +3400,14 @@ type School struct {
 type HeadMaster struct {
 	gorm.Model
 	Name     string
-	SchoolID uint //名字必须 <对方实体的结构体名字+其主键名>
+	SchoolID uint   //名字必须 <对方实体的结构体名字+其主键名>
 	School   School //必须使用命名方式，匿名方式就直接把School的字段合并到HeadMaster中了
 }
 
 func main() {
 	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		SkipDefaultTransaction: false,
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   "relative_", 
-			SingularTable: false,      
-		},
+		SkipDefaultTransaction:                   false,
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
@@ -3429,7 +3417,7 @@ func main() {
 	//迁移时，只迁移HeadMaster就会同时创建两个表
 	db.AutoMigrate(&HeadMaster{}) //参照表
 
-  //创建实例的时候，不用手动处理校长表中学校外键，GORM会自动填写这个外键值
+	//创建实例的时候，不用手动处理校长表中学校外键，GORM会自动填写这个外键值
 	school := School{
 		Model: gorm.Model{
 			ID: 2,
@@ -3449,12 +3437,15 @@ func main() {
 
 ```
 
+校长表
+
+![image-20230918101244218](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230918101244%20.png)
+
+学校表
+
+![image-20230918101335383](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230918101335%20.png)
+
 **has one**
-
-* 学校结构体中需要加入HeadMaster（被参照表）
-* 校长结构体中需要加入外键SchoolID（参照表）
-
-创建数据时，只需要**学校实体**即可创建两个表
 
 ```go
 package main
@@ -3462,28 +3453,23 @@ package main
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 type School struct {
 	gorm.Model
-	Name       string
-	HeadMaster HeadMaster
+	Name         string
+	HeadMasterID uint //名字必须 <对方实体的结构体名字+其主键名>
 }
 type HeadMaster struct {
 	gorm.Model
-	Name     string
-	SchoolID uint //名字必须 <对方实体的结构体名字+其主键名>
+	Name   string
+	School School //必须使用命名方式，匿名方式就直接把School的字段合并到HeadMaster中了
 }
 
 func main() {
 	dsn := "root:hedaodao@(127.0.0.1:3306)/gorm_class?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		SkipDefaultTransaction: false,
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   "relative_", 
-			SingularTable: false,      
-		},
+		SkipDefaultTransaction:                   false,
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
@@ -3493,26 +3479,33 @@ func main() {
 	//迁移时，必须指定School、HeadMaster两个表
 	db.AutoMigrate(&School{}, &HeadMaster{})
 
-  //创建实例的时候，不用手动处理校长表中学校外键，GORM会自动添加这个外键
-	master := HeadMaster{
-		Model: gorm.Model{
-			ID: 1,
-		},
-		Name: "校长一号",
-	}
-
+	//创建实例的时候，不用手动处理校长表中学校外键，GORM会自动填写这个外键值
 	school := School{
 		Model: gorm.Model{
 			ID: 2,
 		},
-		Name:       "希望小学",
-		HeadMaster: master,
+		Name: "希望小学",
 	}
-	
-  //学校结构中是两个表的全量数据
-	db.Create(&school)
+	master := HeadMaster{
+		Model: gorm.Model{
+			ID: 1,
+		},
+		Name:   "校长一号",
+		School: school,
+	}
+	//校长结构中是两个表的全量数据
+	db.Create(&master)
 }
+
 ```
+
+校长表
+
+![image-20230918102451137](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230918102451%20.png)
+
+学校表
+
+![image-20230918102529837](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230918102530%20.png)
 
 **手动维护两个表的一对一关系**
 
@@ -3609,9 +3602,18 @@ db.Model(&school).Association("HeadMaster").Clear()//【school_id字段为2】
 
 ### 多对一关系
 
-一个学校有多个学生，一个学生属于一个学校
+一个学校有多个学生，一个学生只属于一个学校
 
 ![image-20220801004614649](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20220801004615%20.png)
+
+数据库知识：数据库<1：n>关系，转换为表结构，应该将1端的主键，作为外键放入n端。
+
+所以，学生表应该包含学校ID作为外键，GORM的两种写法，其实必须有这个规则
+
+即Student结构体包含SchoolID，唯一区别是：
+
+* School包含Student。 仅仅需要实例化School，就可以插入两个表的数据
+* Student包含School。 仅仅需要实例化Student，就可以插入两个表的数据
 
 **方式一**:
 
@@ -3704,7 +3706,7 @@ type Student struct {
 
 ### 预加载
 
-中文文：https://gorm.io/zh_CN/docs/preload.html
+中文文档：https://gorm.io/zh_CN/docs/preload.html
 
 还是之前的例子（has many）
 

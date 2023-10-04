@@ -1189,8 +1189,9 @@ export default defineConfig({
 
         //key是预处理器名 ，value是该预处理器配置
         preprocessorOptions:{  
-          	sass:{
-              //xxxx
+          	scss:{
+              //指定文件启动全局变量
+              additionalData:'@import "./src/styles/variable.scss";' //注意:';'一定要写，否则报错
             },
             less:{//这里的配置项其实就是less的命令行参数。参考：https://lesscss.org/usage/#less-options
 
@@ -1222,11 +1223,57 @@ devSourcemap选项
 
 ## 静态资源：SVG
 
-```js
-import loading from '@/assets/images/loading.svg' //默认会追加url ===> @/assets/images/loading.svg?url
-let svgImg=document.createElement('img')
-svgImg.src=loading
-document.body.append(svgImg)
+img的src可以直接使用SVG
+
+```vue
+<img src="@/assets/images/loading.svg">
+```
+
+也可以，使用插件`vite-plugin-svg-icons`来进行加载SVG（特点：**预加载**、**高性能** ）
+
+```shell
+# https://github.com/vbenjs/vite-plugin-svg-icons/blob/main/README.zh_CN.md
+pnpm install vite-plugin-svg-icons -D
+```
+
+配置插件
+
+```ts
+import path from 'path'
+
+import { defineConfig } from 'vite'
+
+
+import {createSvgIconsPlugin} from  'vite-plugin-svg-icons'
+
+export default defineConfig({
+  plugins: [
+    createSvgIconsPlugin({
+      // 指定svg图标放置的目录
+      iconDirs: [path.resolve(process.cwd(), 'src/assets/icons')],
+      // 加载的格式
+      symbolId: 'icon-[dir]-[name]',
+    })
+  ]
+})
+
+```
+
+main.ts引入虚拟模块
+
+```ts
+import 'virtual:svg-icons-register'
+```
+
+使用SVG
+
+```vue
+<!--   可以使用css定义宽高   -->
+<svg style="width: 30px;height:30px">
+  	<!--   #icon-xxx加载xxx.svg   -->
+ 		<!--   fill填充svg图标颜色   -->
+		<use xlink:href="#icon-guard" fill="yellow"></use>
+</svg>
 ```
 
 
@@ -1623,7 +1670,8 @@ import { viteMockServe } from 'vite-plugin-mock'
 export default defineConfig({
     plugins:[
         viteMockServe({
-            
+            mockPath: 'mock',//放置mock文件的目录
+        		enable: true, //启用mock
         })
     ]
 })
