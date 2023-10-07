@@ -6,10 +6,8 @@ tagline: 永远年轻，永远热泪盈眶
 # actionText: 快速上手 →
 actionLink: /zh/guide/
 features:
-- title: 2022年的学习目标
-  details: 重刷Javascript 重刷Vue  学习React 学习Electron 学习flutter
-- title: 2022年要写的文章
-  details: 造轮子：尝试自己重写vant/element的部分组件，感受下大神的魅力
+- title: 2023年的学习目标
+  details: 重刷Javascript 重刷Vue  学习flutter 学习Go 学习Redis7
 # - title: 其他基础
 # details: 
 # - title: 高性能

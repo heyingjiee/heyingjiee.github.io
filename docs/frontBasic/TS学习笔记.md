@@ -1722,11 +1722,9 @@ declare module 'fs' {
 
 
 
-
-
 ### TS配置
 
-
+参考：https://www.51cto.com/article/694463.html
 
 
 

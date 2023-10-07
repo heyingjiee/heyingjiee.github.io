@@ -451,11 +451,22 @@ select 5
 flushdb 
 # 清空所有数据库
 flushall
+```
 
+### 配置相关
+
+```shell
 # 获取redis服务配置
 config get xxx # xxx是配置名，比如: config get port
 config get da* # 支持正则，匹配da开头的配置
+
+
+# 设置配置（使用这个命令，我们就不必使用vim打开redis.conf再修改）
+config set xxx yyy # 在内存中修改
+cinfig rewrite # 必须执行这个，才能保证被修改
 ```
+
+
 
 ### Key操作
 
@@ -1105,11 +1116,15 @@ Redis 是一个内存数据库，所以其运行效率非常高。但内存中�
 
 ![image-20231004183440866](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004183441%20.png)
 
-### <span id="RDB">RDB</span>
+### <span id="RDB">RDB</span>（默认开启）
 
 RDB（Redis DataBase）是指将内存中某一时刻的数据快照全量写入到指定的 rdb 文件的持久化技术
 
 RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照文件，将数据从硬盘载入到内存，以恢复 Redis 关机前的数据库状态
+
+开启RDB后（默认开启），在Redis安装目录下，会有一个dump.rdb文件用于存储持久化数据
+
+![image-20231004173940404](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004173940%20.png)
 
 如何进行RDB持久化：
 
@@ -1123,9 +1138,17 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
 
 * 手动**bgsave**
 
-  相当于后台运行的save，Redis服务会生成一个子进程，由该子进程负责完成保存过程不会阻塞进程，使用较多
+  相当于后台运行的save，Redis服务进程会fork一个子进程，由该子进程负责完成保存，过程不会阻塞进程Redis服务器的读写操作（使用较多）
 
   ![image-20231004192218562](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004192218%20.png)
+
+  bgsave的流程：
+
+  ![image-20231006205643004](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231006205643%20.png)
+
+  注意：fork出的子进程和父进程共享内存资源，所以子进程可以复制内存中的数据到RDB文件中。Linux系统中一旦内存被共享，则该内存就变成只读的。当Redis在拷贝内存数据的过程中，如果有新的写入操作，Linux就会采用写时复制技术（Copy-On-Write，Linux会将数据写入一个新的非共享的内存区域A，待数据拷贝完成，再将A的数据追加到RDB临时文件中，最后重命名为dump.rdb文件），最终RDB文件中包含了所有内存数据
+
+  
 
 * 自动条件触发
 
@@ -1133,29 +1156,101 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
 
   
 
-补充：
+  补充：
 
-```shell
-lastsave # 返回最后一次持久化时间
-```
+  ```shell
+  lastsave # 返回最后一次持久化时间
+  ```
 
+  ****
+  
+  下面介绍snapshotting模块的配置：
+  
+  **save**
+  
+  ![image-20231004211328980](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004211329%20.png)
+  
+  ```
+  不开启RDB持久化，save设置为""
+  
+  开启RDB持久化：
+   save 3600 1 300 100 60 10000 # 默认值
+   60s内，如果超过10000次写操作，就触发一个持久化
+   300s，，，， 100次
+   3600，，，， 1次
+  ```
+  
+  **stop-write-on-bgsave-error**
+  
+  ![image-20231004221953659](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004221953%20.png)
+  
+  当RDB开启时，才生效
+  
+  ```shell
+  # 开启这个时，当持久化失败后，redis无法执行其他写操作
+  stop-write-on-bgsave-error:yes 
+  ```
+  
+  **rdbcompression**
 
+  ![image-20231004221922141](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004221922%20.png)
 
-Redis 的持久化的方式分为两种：
+  ```shell
+  # 生成 dump.rdb 文件时开启压缩，可大幅降低文件的大小，加速主从集群中从节点的数据同步
+  
+  rdbcompression yes # 默认开启
+  ```
+  
+  **rdbchecksum**
 
-* RDB （默认）
+  ![image-20231004222523590](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004222523%20.png)
 
-  在Redis安装目录下，会有一个dump.rdb文件
-
-  ![image-20231004173940404](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004173940%20.png)
-
+  ```shell
+  # CRC64 校验和就被放置在了文件末尾。这使格式更能抵抗 RDB文件的损坏，但在保存和加载 RDB 文件时，性能会受到影响（约 10%）
+  
+  rdbchecksum yes # 默认开启
+  ```
+  
   
 
-* AOF
+  **sanitize-dump-payload**
+
+  该配置用于设置在加载 RDB 文件或进行持久化时是否开启对 zipList、listPack 等数据的全面安全检测
+
+  * no：不检测
+  * yes：总是检测
+  *  clients（默认）：只有当客户端连接时检测。排除了加载 RDB 文件与进行持久化时的检测。
+
+  涉及到集群数据迁移时，应该设置为no
+
+  ![image-20231004223108231](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004223108%20.png)
+
+  **dbfilename**
+
+  生成的rdb文件名
+
+  ![image-20231004223431399](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004223431%20.png)
+
+  **dir**
+
+  生成的rdb、aof文件放置的目录，默认安装目录
+
+  ![image-20231004224406156](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004224406%20.png)
+
+  **rdb-del-sync-files**
+  
+  默认no，对于没有开启RDB和AOF持久化的副本实例，控制其是否删除rdb文件
+  
+  ![image-20231004223532357](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004223532%20.png)
+  
 
 
 
+### AOF
 
+AOF（Append Only File）是指 Redis 将每一次的**写操作**都以日志的形式记录到一个 AOF
+文件中的持久化技术。当需要恢复内存数据时，将这些写操作重新执行一次，便会恢复到之
+前的内存数据状态。
 
 
 
