@@ -1,4 +1,4 @@
-# Vue重刷笔记
+# Vue2重刷笔记
 
 这份文档主要针对的是Vue 2.0
 
@@ -789,7 +789,7 @@ student: {
 
 需要采用下面的方法，只要student里面的任何内容变化，就会触发
 
-```vue
+```js
 watch: {
      student: {
          handler: function() {
@@ -802,7 +802,7 @@ watch: {
 
 如果只是监听对象的某个键，上面的方法太浪费性能了
 
-```
+```js
 watch: {
   "student.name": {
     handler:function () {
@@ -814,13 +814,15 @@ watch: {
 
 或者
 
-```vue
+```js
 watch: {
   "student.name":function () {
       console.log("触发执行");
   }
 },
 ```
+
+
 
 **监听器触发时机**
 
@@ -831,6 +833,21 @@ watch: {
 实际场景：
 
 假如当前有一个组件用于将传入的时间戳，使用watch监听该属性并格式化为时分秒。每个1s就会传入新的时间戳。第一传入的是默认值，并不会触发watch，后面的才会触发
+
+如果希望第一次绑定数据时就被监听到，可以使用immediate属性
+
+```js
+watch: {
+     student: {
+         handler: function() {
+            //监测到student变化了，进行的操作  
+         },
+         immediate: true  // 第一次改变就执行
+     }
+}
+```
+
+
 
 ### 生命周期函数
 
@@ -3015,30 +3032,13 @@ keep-alive会影响组件生命周期
 
 
 
-
-
 ## Vue响应式原理
 
 官方文档：https://v2.cn.vuejs.org/v2/guide/reactivity.html
 
 
 
-## Vue动画(待补充)
-
-
-
-## Vuex
-
-```js
-{
-    path: '/user/:id',
-    component: User,
-    children:[
-      // 请注意，只有子路由具有name
-    	{ path: '', name: 'user', component: UserHome }
-    ]
-}    
-```
+## Vue动画(略)
 
 
 
@@ -3062,7 +3062,7 @@ Vue-Router的官网地址：https://router.vuejs.org/zh/
 yarn add vue-router@4
 ```
 
-### 配置映射
+### 简单映射
 
 在浏览器输入URL，会在页面中加载对应的组件
 
@@ -3100,14 +3100,15 @@ export default router
 
 main.js
 
-在把路由实例挂载在路由上，然后把dom（id是app）挂载在Vue实例上
+在把router（路由实例）注入到Vue实例中，最后把dom（id是app）挂载在Vue实例上
+
+在所有组件中都可以用this.$router访问到router实例
 
 ```js
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 
-Vue.config.productionTip = false
 
 new Vue({
   router
@@ -3117,7 +3118,7 @@ new Vue({
 
 App.vue
 
-这里的router-view是第一层，对应routes数组的第一层映射关系。组件会被放置到在这里的`router-view`区域显示
+routes数组的所有第一层组件会被放置到在这里的`router-view`区域显示（因为这里的router-view是第一层，对应routes数组的第一层）
 
 ```vue
 <template>
@@ -3129,32 +3130,38 @@ App.vue
 
 
 
-**URL匹配**
 
-前面配置的路由都是完全匹配，例如URL中的`/about`路径，会匹配到routers中的 `/about`，之后加载对应的组件
 
-```js
-const routes = [
-  { path: '/', component: Home },
-  { path: '/about', component: About },
-]
-```
 
-动态参数匹配路由（URL路径）
 
-```js
-const routes = [
-  { path: '/userCenter/:userName', component: About },
-]
+### 复杂映射
 
-// 会匹配到URL中是 userCenter/xxx 的  
-// URL中的动态参数userName可以通过 this.$route.params.userName 获取
-```
+**一、命名路由**
 
-注意：
+用path路径，对应指定的组件
 
-* 生命周期不触发（采用监听路由变化，改变页面）
+* path是静态的路径（参考上一节）
 
+  ```js
+  const routes = [
+    { path: '/', component: Home },
+    { path: '/about', component: About },
+  ]
+  ```
+
+* path还可以是动态的（动态参数匹配路由）
+  
+  ```js
+  const routes = [
+    { path: '/userCenter/:userName', component: About },
+  ]
+  
+  // 会匹配到URL中是 userCenter/xxx 的  
+  // URL中的动态参数userName可以通过 this.$route.params.userName 获取
+  ```
+  
+  注意：有些组件生命周期不触发的情况（采用监听路由变化，改变页面）
+  
   ```js
   //URL从`userCenter/jack`跳转到`userCenter/tom`，相同的组件实例将被重复使用，生命周期钩子不会被触发。
   //解决方案：可以通过watch监听路由对象或者路由守卫，来知道URL发生了变化，来触发查询用户（jack、tom）的信息
@@ -3173,63 +3180,53 @@ const routes = [
   }
   ```
   
-  实际工作中遇到的一个问题：点击"我的"后，进入新页面，再按浏览器返回键返回"地推"页。tab高亮不会仍然是"我的"
+  实际工作中遇到的一个问题：点击"我的"后，进入新页面，再按浏览器返回键返回"地推"页，tab高亮仍然是"我的"。（这是因为tab组件放在第一层router-view内部，两个页面在第二层router-view中，他们的切换，并不会引起第一层中的tab组件的更新）
   
   解决：可以监听页面route对象
   
   ![image-20230424191313110](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230424191313%20.png)
   
-* 同名动态参数
-
-  无论是哪个
-
-  ```
-  /x
-  /y
-  /z
-  ```
-
-  都会按顺序匹配到第一个组件A
-
+  同效果动态参数优先级
+  
   ```js
   const routes = [
     { path: '/:a', component: A},
     { path: '/:b', component: B},
   ]
   ```
-
+  
+  ```
+  //都会按顺序匹配到第一个组件A
+  
+  /x
+  /y
+  /z
+  ```
+  
+  动态参数指定格式（使用正则匹配，放在其后的括号中）
+  
+  ```js
+  const routes = [
+    // :orderId -> 仅匹配数字 
+    { path: '/:orderId(\\d+)' }, //确保使用转义反斜杠( \ )
+    
+    // xxx*表示匹配所有。比如： path=/a/b 、a/b/c
+    { path: '/:path*'}
+    
+    
+    // 一般把这个放在最后一个，能匹配到所有的路径，重定向到路径/404
+    { path: '/:pathMatch(.*)*' , redirect:'/404'}
+    
+  ]
+  
+  // * 0到多个
+  // ? 0或1个
+  // + 大于等于1个
+  ```
+  
   
 
-动态参数个数
-
-```js
-const routes = [
-  { path: '/:orderId*' },
-]
-
-// * 0到多个
-// ? 0或1个
-// + 大于等于1个
-```
-
-动态参数格式（使用正则匹配，放在其后的括号中）
-
-```js
-const routes = [
-  // :orderId -> 仅匹配数字 
-  { path: '/:orderId(\\d+)' }, //确保使用转义反斜杠( \ )
-]
-```
-
-
-
-
-
-### 复杂映射
-
-**一、嵌套路由**
-
-路由可以嵌套，将映射的组件嵌套起来
+路由还可以可以嵌套，将映射的组件也嵌套起来
 
 如下图，URL里的`johnny`对应User组件，`profile`、`posts`对应不同的组件
 
@@ -3269,16 +3266,21 @@ const routes = [{
 ]
 ```
 
-如果希望访问`/user/:userName`时，有个默认的子组件放置在User的`router-view`之中，可以指定子路由的path为空
+打开/user页面时，可以通过指定redirect来控制二级router-view默认显示的模块
 
 ```js
 const routes = [{ 
-   path: '/user/:userName', 
+   path: '/user', 
    component: User,
+   redirect: { path: 'user/detail' },
    children: [
       {
-        path: '',
-        component: UserProfile,
+        path: 'detail',
+        component: UserDetail,
+      },
+      {
+        path: 'auth',
+        component: UserAuth,
       },
     ],
   }
@@ -3319,24 +3321,76 @@ const router = createRouter({
 
 
 
-### 路由配置
+### 组件接收参数
+
+我们可以在组件中使用this.$route.param获取当前页面参数
+
+除此之外，还提供了其他种方式，将路由参数直接作为组件props传入
+
+组件中可以直接用props接收url中的动态参数
+
+```vue
+<script>
+export default{
+  props:['id'] //参数名为id
+}
+</script>
+```
+
+**布尔模式**
+
+在router.js中配置路由
 
 ```js
-const routes = [
-  { path: '/', component: Home },
-  { path: '/about', component: About },
-]
+const router = new VueRouter({
+  routes: [
+    // 命名路由：指定props为ture
+    { path: '/user/:id', component: User, props: true },
 
-// 3. 创建router实例
-const router = VueRouter.createRouter({
-  routes, // 路由映射
-  history:createWebHashHistory()//路由模式：1、createWebHashHistory() 2、 createWebHistory()
-  strict:true //匹配带有或不带有尾部斜线的路由（默认为true）
-  sensitive: true //不区分路由大小写（默认为true）
+    // 命名视图的路由：必须分别为每个命名视图添加 `props` 选项：
+    {
+      path: '/user/:id',
+      components: { default: User, sidebar: Sidebar },
+      props: { default: true, sidebar: false }
+    }
+  ]
+})
+
+```
+
+**对象模式**
+
+在router.js中配置路由
+
+```js
+const router = new VueRouter({
+  routes: [
+    {
+      path: '/promotion/from-newsletter',
+      component: Promotion,
+      props: { id: 123 } //指定传入属性
+    }
+  ]
 })
 ```
 
 
+
+**函数模式**
+
+```js
+const router = new VueRouter({
+  routes: [
+    {
+      path: '/search',
+      component: SearchUser,
+      props: route => ({ id: route.query.q })
+      //通过函数动态返回属性，返回值是对象{prop:value}
+      //例如访问 /search?q=123，组件属性id就为123
+    }
+  ]
+})
+```
 
 
 
@@ -3377,7 +3431,8 @@ const router = VueRouter.createRouter({
         		// 带 hash，结果是 /about#team
     				router.push({ path: '/about', hash: '#team' })
         
-        		// 命名路由，结果是/user/tom。只有命名路由才会采用param参数（后面会单独讲到）
+        		//命名路由才能采用param参数。在router.js配置{ path:/user/:username }
+            // 下面的结果是/user/tom（参数tom变成了路径）
     				router.push({ name: 'user', params: { username: 'tom' } })
       }
     }
@@ -3427,204 +3482,47 @@ const router = VueRouter.createRouter({
   </template>
   ```
 
-
-
-### 命名路由
-
-push的参数中，只有命名路由才能使用params属性。params属性用于指定URL中的动态参数
-
-```js
-const routes = [
-  {
-    path: '/user/:username',
-    name: 'user',
-    component: User,
-  },
-]
-
-router.push({ name: 'user', params: { username: 'tom' } })
-```
-
-
-
-### 重定向
-
-```js
-//4.配置路由（设置路由匹配规则）
-		var routes = [
-       //方式一：指定path
-			// {path:"/",redirect:{
-			// 	path:"/home"}
-			// },
-            //方式二：只当name
-			{path:"/",redirect:{
-				name:"aa"}
-				
-			},
-			{ path: '/home',name:"aa", component: Ball },
-			//写在最后，如果访问的地址不是上面的，就重定向
-			{ path: '*',name:"aa", redirect:{
-				path:"/home"} 
-			}
-		  
-		]
-```
-
-### 编程式导航
-
-如果不能使用`<router-link>`进行路由，可以用v-bind绑定方法，在方法里，获取路由对象`$router.push( {path:' 路径'} )`进行路由，参数{“路径”} {path:"路径"}  {name:"routes中的name"} 
-
-```html
-
-```
-
-```html
-<script src="node_modules/vue/dist/vue.js"></script>
-	<script src="node_modules/vue-router/dist/vue-router.js"></script>
-	<script>
-		//3.设置渲染页面
-		var Ball= { template: '<div>球组件</div>' }
-	
-		//4.配置路由（设置路由匹配规则）
-		var routes = [
-			{ path: '/home',name:"aa", component: Ball },
-		
-		]
-		//5.实例化路由
-		const router = new VueRouter({
-		  routes // (缩写) 相当于 routes: routes
-		})
-
-
-
-		new Vue({
-			  el: '#app',
-			  data:{
-				  user:"home"
-			  },
-			  //6.挂载路由
-			  router:router,
-            //跳转方法
-			  methods:{					 
-				  urlchange(){
-					  this.$router.push({path:'/home'})
-				  }
-			  }
-							  
-							  
-		})		
-	</script>	
-```
-
-### 嵌套路由
-
-![GKUpGD.png](https://s1.ax1x.com/2020/03/31/GKUpGD.png)
-
-```html
-<div id="app" >
-		<!--1.设置跳转-->
-		<router-link to="/a">音乐</router-link>
-		<!--2.容器-->
-		<router-view></router-view>
-</div>
-```
-
-```html
-<script src="node_modules/vue/dist/vue.js"></script>
-	<script src="node_modules/vue-router/dist/vue-router.js"></script>
-	<script>
-		//3.设置渲染页面
-		var music= { template: `<div>
-			<router-link to="/music/rock">摇滚</router-link>
-			<router-link to="/music/pop">流行</router-link>
-			<router-view></router-view>
-		</div>`
-		}
-			//二级渲染页面			
-		var musicSub={template:`<div>
-			我是music音乐组件
-		</div>`
-		}
-		//4.配置路由（设置路由匹配规则）
-		var routes = [
-			{ path: '/a',
-			  component:music,
-			  //二级路由,children和routes的用法一样
-			  children:[{
-				  path:"/music/:id",
-				  component:musicSub
-			  }] 
-			},
-			
-		]
-
-		//5.实例化路由
-		const router = new VueRouter({
-		  routes // (缩写) 相当于 routes: routes
-		})
-
-
-
-		new Vue({
-			  el: '#app',
-			  data:{
-				  user:"home"
-			  },
-			  //6.挂载路由
-			  router // (缩写) 相当于 router: router													  
-		})		
-	</script>	
-```
-
 ### 路由守卫
+
+全局前置守卫：
 
 在路由跳转之前 我们主要是利用vue-router提供的钩子函数beforeEach()对路由进行判断。
 
 ```jsx
-// 路由守卫
-router.beforeEach((to,from,next)=>{
-        if(to.matched.some(res=>res.meta.isLogin)){//判断是否需要登录
-            if (sessionStorage['username']) {
-                next();
-            }else{
-                next({
-                    path:"/login",
-                    query:{
-                        redirect:to.fullPath
-                    }
-                });
-            }
-
-        }else{
-            next()
-        }
-    });
-
-export default router;
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'Login' && !isAuthenticated) next({ name: 'Login' })
+  else next()
+})
 ```
 
-to 表示将要跳转到的组件 (目标组件)
- console.log(from); //(源组件)
- next();
- next 是一个函数
- next() 进入下一个组件的钩子函数
- next(false)  阻止跳转 中断导航
- next("/login") 进入指定的组件的钩子函数
-
-### 补充
+组件内部守卫
 
 ```js
-let routeData = this.$router.resolve({path:'exteriorColourPicList',query:{albumId:albumId}});
-window.open(routeData.href);
+const Foo = {
+  template: `...`,
+  beforeRouteEnter(to, from, next) {
+    // 在渲染该组件的对应路由被 confirm 前调用
+    // 不！能！获取组件实例 `this`
+    // 因为当守卫执行前，组件实例还没被创建
+  },
+  beforeRouteUpdate(to, from, next) {
+    // 在当前路由改变，但是该组件被复用时调用
+    // 举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候，
+    // 由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。
+    // 可以访问组件实例 `this`
+  },
+  beforeRouteLeave(to, from, next) {
+    // 导航离开该组件的对应路由时调用。例如用户返回时，未保存内容，我们可以在这里弹窗提醒
+    // 可以访问组件实例 `this`
+  }
+}
 ```
 
 
 
+# Vue3学习笔记
 
 
-## 其他
 
-[Vue Playground](https://sfc.vuejs.org/#eNo9j71uwzAMhF+F5eIWqCV0NZQA3foGXbikjpw40B9EOR0EvXspp8imu9N9OFb8TEndN4sTGp7zmgqwLVs6Ulh9irlAhWwXaLDk6GGQrwMFCnMMXMDzBQ49fx2+rHMRvmN255fhjYLRD5yARBTrkzsVKwrAXD+Ote7l1owWtbtrSFuB++jj2boDoeSEEhn9bOM7PlaN/pTUjWOQ3bW36T9gwgl2p3uytmvCaymJJ615mfu1N1YxX7S8VN5CWb1Vlv34k+Mv2yxgwo5oFBq2P3/sZE8=)
 
-Vue的细粒度权限控制方案：https://www.laike.net/article-28-291574-0.html
 

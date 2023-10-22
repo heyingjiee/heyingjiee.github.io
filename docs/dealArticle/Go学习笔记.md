@@ -930,9 +930,32 @@ Go文件基本规则
 
 Go项目基本规则
 
-* 一个Go项目只能有一个main包，只有main包的一个Go文件可以有main函数，这个函数就是整个项目的入口
+* 习惯上，目录名需与包名相同
 
-* 其他Go文件中的函数，必须在含有main函数的Go文件中使用，否则就无法执行
+  ```
+  --main.go
+  --api
+  	|--member.go
+  	|--vip.go 
+  	
+  	
+  1、main.go 是main包中，文件开头是package api
+  2、member.go、 vip.go 都是属于包api中，文件开头都是package api
+  ```
+
+  一般情况下，一个Go项目只能有一个main包，main包一般放在根目录，其中的main函数是整个项目的入口
+
+* 当然也可以有多个main函数入口
+
+  很多时候，我们项目有多个入口，比如一个入口用来启动服务，另一个用来启动客户端
+
+  ```
+  --cmd
+  	|--client
+  	|			|--client.go // package main ，其中有main函数
+  	|--server
+  			  |--server.go // package main ，其中有main函数
+  ```
 
   
 
@@ -1553,6 +1576,35 @@ if !filepath.IsAbs(c.DbPath) {
 		c.DbPath = path
 }
 ```
+
+**如何用？**
+
+```go
+func xx(){  
+  //-----获取文件路径(类似node的__filename)-----
+  // 参数 0 表示,当前函数调用者（如果参数是1，表示当前函数调用者的调用者）
+  // 参数为0时，file是就是函数所在文件的决定路径。
+  _, file, _, ok := runtime.Caller(0)
+  if !ok {
+     fmt.Println("Could not retrieve caller information")
+     return
+  }
+  
+  
+  //-----获取文件所在目录(类似node的__dirname)-----
+  filepath.Dir(file) // Dir函数会裁剪文件的最后一级
+  
+  
+  
+  //-----获取项目根目录-----
+  filepath.Abs（'.'）
+  filepath.Abs（'src'）// （项目根目录 + src）的绝对路径
+  
+  
+}
+```
+
+
 
 ### os/signal
 
@@ -8113,7 +8165,7 @@ func main() {
 	//创建路由器
 	mux := http.NewServeMux()
   //在路由器上挂载处理器（请求命中路由后，则执行第二个参数指定的功能）
-	mux.Handle("/", xxx)//参数2：为Handler接口类型（即实现ServeHTTP方法）。例子在`处理器Handler`不分
+	mux.Handle("/", xxx)//参数2：为Handler接口类型（即实现ServeHTTP方法）。例子在`处理器Handler`部分
   mux.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<h1>你好</h1>") //向response中写入，文本
 	})
@@ -10442,50 +10494,6 @@ peekfunc
 web
 ```
 
-### 如何读Go源码
-
-if语句不读，因为有if代表这句可能执行/不执行
-
-![image-20230513231905954](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513231906%20.png)
-
-有一种if除外，Go语言中if内部可以执行函数，只有后面的err才是进行判断的地方。这种还是要读
-
-![image-20230513232029575](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513232030%20.png)
-
-变量声明不要读
-
-![image-20230513234612532](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234613%20.png)
-
-重点读必会执行的函数调用，记住几个快捷键
-
-* command+左键点击函数，跳转函数定义
-
-* command+光标悬浮在变量/函数上，显示其类型定义
-
-* option+command+向左/向右，上一个/下一个
-
-  
-
-如果函数是结构体实现的接口方法，如下：
-
-![image-20230513232842188](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513232842%20.png)
-
-则会进入接口定义的函数签名处。点击前面的图标
-
-![image-20230513233733050](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513233733%20.png)
-
-提示所有实现该接口的类型，我们要在其中找到实例rt是那个类型。这里rt是属于红框中的类型
-
-![image-20230513234926050](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234926%20.png)
-
-如何找到属于哪个类型？这个比较难找，将鼠标放在rt变量上，显示其是接口类型RoundTripper
-
-![image-20230513234029666](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234030%20.png)
-
-所以，我们必须一路向上层追踪变量实例化的地方，才能知道该变量的具体类型
-
-![image-20230513235450426](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513235451%20.png)
-
 ## 协程排查工具trace
 
 如何生成trace文件
@@ -10546,11 +10554,49 @@ if语句不读，因为有if代表这句可能执行/不执行
 
   
 
+## 如何读Go源码
 
+if语句不读，因为有if代表这句可能执行/不执行
 
+![image-20230513231905954](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513231906%20.png)
 
+有一种if除外，Go语言中if内部可以执行函数，只有后面的err才是进行判断的地方。这种还是要读
 
+![image-20230513232029575](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513232030%20.png)
 
+变量声明不要读
+
+![image-20230513234612532](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234613%20.png)
+
+重点读必会执行的函数调用，记住几个快捷键
+
+* command+左键点击函数，跳转函数定义
+
+* command+光标悬浮在变量/函数上，显示其类型定义
+
+* option+command+向左/向右，上一个/下一个
+
+  
+
+如果函数是结构体实现的接口方法，如下：
+
+![image-20230513232842188](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513232842%20.png)
+
+则会进入接口定义的函数签名处。点击前面的图标
+
+![image-20230513233733050](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513233733%20.png)
+
+提示所有实现该接口的类型，我们要在其中找到实例rt是那个类型。这里rt是属于红框中的类型
+
+![image-20230513234926050](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234926%20.png)
+
+如何找到属于哪个类型？这个比较难找，将鼠标放在rt变量上，显示其是接口类型RoundTripper
+
+![image-20230513234029666](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513234030%20.png)
+
+所以，我们必须一路向上层追踪变量实例化的地方，才能知道该变量的具体类型
+
+![image-20230513235450426](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230513235451%20.png)
 
 
 

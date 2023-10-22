@@ -94,37 +94,41 @@ Redis（Remote Dictionary Server，远程字典服务），是一个使用 ANSI 
 
 官网：https://redis.io/
 
-* 下载
+**1、下载**
 
-  在本地下载压缩包，使用FTP上传到虚拟机中
+在本地下载压缩包，使用FTP上传到虚拟机中
 
-  ![image-20230917232753126](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230917232753%20.png)
+![image-20230917232753126](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230917232753%20.png)
 
-* 虚拟机中解压、编译、安装
 
-  解压（记住解压目录，修改Redis配置的配置文件在这里）
 
-  ```shell
-  tar -zxvf xxx.tar.gz -C /opt/apps #解压文件到/opt目录下(如果提示没有app文件夹，则使用mkdir app创建)
-  ```
+**2、虚拟机中解压、编译、安装**
 
-  编译、安装
-  ```shell
-  # 编译环境
-  yum -y install gcc gcc-c++
-  
-  # 进入解压后的redis目录，其中有一个Makefile文件，使用make编译
-  make
-  
-  # 安装
-  make install
-  ```
+解压（记住解压目录，修改Redis配置的配置文件在这里）
 
-  安装后，提示安装了下面三个部分：redis 服务器、客户端与性能测试工具benchmark
+```shell
+tar -zxvf xxx.tar.gz -C /opt/apps #解压文件到/opt目录下(如果提示没有app文件夹，则使用mkdir app创建)
+```
 
-  ![image-20230917235133481](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230917235133%20.png)
+编译、安装
+```shell
+# 编译环境
+yum -y install gcc gcc-c++
 
-  查看/usr/local/bin，可以看到软件已被安装在这个目录下了
+# 进入解压后的redis目录，其中有一个Makefile文件，使用make编译
+make
+
+# 安装
+make install
+```
+
+安装后，提示安装了下面三个部分：redis 服务器、客户端与性能测试工具benchmark
+
+![image-20230917235133481](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230917235133%20.png)
+
+安装后的结果：
+
+* 软件已被安装在/usr/local/bin这个目录下了
 
   ![image-20230917235525840](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230917235526%20.png)
 
@@ -132,6 +136,12 @@ Redis（Remote Dictionary Server，远程字典服务），是一个使用 ANSI 
 
   ```shell
   echo $PATH #/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+  ```
+
+* 解压目录（我们这里是 /opt/app/redis）
+
+  ```
+  其中，有redis配置文件、哨兵配置文件等各种配置相关的文件
   ```
 
   
@@ -372,11 +382,17 @@ vim /etc/secutiry/limits.conf
 
 ### snapshotting模块
 
-使用快照持久化相关的配置（RDB）
+RDB持久化配置
 
 ![image-20231004194407261](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004194407%20.png)
 
 详细参考<a href="#RDB">RDB</a>
+
+### append only mode模块
+
+AOF持久化配置
+
+详细参考<a href="#AOF">AOF</a>
 
 ### 其他配置
 
@@ -462,8 +478,11 @@ config get da* # 支持正则，匹配da开头的配置
 
 
 # 设置配置（使用这个命令，我们就不必使用vim打开redis.conf再修改）
-config set xxx yyy # 在内存中修改
-cinfig rewrite # 必须执行这个，才能保证被修改
+config set xxx yyy # 仅在内存中修改
+cinfig rewrite # 必须执行这个，才能保证配置文件被修改
+
+
+#这种方案修改配置，不会造成
 ```
 
 
@@ -1148,20 +1167,22 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
 
   注意：fork出的子进程和父进程共享内存资源，所以子进程可以复制内存中的数据到RDB文件中。Linux系统中一旦内存被共享，则该内存就变成只读的。当Redis在拷贝内存数据的过程中，如果有新的写入操作，Linux就会采用写时复制技术（Copy-On-Write，Linux会将数据写入一个新的非共享的内存区域A，待数据拷贝完成，再将A的数据追加到RDB临时文件中，最后重命名为dump.rdb文件），最终RDB文件中包含了所有内存数据
 
-  
+* 关机时自动触发
 
-* 自动条件触发
+* 配置文件设置条件触发
 
   在Redis配置文件中，进行配置。其本质仍然是bgsave，只不过是自动触发
 
   
 
-  补充：
+  
 
+  补充：
+  
   ```shell
   lastsave # 返回最后一次持久化时间
   ```
-
+  
   ****
   
   下面介绍snapshotting模块的配置：
@@ -1190,33 +1211,33 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
   # 开启这个时，当持久化失败后，redis无法执行其他写操作
   stop-write-on-bgsave-error:yes 
   ```
-  
+
   **rdbcompression**
 
   ![image-20231004221922141](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004221922%20.png)
-
+  
   ```shell
   # 生成 dump.rdb 文件时开启压缩，可大幅降低文件的大小，加速主从集群中从节点的数据同步
   
   rdbcompression yes # 默认开启
   ```
-  
+
   **rdbchecksum**
 
   ![image-20231004222523590](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004222523%20.png)
-
+  
   ```shell
   # CRC64 校验和就被放置在了文件末尾。这使格式更能抵抗 RDB文件的损坏，但在保存和加载 RDB 文件时，性能会受到影响（约 10%）
   
   rdbchecksum yes # 默认开启
   ```
-  
+
   
 
   **sanitize-dump-payload**
 
   该配置用于设置在加载 RDB 文件或进行持久化时是否开启对 zipList、listPack 等数据的全面安全检测
-
+  
   * no：不检测
   * yes：总是检测
   *  clients（默认）：只有当客户端连接时检测。排除了加载 RDB 文件与进行持久化时的检测。
@@ -1236,7 +1257,7 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
   生成的rdb、aof文件放置的目录，默认安装目录
 
   ![image-20231004224406156](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004224406%20.png)
-
+  
   **rdb-del-sync-files**
   
   默认no，对于没有开启RDB和AOF持久化的副本实例，控制其是否删除rdb文件
@@ -1246,11 +1267,291 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
 
 
 
-### AOF
+RDB的缺点：可能会存在Redis因为意外的关闭，而丢失最近30s左右的数据（还没来的及触发备份rdb文件）。高并发情况下，30s会丢失大量数据
 
-AOF（Append Only File）是指 Redis 将每一次的**写操作**都以日志的形式记录到一个 AOF
+### <span id="AOF">AOF</span>
+
+AOF（Append Only File）是指 Redis 将每一次的**写操作**都以日志的形式追加到一个 AOF
 文件中的持久化技术。当需要恢复内存数据时，将这些写操作重新执行一次，便会恢复到之
-前的内存数据状态。
+前的内存数据状态。（注意AOF不会修改，如果删除某字段，这条删除命令会追加到文件尾部）
+
+使用AOF持久化方案，发生严重事件：
+
+* 在发生在服务器断电时，仅丢失最后1s的写操作
+* 发生Redis进程错误时（操作系统正常运行），仅丢失最后一次写操作
+
+#### AOF持久化触发
+
+* 自动触发
+
+  执行写操作
+
+* 手动触发：bgsave 
+
+  与rdb命令一样，但是底层实现不一样
+
+#### Rewrite 机制
+
+随着使用时间的推移，AOF 文件会越来越大。为了防止 AOF 文件由于太大而占用大量
+的磁盘空间，降低性能，Redis 引入了 Rewrite 机制来对 AOF 文件进行压缩。
+
+```shell
+# 类似下面这种，name最终值是最后一次的值，如果aof记录多条多数据会浪费大量空间。所以需要rewrite
+set name tom
+set name jack
+```
+
+
+
+**Rewrite过程**
+
+当 Rewrite 开启后，主进程 redis-server 创建出一个子进程 bgrewriteaof，由该子进程完成 rewrite 过程。其首先对现有 aof 文件进行rewrite 计算，将计算结果写入到一个临时文件，写入完毕后，再 rename 该临时文件为原 aof 文件名，覆盖原有文件
+
+**触发条件**
+
+* 手动触发
+
+  ```text
+  bgrewriteaof
+  ```
+
+* 自动触发
+
+  通过redis.conf配置文件设置
+
+  ![image-20231014230633006](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014230633%20.png)
+
+  redis将最后一次rewrite的aof文件的大小作为基础size。
+
+  如果文件大小超过auto-aof-rewrite-percentage设置的百分比，就会触发rewrite
+
+  ```text
+  auto-aof-rewrite-percentage  # 开启 rewrite 的增大比例，默认100%。指定为0，表示禁用自动 rewrite。
+  
+  
+  auto-aof-rewrite-min-size # 开启 rewrite 的 AOF 文件最小值，默认 64M。该值的设置主要是为了防止小 AOF 文件被 rewrite，从而导致性能下降。
+  ```
+
+
+#### AOF基础配置
+
+![image-20231014002330039](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014002330%20.png)
+
+**appendonly**
+
+![image-20231014003240004](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014003240%20.png)
+
+```shell
+# 默认关闭，设置为yes开启AOF。RDB与AOF都开启，Redis会使用aof文件
+appendonly yes 
+```
+
+**appendfilename、appenddirname**
+
+![image-20231014003337146](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014003337%20.png)
+
+aof的配置文件不是一个，而是多个文件。他们都放在appenddirname指定的目录下
+
+包含三种文件，appendfilename用指定前缀，默认appendonly.aof
+
+```
+基础文件：完整的数据库备份
+    appendonly.aof.base.rdb
+    
+增量文件：用来记录每一条写命令，可能会有多个
+		appendonly.aof.1.incr.aof
+		appendonly.aof.2.incr.aof
+		
+清单文件：
+		appendonly.aof.manifest 记录前面生成的所有文件，还有增量文件的顺序
+```
+
+**aof-timestamp-enabled**
+
+```shell
+aof-timestamp-enabled yes # 默认yes，即基础文件使用rdb格式（no表示使用aof格式文件作为基础文件格式，但是不要修改为no这个配置）
+```
+
+#### AOF性能配置
+
+**appendfsync（配置bgsave进程写）**
+
+Redis写入文件，调用系统调用fsync的时机
+
+补充：操作系统写入数据时，会先写入系统缓存，当达到一定阈值后才写入文件，或者调用主动fsync写入文件（fsync是一个将数据从操作系统缓冲区刷新到磁盘的同步操作）
+
+appendfsync配置用来指定bgsave子进程（与rdb一样，aof文件写入也是bgsave，只不过两者底层实现不同）写入aof文件的方式：
+
+* 默认为everysec，即每秒写入磁盘（推荐）
+
+* always，即每次执行写AOF文件的操作都写入磁盘（性能太低了）
+
+* no，由操作系统决定写入
+
+![image-20231014231547727](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014231548%20.png)
+
+**no-appendfsync-on-rewrite（配置Redis主进程写）**
+
+在appendfsync设置为always（默认）、everysec时，这个配置才生效
+
+* 默认值为no，主进程会正常调用fsync（配置项是no-appendfsync-xxx，配置是no，就是双重否定表示肯定）
+* yes，表示当bgsave或bgrewriteaof子进程运行，主进程不会调用fsync
+
+图里注释解释了，大量的fsync会阻塞Redis主进程对外提供服务，默认的no会造成性能下降
+
+但是，很少有高并发的写操作，所以还是默认推荐no
+
+![image-20231014232615793](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014232616%20.png)
+
+**aof-rewrite-incremental-fsync（配置bgrewriteaof进程写）**
+
+yes，即rewrite进程没生成4MB文件就调用fsync写入一次磁盘
+
+![image-20231014234959699](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014235000%20.png)
+
+**aof-load-truncated**
+
+![image-20231014235248493](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014235248%20.png)
+
+```shell
+aof-load-truncated yes
+
+# 当在aof文件末尾丢失了数据 。
+# 比如 : 最后一行丢失
+*2
+$4
+name
+$4 
+tom
+
+# yes 会尽可能加载更多的正确数据后启动。例子：会直接丢掉name:tom这个键值对
+# no 不会启动( ps aux | grep redis 查看是否启动)。必须使用 redis-check-aof 工具修复后，才能启动Redis
+
+
+# 注意：如果在文件中间丢失，Redis是不能启动的，会抛出错误
+```
+
+在 /usr/local/bin下有一个 redis-check-aof 工具（可以在全局使用的），用来修复aof文件
+
+```shell
+# 检查aof文件
+redis-check-aof appendonly.aof.1.incr.aof
+ 
+ 
+# 修复aof文件
+redis-check-aof --fix  appendonly.aof.1.incr.aof
+```
+
+例子：
+
+ appendonly.aof.1.incr.aof 文件（缺失了name：xxx 中的xxx）
+
+![image-20231017010647755](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231017010647%20.png)
+
+检查文件
+
+![image-20231017010240067](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231017010240%20.png)
+
+修复文件
+
+![image-20231017010941714](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231017010941%20.png)
+
+修复结果
+
+![image-20231017011117264](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231017011117%20.png)
+
+**aof-timestamp-enabled**
+
+给aof文件增加时间戳，但是默认解析器不支持，所以保持no
+
+![image-20231014235124960](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014235125%20.png)
+
+#### AOF文件格式
+
+执行写命令
+
+```
+set name jack
+
+set age 18
+```
+
+查看文件：
+
+* appendonly.aof.1.base.rdb (基础文件)
+
+  是个rdb文件，是仓库的完整快照
+
+* appendonly.aof.1.incr.aof 文件 （增量文件）
+
+  文本是以行来划分，每行以`\r\n `结束。每一行都有一个消息头，来表示消息类型。消息头有六个不同字符：
+
+  ```text
+  (*) 表示消息体总共有多少行，不包括当前行
+  ($) 表示下一行消息数据的长度，不包括换行符长度\r\n
+  (+) 表示一个正确的状态信息
+  (-) 表示一个错误信息
+  (:) 表示返回一个数值
+  (空) 表示一个消息数据
+  ```
+
+  ![image-20231014222931496](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014222931%20.png)
+
+* appendonly.aof.manifest 文件（清单文件）
+
+  ```text
+  type b 代表是基础文件
+  type i 代表是增量文件
+  
+  seq 是顺序 
+  ```
+
+  ![image-20231014223436044](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231014223436%20.png)
+
+#### 流程总结
+
+![image-20231021230150722](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231021230151%20.png)
+
+### 对比
+
+**RDB与AOF**
+
+优点
+
+* rdb文件是二进制，数据较小（AOF本质是个写操作的日志，体积会越来越大）
+* 二进制文件加载到内存很快（AOF本质是将写操作从新执行，速度慢）
+
+缺点
+
+* rdb文件是二进制可读性差（AOF可读性强）
+
+* 容易丢失数据（AOF安全性强，仅仅会丢失最后1s或者最后一次的写操作）
+
+  全量保存快照文件，过程中发生宕机数据会丢失
+
+  rdb的持久化策略，是时间范围内达到触发次数时，进行持久化。如果未达到条件时就宕机，也会导致部分数据丢失
+
+  ```
+  save 3600 1 300 100 60 10000
+  ```
+
+* 写时复制回降低性能
+
+  备份rdb文件时，Redis主进程由于和bgsave子进程共享内存，导致主进程无法写入数据，这时候必须使用写时复制，这会降低性能
+
+
+
+**如何选择**
+
+无需使用持久化技术：仅使用Redis作为缓存系统
+
+纯rdb方案：如果对数据安全性要求不高（可以容忍部分数据丢失）
+
+纯aof方案：不使用，因为aof太慢了，性能差
+
+rdb+aof混合持久化：推荐方案
+
+
 
 
 
@@ -1387,4 +1688,629 @@ redis-benchmark -t lpush,sadd -c 100 -n 200000
 
 # -q 输出精简版报告=> 请求数/毫秒
 ```
+
+## Redis主从集群
+
+Redis 的主从集群是**一主多从**的读写分离集群
+
+集群中的**Master 节点负责处理客户端的读写请求**，而 **Slave 节点仅能处理客户端的读请求**
+
+只所以要将集群搭建为读写分离模式，主要原因是：对于数据库集群，写操作压力一般都较小，压力大多数来自于读操作请求。所以，只有一个节点负责处理写操作请求即可
+
+### 伪集群搭建与配置
+
+Redis采用单线程 IO 模型时，在多核主机中为了提高处理器的利用率，一般会在一个主机中安装多台 Redis，这就称为构建Redis 主从伪集群。
+
+下面要搭建的读写分离伪集群包含一个 Master 与两个 Slave。它们的端口号分别是：6380、6381、6382
+
+**公共配置**
+
+```shell
+# 在redis目录下
+mkdir cluster
+cp redis.conf cluster/ 
+cd cluster/
+
+//修改公共文件
+# 开启密码
+requirepass hedaodao  #
+# 做为slave时，连接的master的密码
+masterauth <master-password>
+
+# 因为集群中的master一点宕机下线，会有其他的slave升级为master。所以集群中的所有哦redis实例的masterauth和requirepass需保持一致
+```
+
+
+
+![image-20231022004116544](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231022004117%20.png)
+
+```shell
+repl-disable-tcp-nodelay no # disable+nodelay 双重否定，所以yes是有延迟，no是无延迟
+
+# 设置为yes，就会使用Nagle算法，主从同步数据时不会立即发送tcp包，而是达到一定的数据量才发送一个tcp包，这样避免了频繁发送包（每个包都携带头尾信息，频发发生浪费带宽）
+
+# 如果主从复制数据量非常大、有多级Redis，就会很快达到指定的数据量，这种情况下即使设置为yes，延迟也会很小，这时比较适合yes
+```
+
+
+
+**各个Redis配置**
+
+```shell
+# 不存在的文件，会新建
+vi redis6380.conf
+
+## 添加下面配置，作为启动在6380端口的redis的配置
+# 引入公共配置
+include redis.conf
+
+# 指定pid文件存储位置
+pidfile /var/run/redis_6380.pid
+
+# 端口
+port 6380
+
+# rdb文件名
+dbfilename dump6380.rdb
+
+# aof文件名
+appendfilename appendonly6380.aof
+
+
+# 日志文件（该配置并不会自动创建文件，需要自己建好文件，再启动redis）
+# logfile logs/access6380.log
+
+63
+# 当master宕机,选举slave为master是会参照该属性.越小优先级越高,为0则不能晋升为master
+replica-priority 100
+```
+
+继续创建6381、6382配置文件
+
+```shell
+:%s/6380/6380 # 将文件中的6380替换为6381
+```
+
+启动三个redis服务
+
+```shell
+redis-server redisxxxx.conf # 6380、6381、6382
+
+ps aux | grep redis # 查看是否启动成功
+```
+
+客户端连接redis服务
+
+```shell
+redis-cli -p xxxx # 6380、6381、6382 可通过端口连接到不同实例
+
+> info replication # 在交互模式下查询，主从复制信息
+role:master # 每个实例默认都是master
+connected_slaves:0 # 没有slave
+master_failover_state:no-failover
+master_replid:00cc23da2a5c0bf376b0f50469d0f1669ded064f
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:0
+second_repl_offset:-1
+repl_backlog_active:0
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:0
+repl_backlog_histlen:0
+
+
+# ----------------建立主从关系-------------------
+
+#------6381、6382 这两台作为slave--------
+>slaveof 127.0.0.1 6380 #添加6380为master节点
+>info replication
+role:slave # 角色变为slave
+master_host:127.0.0.1 # 自己的master地址和端口
+master_port:6380 
+master_link_status:up # up代表连接正常，如果master挂了，这里就是down了
+master_last_io_seconds_ago:9
+master_sync_in_progress:0
+slave_read_repl_offset:560
+slave_repl_offset:560
+slave_priority:20
+slave_read_only:1
+replica_announced:1
+connected_slaves:0 # 即使是slave，也会有下一级的slave。后面会讲到redis的多级结构
+master_failover_state:no-failover
+master_replid:e0289d3727266ab15a6780fd49857fc3e7ce58a4 # 集群中的master节点的id
+master_replid2:0000000000000000000000000000000000000000 # 如果集群中的maser易主了，master_replid就会变成新master的id。master_replid2存的是历史上一个master的id，这里的`00000....`表示，这个集群master并未易主
+master_repl_offset:560
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:15
+repl_backlog_histlen:546
+
+
+#------6380 作为master--------
+>info replication
+role:master
+connected_slaves:2
+# 可以查到两个slave节点信息。offset是向slave同步的数据量，slave节点的slave_repl_offset字段是接收的数据量
+slave0:ip=127.0.0.1,port=6381,state=online,offset=42,lag=0 
+slave1:ip=127.0.0.1,port=6382,state=online,offset=42,lag=1
+master_failover_state:no-failover
+master_replid:e0289d3727266ab15a6780fd49857fc3e7ce58a4
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:42
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:42
+```
+
+
+
+*****
+
+redis的集群的多级结构
+
+如果存在大量的二级slave，对应主节点的复制压力很大。这时候就可以采用多级结构，两个以及slave，这两个slave在复制到更多的slave中
+
+![image-20231022154517598](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231022154518%20.png)
+
+```shell
+# 连接准备做三级slave的redis。添加二级节点作为master
+slaveof 二级节点地址 二级节点端口
+```
+
+### 容灾处理
+
+如果master宕机。slave如何晋升为master
+
+![image-20231022155438797](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231022155439%20.png)
+
+* 手动
+
+  例如把slave1节点执行下面命令，就会晋升为master节点
+
+  ```shell
+  slaveof no one 
+  ```
+
+  注意：slave2节点也必须手动加入到新的master节点（原来的slave1）
+
+  ```
+  slaveof slave1地址 slave1端口 
+  ```
+
+  这时候，原来的master重启了，虽然重新启动的redis默认情况都是master，但是已经和原来的集群分离了。必须加入新的master
+
+  ```
+  slaveof slave1地址 slave1端口 
+  ```
+
+  
+
+* 哨兵机制（sentinel）
+
+  从Redis2.6开始提供了高可用的解决方案—— Sentinel 哨兵机制。
+
+  即，在集群中再引入一个节点，该节点充当 Sentinel 哨兵，用于监视 Master 的运行状态，并在 Master 宕机后自动指定一个 Slave 作为新的 Master
+  若使用一个哨兵，该哨兵发生宕机，整个集群就会因为无法选出master而瘫痪。所以一般会创建一个哨兵集群
+  集群中每个哨兵都会定时会向 Master 发送心跳，如果 Master 在有效时间内向它们都进行了响应，则说明 Master 是“活着的”。如果有 quorum 个哨兵没有收到响应，那么就认为 Master 已经宕机，然后会将原来的某一个 Slave晋升为 Master
+
+  **配置sentinel**
+
+  ```shell
+  # redis安装目录下 sentinel.conf 是sentinel的配置文件
+  
+  cp sentinel.conf cluster/
+  ```
+
+  sentinel配置文件完整版（用 ----- 加入自己的翻译，或对英文的注解）
+
+  ```shell
+  # Example sentinel.conf
+  
+  # By default protected mode is disabled in sentinel mode. Sentinel is reachable
+  # from interfaces different than localhost. Make sure the sentinel instance is
+  # protected from the outside world via firewalling or other means.
+  # 保护模式，默认关闭
+  protected-mode no 
+  
+  # port <sentinel-port>
+  # The port that this sentinel instance will run on
+  # 哨兵运行端口
+  port 26379
+  
+  # By default Redis Sentinel does not run as a daemon. Use 'yes' if you need it.
+  # Note that Redis will write a pid file in /var/run/redis-sentinel.pid when
+  # daemonized.
+  # 是否以守护进程运行哨兵
+  daemonize no
+  
+  # When running daemonized, Redis Sentinel writes a pid file in
+  # /var/run/redis-sentinel.pid by default. You can specify a custom pid file
+  # location here.
+  pidfile /var/run/redis-sentinel.pid
+  
+  # Specify the server verbosity level.
+  # This can be one of:
+  # debug (a lot of information, useful for development/testing)
+  # verbose (many rarely useful info, but not a mess like the debug level)
+  # notice (moderately verbose, what you want in production probably)
+  # warning (only very important / critical messages are logged)
+  # nothing (nothing is logged)
+  # 日志等级
+  loglevel notice
+  
+  # Specify the log file name. Also the empty string can be used to force
+  # Sentinel to log on the standard output. Note that if you use standard
+  # output for logging but daemonize, logs will be sent to /dev/null
+  logfile ""
+  
+  # To enable logging to the system logger, just set 'syslog-enabled' to yes,
+  # and optionally update the other syslog parameters to suit your needs.
+  # syslog-enabled no
+  
+  # Specify the syslog identity.
+  # syslog-ident sentinel
+  
+  # Specify the syslog facility. Must be USER or between LOCAL0-LOCAL7.
+  # syslog-facility local0
+  
+  # sentinel announce-ip <ip>
+  # sentinel announce-port <port>
+  #
+  # The above two configuration directives are useful in environments where,
+  # because of NAT, Sentinel is reachable from outside via a non-local address.
+  #
+  # When announce-ip is provided, the Sentinel will claim the specified IP address
+  # in HELLO messages used to gossip its presence, instead of auto-detecting the
+  # local address as it usually does.
+  #
+  # Similarly when announce-port is provided and is valid and non-zero, Sentinel
+  # will announce the specified TCP port.
+  #
+  # The two options don't need to be used together, if only announce-ip is
+  # provided, the Sentinel will announce the specified IP and the server port
+  # as specified by the "port" option. If only announce-port is provided, the
+  # Sentinel will announce the auto-detected local IP and the specified port.
+  #
+  # Example:
+  #
+  # sentinel announce-ip 1.2.3.4
+  
+  # dir <working-directory>
+  # Every long running process should have a well-defined working directory.
+  # For Redis Sentinel to chdir to /tmp at startup is the simplest thing
+  # for the process to don't interfere with administrative tasks such as
+  # unmounting filesystems.
+  dir /tmp
+  
+  # sentinel monitor <master-name> <ip> <redis-port> <quorum>
+  #
+  # Tells Sentinel to monitor this master, and to consider it in O_DOWN
+  # (Objectively Down) state only if at least <quorum> sentinels agree.
+    -----至少有quorum个哨兵主观认定master宕机，才能判断master节点宕机
+  #
+  # Note that whatever is the ODOWN quorum, a Sentinel will require to
+  # be elected by the majority of the known Sentinels in order to
+  # start a failover, so no failover can be performed in minority.
+    ------这句比较难理解。实际上需要在所有哨兵中，选出一个多数派（分为两派，认定master宕机、认定master未宕机的）来执行故障转移任务（就是切换redis的主从关系），如果quorum设置的少于哨兵总数的一半，那选出的哨兵一定是认定master未宕机的。所以，quorum必须设置为一半以上
+  #
+  # Replicas are auto-discovered, so you don't need to specify replicas in
+  # any way. Sentinel itself will rewrite this configuration file adding
+  # the replicas using additional configuration options.
+  # Also note that the configuration file is rewritten when a
+  # replica is promoted to master.
+  #
+  # Note: master name should not include special characters or spaces.
+  # The valid charset is A-z 0-9 and the three characters ".-_".
+  # 这个配置很重要，仔细阅读上面的介绍
+    ----- 这个配置是设置哨兵监听当前的master的信息，对于其他副本实例（slave），哨兵会自动检测到
+  sentinel monitor mymaster 127.0.0.1 6379 2
+  
+  # sentinel auth-pass <master-name> <password>
+  #
+  # Set the password to use to authenticate with the master and replicas.
+  # Useful if there is a password set in the Redis instances to monitor.
+  #
+  # Note that the master password is also used for replicas, so it is not
+  ----- master和replicas实例都需要设置相同的密码
+  # possible to set a different password in masters and replicas instances
+  # if you want to be able to monitor these instances with Sentinel.
+  #
+  # However you can have Redis instances without the authentication enabled
+  # mixed with Redis instances requiring the authentication (as long as the
+  # password set is the same for all the instances requiring the password) as
+  # the AUTH command will have no effect in Redis instances with authentication switched off.（授权被关闭）
+  ----- 支持 设置密码和未设置密码的redis实例混合在一起组成集群（注意，设置密码的必须保持密码一致）
+  #
+  # Example:
+  #
+  # sentinel auth-pass mymaster MySUPER--secret-0123passw0rd
+  
+  # sentinel auth-user <master-name> <username>
+  #
+  # This is useful in order to authenticate to instances having ACL capabilities,
+  # that is, running Redis 6.0 or greater. When just auth-pass is provided the
+  # Sentinel instance will authenticate to Redis using the old "AUTH <pass>"
+  # method. When also an username is provided, it will use "AUTH <user> <pass>".
+  # In the Redis servers side, the ACL to provide just minimal access to
+  # Sentinel instances, should be configured along the following lines:
+  #
+  #     user sentinel-user >somepassword +client +subscribe +publish \
+  #                        +ping +info +multi +slaveof +config +client +exec on
+  
+  # sentinel down-after-milliseconds <master-name> <milliseconds>
+  #
+  # Number of milliseconds the master (or any attached replica or sentinel) should
+  # be unreachable (as in, not acceptable reply to PING, continuously, for the
+  # specified period) in order to consider it in S_DOWN state (Subjectively
+  # Down).
+  #
+  # Default is 30 seconds.
+  sentinel down-after-milliseconds mymaster 30000
+  
+  # IMPORTANT NOTE: starting with Redis 6.2 ACL capability is supported for
+  # Sentinel mode, please refer to the Redis website https://redis.io/topics/acl
+  # for more details.
+  
+  # Sentinel's ACL users are defined in the following format:
+  #
+  #   user <username> ... acl rules ...
+  #
+  # For example:
+  #
+  #   user worker +@admin +@connection ~* on >ffa9203c493aa99
+  #
+  # For more information about ACL configuration please refer to the Redis
+  # website at https://redis.io/topics/acl and redis server configuration 
+  # template redis.conf.
+  
+  # ACL LOG
+  #
+  # The ACL Log tracks failed commands and authentication events associated
+  # with ACLs. The ACL Log is useful to troubleshoot failed commands blocked 
+  # by ACLs. The ACL Log is stored in memory. You can reclaim memory with 
+  # ACL LOG RESET. Define the maximum entry length of the ACL Log below.
+  acllog-max-len 128
+  
+  # Using an external ACL file
+  #
+  # Instead of configuring users here in this file, it is possible to use
+  # a stand-alone file just listing users. The two methods cannot be mixed:
+  # if you configure users here and at the same time you activate the external
+  # ACL file, the server will refuse to start.
+  #
+  # The format of the external ACL user file is exactly the same as the
+  # format that is used inside redis.conf to describe users.
+  #
+  # aclfile /etc/redis/sentinel-users.acl
+  
+  # requirepass <password>
+  #
+  # You can configure Sentinel itself to require a password, however when doing
+  # so Sentinel will try to authenticate with the same password to all the
+  # other Sentinels. So you need to configure all your Sentinels in a given
+  # group with the same "requirepass" password. Check the following documentation
+  # for more info: https://redis.io/topics/sentinel
+  #
+  # IMPORTANT NOTE: starting with Redis 6.2 "requirepass" is a compatibility
+  # layer on top of the ACL system. The option effect will be just setting
+  # the password for the default user. Clients will still authenticate using
+  # AUTH <password> as usually, or more explicitly with AUTH default <password>
+  # if they follow the new protocol: both will work.
+  #
+  # New config files are advised to use separate authentication control for
+  # incoming connections (via ACL), and for outgoing connections (via
+  # sentinel-user and sentinel-pass) 
+  #
+  # The requirepass is not compatible with aclfile option and the ACL LOAD
+  # command, these will cause requirepass to be ignored.
+  
+  # sentinel sentinel-user <username>
+  #
+  # You can configure Sentinel to authenticate with other Sentinels with specific
+  # user name. 
+  
+  # sentinel sentinel-pass <password>
+  #
+  # The password for Sentinel to authenticate with other Sentinels. If sentinel-user
+  # is not configured, Sentinel will use 'default' user with sentinel-pass to authenticate.
+  
+  # sentinel parallel-syncs <master-name> <numreplicas>
+  #
+  # How many replicas we can reconfigure to point to the new replica simultaneously
+  # during the failover. Use a low number if you use the replicas to serve query
+  # to avoid that all the replicas will be unreachable at about the same
+  # time while performing the synchronization with the master.
+  sentinel parallel-syncs mymaster 1
+  
+  # sentinel failover-timeout <master-name> <milliseconds>
+  #
+  # Specifies the failover timeout in milliseconds. It is used in many ways:
+  #
+  # - The time needed to re-start a failover after a previous failover was
+  #   already tried against the same master by a given Sentinel, is two
+  #   times the failover timeout.
+  #
+  # - The time needed for a replica replicating to a wrong master according
+  #   to a Sentinel current configuration, to be forced to replicate
+  #   with the right master, is exactly the failover timeout (counting since
+  #   the moment a Sentinel detected the misconfiguration).
+  #
+  # - The time needed to cancel a failover that is already in progress but
+  #   did not produced any configuration change (SLAVEOF NO ONE yet not
+  #   acknowledged by the promoted replica).
+  #
+  # - The maximum time a failover in progress waits for all the replicas to be
+  #   reconfigured as replicas of the new master. However even after this time
+  #   the replicas will be reconfigured by the Sentinels anyway, but not with
+  #   the exact parallel-syncs progression as specified.
+  #
+  # Default is 3 minutes.
+  sentinel failover-timeout mymaster 180000
+  
+  # SCRIPTS EXECUTION
+  #
+  # sentinel notification-script and sentinel reconfig-script are used in order
+  # to configure scripts that are called to notify the system administrator
+  # or to reconfigure clients after a failover. The scripts are executed
+  # with the following rules for error handling:
+  #
+  # If script exits with "1" the execution is retried later (up to a maximum
+  # number of times currently set to 10).
+  #
+  # If script exits with "2" (or an higher value) the script execution is
+  # not retried.
+  #
+  # If script terminates because it receives a signal the behavior is the same
+  # as exit code 1.
+  #
+  # A script has a maximum running time of 60 seconds. After this limit is
+  # reached the script is terminated with a SIGKILL and the execution retried.
+  
+  # NOTIFICATION SCRIPT
+  #
+  # sentinel notification-script <master-name> <script-path>
+  # 
+  # Call the specified notification script for any sentinel event that is
+  # generated in the WARNING level (for instance -sdown, -odown, and so forth).
+  # This script should notify the system administrator via email, SMS, or any
+  # other messaging system, that there is something wrong with the monitored
+  # Redis systems.
+  #
+  # The script is called with just two arguments: the first is the event type
+  # and the second the event description.
+  #
+  # The script must exist and be executable in order for sentinel to start if
+  # this option is provided.
+  #
+  # Example:
+  #
+  # sentinel notification-script mymaster /var/redis/notify.sh
+  
+  # CLIENTS RECONFIGURATION SCRIPT
+  #
+  # sentinel client-reconfig-script <master-name> <script-path>
+  #
+  # When the master changed because of a failover a script can be called in
+  # order to perform application-specific tasks to notify the clients that the
+  # configuration has changed and the master is at a different address.
+  # 
+  # The following arguments are passed to the script:
+  #
+  # <master-name> <role> <state> <from-ip> <from-port> <to-ip> <to-port>
+  #
+  # <state> is currently always "start"
+  # <role> is either "leader" or "observer"
+  # 
+  # The arguments from-ip, from-port, to-ip, to-port are used to communicate
+  # the old address of the master and the new address of the elected replica
+  # (now a master).
+  #
+  # This script should be resistant to multiple invocations.
+  #
+  # Example:
+  #
+  # sentinel client-reconfig-script mymaster /var/redis/reconfig.sh
+  
+  # SECURITY
+  #
+  # By default SENTINEL SET will not be able to change the notification-script
+  # and client-reconfig-script at runtime. This avoids a trivial security issue
+  # where clients can set the script to anything and trigger a failover in order
+  # to get the program executed.
+  
+  sentinel deny-scripts-reconfig yes
+  
+  # REDIS COMMANDS RENAMING (DEPRECATED)
+  #
+  # WARNING: avoid using this option if possible, instead use ACLs.
+  #
+  # Sometimes the Redis server has certain commands, that are needed for Sentinel
+  # to work correctly, renamed to unguessable strings. This is often the case
+  # of CONFIG and SLAVEOF in the context of providers that provide Redis as
+  # a service, and don't want the customers to reconfigure the instances outside
+  # of the administration console.
+  #
+  # In such case it is possible to tell Sentinel to use different command names
+  # instead of the normal ones. For example if the master "mymaster", and the
+  # associated replicas, have "CONFIG" all renamed to "GUESSME", I could use:
+  #
+  # SENTINEL rename-command mymaster CONFIG GUESSME
+  #
+  # After such configuration is set, every time Sentinel would use CONFIG it will
+  # use GUESSME instead. Note that there is no actual need to respect the command
+  # case, so writing "config guessme" is the same in the example above.
+  #
+  # SENTINEL SET can also be used in order to perform this configuration at runtime.
+  #
+  # In order to set a command back to its original name (undo the renaming), it
+  # is possible to just rename a command to itself:
+  #
+  # SENTINEL rename-command mymaster CONFIG CONFIG
+  
+  # HOSTNAMES SUPPORT
+  #
+  # Normally Sentinel uses only IP addresses and requires SENTINEL MONITOR
+  # to specify an IP address. Also, it requires the Redis replica-announce-ip
+  # keyword to specify only IP addresses.
+  #
+  # You may enable hostnames support by enabling resolve-hostnames. Note
+  # that you must make sure your DNS is configured properly and that DNS
+  # resolution does not introduce very long delays.
+  #
+  SENTINEL resolve-hostnames no
+  
+  # When resolve-hostnames is enabled, Sentinel still uses IP addresses
+  # when exposing instances to users, configuration files, etc. If you want
+  # to retain the hostnames when announced, enable announce-hostnames below.
+  #
+  SENTINEL announce-hostnames no
+  
+  # When master_reboot_down_after_period is set to 0, Sentinel does not fail over
+  # when receiving a -LOADING response from a master. This was the only supported
+  # behavior before version 7.0.
+  #
+  # Otherwise, Sentinel will use this value as the time (in ms) it is willing to
+  # accept a -LOADING response after a master has been rebooted, before failing
+  # over.
+  
+  SENTINEL master-reboot-down-after-period mymaster 0
+  
+  ```
+
+  cluster文件夹下添加三个哨兵配置文件
+
+  ```shell
+  # sentinel（哨兵）实例 ，26380、26381、26382
+  
+  # 新建26380哨兵实例的文件
+  vi sentinel26380.conf
+  
+  # 文件加入如下配置
+  include sentinel.conf # 引入公共配置
+  pidfile /var/run/sentinel_26380.pid
+  port 26380
+  sentinel monitor mymaster 192.168.174.120 6380 2
+  #logfile access26380.log 
+  ```
+
+  与配置三个redis实例相似，新建三个配置文件即可
+
+  启动哨兵
+
+  ```shell
+  redis-sentinel 哨兵配置文件
+  
+  # redis-sentinel是redis-server的别名，也可以使用redis-server启动哨兵
+  # redis-server 哨兵配置文件 --sentinel
+  ```
+
+  
+
+  
+
+### 主从复制过程
+
+![image-20231022193756192](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231022193756%20.png)
 

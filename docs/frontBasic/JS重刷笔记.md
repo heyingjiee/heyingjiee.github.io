@@ -1232,7 +1232,13 @@ console.log(obj.name,obj.subName)//cruise smith
 
 **数据属性的属性描述符**
 
-（待补充）
+- **`writable`** — 如果为 `true`，则值可以被修改，否则它是只可读的。
+
+- **`enumerable`** — 如果为 `true`，则会被在循环中列出，否则不会被列出。
+
+- **`configurable`** — 如果为 `true`，则此属性可以被删除，这些特性也可以被修改，否则不可以
+
+  
 
 **访问器属性的属性描述符**
 
@@ -3398,71 +3404,6 @@ for(let [key,value] of m){
 
 ## this的指向
 
-
-
-### this指向的丢失
-
-this指向的丢失，可以看到下面的例子中，将函数复制给其他变量调用，会造成this指向的丢失，this变成了window
-
-```js
-let lesson={
-    site:"hedaodao",
-    show:function(){
-        console.log(this.site)
-    }
-}
-lesson.show() //hedaodao
-newVar=lesson.show
-newVar()//undefined
-```
-
-为什么这里this绑定的对象会丢失？
-
-因为这里并没有直接调用show函数，而是通过`lesson`对象找到了对应`show`的内存地址，然后赋值给变量`newVar`。最后通过`newVar` 直接进行了调用，本质上就是独立函数调用【规则1】所以this指向window
-
-
-
-另一种复杂的情况，函数作为回调函数传递的时候，this也会丢失绑定，从而指向window
-
-```js
-let lesson={
-    site:"hedaodao",
-    show:function(){
-        console.log(this.site)
-    }
-}
-
-function fn(callback) {
-    callback()
-}
-fn(lesson.show) //undefined
-```
-
-为什么这里this绑定的对象会丢失？道理与前面的情况其实一样，真正调用函数的并不是lesson，而是callback
-
-
-
-解决this指向丢失:使用bind绑定this的指向
-
-```js
-let lesson={
-    site:"hedaodao",
-    show:function(){
-        console.log(this.site)
-    }
-}
-
-//固定this指向了lesson
-lesson.show=lesson.show.bind(lesson)
-
-function fn(callback) {
-    callback()
-}
-fn(lesson.show) //hedaodao
-```
-
-
-
 ### this指向规则
 
 * 对于普通函数
@@ -3601,7 +3542,7 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
         name: "tom",
         //注意下面是简写，实际是=》success:function(){ xxx }
         success() {
-          console.log('2',this); //window。fail是test调用的，test是onLoad调用的，onLoad的是Page调用的，window调用的Page，所以this指向window
+          console.log('2',this); //window。success是test调用的,test是函数，this指向window
         },
         fail:()=> {
           console.log('2',this); //{name:'jack'} 。test所在作用域this是{name:'jack'}
@@ -3616,10 +3557,8 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
 
   这个需要特殊记忆，前面学过构造函数会创造新的对象，this就指向这个新对象
 
-  ```
   
-  ```
-
+  
 * 定时器
 
   定时器函数比较特殊，他会把函数内部的this重写为window【在node环境下，会重写成 Timer对象】
@@ -3657,6 +3596,55 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
   const {getThis}=obj
   getThis() //window
   ```
+
+* 将函数地址存在新的变量里，调用变量
+
+  注意：lesson.show并没有调用函数
+
+  ```js
+  let lesson={
+      show:function(){
+          console.log(this)
+      }
+  }
+  lesson.show() //对象lesson
+  
+  newVar=lesson.show //这里并没有调用函数
+  newVar()//window  #这里比较特殊，这里理解为newVar()被挂在window上了
+  ```
+
+  ```js
+  let lesson={
+      show:function(){
+          console.log(this)
+      }
+  }
+  
+  function fn(callback) {
+      callback()  // fn是函数的调用者，所以指向window
+  }
+  fn(lesson.show) //window 
+  ```
+
+  下一节介绍bind、call、apply来绑定this的指向
+
+  ```js
+  let lesson={
+      show:function(){
+          console.log(this)
+      }
+  }
+  
+  //固定this指向了lesson
+  lesson.show=lesson.show.bind(lesson) 
+  
+  function fn(callback) {
+      callback()
+  }
+  fn(lesson.show) // lesson对象
+  ```
+
+  
 
 ### call apply bind
 
@@ -6590,6 +6578,22 @@ function add(a, b) {
 */
 ```
 
+### 案例
+
+````js
+/**
+ * 首页-数据预览接口
+ * @param {Object} data
+ * @param {number} data.level data证书等级（1-7）
+ * @param {string} data.showName 用户昵称
+ * @returns {string} 返回值类型
+ * @see [接口文档](http://yapi.yiche.com/project/743/interface/api/74850)
+ */
+customStatisPreview(data) {
+  xxxx
+},
+````
+
 
 
 
@@ -8685,12 +8689,12 @@ node index.js
   
   
 
-### 文件与文件夹
+### 文件与目录
 
 **fs.readFileSync**、**fs.writeFileSync ** 读写文件
 
 ```js
-const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'))
+const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'),{ encoding: 'utf8' })
 
 
 fs.writeFileSync(path.resolve(__dirname, '../data/audio.ass'), data) 
@@ -8705,10 +8709,25 @@ https://juejin.cn/post/7190563380900397117
 **fs.readdirSync** 读取目录下的目录名+文件名（仅仅返回第一层级）
 
 ```js
-const resArr=fs.readFileSync(path.resolve(__dirname,'./src'))
+const resArr=fs.readdirSync(path.resolve(__dirname,'./src'))
 
 // [ 'assets', 'components', 'test.js' ]
 ```
+
+如果目录不存在，会直接报错
+
+```js
+//可以判断文件、目录是否存在
+const isExist = existsSync(path.join(rootAbsPath, './dist'));
+if (isExist) {
+  console.log('删除dist目录...'); //包括dist及其子目录
+  process.execSync(`rm -rf dist`, {
+    cwd: rootAbsPath,
+  });
+}
+```
+
+
 
 **fs.statSync** 获取指定路径的文件夹、文件的描述信息
 
@@ -8767,7 +8786,9 @@ process.exec('shell命令', function(err, stdout, errout){
 
 ```js
 var process = require('child_process');  
-let res=process.exec('shell命令');  
+let res=process.exec('shell命令',{
+  cwd:'执行命令所在的路径' //默认工作路径为运行脚本所在的路径
+});  
 ```
 
 同步方式
@@ -8776,8 +8797,6 @@ let res=process.exec('shell命令');
 execSync(`git log -1 HEAD --pretty='%s'`,{ encoding: 'utf-8' })
 //指定编码方式，才会输出文字
 ```
-
-
 
 
 
@@ -10752,3 +10771,6 @@ export default {
 - 红宝书
 - 阮一峰的《ECMAScript 6 入门》：https://es6.ruanyifeng.com/
 - ES6 视频教程：http://t.kuick.cn/RaR3
+
+
+

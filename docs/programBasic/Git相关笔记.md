@@ -670,6 +670,19 @@ git fetch --tags --progress xxx.git +refs/heads/*:refs/remotes/origin/* # timeou
 日志
 
 ```shell
+git log --all --after="2022-06-23 00:00:00" --before=="2022-06-23 23:30:00" --pretty=tformat: --numstat ':(exclude,glob)package-lock.json' ':(exclude,glob)**/package-lock.json' ':(exclude,glob)yarn.lock' ':(exclude,glob)**/yarn.lock' ':(exclude,glob)assets/**/*' ':(exclude,glob)**/assets/*'
+```
+
+第一列：新增 ；第二列：删除
+
+![image-20231012102335131](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231012102335%20.png)
+
+使用awk可进行数据统计
+
+```shell
 git log --all --after="2022-06-23 00:00:00" --before=="2022-06-23 23:30:00" --pretty=tformat: --numstat ':(exclude,glob)package-lock.json' ':(exclude,glob)**/package-lock.json' ':(exclude,glob)yarn.lock' ':(exclude,glob)**/yarn.lock' ':(exclude,glob)assets/**/*' ':(exclude,glob)**/assets/*' | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "%s,%s,%s", add, subs, loc }'
+
+
+// 返回 4932,48,4884
 ```
 

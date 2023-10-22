@@ -1969,7 +1969,8 @@ outer display type对外显示方面，盒子类型可以分成 2 类：块级�
         font-size: 100px;
     }
     .container {
-        min-height: 100vh;
+        height: 100vh;
+      	width:100vw
         display: grid;
         grid-auto-flow: column;
         grid-template-columns: 100%;
@@ -1980,6 +1981,11 @@ outer display type对外显示方面，盒子类型可以分成 2 类：块级�
                         "header"
                         "content"
                         "footer";
+      
+      	/*这个很重要，可以让这个*/
+      	position: fixed;
+        top:0;
+        left: 0;
 
     }
     .header{
