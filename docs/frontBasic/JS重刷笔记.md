@@ -1866,23 +1866,38 @@ console.log(new Student('tom',19)) //{ name: 'tom', age: 19 }
 为对象添加函数
 
 * 在构造函数内添加一个函数作为对象的属性
-* 通过**原型链**（prototype）添加函数/属性
+* 通过向prototype属性中添加其他函数/属性
 
 ```js
+//----------方式1、2都是一样的，创建实例的实例上会有这些方法。this指向那个最终被创建出来的实例对象-------------
 function Student(name,age){
     this.name = name;
     this.age = age;
-    this.getName = ()=>{
+    this.getName = ()=>{ //方式1
         return this.name
     }
 }
-Student.prototype.getAge =function (){ //一定要注意，这里不能用箭头函数，否则其中的this指向了全局的window
+Student.prototype.getAge =function (){ //方式2：一定要注意，这里不能用箭头函数，否则其中的this指向了全局的window
     return this.age
 }
+
+//----------方式3都是一样的，this指向Student，类似于类的静态方法 （this无法访问到name、age）-------------
+Student.getSingleInstance =function (){ //方式3
+    if (this.instance) {
+        return this.instance;
+    }
+    //注意这里是把instance挂在到Student上了
+    return this.instance = new Singleton(name);
+}
+
 
 
 let stu1=new Student('jack',18) 
 console.log('stu1 --> ',stu1.getName(),stu1.getAge()) //stu1 -->  jack 18
+
+let stu2=Student.getSingleInstance()
+let stu3=Student.getSingleInstance()
+console.log(stu2===stu3) // true 即同一个实例
 ```
 
 **函数默认的prototype属性**
@@ -3483,7 +3498,7 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
   function f1(params){
       params.callback1() // this指向params对象。（调用关系:callback1<=params对象 ）
       params.callback2() // this指向window。callback2所在作用域是f1的函数作用域，这里的this是指向window的
-    	params.action.getInfo()//this指向action对象。（调用关系:callback3<=action对象<=params对象 ）
+    	params.action.getInfo()//this指向action对象。（调用关系:getInfo<=action对象<=params对象 ）
   }
   
   
@@ -4465,6 +4480,98 @@ class ValidationError extends Error {
 
 
 
+## Proxy与Reflect
+
+```js
+(() => {
+  const stu = {
+    name: 1,
+    score: {
+      math: {
+        title:'1'
+      },
+    },
+  };
+  const handler = {
+    get(target,prop){
+        let val = Reflect.get(target, prop);
+        if(val instanceof Object){
+            return new Proxy(val,handler)
+        }
+        return val
+    },
+    set(target, prop, val) {
+        console.log(target, prop, val)
+      let val = Reflect.get(target, prop);
+      if(val instanceof Object){
+          new Proxy(val,handler)
+      }
+      val[prop]=val
+      return true;
+    },
+  };
+  const newStu = new Proxy(stu, handler);
+  newStu.score.math.title = 3;
+  //难以置信---》 newStu.score.math.title 等价于
+  //   newStu.score  get拦截到score为对象就 return 新的Proxy(score,handler)
+  //   (get拦截器return的值).math   get拦截到math为对象就 return 新的Proxy(math,handler)
+  //   (get拦截器return的值).title=3 这里不会触发get，而是set
+})();
+```
+
+实现一个写时深拷贝
+
+```js
+function produce(base, recipe) {
+  // 预定义一个 copy 副本
+  let copy;
+  // 定义 base 对象的 proxy handler
+  const baseHandler = {
+    get(target,prop){
+        const val=Reflect.get(target,prop)
+        if(val instanceof Object){
+            return  new Proxy(val,baseHandler)
+        }
+    },
+    set(target, key, value) {
+      // 先检查 copy 是否存在，如果不存在，创建 copy
+      if (!copy) {
+        copy = { ...target };
+      }
+      copy[key] = value;
+
+      return true;
+    },
+  };
+
+  // 被 proxy 包装后的 base 记为 draft
+  const draft = new Proxy(base, baseHandler);
+  // 将 draft 作为入参传入 recipe
+  recipe(draft);
+  // 返回一个被“冻结”的 copy，如果 copy 不存在，表示没有执行写操作，返回 base 即可
+  // “冻结”是为了避免意外的修改发生，进一步保证数据的纯度
+  return Object.freeze(copy || base);
+}
+
+const stu={
+    name:'tom',
+    score:{
+        english:100,
+        math:80
+    }
+}
+
+const deepData=produce(stu,(data)=>{
+    data.score.math=1
+    // data.name=1
+})
+console.log(deepData)
+console.log(deepData===stu)
+console.log(deepData.score===stu.score)
+```
+
+
+
 
 
 ## Promise
@@ -4927,6 +5034,8 @@ const p1 = new Promise((resolve, reject) => {
 const p2 = new Promise((resolve, reject) => {
   reject("参数2");
 });
+
+//入参数组，是一个返回promise的函数
 Promise.allSettled([p1, p2])
 .then(msg => {
   console.log(msg);
@@ -6169,13 +6278,14 @@ p.getName()
 
 ### 类的私有成员
 
-this指向与**构造函数、普通方法**一样，都是当前实例。所有他们能互相访问到
+**构造函数、普通方法**在其函数内部可以通过this访问到普通成员、私有成员（静态方法才能访问静态成员）
 
-私有成员只能在定义类时，在构造函数、普通函数内部直接通过this访问，它的子类也不能访问
+new  class创造的实例仅能通过`点`操作符访问普通成员，无法访问私有成员
 
 ```js
 class Person {
-    static school ='默认值'
+    #school ='默认值'  // 私有变量
+  
     //1、构造函数，通过this调用私有方法
     constructor () {
        this.#getThis()
@@ -6234,8 +6344,12 @@ class Person {
 //------子类Child-------
 class Child extends Person{
     constructor(){
-        super('子类调用')//
+        super('子类调用')// super(xxx) 相当于父类的构造函数
     }
+  	
+  	f4(){
+      super.f2()  //super.xxx 调用父类的普通成员、静态成员（私有成员不能调用）
+		} 
 }
 
 //1、可调用父类的静态方法
@@ -6584,212 +6698,208 @@ function add(a, b) {
 /**
  * 首页-数据预览接口
  * @param {Object} data
- * @param {number} data.level data证书等级（1-7）
+ * @param {number} data.level 证书等级（1-7）
  * @param {string} data.showName 用户昵称
  * @returns {string} 返回值类型
  * @see [接口文档](http://yapi.yiche.com/project/743/interface/api/74850)
  */
 customStatisPreview(data) {
-  xxxx
+  // xxxx
 },
 ````
 
+### d.ts文件
 
+JSDoc仅仅可以在鼠标悬浮在变量或者函数时出现提示。但是，并不能在输入时提示字段名
+
+![image-20230817152211814](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230817152212%20.png)
+
+d.ts文件是记录声明与类型关系的文件，编辑器会自动读取这个文件为我们做代码提示
+
+参考：https://m.php.cn/faq/394698.html
 
 
 
 ## 模块化规范
 
-### 模块化的最佳实现
+### 模块化概述
 
-- 在 Node.js 环境中采用 CommonJS 的规范（Node 项目，微信小程序）
-- 在浏览器环境采用 ES Modules 规范（Vue 项目）
+* **EMS**
 
-### 传统 HTML
+  官方的模块化标准，目前浏览器已原生支持、Node环境下也支持
 
-HTML 网页中，浏览器通过`<script>`标签加载 JS 脚本。
+- **CommonJS**
 
-**同步加载**
+   仅Node环境中支持
 
-默认情况下，浏览器是**同步加载**JS 脚本【渲染引擎遇到`<script>`标签就会停下来，等到执行完脚本，再继续向下渲染。如果是外部脚本，还必须加入脚本下载的时间】
+- **UMD**
 
-如果脚本体积很大，下载和执行的时间就会很长，因此造成浏览器堵塞，用户会感觉到浏览器“卡死”了，没有任何响应。
+  Universal Module Definition 通用模块定义，它可以通过运行编译时让同一个代码模块支持EMS、CommonJS
 
-```html
-<!-- 页面内嵌的脚本 -->
-<script type="application/javascript">
-  //脚本代码
-</script>
-```
-
-```html
-<!-- 外部脚本 -->
-<script type="application/javascript" src="脚本地址"></script>
-```
-
-**异步加载 **
-
-`<script>`标签默认为同步加载，只要打开 defer 或 async 属性，脚本就会异步加载【渲染引擎遇到这一行命令，就会开始下载外部脚本，但不会等它下载和执行，而是直接执行后面的命令】
-
-```html
-<script src="path/to/myModule.js" defer></script>
-<script src="path/to/myModule.js" async></script>
-```
-
-defer：要等到整个页面在内存中正常渲染结束（DOM 结构完全生成），才会执行
-
-async：一旦下载完，渲染引擎就会中断渲染，执行这个脚本以后，再继续渲染
-
-注意：如果有多个 defer 脚本，会按照它们在页面出现的顺序，执行脚本；而多个 async 脚本是不能保证按照在页面出现的顺序执行脚本。
-
-### CommonJS（CJS）
-
-#### 介绍
-
-[CommonJS 规范](http://javascript.ruanyifeng.com/nodejs/module.html#toc0)
-
-- 一个 JS 文件就是一个模块，每个模块都有单独的作用域，即在一个文件里面定义的变量、函数、类，都是私有的，对其他文件不可见。必须导出，并在别的文件引入，才能在别的文件中访问到
-
-- 模块内的代码不会污染全局作用域
-
-- 模块加载的顺序，按照其在代码中出现的顺序
-
-- 以同步模式加载模块【也就是说，只有加载完成，才能执行后面的操作，由于 Node.js 主要用于服务器编程，模块文件一般都已经存在于本地硬盘，所以加载起来比较快，不用考虑非同步加载的方式，所以 CommonJS 规范一般用于服务端】
-
-- 模块被引入就会执行
+  本质就是一个立即执行函数，通过判断是否存在某些全局变量，来使用不同的导出
 
   ```js
-  //a.js
-  console.log("a文件")
-  module.exports = {
-      count:1
-    	func(){}
-  }
-
-  //b.js
-  const {count} =require('./a.js')  //a文件
+  (function(root, factory) {
+      if (typeof module === 'object' && typeof module.exports === 'object') {
+          //commonjs模块规范
+          module.exports = factory();
+      } else if (typeof define === 'function' && define.amd) {
+          //是AMD模块规范，如require.js
+          define(function(require,exports,module){
+          //如果要将指定模块名(比如:fpd)挂载到window对象，可以用       \
+   
+          // root.fpd= factory();});
+   
+          module.exports = factory();});
+   
+          
+      } else if (typeof define === 'function' && define.cmd) {
+          //CMD模块规范，如sea.js
+          define(function(require, exports, module) {
+              module.exports = factory()
+          })
+      } else {
+          //没有模块环境，直接挂载在全局对象上
+          root.umdModule = factory(root);
+      }
+  }(this, function() {
+      
+   
+       // 方法
+      function 私有方法名(){}; 
+      function 公共方法(){}; 
+   
+      //对外暴露的方法
+      return {
+          公共方法: 公共方法
+      }   
+   
+      
+  }));
   ```
 
-- 导出：
+  
 
-  - `module`变量代表当前模块
+- **IIFE**
+
+  IIFE打包成一个立即执行函数
+
+  ```js
+  (function foo(){
+    console.log('立即执行函数')
+  }())
+  ```
+
+  较为常见的 SDK 打包方式，项目使用script标签引入后，就会立即执行向window上挂载SDK类
+
+  在另一个script标签中增加 new  SDK类(配置参数)，就可实现加载SDK功能
+
+  
+
+### CommonJS
+
+#### 基础
+
+Node环境中模块内置变量、函数
+
+* module 变量
+
+  代表当前JS模块，存储当前模块的信息
+
+  ```js
+  module.path // 当前js文件的查找路径
+  
+  module.exports // 表示当前模块对外输出的接口，其他文件加载该模块，本质就是读取该变量
+  ```
+
+* exports 变量
+
+  是module.exports的别名
+
+  ```js
+  var exports = module.exports;
+  ```
+
+- require 函数
+
+  用于引入模块的函数
+
+  ```js
+  // 内置模块
+  const foo1 = require("http");
+  
+  // 第三方模块（axios模块需要通过npm安装）
+  const axios = require("axios");
+  
+  // 文件模块(参数是路径)
+  const foo2 = require("/a.js"); //看后面的 路径分析——>文件定位
+  ```
+
+#### 加载模块流程
+
+加载内置模块的流程：**缓存加载**、**文件定位**、**编译执行**
+
+加载第三方模块、文件模块的流程：**缓存加载**、**路径分析**、**文件定位**、**编译执行**
+
+- **缓存加载**
+
+  > node 为了提高性能，优先从缓存中加载，如果缓存中没有，才会从**路径分析**、**文件定位**、**编译执行**，最后放入缓存中
+
+  文件模块：在第一次加载模块后，会把模块编译执行并放在缓存中。从而以后再次加载模块的时候，会直接去缓存中找相应的模块。
+
+  内置模块：它在 Node 源代码编译过程中直接编译成了二进制可执行文件，在启动 Node 进程的同时就从内存中加载了核心模块，并缓存起来。所以内置模块的加载跳过了文件定位和编译执行的步骤，并且优先于文件模块加载
+
+- **路径分析**
+
+  > 路径分析主要是对模块标识符分析，根据不同类型的模块标识符使用不同规则分析路径
+
+  ```js
+  require("模块标识符");
+  ```
+
+  （1）如果模块标识符为路径（绝对路径、相对路径），比如： `require(./a.js)`或者`require(./a)`，会从指定路径寻找
+
+  （2）如果模块标识符不为路径，比如`require('a.js')`、`require('a')`，就会按照以下的顺序去寻找
+
+  - 查询当前文件目录下的`node_modules`路径
+  - 查询父级目录下的`node_modules`路径
+  - 查询父级的父级目录下的`node_modules`路径
+  - 一直递归，直到查询到根目录下的`node_modules`路径
+
+- **文件定位**
+
+  > 由于模块标识符的文件后缀可以省略，node 需要知道要查找的模块，到底是一个文件还是一个文件夹（包）
+
+  主要分为两个步骤：`文件拓展名分析`和`目录（包）分析`
+
+  - 文件拓展名分析
+
+    我们使用 require 引入模块的时候，可以不加文件的后缀名。比如：
 
     ```js
-    console.log(module.path); //放在js文件中，找到这个js文件的查找路径
+    var foo = require("foo");
     ```
 
-  - `module.exports`属性表示当前模块对外输出的接口，其他文件加载该模块，实际上就是读取`module.exports`变量
+    这个时候 Node 就会进行文件拓展名分析，会依次分析下面三个拓展名：`.js`、`.node`、`.json`
+    在分析的过程中，Node 会同步阻塞式调用 fs 模块来判断文件是否存在
 
-  - node 提供一个`exports`变量，指向 module.exports。这等同在每个模块头部，有一行这样的命令
+    如果查找不到这个文件，那么就会进行**目录（包）分析**
 
-    ```js
-    var exports = module.exports;
-    ```
+  - 找到 foo 这个目录（或者叫包）【如何找到？请看上面的**路径分析**】
 
-- 引入：
+    - 如果有 package.json 文件，使用 JSON.parse 解析 JSON 对象，找到 name 属性值，如果和**模块标识符**一样，那就找到 main 字段，这个字段指定了包的入口文件
+    - 如果没有 package.json 文件，就会在当前目录下依次寻找`index.js`、`index.node`、`index.json`，如果都不符合条件就抛出异常
 
-  - 通过`require`函数载入模块，`require`命令的基本功能是，读入并执行一个 JS 文件，然后返回该模块的 module.exports 对象。如果没有发现指定模块，会报错
+- **编译执行**
 
-  - require 参数
+  文件定位无论是`文件拓展名分析`还是`目录（包）分析`，只要成功，最后都会找到一个文件
 
-    ```js
-    //内置模块
-    var foo1 = require("http");
+  node 根据文件后缀，处理最终定位的文件
 
-    //文件模块【可以是自己的写的js文件，也可以下载的第三方npm包】（写法有：绝对路径、相对路径，下面以绝对路径为例）
-    var foo2 = require("/a.js"); //看后面的 路径分析——>文件定位
-    var foo2 = require("/a"); // 看后面的 路径分析——>文件定位
-    ```
-
-  - 从 Node 中引入模块，主要经历了四个过程：**缓存加载**、**路径分析**、**文件定位**、**编译执行**
-
-  - **缓存加载**
-
-    > node 为了提高性能，优先从缓存中加载，如果缓存中没有，才会从**路径分析**、**文件定位**、**编译执行**，最后放入缓存中
-
-    文件模块：在第一次加载模块后，会把模块编译执行并放在缓存中。从而以后再次加载模块的时候，会直接去缓存中找相应的模块。
-
-    内置模块：它在 Node 源代码编译过程中直接编译成了二进制可执行文件，在启动 Node 进程的同时就从内存中加载了核心模块，并缓存起来。所以内置模块的加载跳过了文件定位和编译执行的步骤，并且优先于文件模块加载
-
-  - **路径分析**
-
-    > 路径分析主要是对模块标识符分析，根据不同类型的模块标识符使用不同规则分析路径
-
-    ```js
-    require("模块标识符");
-    ```
-
-    （1）如果模块标识符为路径（绝对路径、相对路径），比如： `require(./a.js)`或者`require(./a)`，会从指定路径寻找
-
-    （2）如果模块标识符不为路径，比如`require('a.js')`、`require('a')`，就会按照以下的顺序去寻找
-
-    - 查询当前文件目录下的`node_modules`路径
-    - 查询父级目录下的`node_modules`路径
-    - 查询父级的父级目录下的`node_modules`路径
-    - 一直递归，直到查询到根目录下的`node_modules`路径
-
-  - **文件定位**
-
-    > 由于模块标识符的文件后缀可以省略，node 需要知道要查找的模块，到底是一个文件还是一个文件夹（包）
-
-    主要分为两个步骤：`文件拓展名分析`和`目录（包）分析`
-
-    - 文件拓展名分析
-
-      我们使用 require 引入模块的时候，可以不加文件的后缀名。比如：
-
-      ```js
-      var foo = require("foo");
-      ```
-
-      这个时候 Node 就会进行文件拓展名分析，会依次分析下面三个拓展名：`.js`、`.node`、`.json`
-      在分析的过程中，Node 会同步阻塞式调用 fs 模块来判断文件是否存在
-
-      如果查找不到这个文件，那么就会进行**目录（包）分析**
-
-    - 找到 foo 这个目录（或者叫包）【如何找到？请看上面的**路径分析**】
-
-      - 如果有 package.json 文件，使用 JSON.parse 解析 JSON 对象，找到 name 属性值，如果和**模块标识符**一样，那就找到 main 字段，这个字段指定了包的入口文件
-      - 如果没有 package.json 文件，就会在当前目录下依次寻找`index.js`、`index.node`、`index.json`，如果都不符合条件就抛出异常
-
-  - **编译执行**
-
-    文件定位无论是`文件拓展名分析`还是`目录（包）分析`，只要成功，最后都会找到一个文件
-
-    node 根据文件后缀，处理最终定位的文件
-
-    - `.js`：通过 fs 模块同步载入后编译执行
-    - `.node`：这是 c/c++编写的拓展文件，需要调用 dlopen()方法来编译
-    - `.json`：通过 fs 模块同步载入后使用 JSON.parse 解析结果
-    - 其余拓展名都被当做 js 文件来处理
-
-#### 导出和引入的模版
-
-以下的内容，都可以在这个模版中，看效果。
-
-新建两个文件`a.js`、`b.js`，文件 a 作为导出模块，文件 b 引入 a 模块
-
-```js
-//a.js
-export let count = 1;
-export function countplus() {
-  count++;
-  console.log(count);
-}
-```
-
-```js
-//b.js
-import { count, countplus } from "./a.js";
-console.log(count); //1
-countplus(); //2
-```
-
-运行 b.js 查看效果
-
-```js
-node b.js
-```
+  - `.js`：通过 fs 模块同步载入后编译执行
+  - `.node`：这是 c/c++编写的拓展文件，需要调用 dlopen()方法来编译
+  - `.json`：通过 fs 模块同步载入后使用 JSON.parse 解析结果
+  - 其余拓展名都被当做 js 文件来处理
 
 #### 导出和引入
 
@@ -6891,9 +7001,9 @@ module.exports = "Hello world";
 
 为避免导出时出现问题，尽量只使用`module.exxports`
 
-### ES Modules（ESM）
+### ESM
 
-#### 介绍
+#### 基础
 
 - 每个模块都是单独的私有作用域，模块内部，自动采用严格模式(“use strict”)
 
@@ -7105,64 +7215,190 @@ node b.js
 
 输入 `node b.js`，重新运行，输出结果
 
+#### 浏览器
+
+HTML 网页中，浏览器可通过`<script>`标签加载 JS 脚本
+
+**同步加载**
+
+默认情况下，浏览器是**同步加载**JS 脚本【渲染引擎遇到`<script>`标签就会停下来，等到执行完脚本，再继续向下渲染。如果是外部脚本，还必须加入脚本下载的时间】
+
+如果脚本体积很大，下载和执行的时间就会很长，因此造成浏览器堵塞，用户会感觉到浏览器“卡死”了，没有任何响应。
+
+```html
+<!-- 页面内嵌的脚本 -->
+<script type="application/javascript">
+  //脚本代码
+</script>
+```
+
+```html
+<!-- 外部脚本 -->
+<script type="application/javascript" src="脚本地址"></script>
+```
+
+**异步加载 **
+
+`<script>`标签默认为同步加载，只要打开 defer 或 async 属性，脚本就会异步加载【渲染引擎遇到这一行命令，就会开始下载外部脚本，但不会等它下载和执行，而是直接执行后面的命令】
+
+```html
+<script src="path/to/myModule.js" defer></script>
+<script src="path/to/myModule.js" async></script>
+```
+
+defer：要等到整个页面在内存中正常渲染结束（DOM 结构完全生成），才会执行
+
+async：一旦下载完，渲染引擎就会中断渲染，执行这个脚本以后，再继续渲染
+
+注意：如果有多个 defer 脚本，会按照它们在页面出现的顺序，执行脚本；而多个 async 脚本是不能保证按照在页面出现的顺序执行脚本。
+
+****
+
+使用type属性可开启浏览器原生ESM支持，main.js文件可以使用ESM导出
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+	</head>
+	
+	<!--html文件是入口，在其中会加载main.js-->
+	<script src="./main.js" type="module">
+  	import xxx from 'xxx'
+  </script>
+
+	<body></body>
+</html>
+```
+
+
+
 
 
 ### ESM 与 CJS 模块的差异
 
-- 区别一
+区别一：运行阶段
 
-  CommonJS 模块输出的是一个值的拷贝，countPlus 将模块内的 count 变成 2，但是拷贝出来的 count 值还是 1【注意 node 环境下 module 指向模块，而不是 this】
+- **CommonJS** 本质是加载的是一个对象（即`module.exports`属性）
+
+  require是同步加载代码，运行时动态加载
 
   ```js
-  //a.js
+  const cmjExample = require("./a.js");
+  ```
+
+- **ES6 模块**不是对象，它的对外接口只是一种静态定义（语法级别的）
+
+  在**代码静态解析阶段**就可以确定依赖关系（按需加载所需依赖），必须写在文件开头
+
+  ```js
+  import esmExample from "./a.js";
+  ```
+
+  也可以运行时动态加载，写法必须是下面这样
+
+  ```js
+  import('lang/zh.js').then(module) => { /* 获得语言包对象 */ }
+  ```
+
+
+
+区别二：导出值
+
+* **CommonJS** 模块输出的是一个值的拷贝
+
+  对于基础类型，修改引入值是不会改变模块原本的值
+
+  但是引用类型比较特殊，修改引入的对象会改变模块原本的值
+
+  ```js
+  // a.js
   module.exports = {
     count: 1,
-    countPlus() {
-      module.exports.count++;
-      console.log("count的值", module.exports.count);
-    },
   };
+  ```
 
-  //b.js
-  const { count, countPlus } = require("./a.js");
-  console.log(count); //1
-  countPlus(); //count的值 2
+  不可修改
+
+  ```js
+  // b.js
+  const { count } = require("./a.js");
+  console.log(count); //1 
+  count=2  // 输出 TypeError: "city" is read-only
+  
+  // c.js
+  const { count } = require("./a.js");
   console.log(count); //1
   ```
 
-  ESM 模块输出的是值的引用
+  可修改
+
+  ```js
+  // b.js
+  const A = require("./a.js");
+  console.log(A.count); //1 
+  A.count=2  
+  
+  // c.js
+  const A = require("./a.js");
+  console.log(A.count); //2
+  ```
+
+  
+
+* **ESM**模块输出的是值的引用
+
+  实际测试，居然与cmj是一样的，只有对象能改
 
   ```js
   //a.js
   export let count = 1;
-  export function countplus() {
-    count++;
-    console.log(count);
-  }
-
+  
+  
   //b.js
-  import { count, countplus } from "./a.js";
+  import { count } from "./a.js";
   console.log(count); //1
-  countplus(); //2
+  count=2
+  
+  //b.js
+  import { count } from "./a.js";
+  console.log(count); //2
   ```
 
-- 区别二
+* **注意**
 
-  - **CommonJS** 加载的是一个对象（即`module.exports`属性），该对象只有在**脚本运行完**才会生成（运行时导出）
-  - **ES6 模块**不是对象，它的对外接口只是一种静态定义，在**代码静态解析阶段**就会生成（编译时导出）
+  cmj、esm是一样的，都是导出运行后的结果
 
-- CommonJS 模块的 require()是同步加载模块，只有加载完成，才能执行后面的操作
+  下面用cmj举例子，导出的是实例、返回值，无论多少次引入都是同一个值
 
-  ES6 模块的 import 命令是异步加载，有一个独立的模块依赖的解析阶段
+  ```js
+  // 导出的是实例
+  class RootApi{
+  	
+  }
+  module.exports=new RootApi()
+  
+  
+  // 导出的是返回值
+  function f1{
+  	return 111
+  }
+  module.exports=f1()
+  ```
 
+  
 
-### 参考
+区别三：还是导出值
 
-[Module 的加载实现](https://blog.csdn.net/weixin_46151381/article/details/122195535)
+* **CommonJS** 模块除了可以导出JS模块，还能导出JSON文件
 
-[CommonJS 规范](http://javascript.ruanyifeng.com/nodejs/module.html)
+  
 
-[学习 UMD](https://www.cnblogs.com/wenbinjiang/p/11429368.html)
+* **ESM**模块只能导出JS模块（在使用打包工具时，是因为打包工具会替我们做一层转换，所以才能通过import引入图片、JSON等等）
+
+  
 
 ## 设计模式
 
@@ -7257,9 +7493,101 @@ class EventEmitter {
 
 ### 单例模式
 
-通过这种方式，无论多少次调用返回的函数，都只会创建一个 Location 实例并共享使用
+**目的：维护一个全局实例对象**
+
+* 弹窗（登录框，信息提升框）
+
+* 全局态管理 store (Vuex / Redux)
+
+1、函数/类实现方案（唯一的实例存在静态成员里）
 
 ```js
+let Singleton = function (params) {
+    this.params=params  // 这里就是类的构造函数 this指向new Singleton时新创建的对象
+}
+
+
+Singleton.getInstance = function (params) {//静态方法
+    return this.instance|| (this.instance=new Singleton(params)) //this指向Singleton
+}
+
+let res1 = Singleton.getInstance('Winner');
+let res2 = Singleton.getInstance('Looser');
+
+console.log(res1) // Singleton { params: 'Winner' } 
+console.log(res2) // Singleton { params: 'Winner' } 
+console.log(res1===res2) // true
+```
+
+```js
+class Singleton{
+    constructor(params){
+        this.params=params
+    }
+    static instance=null
+    static getInstance(params) {
+        return this.instance|| (this.instance=new Singleton(params))
+    };
+
+}
+const res1= Singleton.getInstance('Winner')
+const res2= Singleton.getInstance('Looser')
+console.log(res1) // Singleton { params: 'Winner' } 
+console.log(res2) // Singleton { params: 'Winner' } 
+console.log(res1===res2) // true
+```
+
+
+
+2、闭包实现（唯一的实例存在闭包里）
+
+```js
+let CreateSingleton = (function () {
+    let instance;
+    return function (name) {
+        if (instance) {
+            return instance;
+        }
+        this.name = name;
+        return instance = this;
+    }
+})();
+
+
+let Winner = new CreateSingleton('Winner');
+let Looser = new CreateSingleton('Looser');
+
+console.log(Winner === Looser); // true
+```
+
+
+
+3、模块化
+
+esm、commonjs导出的对象其实就是单例模式 （全局只有一个）
+
+```js
+// a.js
+module.exports ={
+   city:'北京'
+}
+
+// b.js
+const obj require('./a')
+obj.city='上海'
+
+// c.js
+const obj require('./a')
+console.log(obj.city) //上海
+```
+
+如果导出的是个类呢？每个文件引入后，new创建的肯定不是一个实例。所以不能导出类，应该导出实例【用的闭包的方式】
+
+```js
+class Location{
+  //xxxx
+}
+
 module.exports = (function () {
   let location;
   return function () {
@@ -7272,33 +7600,119 @@ module.exports = (function () {
 })()();
 ```
 
-分析：
 
-* return 函数，其中的location是闭包变量。这个变量不会随着函数运行被销毁
 
-* 立即执行函数（IIFE）
+**最后**
 
-  ```js
-  (function () {
-    xxxx
-  })()
-  ```
+高阶函数包装下，不同的fn返回对象，都是唯一单例
 
-  这个函数返回的也是函数，这个函数也要立即执行，所以需要再加一个括号
+```js
+// 定义
+var getSingleton = function(fn) {
+    var ret;
+    return function() { // arguments 是传入的fn的参数
+      	// apply目的是让fn内的this和funcHandle的指向保证一致，即谁调用funcHandle时的决定
+        return ret || (ret = fn.apply(this, arguments)); 
+      
+      	// 如果不使用apply，fn这个函数中的会指向window
+        //return ret || (ret = fn(arguments)); 
+    };
+};
+```
 
-  ```js
-  (function () {
-    xxxx
-  })()()
-  ```
+下面调用例子里，是否使用apply，是没有区别的
 
-* 两个立即执行函数，最终返回的是一个Location实例
+```js
+var funcHandle = getSingleton(function() {
+    console.log('this指向',this) // window
+    return {}
+});
+var res1 = funcHandle();
+var res2 = funcHandle();
+console.log(res1 === res2);// true
+```
 
-  ```js
-  import Location from './xxx.js' //
-  ```
+这个例子才有差异
 
-  
+```js
+// 使用apply绑定this：this 等于 funHandle 中的this，obj调用的funHandle，所以最后this指向了obj
+
+// 不使用apply绑定this：this 指向 window
+let obj={}
+obj.funcHandle = getSingleton(function() {
+    console.log('this指向',this)
+});
+var res1 = obj.funcHandle();
+var res2 = obj.funcHandle();
+console.log(res1 === res2);// true
+```
+
+这个例子里是否使用apply是返回的都是同一个实例，对我们的主功能无影响，为什么选择使用apply的方案
+
+funcHandle是一个可复用的工具函数，当使用文件A导出funcHandle函数
+
+在其他任何页面调用funcHandle，其中的this都应该指向使用页面中的this
+
+
+
+参考：https://juejin.cn/post/7266702105829687354
+
+### 装饰器模式
+
+![image-20231026203554974](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/minprogram-template/20231026203555%20.png)
+
+```js
+// Function.prototype（看成一个整体）, 增加一个after字段
+Function.prototype.after = function (fn) {
+    const _this = this; // 本质是load对象调用了原型链上的after方法，this指向load对象（函数）
+    
+    return function () { // 这里是<新load函数>可以看下面，该函数直接调用this指向window
+      	// _this指向load，这里是调用load函数执行。arguments是新load函数的入参
+        _this.apply(this, arguments); 
+        if (fn && typeof fn === 'function') {
+            fn.apply(this);// 
+        }
+    };
+};
+
+// 函数是Function类的实例，load是一个对象
+function load() {
+    console.log('load')
+}
+
+// load对象上没有after属性，所以沿着原型链查找，原型链指向 Function.prototype（看成一个整体），其中有一个after属性
+// <返回值是新的load函数>
+const load=load.after(() => {
+    console.log('after')
+})
+
+load()
+```
+
+新例子
+
+```js
+
+
+module.exports={
+  Page(option){
+    const option.load=option.load.after(() => {
+    	console.log('after')
+		})
+	}
+}
+
+
+// 页面 。框架会自动调用
+const Api=require('./a.js')
+Api.Page({
+  onLoad(){
+    // xxx
+  }
+})
+```
+
+
 
 ## Dom
 
@@ -8633,12 +9047,91 @@ console.log("Listening on port 3000...");
 
 ## JS高级进阶
 
-### LRU缓存
+### 柯里化
 
-```
+接收一个函数func1，内部返回一个函数，这个函数调用func1
+
+```js
+// 任意函数，返回值会被缓存
+function slow(x) {
+    // 这里可能会有重负载的 CPU 密集型工作
+    console.log(`Called with ${x}`);
+    return x;
+}
+
+// 缓存工具（柯里化，入参是一个函数）
+function cachingDecorator(func) {
+  	// 这里是闭包
+    let cache = new Map();
+
+  	// 这里的x实际上传给 "入参func的" 
+    return function(x) {
+        if (cache.has(x)) {    // 如果缓存中有对应的结果
+            return cache.get(x); // 从缓存中读取结果
+        }
+
+        let result = func(x);  // 否则就调用 func
+
+        cache.set(x, result);  // 然后将结果缓存（记住）下来
+        return result;
+    };
+}
+
+slow = cachingDecorator(slow) // 这里就是入参func
+slow(1) // 这里是入参func的参数
 ```
 
 ​	
+
+### 状态机(FSM)
+
+FSM（finite state machine）
+
+预定义了所有的状态
+
+状态接收变更，完成从状态A转换为状态B的状态转换
+
+以常见的订单状态为例子
+
+![image-20231024005813636](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231024005814%20.png)
+
+**不使用状态机**
+
+```js
+const orderInfo={
+  status:0 // 0初始值，1创建成功，2已支付
+}
+
+// 以取消为例子
+functin cancelOrderPay(){
+ 	if(是否已支付){
+    // 这里做大量的逻辑，来重置订单
+    // 这些逻辑都需要判断各种状态是否符合要求，再执行
+  }
+}
+```
+
+**使用状态机**
+
+![image-20231024010723367](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231024010723%20.png)
+
+![image-20231024010810243](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231024010810%20.png)
+
+![image-20231024011401038](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231024011402%20.png)
+
+![image-20231024011503169](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231024011504%20.png)
+
+
+
+fsm的Go包：https://pkg.go.dev/github.com/looplab/fsm
+
+JS包：https://github.com/jakesgordon/javascript-state-machine
+
+
+
+
+
+
 
 ## Node
 
@@ -8699,6 +9192,10 @@ const mainJS=fs.readFileSync(path.resolve(__dirname,'./main.js'),{ encoding: 'ut
 
 fs.writeFileSync(path.resolve(__dirname, '../data/audio.ass'), data) 
 ```
+
+读不存在的目录、文件会报错
+
+写不存在的目录会报错，写不存在的文件会新建一个文件后写入
 
 **文件流**
 
@@ -8781,12 +9278,12 @@ process.exec('shell命令', function(err, stdout, errout){
     // stdout是标准输出，即shell命令执行后的结果  
     // errout是错误输出  
 });  
- 
 ```
 
 ```js
 var process = require('child_process');  
 let res=process.exec('shell命令',{
+  encoding: 'utf-8', //指定编码方式，res才会输出string
   cwd:'执行命令所在的路径' //默认工作路径为运行脚本所在的路径
 });  
 ```
@@ -8794,8 +9291,10 @@ let res=process.exec('shell命令',{
 同步方式
 
 ```js
-execSync(`git log -1 HEAD --pretty='%s'`,{ encoding: 'utf-8' })
-//指定编码方式，才会输出文字
+execSync(`git log -1 HEAD --pretty='%s'`,{ 
+  encoding: 'utf-8',
+  cwd:'执行命令所在的路径' 
+})
 ```
 
 

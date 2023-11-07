@@ -2886,7 +2886,54 @@ table-layout:fixed; //默认为auto
 </html>
 ```
 
-## 图像
+## 颜色
+
+* 十六进制、rgb、rgba
+
+  ```css
+  ```
+
+* transport
+
+  ```css
+  ```
+
+  
+
+## 渐变
+
+渐变的本质是图片，而不是颜色
+
+下面介绍几种渐变
+
+**线性渐变**
+
+![image-20231027150030612](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/minprogram-template/20231027150031%20.png)
+
+```html
+<div class="box"></div>
+
+<style>
+.box{
+	width:100px;
+	height:100px;
+	background:linear-gradient(red,yellow); //
+}
+</style>
+```
+
+**径向渐变**
+
+```css
+
+```
+
+**锥形渐变**·
+
+```css
+```
+
+
 
 
 

@@ -484,8 +484,20 @@ dog.move(10); // Output: "Buddy moved 10 meters."
 
 JS中的面向对象机制并不健全，TS也完善了JS中关于面向对象的部分
 
+从整体分析：
+
+类的成员分为：普通成员（构造函数是特殊的普通成员）、静态成员
+
+访问修饰符：public/ private/ protected （控制成员的可见范围）
+
+操作修饰符：readonly
+
+抽象类与接口：abstract、interface
+
 ```
 ```
+
+
 
 ### 顶部、底部类型
 
@@ -1500,15 +1512,7 @@ function feedCat(cat: Cat) { }
 feedCat(new Dog())
 ```
 
-
-
-
-
-
-
-## 工程方面
-
-### TS指令
+## TS指令
 
 通过TS指令可以指定在某一部分关闭TS类型检查
 
@@ -1555,98 +1559,39 @@ feedCat(new Dog())
 
   ![image-20230425200400518](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230425200400%20.png)
 
-### 类型声明
+## d.ts文件
 
-TS项目中，有单独的类型标注文件（即`*.d.ts`文件，这个文件一般是TS代码文件编译生成），这个文件独立于TS逻辑代码文件
+之前这里的知识一直很混乱，是因为没有区分开JS项目、TS项目的场景。这里梳理下
 
-编辑器会自动加载这个文件，实现对引入包的类型提示
+### TS项目
 
-为什么这么代码文件和类型文件独立设计？
+* 自己编写的TS代码，其本身就带类型，所以能做类型检查，根本用不到d.ts文件
 
-早期的npm包大部分没有携带类型信息，可以通过编写`*.d.ts`文件，来实现类型提示，或者通过编写`*.d.ts`文件来扩充新的类型标注
+  但是，很多项目都需要编译为JS使用，例如npm包。TS编译后会生成 JS文件 + d.ts文件 
 
-**类型标注包**
+  * JS文件：保留了逻辑部分，但是TS代码中的类型被去掉了
+  * d.ts文件：记录了 JS中变量、函数等声明 与 类型 之间的映射   
 
-`@types/xxx` 开头的这一类 npm 包是 TypeScript 维护的，专用于为社区存在的**无类型定义的 JavaScript 库**添加类型支持
-
-通过 DefinitelyTyped 来提供类型定义的包常见的有几种情况
-
-* 例如，Lodash 这样的库仍然有大量 JavaScript 项目使用，将类型定义内置在里面不一定是所有人都需要的，反而会影响包的体积
-* 例如，React 这种不是用纯 JavaScript / TypeScript 书写的库，需要自己来手写类型声明
-
-
-
-
-
-```ts
-//declare module定义模块名
-declare module 'fs' { 
-   //模块中的类型定义需要导出
-    export function readFileSync(/** 省略 */): Buffer;
-}
-```
-
-
-
-**declare关键字**
-
-通过declare声明的类型或者变量或者模块，在include包含的文件范围内，都可以直接引用而不用去import或者import type相应的变量或者类型。
-
-* 场景一：声明全局类型（可在其他TS文件中使用该类型）
-
-  **定义新的类型**
-
-  将类型定义在`typings/global.ts`
+  如下d.ts文件
 
   ```ts
-  //注意：这里要export，其他文件才能用这个类型
-  declare interface Stu {
-    name: string;
-    age:number
-  }
+  //global.d.ts
+  declare let name:string  // 变量name的类型  ---> string类型
+  
+  declare getNameById:(id:string)=>string // 函数getNameById  ---> 对应入参string、返参string
+  
+  // 补充： declare表示全局定义的类型 所有JS文件中的name都成了string类型
   ```
 
-  在其他TS文件中，可以引入使用类型
+  这部分无需手写d.ts文件，是编译自动生成的
 
-  ```ts
-  let a:Stu
-  ```
+* 宿主环境提供的变量、对象等
 
-  **扩展已有类型**
-
-  浏览器环境下已有window对象，其类型是Window类型的接口
-
-  我们在代码中再次定义一个Window接口，TS对于同名接口，会进行自动合并，所以达到了扩展字段的作用
-
-  ```ts
-  //global.ts
-  interface Window {
-    userTracker: (...args: any[]) => Promise<void>;
-  }
-  
-  window.userTracker("click!")
-  
-  ```
-
-  
-
-* 场景二：声明全局变量（可在其他TS文件中使用该变量）
-
-  声明全局变量$，注意这种和`场景一`不一样，$并不是类型，而是可以使用的变量
+  这种值也是没有类型的，使用时TS类型检查会报错。我们需要d.ts文件
 
   ```ts
   // global.ts
-  declare var $: (selector: string) => any;
-  
-  // index.ts
-  $('body').css('background-color', '#f0f0f0');
-  ```
-
-  我常用的情况是：
-
-  ```ts
-  // global.ts
-  declare var wx:Record<any, any>;
+  declare const wx:Record<any, any>; // 小程序环境下提供的wx对象，我们就需要指定下类型
   
   // index.ts
   wx.showToast({
@@ -1654,75 +1599,195 @@ declare module 'fs' {
   })
   ```
 
-  
+  不过，对应微信小程序来说，选择官方的TS模版，会自动在项目里帮我们生成这些对象、函数对应的类型。
 
-* 场景三：声明全局模块
+  ![image-20231028233944617](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/minprogram-template/20231028233944%20.png)
 
-  项目中使用import引入静态资源`.css`、`md`、`.png`等等。这个必须export导出
-  
+* 非TS模块
+
+  项目中引入非TS模块，这些模块是没有类型，TS类型检查会报错。我们需要手写d.ts文件
+
   ```ts
   //global.d.ts
+  
+  declare module '*.vue' {
+      import type { DefineComponent } from 'vue'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+      const component: DefineComponent<{}, {}, any>
+      export default component
+  }
+  
   declare module '*.md'{
       const raw: string;
       export default raw; //这里必须导出，才能在ts中import
   }
   
-  //index.ts
-  import raw from './README.md'
+  // 使用时  const raw = require('./README.md')
   ```
-  
-  
-
-* 场景四：补充第三方模块
-
-  ```shell
-  //安装axios
-  npm i axios
-  ```
-
-  项目中，定义`typings/axios.d.ts`。这个不用export
 
   ```ts
-  declare module 'axios' {
-    interface AxiosInstance {
-      <T = any>(config: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-      // ...
-    }
-    interface AxiosRequestConfig {
-      // ...
-    }
-  	interface AxiosResponse {
-      // ...
-    }
+  //global.d.ts
+  
+  // 补充： module <文件通配符|JS模块名>是一种特殊的语法，用来声明模块的（TS、JS、非代码的）。
+  declare module 'abc' {
+  		export let name:string //导出类似ESM的语法，导出的变量与类型的映射，就是引入时的类型
+      export let age:number
   }
+  // 引入使用ESM还是commonJS语法？清醒点，这个是d.ts文件，是给编辑器看的。使用那种模块化是你的项目配置
+  // 使用时 const {name,age} = require('abc') ，代码里name,age就有类型了
+  
   ```
 
-  使用
+* 扩展类型
+
+  项目中已经原本存在的类型，不满足我们的要求。我们需要手写d.ts文件
+
+  利用了同名的interface类型，会自动进行行合并的特点
+
+  下面这两个对象的类型都是内置在编辑器里的d.ts文件定义的，我们虽然不能修改，但是可以通过新增d.ts来补充
 
   ```ts
-  import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+  //global.ts
   
-  async function getData() {
-    const result: AxiosResponse = await axios.get('https://jsonplaceholder.typicode.com/todos/1');
-    console.log(result.data);
+  // --- 扩展window对象，其类型是Window ---
+  // 如下Window接口中，我们新增了userTracker属性。我们在使用该类型时就不会提示属性不存在了
+  interface Window {
+    userTracker: (...args: any[]) => Promise<void>;
   }
+  window.userTracker("click!")
+  
+  
+  // --- 扩展Date对象，其类型是Window ---
+  interface Date {
+    format: (date:Date,formatStr:string) => Promise<void>;
+  }
+  Date().format(xxx,xxx)
   ```
 
-  还有一个例子：在TS文件中引入vue文件会报错，加入下面内容
+* 引入了第三方npm包：
+
+  * TS编写的包，这种包编译为JS时，会带着d.ts文件来做类型提示（定义文件一般在入口文件所在目录下index.d.ts/global.d.ts或者package.json的typings字段也可以指定）
+
+  * JS编写的包，这种包是没有类型提示的。但是我们有两种方案：
+
+    * 如果存在 @types/xxx 的包，这是其他人为JS项目手写的d.ts文件
+
+      下面是是 @types/node的包，其中包含着xxx包的d.ts定义文件
+
+      ![image-20231028225555360](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/minprogram-template/20231028225555%20.png)
+
+    * 如果没有这种包，则必须手写d.ts实现JS项目的类型支持
+
+
+
+
+
+### JS项目
+
+JS项目没有类型检查，无需d.ts包。即使下载的npm包不支持类型，也没有关系
+
+但是，我发现一个很好玩的点： TS编译为JS+d.ts
+
+如果，我们为JS项目编写d.ts文件会如何？
+
+* 编辑器会有输入提示，记住d.ts是给编辑器看的
+* 通过给JS文件开通增加 @ts-check ，来进行代码检查
+
+公司JS项目，我推荐给一些公共的函数编写d.ts文件，编码时的提示会极大地提高效率
+
+
+
+### d.ts的作用
+
+总结下：
+
+在TS项目中，用来补充没有类型覆盖的场景
+
+在JS项目中，为JS代码提供编辑器提示（可以看这个文章里的示例：https://www.php.cn/faq/394698.html，其实就是编写JS中变量、函数、对象对应的d.ts文件）
+
+
+
+### 编写d.ts
+
+前面已经提到了，如何编写模块的d.ts文件和如何扩展已有类型的d.ts文件
+
+下面，我们全面的讲解下：
+
+请记住编写d.ts的核心是如何给JS建立类型关系
+
+* declare表示全局定义的类型
+
+  ```js
+  //global.d.ts
   
+  // 全局变量name的类型  ---> string类型
+  declare let name:string 
+  
+  // 全局函数，这里可以看到使用的函数签名的方式标记类型。（?:表示参数可选）
+  declare getNameById:(id:string,phone?:number)=>string 
+  declare function getNameById(id:string,phone?:number):string 
+  
+  // 全局类
+  declare class Person{
+    static name:string
+    constructor(name:string) // 构造函数的声明，与普通函数不同，是没有返回值的
+    static getName():string
+    //static getName:()=>string // 错误写法
+  }
+  
+  // 全局的对象（命名空间）。如果担心上面的污染全局，可以放入全局的命名空间中
+  // 比如全局的name声明，会导致所有JS文件中的name都成了string类型，我们可以把他放在namespace中
+  declare namespace Stu{
+   	let name:string 
+  	getNameById:(id:string,phone?:number)=>string 
+  }
+  // JS代码中输入`Stu.`就会出现输入提示
+  
+  
+  // 全局模块名（前面已经讲的很详细了）
+  // 语法 module <文件通配符|JS模块名>，用来声明模块的（TS、JS、非代码的）。
+  declare module 'abc' {
+    	//导出类似ESM的语法，导出的变量与类型的映射，就是引入时标记的类型
+    	//这个是d.ts文件，是给编辑器看的。abc模块使用的什么模块规范，需要看自己的代码
+  		export let name:string 
+      export function getName():string
+      //export getName:()=>string // 错误写法，模块内不能这样声明
+  }
+  // 使用时 const {name,age} = require('abc') ，代码里name,age就有类型了
+  
+  ```
+
+* 函数的重载
+
+  JS代码中函数入参不同，可以利用TS的重载机制。指定不同入参
+
   ```ts
-  declare module "*.vue" {
-    import { DefineComponent } from "vue";
-    const component: DefineComponent<{}, {}, any>;
-    export default component;
-  }
+  declare getNameById:(id:string)=>string 
+  
+  declare getNameById:(phone:number)=>string 
   ```
+
+*  d.ts文件的命名
+
+  ```text
+  全局的一般命名：global.d.ts
   
+  特定模块的一般命名：moduleName.d.ts
+  ```
+
   
 
 
 
-### TS配置
+
+
+**declare关键字**
+
+通过declare声明的类型或者变量或者模块，在include包含的文件范围内，都可以直接引用而不用去import或者import type相应的变量或者类型。
+
+
+
+## TS配置
 
 参考：https://www.51cto.com/article/694463.html
 

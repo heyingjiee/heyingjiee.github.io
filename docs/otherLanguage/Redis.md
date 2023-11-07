@@ -1135,9 +1135,9 @@ Redis 是一个内存数据库，所以其运行效率非常高。但内存中�
 
 ![image-20231004183440866](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231004183441%20.png)
 
-### <span id="RDB">RDB</span>（默认开启）
+### RDB（默认开启）
 
-RDB（Redis DataBase）是指将内存中某一时刻的数据快照全量写入到指定的 rdb 文件的持久化技术
+<span id="RDB">RDB</span>（Redis DataBase）是指将内存中某一时刻的数据快照全量写入到指定的 rdb 文件的持久化技术
 
 RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照文件，将数据从硬盘载入到内存，以恢复 Redis 关机前的数据库状态
 
@@ -1269,9 +1269,9 @@ RDB 持久化默认是开启的。当 Redis 启动时会自动读取 RDB 快照�
 
 RDB的缺点：可能会存在Redis因为意外的关闭，而丢失最近30s左右的数据（还没来的及触发备份rdb文件）。高并发情况下，30s会丢失大量数据
 
-### <span id="AOF">AOF</span>
+### AOF
 
-AOF（Append Only File）是指 Redis 将每一次的**写操作**都以日志的形式追加到一个 AOF
+<span id="AOF">AOF</span>（Append Only File）是指 Redis 将每一次的**写操作**都以日志的形式追加到一个 AOF
 文件中的持久化技术。当需要恢复内存数据时，将这些写操作重新执行一次，便会恢复到之
 前的内存数据状态。（注意AOF不会修改，如果删除某字段，这条删除命令会追加到文件尾部）
 
@@ -1982,6 +1982,7 @@ slaveof 二级节点地址 二级节点端口
   # For Redis Sentinel to chdir to /tmp at startup is the simplest thing
   # for the process to don't interfere with administrative tasks such as
   # unmounting filesystems.
+   ----- 哨兵临时文件放置的文件夹
   dir /tmp
   
   # sentinel monitor <master-name> <ip> <redis-port> <quorum>
@@ -2005,6 +2006,7 @@ slaveof 二级节点地址 二级节点端口
   # The valid charset is A-z 0-9 and the three characters ".-_".
   # 这个配置很重要，仔细阅读上面的介绍
     ----- 这个配置是设置哨兵监听当前的master的信息，对于其他副本实例（slave），哨兵会自动检测到
+    			下面会被这个文件作为公共的哨兵配置文件，这条配置会在各个哨兵配置文件中重写，所以，这里要注释掉
   sentinel monitor mymaster 127.0.0.1 6379 2
   
   # sentinel auth-pass <master-name> <password>
@@ -2047,6 +2049,7 @@ slaveof 二级节点地址 二级节点端口
   # Down).
   #
   # Default is 30 seconds.
+  	---------哨兵30秒未收到响应，则该哨兵认为宕机
   sentinel down-after-milliseconds mymaster 30000
   
   # IMPORTANT NOTE: starting with Redis 6.2 ACL capability is supported for
@@ -2122,6 +2125,8 @@ slaveof 二级节点地址 二级节点端口
   # during the failover. Use a low number if you use the replicas to serve query
   # to avoid that all the replicas will be unreachable at about the same
   # time while performing the synchronization with the master.
+    --------- 原master宕机。进行故障转移时，这里用来设置几个副本同时把数据复制到新选的master中
+    					注意：复制时，新maser无法提供读写服务，同步中的slave副本是无法进行对外读服务的，所以切记不可设置为所有的slave个数
   sentinel parallel-syncs mymaster 1
   
   # sentinel failover-timeout <master-name> <milliseconds>
@@ -2130,23 +2135,28 @@ slaveof 二级节点地址 二级节点端口
   #
   # - The time needed to re-start a failover after a previous failover was
   #   already tried against the same master by a given Sentinel, is two
-  #   times the failover timeout.
+  #   times the failover timeout. 
+  ----- 哨兵进行故障转移时如果失败，重新进行故障转移的超时时间为上一次的两倍： 2*（默认3分钟）=6分钟
   #
   # - The time needed for a replica replicating to a wrong master according
   #   to a Sentinel current configuration, to be forced to replicate
   #   with the right master, is exactly the failover timeout (counting since
   #   the moment a Sentinel detected the misconfiguration).
+  ----- 这里的wrong master指的是宕机的master，right master是新的master。因为新master被选举后，slave的配置文件中还是配置的旧的master，文件被哨兵变更为新的master的时间
   #
   # - The time needed to cancel a failover that is already in progress but
   #   did not produced any configuration change (SLAVEOF NO ONE yet not
   #   acknowledged by the promoted replica).
+  ------ 哨兵选择晋升slave后，决定取消晋升的超时时间
   #
   # - The maximum time a failover in progress waits for all the replicas to be
   #   reconfigured as replicas of the new master. However even after this time
   #   the replicas will be reconfigured by the Sentinels anyway, but not with
   #   the exact parallel-syncs progression as specified.
+  ------- 故障转移的最大时间，但是即使超过了这个时间，哨兵仍然会继续做转移，只不过哨兵可能会增加sentinel parallel-syncs指定的同步的数量
   #
   # Default is 3 minutes.
+  	---------
   sentinel failover-timeout mymaster 180000
   
   # SCRIPTS EXECUTION
@@ -2215,11 +2225,11 @@ slaveof 二级节点地址 二级节点端口
   
   # SECURITY
   #
-  # By default SENTINEL SET will not be able to change the notification-script
-  # and client-reconfig-script at runtime. This avoids a trivial security issue
+  # By default SENTINEL SET will not be able to change the notification-script（通知脚本）
+  # and client-reconfig-script（故障转移结束之后触发脚本） at runtime. This avoids a trivial security issue
   # where clients can set the script to anything and trigger a failover in order
   # to get the program executed.
-  
+  -------- yes表示禁止在运行时重新配置 Sentinel 的脚本
   sentinel deny-scripts-reconfig yes
   
   # REDIS COMMANDS RENAMING (DEPRECATED)
@@ -2278,9 +2288,9 @@ slaveof 二级节点地址 二级节点端口
   SENTINEL master-reboot-down-after-period mymaster 0
   
   ```
-
+  
   cluster文件夹下添加三个哨兵配置文件
-
+  
   ```shell
   # sentinel（哨兵）实例 ，26380、26381、26382
   
@@ -2291,23 +2301,176 @@ slaveof 二级节点地址 二级节点端口
   include sentinel.conf # 引入公共配置
   pidfile /var/run/sentinel_26380.pid
   port 26380
-  sentinel monitor mymaster 192.168.174.120 6380 2
-  #logfile access26380.log 
+  sentinel monitor myMaster 192.168.174.120 6380 2 # myMaster可以随便起个名字，用来代表master节点。192.168.174.120 6380是master的ip和端口。 2表示只有有两个哨兵任务master宕机，则判断master已宕机
+  
+  #logfile access26380.log  # 日志
   ```
 
   与配置三个redis实例相似，新建三个配置文件即可
 
   启动哨兵
-
-  ```shell
-  redis-sentinel 哨兵配置文件
   
+  ```shell
+  # 启动哨兵
   # redis-sentinel是redis-server的别名，也可以使用redis-server启动哨兵
   # redis-server 哨兵配置文件 --sentinel
-  ```
-
+  redis-sentinel 哨兵配置文件
   
-
+  
+  # 查询哨兵集群的信息
+  # redis-sentinel的本质就是redis-server，所以也可以使用redis-cli连接
+  redis-cli -p 哨兵端口 info sentinel # 使用任意一个哨兵的端口即可
+  
+  
+  # redis-cli -p 26380 info sentinel # 查询哨兵集群信息
+  # 输出：
+  sentinel_masters:1 # 监控了1个master（哨兵是可以监控多个集群的）
+  sentinel_tilt:0
+  sentinel_tilt_since_seconds:-1
+  sentinel_running_scripts:0
+  sentinel_scripts_queue_length:0
+  sentinel_simulate_failure_flags:0
+  #  哨兵配置文件中给master节点起的名字就是myMaster
+  #  address是master的ip和端口
+  #  slaves个数是2
+  #  sentinels（哨兵）个数是3
+  master0:name=myMaster,status=ok,address=192.168.174.120:6380,slaves=2,sentinels=3
+  ```
+  
+  哨兵启动后，我们查看26380端口的哨兵（每个启动的哨兵配置文件都变化了）
+  
+  ```shell
+  include sentinel.conf
+  pidfile "/var/run/sentinel_26380.pid"
+  port 26380
+  sentinel monitor myMaster 192.168.174.120 6380 2
+  #logfile access26380.log
+  
+  # Generated by CONFIG REWRITE
+  protected-mode no
+  latency-tracking-info-percentiles 50 99 99.9
+  dir "/tmp"
+  user default on nopass sanitize-payload ~* &* +@all
+  sentinel myid c05e7f92cd2f0ace8b5e1a7b266386497b9a53b8
+  sentinel config-epoch myMaster 0
+  sentinel leader-epoch myMaster 0
+  sentinel monitor mymaster 127.0.0.1 6379 2
+  sentinel config-epoch mymaster 0
+  sentinel leader-epoch mymaster 0
+  sentinel current-epoch 0
+  
+  # ----- redis的两个slave
+  sentinel known-replica myMaster 192.168.174.120 6381 # 本机的ip，所以与下一行的127.0.0.1是一样的
+  
+  sentinel known-replica myMaster 127.0.0.1 6381
+  
+  sentinel known-replica myMaster 192.168.174.120 6382
+  
+  sentinel known-replica myMaster 127.0.0.1 6382
+  
+  # ----- 两个哨兵
+  sentinel known-sentinel myMaster 192.168.174.120 26381 d9b962d71ad736d0472d558138be1410eaf4f3a7
+  
+  sentinel known-sentinel myMaster 192.168.174.120 26382 669c77662921529702abb9cc14017407be483583
+  ~                                                                                                 
+  ```
+  
+  对于redis的master（端口6380）的配置文件没有变化
+  
+  但是两个slave的配置文件变化了
+  
+  ```shell
+  ## 添加下面配置，作为启动在6381端口的redis的配置
+  # 引入公共配置
+  include redis.conf
+  
+  # 指定pid文件存储位置
+  pidfile "/var/run/redis_6381.pid"
+  
+  # 端口
+  port 6381
+  
+  # rdb文件名
+  dbfilename "dump6381.rdb"
+  
+  # aof文件名
+  appendfilename "appendonly6381.aof"
+  
+  # 日志文件
+  #logfile logs/access6381.log
+  
+  # 当master宕机,选举slave为master是会参照该属性.越小优先级越高,为0则不能晋升为master
+  replica-priority 20
+  
+  #-------------------------------------多了下面这些行
+  # Generated by CONFIG REWRITE
+  daemonize yes
+  dir "/opt/apps/redis/cluster"
+  latency-tracking-info-percentiles 50 99 99.9
+  protected-mode no
+  appendonly yes
+  save 3600 1
+  save 300 100
+  save 60 10000
+  aof-load-truncated no
+  replicaof 192.168.174.120 6380 # 指明当前节点是192.168.174.120 6380的slave
+  user default on nopass sanitize-payload ~* &* +@all
+  ```
+  
+  模拟master（6380端口）宕机
+  
+  ```shell
+  redis-cli -p 6380 shutdown
+  ```
+  
+  现象：
+  
+  * 观察哨兵，会打印一条日志。表示切换master为6381端口
+  
+    ```shell
+    switch-master myMaster 192.168.174.120 6380 192.168.174.120 6381
+    ```
+  
+  * 哨兵配置会自动变为
+  
+    ```shell
+    # 这里原来是6380，但是现在宕机了。自动变为新的master地址
+    sentinel monitor myMaster 192.168.174.120 6381 2 
+    ```
+  
+  * redis集群信息
+  
+    ```shell
+    >redis-cli -p 6381 info replication
+    # 虽然这里6381还是slave，但是master的IP和端口已经变成了6381了
+    # 类似于多级结构
+    role:slave 
+    master_host:192.168.174.120
+    master_port:6381
+    master_link_status:down
+    master_last_io_seconds_ago:-1
+    master_sync_in_progress:0
+    slave_read_repl_offset:498326
+    slave_repl_offset:498326
+    master_link_down_since_seconds:-1
+    slave_priority:20
+    slave_read_only:1
+    replica_announced:1
+    connected_slaves:1
+    slave0:ip=192.168.174.120,port=6382,state=online,offset=498326,lag=0
+    master_failover_state:no-failover
+    master_replid:ea12c952478fb3eb0ac09b8d6f8c0b37eb3a9c9c
+    master_replid2:4bf01980a3f7897482cb0b31dff22544ffc29f39
+    master_repl_offset:498326
+    second_repl_offset:494175
+    repl_backlog_active:1
+    repl_backlog_size:1048576
+    repl_backlog_first_byte_offset:15
+    repl_backlog_histlen:498312
+    ```
+  
+    
+  
   
 
 ### 主从复制过程

@@ -1,6 +1,6 @@
 # 代码分析
 
-## 开始
+## 编译流程
 
 ESlint、Prettier、JS转译等功能，实际上都是通过下面的流程，实现分析代码，在中间的AST（语法树）进行修改或者校验语法树节点，来实现其功能
 
@@ -8,7 +8,7 @@ ESlint、Prettier、JS转译等功能，实际上都是通过下面的流程，�
 
 其中，我们使用的最多的部分就是AST，所以需要对AST语法树有基本的了解
 
-## 工具
+## 可视化工具
 
 [AST explorer](https://astexplorer.net/)：一个可视化的网站，可以将代码转化为抽象语法树
 
@@ -27,17 +27,42 @@ ESlint、Prettier、JS转译等功能，实际上都是通过下面的流程，�
 
 目前JS编译器遵循的通用规范是espree，不同的工具都是基于此AST（语法树）的结构进行了相应的拓展
 
-## AST
+## Babel
 
 AST语法树，首先应该明确它是一个树形结构，代码中的每个部分都会生成树的一个节点
 
 使用不同的parse（解析器）生成的AST节点会有差异
 
-那么有哪些常见的接种节点？如图，矩形框第一行是节点类型，第二行是代码示例
-
-![image-20221106120119752](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221106120119%20.png)
+这篇文章我们学习使用Babel，Babel为我们提供了大量的工具来处理AST
 
 ## 实战
+
+```js
+import parser from '@babel/parser'
+import traverse from '@babel/traverse'
+import generate from '@babel/generator'
+
+const sourceCode = `console.log(1);`;
+
+const ast = parser.parse(sourceCode, {
+  sourceType: 'unambiguous'
+});
+
+traverse(ast, {
+    CallExpression(path, state) {
+
+    }
+});
+
+const { code, map } = generate(ast);
+console.log(code);
+```
+
+
+
+### 为console打印添加信息
+
+
 
 ### 修改函数名
 
