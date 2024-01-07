@@ -2,7 +2,7 @@
 
 ## 前言
 
-是时候重新整理笔记了，从一无所知的萌新变成一个菜鸟，总归是有点进步了
+是时候重新整理笔记了，从一无所知的萌新变成菜鸟，总归是有点进步了
 
 ## 严格模式
 
@@ -936,7 +936,7 @@ function tag(string, name, age) {
 //注意:函数的第一个参数string，接收除变量的部分，如果字符串是 tag`${name}` ,返回的是["",""],即使变量前后没有字也会返回
 ```
 
-#### symbol(内容太晦涩，暂时整理部分)
+#### symbol(内容太晦涩，暂时跳过)
 
 Symbol（符号）是 ES 6 新增的数据类型。符号是原始值，且符号实例是唯一、不可变的。符号的用途是确保对象属性使用唯一标识符，不会发生属性冲突的危险。
 
@@ -3907,10 +3907,13 @@ obj.run()
   
   //注意:
   //1. 当你使用字符串这个形式的时候, 1 表示 1 月, 12 表示 12 月
-  //2. 年月日和时分秒中间有一个空格
+  //2. 年月日与时分秒中间有一个空格
   ```
   
   ```js
+  // 注意：巨坑，Date格式化 年月日，返回的时间不是当天的0点，而是当天的8点
+  new Date("2022-01-20") //Thu Jan 20 2022 08:00:00 GMT+0800 (中国标准时间)
+  
   new Date("2022-01-20 14:30:00") //Thu Jan 20 2022 14:30:00 GMT+0800 (中国标准时间)
   
   new Date("2022/01/20 14:30:00") //Thu Jan 20 2022 14:30:00 GMT+0800 (中国标准时间)
@@ -4580,84 +4583,139 @@ console.log(deepData.score===stu.score)
 
 Promise是用来处理异步函数的利器，相较于传统的回调函数的弊端（回调地狱）
 
-Promise会在在内部是同步的，只有then、catch、finally才会加入微任务队列，等待异步返回后才会执行
-
 Promise包含`pending`、`fulfilled`、`rejected`三种状态
 
 - `pending` 指初始等待状态，初始化 `promise` 时的状态
-- `resolve` 指已经解决，将 `promise` 状态设置为`fulfilled`
-- `reject` 指拒绝处理，将 `promise` 状态设置为`rejected`
+- `fulfilled` 指已经解决
+- `rejected` 指失败
 
-### 基本使用
+pending只能转化为最终态fulfilled或reject，且转化不可逆
 
-创建一个Promise，其参数是一个回调函数
+![image-20231222125752813](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231222125753WUYjVs.png)
+
+### 创建Promise
+
+注意：最终态Promise可以携带数据
+
+**Pending状态**
+
+创建一个Pending状态的Promise
+
+```js
+p=new Promise()
+```
+
+变更状态：
 
 ```javascript
 let p1=new Promise((resolve,reject)=>{
-    resolve("传递给then的值")//执行成功，传递参数
-}).then(
-    value=>{//执行成功，会把值传递给第一个参数value
-        console.log(value)
-    },reason=>{////执行失败，会把值传递给第二个参数reason
-        console.log(reason)
-    }
-)
+  	// 调用resolve函数后，Promise从pending态转变为fulfilled态
+    resolve("成功状态Promise携带的数据")
+})
 
-//输出 传递给then的值
+
+let p2=new Promise((resolve,reject)=>{
+  	// 调用reject函数后，Promise从pending态转变为rejected态
+    reject("成功失败Promise携带的数据")  // 习惯上抛出Error对象，例如 reject(new Error("失败的信息"))
+})
 ```
 
-注意：
+Promise的构造函数入参是一个回调函数，Promise内部会向会回调函数的入参中塞入resolve、reject函数
 
-Promise内部函数，只写一个参数时，默认是resolve
+这样在回调函数中，就可以控制Promise内部的行为
 
-then中只写一个函数，默认是执行成功的那个函数
+```js
+class Promise{
+	constructor(executor){
+		executor(this.resolve,this.reject)
+	}
+	resolve(){}
+	reject(){}
+}
+```
+
+**Fulfilled状态**
+
+使用 `promise.resolve` 方法可以快速的返回一个成功状态的promise对象
+
+```javascript
+Promise.resolve("成功的信息")
+```
+
+**Reject状态**
+
+```javascript
+Promise.reject(new Error("失败的信息"))
+```
+
+### 流水线then
+
+then是Promise实例上的函数
+
+**入参**
+
+then有两个参数，都是回调函数
+
+```js
+let p=new Promise((resolve,reject)=>{
+  	// 这里转化了Promise的状态，then才会触发执行。获取其结果
+    resolve("成功失败Promise携带的数据") 
+}).then(
+    value=>{ // 如果前面的Promise转化为了 fulfilled ，这个回调会执行。value是Promise携带的数据
+        console.log("fulfilled状态",value)
+    },
+    reason => { // 如果前面的Promise转化为了 rejected ，这个回调会执行。reason是Promise携带的数据
+        console.log("rejected状态",reason)
+    }
+)
+```
+
+then中只写一个函数，默认是执行成功的那个回调函数
 
 ```javascript
 let p1=new Promise((resolve)=>{
-    resolve("传递给then的值")//执行成功，传递参数
-}).then(
-    value=>{//执行成功，会把值传递给参数value
-        console.log(value)
+    resolve("成功失败Promise携带的数据")//转化为fulfilled状态
+}).then(value=>{
+        console.log(value) //执行成功，会把值传递给参数value
 )
 ```
 
-如果then中只写执行失败的函数
+如果then中只想写执行失败的回调函数
 
 ```javascript
 let p1=new Promise((resolve，reject)=>{
-    reject("传递给then的值")//执行成功，传递参数
+    reject("成功失败Promise携带的数据")//转化为fulfilled状态
 }).then(
-	null,////执行成功的函数不写，也得放个null占位置
+	null,//执行成功的函数不写，也得放个null占位置
     reason=>{////执行失败，会把值传递给第二个参数reason
         console.log(reason)
     }
 )
 ```
 
-### then
+**返参**
 
-then可以链式传递Promise 。then函数执行返回的结果得是promise对象，才可以继续调用then方法
+then函数的返参还是Promise ，所以其可以继续调用then方法
 
-1、默认传递的是成功
+下面只以fulfilled状态的Promise，调用then函数为例子
+
+1、返回fulfilled的Promise
 
 ```javascript
 let p=new Promise((resolve,reject)=>{
     resolve("传递给then的值")
 }).then(
     value=>{
+      	// 方式1
+      	return Promise.resolve("成功")
+      	// 方式2：return 值 ，默认返回Fulfilled状态Promise，Promise的数据为return的值
         return "成功"
-    }
-).then(
-    value=>{
-        console.log("fulfilled状态",value)//fulfilled状态 成功
-    },
-    reason => {
-        console.log("rejected状态",reason)
+        // 方式3： 不写return ，默认返回的Fulfilled状态Promise的参数是 undefined
     }
 )
 ```
 
-2、传递失败状态
+2、返回Reject的Promise
 
 ```js
 let p=new Promise((resolve,reject)=>{
@@ -4676,35 +4734,73 @@ let p=new Promise((resolve,reject)=>{
 )
 ```
 
-**注意细节：**
+**异步**
 
-then的返回值是resolve状态的promise，如果没有return值，则不带参数
+一定要注意：then的两个回调函数是异步的
+
+resolve() 执行后，需要等待Promise转化为最终状态后（这部分不是立即执行的），回调函数才会执行
 
 ```js
 let p=new Promise((resolve,reject)=>{
-    resolve("传递给then的值")
-}).then(
-    value=>{
-        console.log(value)//这里打印，但是没写return value，但是这个then的返回值任然是resolve状态的promise，只不过没参数
-    },reason=>{
-        console.log(reason)
-    }
-).then(
-    value=>{//
-        console.log("看这里："+value)
-    }
-)
+    resolve()  // 第一步
+    console.log(1) // 第二部
+}).then(value=>{
+        console.log(2) // 第三部，回调回来
+})
 
-//输出    传递给then的值     看这里：undefined
+// 1
+// 2
 ```
 
-###  catch
+更复杂的例子
 
-【1】then的第二个回调函数可以捕获到rejected状态的Promise和Error对象
+```js
+let p=new Promise((resolve,reject)=>{
+    console.log("1")
+    reject("2")
+    console.log("3")
+}).then(
+    null,
+    reason=>{
+        console.log(reason)
+        return Promise.reject("错误")
+    }
+).catch(()=>{
+    console.log("5")
+})
+console.log("6")
 
-【2】catch也可以捕获到rejected状态的Promise和Error对象
+// 1
+// 3
+// 6
+// 2
+// 5 
+```
 
-【3】未捕获到的rejected状态的Promise和Error对象，都会造成代码终止执行，在控制台会打印错误
+这个例子，需要注意 p1.then返回的Promise，在then回调执行之前是pending状态
+
+```js
+let p1=new Promise((resolve,reject)=>{
+    console.log("你好")
+    resolve("succeed")
+})
+let p2=p1.then(
+    value=>console.log(value),
+    reason=>console.log(reason)
+)
+console.log(p1)
+console.log(p2)
+```
+
+![image-20210415001615623](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415001615623.png)
+
+###  流水线错误处理catch
+
+catch是Promise实例的参数
+
+【1】catch也可以捕获到rejected状态的Promise和Error对象，then的第二个回调函数也可以
+
+【2】未捕获到的rejected状态的Promise和Error对象，都会造成代码终止执行，在控制台会打印错误
 
 一般规律是：出现rejected状态的Promise或抛出错误对象，会被**后面最近【1】或【2】捕获到**，且被捕获后除非重新抛出rejected状态的Promise 或者 重新抛出错误对象，否则就不能被捕获到了
 
@@ -4803,67 +4899,6 @@ let p1 = new Promise((resolve, reject) => {
 //第三个then中处理resolve:参数2
 ```
 
-### finally
-
-无论状态是`resolve` 或 `reject` 都会执行此动作，`finally` 与状态无关。
-
-```javascript
-const promise = new Promise((resolve, reject) => {
-  reject("hdcms");
-})
-.then(msg => {
-  console.log("resolve");
-})
-.catch(msg => {
-  console.log("reject");
-})
-.finally(() => {
-  console.log("resolve/reject状态都会执行");
-});
-```
-
-### 宏任务与微任务  
-
-js是单线程，程序从上到下执行
-
-执行到异步函数（比如：setTimeout），就添加到微任务队列中，其他的添加到宏任务队列中
-
-只有宏任务队列中的任务执行完毕后，才会开始执行微任务队列中的任务
-
-
-
-**Promise中的同步与异步**
-
-执行到resove或者reject时才会把（new Promise中的函数是同步函数，在主线程中执行），其promise后的所有then中的函数操作，按顺序添加到微任务队列中
-
-注意：
-
-* Promise内部是同步的
-* then、catch、finally才是异步的，会被加入异步队列
-
-```js
-let p=new Promise((resolve,reject)=>{
-    console.log("1")
-    reject("2")
-    console.log("3")
-}).then(
-    null,
-    reason=>{
-        console.log(reason)
-        return Promise.reject("错误")
-    }
-).catch(()=>{
-    console.log("5")
-})
-console.log("6")
-
-// 1
-// 3
-// 6
-// 2
-// 5 
-```
-
 
 
 **例题1**
@@ -4879,16 +4914,7 @@ console.log("6")
 * 主线任务结束后，开始执行微任务队列，value函数执行，打印"succeed"
 
 ```javascript
-let p1=new Promise((resolve,reject)=>{
-    console.log("你好")
-    resolve("succeed")
-})
-let p2=p1.then(
-    value=>console.log(value),
-    reason=>console.log(reason)
-)
-console.log(p1)
-console.log(p2)
+
 ```
 
 ![image-20210415000628923](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415000628923.png)
@@ -4905,50 +4931,9 @@ console.log(p2)
 * 主线任务结束，开始执行微任务队列，value函数执行，打印"succeed"
 * 执行宏任务队列，打印p1和p2,这时候两个都是fulfilled状态
 
-```javascript
-let p1=new Promise((resolve,reject)=>{
-    console.log("你好")
-    resolve("succeed")
-})
-let p2=p1.then(
-    value=>console.log(value),
-    reason=>console.log(reason)
-)
-setTimeout(()=>{
-    console.log(p1)
-    console.log(p2)
-})
-```
 
-![image-20210415001615623](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210415001615623.png)
 
 ### Promise API
-
-**Promise.resolve**
-
-使用 `promise.resolve` 方法可以快速的返回一个成功的promise对象
-
-```javascript
-Promise.resolve("后盾人").then(value => {
-  console.log(value); //后盾人
-});
-```
-
-**Promise.reject**
-
-和 `Promise.resolve` 类似，`reject` 生成一个失败的promise对象
-
-```javascript
-new Promise(resolve => {
-  resolve("成功");
-})
-.then(v => {
-    return Promise.reject(new Error("失败原因"));
-})
-.catch(error => {
-  console.log(error);
-});
-```
 
 **Promise.all**
 
@@ -5017,8 +5002,6 @@ new Promise(resolve => {
 
 
 
-
-
 **Promise.allSettled**
 
 `allSettled` 也适用于处理多个`promise` ，无论promise是fulfiled还是rejected，`allSettled`都是按照参数的顺序返回结果
@@ -5071,50 +5054,63 @@ Promise.race([hdcms, houdunren])
 });
 ```
 
+### 回调函数Promise化
 
+**回调函数**
 
-### async/await
+首先第一个问题，回调函数一定是异步的吗？
 
-使用 `async/await` 是promise 的语法糖，可以让编写 promise 更清晰易懂，也是推荐编写promise 的方式。
+答案：不是。回调只是代码层面的一种手段，函数可以不在执行时立即拿到结果，而是在之后的某个时间触发回调函数带回结果
 
-* async用在函数前，把return的值，放到Promise对象中，然后返回这个Promise对象。所以想要去处理Promise中的对象，需要继续用then函数
+下面例子是回调函数是同步的
 
-  ```javascript
-  async function a() {
-    return "ni"
-  }
-  console.log(a())
-  //输出 Promise {<fulfilled>: "ni"}
-  ```
-
-* await只能出现在async函数中，await后面接Promise对象或其他异步函数
-
-  * await +Promise :等待Promise对象中resolve或者reject参数后，返回参数
-  * await +异步函数：等待异步函数结束，返回函数中return的值
-
-![image-20210418105050836](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210418105050836.png)
-
-### Promise封装AJAX异步请求
-
-原版的AJAX异步请求
-
-```javascript
-function ajax(url,callback) {
-    let xhr=new XMLHttpRequest()
-    xhr.open("GET",url)
-    xhr.send()
-    xhr.onload=function(){
-        if(this.status==200){
-           callback(JSON.parse(this.response)) 
-        }else{
-            throw new Error("加载失败")
-        }
-    }
-    
+```js
+function f1(callback) {
+    callback()
 }
+
+// 第1步 回调函数立即就执行了
+f1(()=>{
+  console.log(1)
+})
+
+// 第2步
+console.log(2)
+
+//1
+//2
 ```
 
-使用Promise封装
+下面的回调是异步的
+
+异步其实本质是浏览器控制的，代码并不会等待1s，而是1s后浏览器将"setTimeout传入的函数"放入微任务队列，当宏任务执行完毕后才会继续执行微任务，即这里的callback函数
+
+```js
+function f1(callback) {
+    setTimeout(()=>{
+        callback()
+    },1000)
+}
+
+// 第1步 回调函数立即就执行了
+f1(()=>{
+  console.log(1)
+})
+
+// 第2步
+console.log(2)
+
+//2
+//1  等待1s后才输出1
+```
+
+**应用**
+
+一般情况下，我们只会把异步的回调函数Promise化
+
+网络请求是异步的，当浏览器接收到请求结果后将其放入微任务队列等待，当宏任务执行完毕后执行触发回调
+
+改成Promise后，只有请求结果返回时才会触发then，then中就可以处理这个数据了。相当于指定了一个顺序：请求--->处理请求的数据
 
 ```javascript
 function ajax(url) {
@@ -5140,6 +5136,137 @@ function ajax(url) {
             reason=>console.log(reason)
                        )
 ```
+
+**变化**
+
+回调函数不只能执行一次回调，可以多次
+
+```js
+function f1(callback) {
+    setInterval(()=>{
+        callback()
+    },1000)
+}
+
+// 第1步 回调函数立即就执行了
+f1(()=>{
+  console.log(1)
+})
+
+// 第2步
+console.log(2)
+
+//2
+//1  循环输出1
+```
+
+但是一旦Promise化后，由于Promise转化为最终态后，不可逆转。所以下面的代码只能输出一次回调的结果
+
+```js
+function getDate() {
+    return new Promise((resolve) => {
+        setInterval(resolve,1000)
+    })
+}
+
+
+this.getDate(()=>{
+  console.log(1)
+})
+console.log(2)
+
+//2
+//1  
+```
+
+### async/await
+
+Promise已经能实现异步转化为同步处理了
+
+只不过，当为多个异步操作指定处理顺序时，会出现嵌套
+
+```js
+getData1().then((res1)=>{
+  getData2(res1.value).then((res2)=>{
+    getData3(res2.value).then((res3)=>{
+      // 指定  getData1 -> getData2 -> getData3 循序执行
+    })    
+  })
+})
+```
+
+async/await语法本质是Promise的语法糖，仅仅是使得Promise的书写更加明晰
+
+* 用async修饰的函数内部才能使用await
+
+* await后面接值，会直接返回之该值
+
+  ```js
+  function f() {
+      return 1
+  }
+  
+  async getRes(){
+    const res=await f()
+    console.log(res)  //1
+  } 
+  ```
+
+* await后面接Promise对象，如果Promise对象为fulfilled状态会直接取出其携带的数据，rejected状态会直接结束
+
+  ```js
+  function f() {
+      return new Promise((resolve) => {
+          setTimeout(()=>{
+            resolve(1)
+          },1000)
+      })
+  }
+  
+  async getRes(){
+    const res=await f() // 返回值是Promise对象，await取出携带的值
+    console.log(res)  //1
+  } 
+  ```
+
+  
+
+async/await错误处理方案
+
+```js
+try{
+	// await 
+  await xxx()
+
+}catch(err){// 错误处理 rejected状态的Promise、Error都能被捕获到
+
+}finally{ //无论状态是`resolve` 或 `reject` 都会执行`finally` 
+	
+}
+```
+
+但是请注意，对于异步函数必须使用await同步化后，才能使用try catch来处理错误
+
+```javascript
+function p(){
+    return new Promise((resolve,reject)=>{
+        setTimeout(resolve,2000)
+    })
+}
+async function run (){
+    try{
+        await p1() // 这里必须await，否则代码不会等待，而是直接打印输出了： try和finally
+        console.log('try') 
+    }catch (err){
+        console.log('err',err)
+    }finally {
+        console.log('finally')
+    }
+}
+run()
+```
+
+
 
 ## 实现Promise
 
@@ -8348,7 +8475,9 @@ link.click();
 
 Cookie一般是由服务端在响应请求时，通过设置响应体的头的`Set-Cookie`字段，浏览器读取后在该域名下设置的键值对(多个键值对使用分号分隔)，并存储在前端浏览器中
 
-所以，Cookie只能在它设置的域名下才能被访问，注意默认情况下，子域名也无法访问（但是可以设置domain这个key来改变，后面会讲到）
+所以，Cookie只能在它设置的域名下才能被访问
+
+默认情况下，子域名也无法访问（但是可以设置domain这个key来改变，后面会讲到）
 
 ```
 在 site.com 下设置的Cookie
@@ -8379,17 +8508,17 @@ Access-Control-Allow-Credentials:true
 
 
 
-读取当前域名下的Cookie：
+JS操作当前域名下的Cookie：
 
 ```js
+// 读取当前域名下的Cookie
 document.cookie
+
+//该操作只会更新Cookie中的user字段为hedaodao，其他Cookie字段不会被影响
+document.cookie = "user=hedaodao";  
 ```
 
-修改当前域名下的Cookie：（这只是前端修改Cookie，想要对所有用户生效还是需要服务端修改header的`cookie`字段）
 
-```js
-document.cookie = "user=hedaodao";  //该操作只会更新Cookie中的user字段为hedaodao，其他Cookie字段不会被影响
-```
 
 Cookie中默认的一些Key：
 
@@ -8453,7 +8582,10 @@ Cookie中默认的一些Key：
 
 * samesite
 
-  * strict
+  * strict（默认值）
+
+    用户当前域为A.com，网页中有一个B.com下的图片（或者有一个form表单，action是B.com）。向B.com请求数据时无法携带Cookie
+
   * lax
 
   [详细内容请查看](https://zh.javascript.info/cookie#samesite)
@@ -8548,10 +8680,39 @@ app.listen('8099',()=>{
 
 ### sessionStorage、LocalStotage
 
+网页只能访问到当前的 <协议+域名+端口> 下存储的数据，注意：子域名不一致也无法访问
+
+例如： `http://www.baidu.com`与`http://www.yy.baidu.com`
+
+**sessionStorage**
+
+当前页签不关闭就一直存在，页签关闭就会被清楚
+
+如果是window.open打开的页面，也可以访问
+
+```js
+sessionStorage.setItem('token', res.data); //如果key存在时，就更新value
+
+sessionStorage.getItem(key) //如果key不存在就返回null
+```
+
+**LocalStotage**
+
+一直存储，除非清楚浏览器缓存
+
 ```JS
 localStorage.setItem('token', res.data); //如果key存在时，就更新value
 
 localStorage.getItem(key) //如果key不存在就返回null
+```
+
+监听缓存
+
+```js
+window.addEventListener('storage', () => {  ...});
+
+// 或                                         
+window.onstorage = () => {  ...};
 ```
 
 
@@ -8560,11 +8721,15 @@ localStorage.getItem(key) //如果key不存在就返回null
 
 ## 前端攻击
 
-### XSS
+### XSS（跨站脚本漏洞攻击）
 
-Cookie的`httpOnly`字段可以防止XSS攻击
+跨站脚本攻击是指攻击者往Web页面里插入恶意JS代码，当用户浏览该页之时，嵌入其中的JS代码会被执行，从而达到恶意攻击用户的目的
 
-### XSRF
+例如最常用的手段：新闻详情页面支持评论、展示用户评论的功能，攻击者将JS脚本作为评论提交到服务器，其他用户访问该页面展示该评论时，就会在用户浏览器执行该JS脚本
+
+Cookie的`httpOnly`字段可以阻止JS获取Cookie，一定程度上防止XSS获取存储用户登录信息的Cookie
+
+### XSRF（跨站请求伪造）
 
 跨站请求伪造（Cross-Site Request Forgery）
 
@@ -9179,6 +9344,13 @@ node index.js
   fs.readFileSync(path.resolve(process.cwd(),'./data'))
   ```
 
+* 现在推荐使用ESM模块化规范，ESM中没有`__dirname`
+
+  ```js
+  import url from "node:url";
+  
+  url.fileURLToPath(new URL("./src", import.meta.url)) //import.meta.url是当前文件的url路径
+  ```
   
   
 
@@ -9295,6 +9467,449 @@ execSync(`git log -1 HEAD --pretty='%s'`,{
   encoding: 'utf-8',
   cwd:'执行命令所在的路径' 
 })
+```
+
+## 网络与浏览器
+
+### Http与Https
+
+**基本概念**
+
+HTTP是超文本传输协议，HTTP的初衷是为了提供一种发布和接收HTML页面的方法。
+
+HTTPS使用的主要目的是提供对网站服务器的身份认证，同时保护交换数据的隐私与完整性。
+
+TLS是传输层加密协议，前身是SSL协议，由网景公司1995年发布，有时候两者不区分。
+
+多路复用：通过一个的HTTP/2连接请求发起多重的请求-响应消息，多个请求共享一个TCP连接，而不是依赖建立多个TCP连接。
+
+**HTTP的发展史**
+
+![image-20210413221452645](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413221452645.png)
+
+**http/2 VS http/1.1**
+
+* HTTP2.0的多路复用（ 1次连接）
+* HTTP2.0服务端推送
+* HTTP2.0压缩消息头
+
+* HTTP2.0的基本单位为二进制帧
+
+* HTTP2.0中帧具有优先级
+
+**HTTP特点**
+
+* 无状态：协议对客户端没有状态存储，对事物处理没有“记忆”能力，比如访问一个网站需要反复进行登录操作
+* 无连接：HTTP/1.1之前，由于无状态特点，每次请求需要通过TCP三次握手四次挥手，和服务器重新建立连接。比如某个客户机在短时间多次请求同一个资源，服务器并不能区别是否已经响应过用户的请求，所以每次需要重新响应请求，需要耗费不必要的时间和流量。
+* 基于请求和响应：基本的特性，由客户端发起请求，服务端响应简单快速、灵活
+* 通信使用明文、请求和响应不会对通信方进行确认、无法保护数据的完整性
+
+**HTTPS特点** 
+
+* 基于HTTP协议，通过SSL或TLS提供加密处理数据、验证对方身份以及数据完整性保护
+
++ 内容加密：采用混合加密技术，中间者无法直接查看明文内容
+
+* 验证身份：通过证书认证客户端访问的是自己的服务器
+* 保护数据完整性：防止传输的内容被中间人冒充或者篡改
+
+### V8引擎内存机制
+
+JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，栈内存存储基本类型数据以及引用类型数据的内存地址，堆内存储存引用类型的数据
+
+![image-20210511125507639](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/20210511125508.png)
+
+1. 栈内存的回收：栈内存调用栈上下文切换后就被回收，比较简单
+2. 堆内存的回收：V8 的堆内存分为**新生代内存和老生代内存**，新生代内存是临时分配的内存，存在时间短，老生代内存存在时间长
+
+![img](https://img.bosszhipin.com/beijin/cms/0f4ec1d2ee97c0493785ed36e12e118b26b1843edb5867970fca7c28c0d4ecae8ed151f9047a473e853d69196fe541ef.)
+
+**新生代内存回收机制：**
+
+新生代内存容量小，64 位系统下仅有 32M。新生代内存分为 From、To 两部分，进行垃圾回收时，先扫描 From，将非存活对象回收，将存活对象顺序复制到 To 中，之后调换 From/To，等待下一次回收。
+
+**老生代内存回收机制：**
+
+1. 晋升：如果新生代的变量经过多次回收依然存在，那么就会被放入老生代内存中
+2. 标记清除：老生代内存会先遍历所有对象并打上标记，然后对正在使用或被强引用的对象取消标记，回收被标记的对象
+3. 整理内存碎片：把对象挪到内存的一端
+
+**为什么限制内存大小？**
+
+1、够用了，js设计的初衷是浏览器脚本语言，只执行一次，便释放内存
+
+2、如果不限制，回收一次100MB的内存大概花费3ms，V8引擎在回收垃圾时，是**暂停住所有代码的执行**，一旦垃圾过多，在回收内存的时候，中断的时间过长，体验不佳。
+
+**新生代内存**：保存新变量，存活时间短的
+**老生代内存**：保存老变量，存活时间长的（老变量：经过几次垃圾回收也没有被杀死的变量）
+
+
+
+新生代变量晋升老生代变量的条件：①这个变量经历过内存回收，当未被回收 ②新生代内存空间一旦超过占用临界值，①中的变量就会被移到老生代内存中
+新生代内存特点：内存回收频率快，因为频率快，所以要求回收这个动作要快，即持续时间短，所以采用了牺牲空间换取时间的算法。
+
+**新生代内存回收机制**
+
+![image-20210427094117135](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/C++%E7%9B%B8%E5%85%B3/20210427094118.png)假设所有新变量都存在From中，那么在回收的过程中，会先标记活变量，将活着的变量全部复制到To当中，清空From，第二次回收时，标记活变量，将活着的变量全部复制到From当中，清空To 也就是：标记-复制-清空的过程
+**老生代内存回收机制**
+假设在内存中有一片连续的区域：1，2，3，4，5 此时2，4死亡，标记并删除后，内存变为：1，-，3，-，5 这时内存空间会不连续，也就是所谓的内存碎片，如果不进行修补，有可能会放不进数组，因为在数据结构中，数组中的元素是储存在内存中的连续一片地址中的。所以在V8引擎中，老生代内存在标记-删除之后，还要进行一次排列，整理内存碎片。
+标记死亡变量，删除死亡变量，整理内存空间 也就是标记-删除-整理的过程
+
+**总结：**新生代内存：标记-复制-清空（省时，费空间） 老生代内存：标记-删除-整理
+
+**内存回收时机**
+
+![image-20210427094359903](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/C++%E7%9B%B8%E5%85%B3/20210427094400.png)
+
+在内存占用接近临界值的时候，开始回收内存
+全局变量：只在程序执行完成才会被回收，否则永久保留
+
+### 响应状态码
+
+**1开头**  代表请求已被接受，需要继续处理。这类响应是临时响应
+
+**2开头 （请求成功）**
+
+200   （成功）  服务器已成功处理了请求。
+
+**3开头 （请求被重定向）**
+
+301   （永久移动）  请求的网页已永久移动到新位置。 服务器返回此响应（对 GET 或 HEAD 请求的响应）时，会自动将请求者转到新位置。
+
+302   （临时移动）  服务器目前从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。
+
+**4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理。**
+
+401 表示发送的请求需要有通过 HTTP 认证的认证信息
+
+403 forbidden，表示对请求资源的访问被服务器拒绝
+
+404 not found，表示在服务器上没有找到请求的资源
+
+**5开头（服务器错误）这些状态代码表示服务器在尝试处理请求时发生内部错误。 这些错误可能是服务器本身的错误，而不是请求出错。**
+
+500   （服务器内部错误）  服务器遇到错误，无法完成请求。 501   （尚未实施） 服务器不具备完成请求的功能。 例如，服务器无法识别请求方法时可能会返回此代码。 502   （错误网关） 服务器作为网关或代理，从上游服务器收到无效响应。 503   （服务不可用） 服务器目前无法使用（由于超载或停机维护）。 通常，这只是暂时状态。 504   （网关超时）  服务器作为网关或代理，但是没有及时从上游服务器收到请求。 505   （HTTP 版本不受支持） 服务器不支持请求中所用的 HTTP 协议版本。
+
+### 浏览器静态资源缓存
+
+**强缓存**
+
+强缓存就是给资源设置个过期时间，客户端每次请求资源时都会看是否过期；只有在过期才会去询问服务器。
+
+当浏览器去请求某个文件的时候，服务端就在respone header里面对该文件做了缓存配置。缓存的时间、缓存类型都由服务端控制，具体表现为：
+ respone header 的`cache-control`字段，常见的值有max-age, public ,private ,no-cache ,no-store等
+
+如下图respon header中,**cahe-control:max-age=31536000,public,immutable**
+
+![image-20210411232414821](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411232414821.png)
+
+`max-age`表示缓存的时间是31536000秒（1年）
+
+`public`表示可以被浏览器和代理服务器缓存，代理服务器一般可用nginx来做。
+
+`immutable`表示该资源永远不变，但是实际上该资源并不是永远不变，它这么设置的意思是为了让用户在刷新页面的时候不要去请求服务器！如果你只设置了cahe-control:max-age=31536000,public  这属于强缓存，每次用户正常打开这个页面，浏览器会判断缓存是否过期，没有过期就从缓存中读取数据；但是有一些用户会点击浏览器的刷新按钮去刷新页面，这时候就算资源没有过期，浏览器也会直接去请求服务器，这就是额外的请求消耗了，这时候就相当于是走协商缓存的流程了。如果cahe-control:max-age=315360000,public再加个immutable的话，就算用户刷新页面，浏览器也不会发起请求去服务，浏览器会直接从本地磁盘或者内存中读取缓存并返回200状态，看上图的红色框（from memory cache）
+
+**总结**
+
+* cache-control: max-age=xxxx，public
+  **客户端和代理服务器**都可以缓存该资源；客户端在xxx秒的有效期内，如果有请求该资源的需求的话就直接读取缓存,statu code:200 ，如果用户做了刷新操作，就向服务器发起http请求
+
+* cache-control: max-age=xxxx，private
+  只让**客户端**可以缓存该资源；代理服务器不缓存。客户端在xxx秒内直接读取缓存,statu code:200
+
+* cache-control: max-age=xxxx，immutable
+  客户端在xxx秒的有效期内，如果有请求该资源的需求的话就直接读取缓存,statu code:200 ，即使用户做了刷新操作，也不向服务器发起http请求
+
+* cache-control: no-cache
+  跳过设置强缓存，但是不妨碍设置协商缓存；一般如果你做了强缓存，只有在强缓存失效了才走协商缓存的，设置了no-cache就不会走强缓存了，每次请求都回询问服务端。
+
+* cache-control: no-store
+  不缓存，这个会让客户端、服务器都不缓存，也就没有所谓的强缓存、协商缓存了。
+
+****
+
+**协商缓存**
+
+上面说到的强缓存就是给资源设置个过期时间，客户端每次请求资源时都会看是否过期；只有在过期才会去询问服务器。所以，强缓存就是为了给客户端自给自足用的。
+
+协商缓存指的是，客户端向服务器发送请求，如果服务端发现该静态资源未发生变化，则直接返回304，客户端使用缓存的静态资源。如果发生变化，返回新的静态资源
+
+***怎么设置协商缓存？***
+
+response header里面的设置`etag`和`last-modified`两个字段
+
+```bash
+etag: '5c20abbd-e2e8'
+last-modified: Mon, 24 Dec 2018 09:49:49 GMT
+```
+
+`etag`：每个文件有一个，改动文件了就变了，就是个文件hash，每个文件唯一
+
+`last-modified`：文件的修改时间，精确到秒
+
+也就是说，每次请求返回来 response header 中的 etag和 last-modified，在下次请求时在 request header 就把这两个带上，服务端把你带过来的标识进行对比，然后判断资源是否更改了，如果更改就直接返回新的资源，和更新对应的response header的标识etag、last-modified。如果资源没有变，那就不变etag、last-modified
+
+***协商缓存流程***
+
+* 服务端发现资源没有改变的时候，会走如下流程：
+
+  发请求-->看资源是否过期-->过期-->请求服务器-->服务器对比资源是否改变（通过对比 etag）-->没改变->返回**304状态码**-->客户端用缓存的老资源。
+
+* 服务端发现资源改变的时候，会走如下流程：
+
+  发请求-->看资源是否过期-->过期-->请求服务器-->服务器对比资源是否改变（通过对比 etag）-->改变-->返回**200状态码**-->客户端如第一次接收该资源一样，记下它的cache-control中的max-age、etag、last-modified等。
+
+***总结***
+
+请求资源时，把用户本地该资源的 etag 同时带到服务端，服务端和最新资源做对比。
+ 如果资源没更改，返回304，浏览器读取本地缓存。
+ 如果资源有更改，返回200，返回最新的资源。
+
+***补充***
+
+response header中的etag、last-modified在客户端重新向服务端发起请求时，会在request header中换个key名：
+
+```csharp
+// response header
+etag: '5c20abbd-e2e8'
+last-modified: Mon, 24 Dec 2018 09:49:49 GMT
+
+// request header 变为
+if-none-matched: '5c20abbd-e2e8'
+if-modified-since: Mon, 24 Dec 2018 09:49:49 GMT
+```
+
+***为什么要有etag？***
+ 你可能会觉得使用last-modified已经足以让浏览器知道本地的缓存副本是否足够新，为什么还需要etag呢？HTTP1.1中etag的出现（也就是说，etag是新增的，为了解决之前只有If-Modified的缺点）主要是为了解决几个last-modified比较难解决的问题：
+
+1. 一些文件也许会周期性的更改，但是他的内容并不改变(仅仅改变的修改时间)，这个时候我们并不希望客户端认为这个文件被修改了，而重新get；
+2. 某些文件修改非常频繁，比如在秒以下的时间内进行修改，(比方说1s内修改了N次)，if-modified-since能检查到的粒度是秒级的，这种修改无法判断(或者说UNIX记录MTIME只能精确到秒)；
+
+3. 某些服务器不能精确的得到文件的最后修改时间。
+
+
+
+## 跨域
+
+**浏览器的同源策略**：同源策略（Sameoriginpolicy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。同源策略会阻止一个域的javascript脚本和另外一个域的内容进行交互。
+
+**同域的概念：**简单的解释就是相同域名,端口相同,协议相同
+
+| 当前网页URL地址：study.cn/json/jsonp/jsonp.html |                       |      |
+| ----------------------------------------------- | --------------------- | ---- |
+| 请求地址                                        | 形式                  | 结果 |
+| http://study.cn/test/a.html                     | 同一域名,不同文件夹   | 成功 |
+| http://study.cn/json/jsonp/jsonp.html           | 同一域名,统一文件夹   | 成功 |
+| http://a.study.cn/json/jsonp/jsonp.html         | 不同域名,文件路径相同 | 失败 |
+| http://study.cn:8080/json/jsonp/jsonp.html      | 同一域名,不同端口     | 失败 |
+| https://study.cn/json/jsonp/jsonp.html          | 同一域名,不同协议     | 失败 |
+
+**跨域:**
+
+浏览器对于javascript的同源策略的限制，例如a.cn下面的js不能调用b.cn中的**js,对象或数据**(因为a.cn和b.cn是不同域),所以就出现了跨域的概念
+
+**跨域的解决方案**
+
+* **JSONP**
+
+  **核心思想：**Web 页面上直接使用Ajax受到同源策略的影响。但是，通过`<script>`调用js文件不受浏览器同源策略的影响，所以通过 Script 便签可以进行跨域的请求
+
+  **优点：**简单适用，兼容性好（兼容低版本IE）
+
+  **缺点：**只支持get请求，不支持post请求。它只支持跨域 HTTP 请求这种情况,不能解决不同域的两个页面或 iframe 之间进行数据通信
+
+  **过程：**网页通过添加一个`<script>元素`，向服务器请求 JSON 数据，服务器收到请求后，将数据放在一个指定名字的回调函数的参数位置传回来。
+
+  **例子：**
+
+  ```html
+  <!--前端代码-->
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>index.html</title>
+  </head>
+  <body>
+      <script>
+  	function jsonpCallback(data) {
+  	    alert('获得 X 数据:' + data.x);
+  	}
+      </script>
+      <script src="http://127.0.0.1:3000?callback=jsonpCallback"></script>
+  </body>
+  </html>
+  ```
+
+  ```js
+  //后端node的代码
+  const url = require('url');
+  	
+  require('http').createServer((req, res) => {
+   
+      const data = {
+  	x: 10
+      };
+      const callback = url.parse(req.url, true).query.callback;
+      res.writeHead(200);
+      res.end(`${callback}(${JSON.stringify(data)})`);
+   
+  }).listen(3000, '127.0.0.1');
+   
+  console.log('启动服务，监听 127.0.0.1:3000');
+  ```
+
+* **CORS**
+
+  CORS是一个 W3C 标准 ，全称是跨域资源分享（Cross-Origin Resource Sharing），它允许浏览器向跨源服务器，发出 XMLHttpRequest 请求，从而**克服了 Ajax 只能同源使用的限制**。实现 CORS 通信的关键是服务器。只要服务器实现了 CORS 接口，就可以跨源通信。
+
+  CORS 的优缺点：使用简单方便，更为安全；支持 POST 请求方式；CORS 是一种新型的跨域问题的解决方案，存在兼容问题，仅支持 IE 10 以上
+
+  **1、普通跨域请求：只需服务器端设置Access-Control-Allow-Origin**
+
+  **2、带cookie跨域请求：前后端都需要进行设置**
+
+  ```javascript
+  //前端axios
+  axios.defaults.withCredentials = true
+  ```
+
+  ```javascript
+  //后端Node.js
+  var http = require('http');
+  var server = http.createServer();
+  var qs = require('querystring');
+   
+  server.on('request', function(req, res) {
+      var postData = '';
+   
+      // 数据块接收中
+      req.addListener('data', function(chunk) {
+          postData += chunk;
+      });
+   
+      // 数据接收完毕
+      req.addListener('end', function() {
+          postData = qs.parse(postData);
+   
+          // 跨域后台设置
+          res.writeHead(200, {
+              // 后端允许发送Cookie
+              'Access-Control-Allow-Credentials': 'true', 
+              
+              // 允许访问的域（协议+域名+端口）
+              'Access-Control-Allow-Origin': 'http://www.domain1.com',    
+              /* 
+               * 此处设置的cookie还是domain2的而非domain1，因为后端也不能跨域写cookie(nginx反向代理可以实现)，
+               * 但只要domain2中写入一次cookie认证，后面的跨域接口都能从domain2中获取cookie，从而实现所有的接口都能跨域访问
+               */
+              'Set-Cookie': 'l=a123456;Path=/;Domain=www.domain2.com;HttpOnly'  // HttpOnly的作用是让js无法读取cookie
+          });
+   
+          res.write(JSON.stringify(postData));
+          res.end();
+      });
+  });
+   
+  server.listen('8080');
+  console.log('Server is running at port 8080...');
+  ```
+
+* **Server Proxy**
+
+  即，服务器代理，当你需要有跨域的请求操作时发送请求给后端，让后端帮你代为请求，然后最后将获取的结果发送给你。
+
+  假设有这样的一个场景，你的页面需要访问[https://cnodejs.org/api/v1/topics](http://link.zhihu.com/?target=https%3A//cnodejs.org/api/v1)，当时因为不同域，所以你可以将请求后端，让其对该请求代为转发。
+
+  代码如下：
+
+  ```js
+  const url = require('url');
+  const http = require('http');
+  const https = require('https');
+   
+  const server = http.createServer((req, res) => {
+      const path = url.parse(req.url).path.slice(1);
+      if(path === 'topics') {
+  	https.get('https://cnodejs.org/api/v1/topics', (resp) => {
+  	    let data = "";
+  	    resp.on('data', chunk => {
+  		data += chunk;
+  	    });
+  	    resp.on('end', () => {
+  		res.writeHead(200, {
+  		    'Content-Type': 'application/json; charset=utf-8'
+  		});
+  		res.end(data);
+  	    });
+  	})		
+      }
+  }).listen(3000, '127.0.0.1');
+   
+  console.log('启动服务，监听 127.0.0.1:3000');
+  ```
+
+  通过代码你可以看出，当你访问 [http://127.0.0.1:3000](http://link.zhihu.com/?target=http%3A//127.0.0.1%3A3000) 的时候，服务器收到请求，会代你发送请求[https://cnodejs.org/api/v1/topics](http://link.zhihu.com/?target=https%3A//cnodejs.org/api/v1) 最后将获取到的数据发送给浏览器。
+
+## DNS
+
+用户访问网站的过程
+
+**从浏览器打开http://www.baidu.com地址回车发送请求到看到页面的过程：**
+
+主要分成 **两个** 步骤：
+
+第一步：DNS服务器将域名解析成IP
+
+具体来说：
+
+1. 客户端用户从浏览器输入 www.baidu.com 网站网址后回车后，浏览器会查询**浏览器缓存**，查找是否存在网址对应的IP解析记录。如果有，就直接获取到IP地址，然后访问网站；
+2. 如果浏览器缓存没有该记录，则在**操作系统缓存**即本地hosts文件中查找对应的IP；
+3. 如果还是没有，则将查询请求发给路由器，查看**路由器缓存**里是否有该IP地址的缓存；
+4. 如果依然没有，向**本地域名服务器**（Local DNS：一般是网络服务提供商，比如电信，移动，联通服务商）发出请求，获取IP；
+5. 以上都失败的话，LDNS会从DNS系统的“.”根开始（根域名服务器）请求www.baidu.com域名的解析，经过一系列的查找各个层次DNS服务器，最终会查找到www.baidu.com域名对应的**授权DNS服务器**，而这个授权DNS服务器，正是该企业购买域名时用于管理域名解析的服务器。这个服务器有www.baidu.com对应的IP解析记录，如果此时都没有，就表示企业的运维人员么有给www.baidu.com域名做解析；
+6. LDNS把收到来自授权DNS服务器关于www.baidu.com对应的IP解析记录发给客户端浏览器，并且在LDNS本地把域名和IP的对应解析缓存起来，以便下一次更快的返回相同的解析请求的记录；
+
+第二步：客户端浏览器获取到了www.baidu.com的对应IP地址，接下来浏览器会请求获得的IP地址对应的Web服务器，Web服务器接收到客户的请求并响应处理，将客户请求的内容返回给客户端浏览器；
+
+### 暂未分类
+
+节流防抖：
+
+https://segmentfault.com/a/1190000018428170
+
+防抖
+
+```javascript
+function debounce(fn,delay){
+    let timer = null //借助闭包
+    return function() {
+        if(timer){
+            clearTimeout(timer) 
+        }
+        timer = setTimeout(fn,delay) // 简化写法
+    }
+}
+```
+
+节流
+
+```javascript
+function throttle(fn,delay){
+    let valid = true
+    return function() {
+       if(!valid){
+           //休息时间 暂不接客
+           return false 
+       }
+       // 工作时间，执行函数并且在间隔期内把状态位设为无效
+        valid = false
+        setTimeout(() => {
+            fn()
+            valid = true;
+        }, delay)
+    }
+}
 ```
 
 

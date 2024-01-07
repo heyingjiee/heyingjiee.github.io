@@ -17,7 +17,7 @@ git add -A
 git commit -m  "部署时间：`date '+%Y%m%d %H:%M:%S'`"
 
 # 如果发布到 https://<USERNAME>.github.io
- git push -f git@github.com:heyingjiee/heyingjiee.github.io.git master
+ git push -f git@github.com:heyingjiee/heyingjiee.github.io.git master:gh-pages
 
 # 如果发布到 https://<USERNAME>.github.io/<REPO>
 # git push -f git@github.com:<USERNAME>/<REPO>.git master:gh-pages

@@ -153,7 +153,6 @@ const age: number = 24;
 const male: boolean = false;
 const undef: undefined = undefined;
 const nul: null = null;
-const obj: object = { name, age, male };
 const bigintVar1: bigint = 9007199254740991n;
 const bigintVar2: bigint = BigInt(9007199254740991);
 const symbolVar: symbol = Symbol('unique');
@@ -249,29 +248,31 @@ let add=(a:number,b:number):number=>{
 }
 ```
 
-**关于函数入参的补充**
+**函数入参**
 
-TS中支持了，可选参数`param ?`。可选参数必须放在最后
+* 可选参数`param ?`
 
-```ts
-function f1(name:string,age?:number){
-    console.log(name,age);
-    
-}
-f1('tom')//tom undefined
-```
+  调用函数时的实参，按照形参顺序传入的，所以可选参数必须在最后
 
-JS中由于并不支持可选参数，我们只能利用解构赋值
+  ```ts
+  function f1(name:string,age?:number){
+      console.log(name,age);
+      
+  }
+  f1('tom')//tom undefined
+  ```
 
-```js
-function f1(params){
- 	 	const {name,age}=params
-  	console.log(name,age);    
-}
-f1('tom')//tom undefined
-```
+* 默认参数 
 
+  默认参数位置没有要求，如果要使用默认值，需传入undefined
 
+  ```ts
+  function f1(name:string='tom',age?:number){
+      console.log(name,age);
+      
+  }
+  f1(undefined,20)//tom 20
+  ```
 
 **函数签名**
 
@@ -354,9 +355,49 @@ console.log(result2); // Output: 3
 
 
 
+**注意**
+
+对比记一下
+
+```ts
+// ----标记函数类型------
+// 命名函数
+function add(a:number,b:number):number{
+  return a+b
+}
+// 匿名函数里的箭头函数
+const add1=(a:number,b:number):number=>{
+  return a+b
+}
+// 函数类型的变量
+let add2:(a:number,b:number)=>number
+
+// ----标记接口的函数签名------
+interface test{
+  // 命名函数签名
+  add(a:number,b:number):number
+  // 匿名函数签名
+  (a:number,b:number):number
+  
+  // 函数类型的属性
+  add2:(a:number,b:number)=>number
+}
+```
+
 ### 枚举
 
-enum枚举类型，注意：每个枚举项用逗号分隔（不可省略），键与值用等于号分隔（对象用逗号）
+enum枚举类型，注意：每个枚举项用逗号分隔（不可省略）
+
+默认枚举类型实际值从0开始
+
+```ts
+enum sex{
+    man,  // 0
+    woman // 1
+}
+```
+
+也可以键与值用等于号分隔，手动指定枚举项的实际值
 
 ```ts
 enum sex{
@@ -365,16 +406,7 @@ enum sex{
 }
 ```
 
-仅不指定枚举值，默认从0开始
-
-```ts
-enum sex{
-    man, //0
-    woman //1
-}
-```
-
-指定部分枚举值为数字，如B字段是数字，则下面的字段可以不指定值，继续累加
+仅不指定枚举项的实际值，默认从0开始指定部分枚举值为数字，如B字段是数字，则下面的字段可以不指定值，继续累加
 
 ```ts
 enum Items {
@@ -399,73 +431,181 @@ enum Items {
 
 ### 接口
 
-**基础**
+接口类型可以描述对象，类也可以继承接口（与Go中接口不同，Go中的接口类型类似于TS中的any类型）
 
-接口类型，描述对象和类（与Go中接口不同，Go中的接口类型类似于TS中的any类型）
+（注意：接口字段一般用逗号分隔，也可以用分号、换行）不要和JS对象混淆
+
+#### **索引签名**
+
+使用索引签名，可以描述key、value的类型
+
+索引签名中key的类型只能是 string 、 number 、 symbol
 
 ```ts
-interface Stu {
-  readonly name:string; //只读属性
-  age?: number; //可选属性
+interface 接口名{
+	[yyy:key的类型]:value的类型 //yyy 可以是任何名字,习惯写为index
+}
+```
+
+对象可以包含多个只要符合类型的键值对
+
+```js
+interface Stu{
+  [key:string]:string
+}
+
+// s包含多个键值对，也就是索引签名只限制key、value类型，键值对数量没有限制
+let s:Stu={
+  name:'tom',
+  other:'其他信息'
+}
+```
+
+修饰key为只读类型
+
+```ts
+interface ReadonlyRecord{
+  readonly [key: string]:string
+}
+
+let o:ReadonlyRecord={
+  name:'tom'
+}
+o.name='jack' // 报错
+```
+
+
+
+#### 属性声明
+
+明确描述属性key、value的类型
+
+```
+interface xxx{
+	key的类型:value的类型
+}
+```
+
+例子
+
+```ts
+interface Student {
+  readonly name:string,//只读属性
+  age?: number, //可选属性
   score:number
 }
 ```
 
-注意：接口字段可以用分号、逗号分隔，也可以不用任何符号
+Student类型的**key的类型**分别是 字符串name、字符串age、字符串score
+
+千万不要错误的认为key是 字符串name、字符串age、字符串score
+
+混用：属性声明必须是索引签名的子类型
 
 ```ts
-interface Stu {
-  name:string,
-  age: number,
+interface Stu{
+  score:number, // 报错，value是number，不符合索引签名指定的value为string
+  [key:string]:string
 }
 
-interface Stu {
-  name:string
-  age: number
+let s:Stu={
+  name:'tom',
+  other:'其他信息'
 }
 ```
 
-**同名接口类型会被合并**
 
-````ts
-interface a {
-    name:string;
-    age:number;
-}
-interface a{
-    score:number;
-}
 
-//接口a是两个接口的合并
-let b:a={
-    name:'tom',
-    age:20,
-    score:100
-}
-````
-
-**<span id="函数签名">函数签名</span>**
+#### **函数签名</span>**
 
 前两种方式，本质都是声明了一个函数，必须实现函数体
 
 而，函数签名相当于定义了一个函数模版，具体实现
 
 ```ts
-interface a{
+interface A{
     name(a:number,b:number):number
+  	// 这种方式等价于上面的
+  	name:(a: number, b: number)=> number;
 }
 ```
 
-面向接口编程。类可以使用implements实现接口中定义中的函数签名
+**匿名函数签名**
+
+匿名函数签名很少见，这种接口用来描述函数（不能描述对象了）
+
+```ts
+interface A {
+  	// 匿名签名
+    (a: number, b: number): number;
+}
+
+let myFunction: A 
+
+// 匿名函数签名，入参名不必一致（签名 a、b，实际值param1、 param2），只要类型对得上就行
+myFunction = (param1, param2) => {
+    return param1 + param2;
+};
+```
+
+匿名函数签名、命名函数签名混合（axios库就是这种实现）
+
+```ts
+// 实现Counter，需要其本身即可以当函数、还可以当对象调用reset方法
+interface Counter{
+  (start:number,increment:number):number
+  reset():void
+}
+
+// 构造返回一个Counter
+function getCounter():Counter{
+  let counter=function (start:number,increment:number):number{
+    return start+increment
+  } as Counter 
+  counter.reset=function(){
+
+  }
+  return  counter
+}
+
+// c是实现了Counter的实例，可以看到既是个函数，也是个对象
+let c:Counter=getCounter()
+c(1,10)
+c.reset()
+```
+
+#### **类实现接口**
+
+**implements**
+
+类实现的接口时，只能实现接口中公开的成员
+
+```ts
+interface yyy{
+  // 这里定义的属性和方法，都是公开的（public）
+  run():void
+}
+class xxx implements yyy {
+  // 实现接口，也只能实现公开的属性、方法
+  run(){
+    console.log('1')
+  }
+}
+```
+
+例子
 
 ```ts
 interface Animal {
+  // 属性
   name: string;
-  move(distance: number): void;
+  // 方法
+  move(distance: number): void
 }
 
+// implements实现，需实现Animal的属性、方法
 class Dog implements Animal {
-  name: string;
+  name: string
   constructor(name: string) {
     this.name = name;
   }
@@ -478,23 +618,217 @@ let dog = new Dog("Buddy");
 dog.move(10); // Output: "Buddy moved 10 meters."
 ```
 
+但是，<span id="接口可以继承其他类">接口可以继承其他类</span>中的私有成员，使得接口中包含私有成员
+
+但是这种接口无法被直接实现
+
+```ts
+class A{
+  private name:string|undefined
+  private setName(name:string):void{
+    this.name=name
+  }
+}
+
+// 继承了Parent类中的私有成员
+interface Iselect extends A{
+  select():void
+}
+
+// 报错 Iselect中包含private成员，但是implement中只能实现共有成员
+class B implements Iselect{
+  select() {
+    console.log(1)
+  }
+}
+
+// 解决方案：先继承A获取私有成员，在继承实现公开成员
+class B extends A implements Iselect{
+  select() {
+    console.log(1)
+  }
+}
+
+```
 
 
-### 类(待补充)
+
+**实现构造函数**
+
+```
+```
+
+
+
+#### **继承**
+
+**接口继承接口**
+
+extends关键字继承其他接口，相当于可以扩展接口
+
+```ts
+interface A {
+ 
+}
+interface B {
+  
+}
+
+// 多继承
+interface SomeData extends A,B {
+ 
+}
+```
+
+同名接口类型会被合并
+
+````ts
+interface A {
+    name:string;
+    age:number;
+}
+interface A{
+    score:number;
+}
+
+//接口A是两个接口的合并
+let b:A={
+    name:'tom',
+    age:20,
+    score:100
+}
+````
+
+**接口继承类**
+
+例子<a href="#接口可以继承其他类">详见</a>
+
+
+
+### 类
 
 JS中的面向对象机制并不健全，TS也完善了JS中关于面向对象的部分
 
 从整体分析：
 
-类的成员分为：普通成员（构造函数是特殊的普通成员）、静态成员
+* 类的成员分为：静态成员static、普通成员（默认）
 
-访问修饰符：public/ private/ protected （控制成员的可见范围）
+* 访问限定符：public（默认）/ private/ protected/readonly 《注意：无论是哪种成员都可以使用》
 
-操作修饰符：readonly
 
-抽象类与接口：abstract、interface
+
+#### **类的成员**
+
+静态方法中的this指向所有静态成员
+
+普通方法中的this指向所有普通成员
+
+```ts
+class Animal {
+  static animalName:string
+  
+  static setName(animalName:string){
+    // 访问到静态变量
+    this.animalName=animalName
+  }
+}
+
+Animal.setName('1')
+console.log(Animal.animalName) // 1
+```
+
+#### **访问修饰符**
+
+包括：
+
+- public：此类成员在**类、子类、类的实例**中都能被访问
+- private：此类成员仅能在**类的内部**被访问
+- protected：此类成员仅能在**类与子类中**被访问，你可以将类和类的实例当成两种概念，即一旦实例化完毕（出厂零件），那就和类（工厂）没关系了，即**不允许再访问受保护的成员**
+- readonly：给**类的实例**设置只读属性
+
+**public成员**
+
+public为默认值，可省略
+
+```ts
+class Animal {
+  name: string
+  constructor(name:string){
+    this.name=name
+  }
+  move(distance: number) {
+    console.log(`${this.name} moved ${distance} meters.`);
+  }
+}
+
+class Dog extends Animal {
+  constructor(name: string) {
+    super(name)
+  }
+  
+  move(distance: number) {
+    console.log('狗');
+    super.move(distance)
+  }
+
+}
+
+let dog = new Dog("Buddy");
+dog.move(10); // 输出： 狗  "Buddy moved 10 meters."
 
 ```
+
+**private**
+
+```ts
+class Animal {
+  private name: string =''
+
+  constructor(name:string) {
+    // 只能在类内部访问
+    this.name=name
+  }
+}
+
+class Dog extends Animal {
+  constructor(name: string) {
+    super(name)
+  }
+}
+```
+
+**protected**
+
+用它修饰构造函数，可以阻止函数被实例化。例如我们希望用户只能使用类的静态方法
+
+```ts
+class Animal {
+  protected  name
+  protected constructor(name:string) {
+    this.name=name
+  }
+}
+
+// 报错
+new Animal()
+```
+
+**readonly**
+
+只读修饰的属性指的是实例化后的对象无法修改
+
+```ts
+class Animal {
+  readonly  name
+   constructor(name:string) {
+    this.name=name // 这里是可以修改的
+  }
+}
+
+let animal=new Animal('1')
+
+// 报错
+animal.name=""
 ```
 
 
@@ -517,7 +851,7 @@ Top Type表示在它们包含了所有可能的类型：
 
 * **unknown**
 
-  它能接受所有类型，只能被unknown类型接受
+  它能接受所有类型，但是只能被unknown类型接收
 
   ```ts
   //它能接受所有类型
@@ -529,11 +863,11 @@ Top Type表示在它们包含了所有可能的类型：
 
 Bottom Type表示在它是一个虚无的、不存在的类型：
 
-* **nerver**
+* **never**
 
   表示没有类型，即**不携带任何的类型信息**
 
-  它只能接受nerver类型，但能够被所有类型兼容
+  它只能接受never类型，但能够被所有类型接收
 
   ```ts
   declare let v1: never;
@@ -544,6 +878,30 @@ Bottom Type表示在它是一个虚无的、不存在的类型：
   v2 = v1;
   ```
 
+  常见用法：函数没返回值
+  
+  专门用来抛出错误
+  
+  ```ts
+  function error(message:string):never{
+  	throw Error(message)
+  }
+  
+  function fail():never{
+    return error("错误")
+  }
+  ```
+  
+  循环
+  
+  ```ts
+  function Loop(){
+  	while(true){
+  		//xxx
+  	}
+  }
+  ```
+  
   
 
 **类型断言**
@@ -620,55 +978,35 @@ any类型
 any就是 string | number | symbol 组成的联合类型
 ```
 
+接口的联合
 
+```ts
+interface Dog{
+  name:string
+  run():void
+}
+interface Cat{
+  name:string
+  eat():void
+}
+function getAnimal():Dog|Cat{
+	//xxx
+}
+
+// 只有共同的属性
+getAnimal.name
+
+```
+
+如何解决详见【类型保护】
 
 **交叉类型**
 
 全部符合才可以
 
 ```ts
-// 接口的交叉
-interface NameStruct {
-  name: string;
-}
-
-interface AgeStruct {
-  age: number;
-}
-
-type ProfileStruct = NameStruct & AgeStruct;
-
-const profile: ProfileStruct = {
-  name: "linbudu",
-  age: 18
-}
-
-// 对象的交叉
-type Struct1 = {
-  primitiveProp: string;
-  objectProp: {
-    name: string;
-  }
-}
-
-type Struct2 = {
-  primitiveProp: number;
-  objectProp: {
-    age: number;
-  }
-}
-
-type Composed = Struct1 & Struct2;
-
-type PrimitivePropType = Composed['primitiveProp']; // never
-type ObjectPropType = Composed['objectProp']; // { name: string; age: number; }
-
-
-//其他例子
 type UnionIntersection2 = (string | number | symbol) & string; // string
 ```
-
-
 
 注意：两个互斥的类型的交叉会被推断为never，即不存在的类型（不可能有值即是字符串也是数字）
 
@@ -680,53 +1018,7 @@ type a = string & number; //never
 
 
 
-### 索引签名类型
-
-**用于指定对象的内部结构**
-
-TS除了前面提到的，可以明确指定对象字段的方式外
-
-```ts
-//接口形式
-interface AllStringTypes1 {
-  name: string;
-  age?:number
-}
-let a:AllStringTypes1
-
-//对象字面量形式
-type AllStringTypes2={
-   name:string,
-   age?:number
-}
-let b:AllStringTypes2
-```
-
-还提供了另一种不明确的类型定义（纯属个人看法）:**索引类型**，即仅定义键值对类型，不限制对象字段
-
-```ts
-//接口形式
-interface AllStringTypes {
-  [key: string]: string;
-}
-
-//对象字面量形式
-type AllStringTypes = {
-  [key: string]: Any; //value可以是任何类型
-}
-```
-
-两种方式还可以混合使用，但是注意：明确指定的键值类型，必须符合 `key、value的类型定义`
-
-```ts
-interface AllStringTypes {
-  // 类型“number”的属性“propA”不能赋给“string”索引类型“boolean”。
-  propA: number;
-  [key: string]: boolean;
-}
-```
-
-### 索引类型
+### 索引类型 keyof
 
 **数组类型**
 
@@ -792,7 +1084,7 @@ let a:pickArr<['a','b']> // "a" | "b"
   type PropTypeUnion = Foo[keyof Foo]; // string | number | boolean
   ```
 
-### 映射类型
+### 映射类型 in
 
 **in**关键字，可以将联合类型遍历出来
 
@@ -818,13 +1110,58 @@ let student:{
 }
 ```
 
-### 泛型
+### 值的类型
+
+typeof在JS中用于获取值的类型，返回值是一个字符串（注意返回的是值，不是类型）
+
+TS中，typeof继承了这个功能
+
+```ts
+function printValue(value: number | string) {
+    if (typeof value === 'number') {
+        console.log('It is a number:', value.toFixed(2));
+    } else {
+        console.log('It is a string:', value.toUpperCase());
+    }
+}
+
+```
+
+还扩展了新的功能，`typeof 值`还可以作为类型
+
+```ts
+let x = 10;
+let y: typeof x; // 类型查询，y 的类型为 number
+```
+
+### 类的实例
+
+InstanceType是TS内置的工具函数，常常与typeof结合为实例标记类型
+
+```ts
+class MyClass {
+    constructor(public value: number) {}
+}
+
+// 使用 InstanceType 获取 MyClass 的实例类型
+type MyInstance = InstanceType<typeof MyClass>;
+
+// 创建一个 MyInstance 类型的实例
+const myInstance: MyInstance = new MyClass(42);
+
+console.log(myInstance.value); // 输出: 42
+
+```
+
+## 泛型
+
+### 泛型分类
 
 泛型其实可以类比为函数的入参，只不过入参是类型，经过函数内部处理返回了一个新的类型
 
 在使用包含泛型的类型时，会指定泛型具体为哪种类型
 
-**别名泛型**
+#### **别名泛型**
 
 type关键字命名新类型时，可以在类型名后的`<>`中，指定入参泛型；在`=`后进行处理，返回新类型
 
@@ -835,7 +1172,7 @@ var a:Factory<string> //声明变量a的类型时，必须指定传入得泛型�
 
 
 
-**字符串字面量**
+#### **字符串字面量**
 
 这个很特殊，其他形式都是定义类型时使用泛型
 
@@ -856,13 +1193,13 @@ type Greet1 = Greet<"tom">; // "Hello tom"
 
 
 
-**对象泛型**
+#### **泛型接口**
 
-interface关键字命名新类型时，可以在接口名后的`<>`中，指定入参泛型；在后面的大括号中进行处理，返回新类型
+定义接口时，可以在接口名后的`<>`中，指定入参泛型T
 
-例子：
+在接口体里消费泛型
 
-我们常用的接口返回值结构，可以参考下面：
+例子：我们常用的接口返回值结构，可以参考下面：
 
 ```ts
 //定义接口统一的返回值结构，其中data每个具体的接口不同。使用泛型传入
@@ -893,17 +1230,11 @@ async function fetchUserProfile(): Promise<response<student>> {
 
 
 
-**函数泛型**
+#### **泛型函数**
 
-function关键字创建函数时，
+定义function函数时，可以在函数名后的`<>`中增加泛型T
 
-可以在函数名后的`<>`中，指定泛型
-
-在入参列表中，指定哪个函数入参为泛型
-
-在`:`后，即返参列表中进行泛型处理，返回新类型，作为函数返回值的类型
-
-
+在入参列表中、返参、函数体中可以消费这个泛型
 
 例子：普通函数
 
@@ -912,7 +1243,10 @@ function handle<T>(input: T): T {// 入参input必须是T类型，且函数返�
     return input
 }
 
-handle<string>("tom") //入参必须是string类型，且返回值被推导为string类型
+// 调用时传入泛型
+handle<string>("tom") // 入参必须是string类型，且返回值被推导为string类型
+
+handle("tom") //TS类型推导。 入参是string，所以泛型T就是string类型。所以就不用显式传入了
 ```
 
 例子：箭头函数
@@ -921,9 +1255,13 @@ handle<string>("tom") //入参必须是string类型，且返回值被推导为st
 const handle = <T>(input: T): T => {}
 ```
 
+例子：函数类型的变量
 
+```ts
+add:<T>(input:T)=>T
+```
 
-一点注意:前面的例子都是在返回值中使用传入的泛型构造新的类型，其实函数体内部也可以消费泛型
+函数体内部消费泛型的例子
 ```ts
 function handle<T>(input: T): Promise<[T]> {
   	//函数体内部也可以使用泛型
@@ -935,9 +1273,9 @@ function handle<T>(input: T): Promise<[T]> {
 
 
 
-**Class泛型**
+#### **泛型类**
 
-Class 中的泛型消费者是属性、方法等
+Class 中的泛型消费者是**普通成员**
 
 ```ts
 class Queue<TElementType> {
@@ -963,72 +1301,128 @@ q.enqueue<'1'>('1')
 
 
 
+### 泛型约束
+
+泛型就像是入参，传入泛型就可以消费泛型
+
+我们可以通过**泛型约束**，来限制传入的泛型是什么范围
+
+1、**泛型默认值**
+
+当不传入泛型时的默认值
+
+```ts
+type Factory<T = boolean> = T;
+var a:Factory //a是boolean类型
+```
+
+2、**泛型限制类型范围**
+
+类似于类继承的语法，`T extends B`表示泛型T必须属于B类型
+
+使用基本类型：
+
+```ts
+// T只能是string类型
+type Factory<T extends string> = T;
+var a:Factory<"tom"> //类型为字面量 "tom"
+```
+
+使用接口
+
+```ts
+interface lengthWise{
+  length:number
+}
+
+function getLength<T extends lengthWise>(arg:T){
+  // 限制了传入的泛型必须拥有length属性，这时候arg才会提示length属性
+  return arg.length
+}
+```
+
+使用数组
+
+```ts
+```
+
+
+
+使用联合类型：B中的联合类型必须完全包含A
+
+```ts
+var a:1|2|3 extends 1?'Yes':'No' //No类型
+
+var a:1|2|3 extends 1|2|3|4?'Yes':'No' //Yes类型
+```
+
+例外情况，联合类型作为泛型参数时
+
+* entends比较时，完全裸露会比较特殊
+
+  ```ts
+  type Extract<T, U> = T extends U ? T : never;
+  var a:Extract<1|2|3,1|2>  //a是数字字面量类型 1
+  ```
+
+  extends会将T中的联合类型拆开，分别判断。最后合并成新的新的联合类型，即`1|2`
+
+  ```ts
+  1 extends U ? 1 : never; //1
+  2 extends U ? 2 : never; //2
+  3 extends U ? 3 : never; //never
+  ```
+
+* 不裸露（用数组），则是正常表现
+
+  ```ts
+  type t<T>=[T] extends [1|2]?"Yes":"No"
+  let a:t<1|2|3> //"No"类型
+  ```
+
+3、多个泛型，直接限制关系
+
+```ts
+function getValue<T,K extends keyof T>(obj:T,key:K):T[K] {
+  return obj[key]
+}
+
+
+getValue({a:'1'},"a")
+```
+
+4、限制入参类T（工厂函数）
+
+在TS中class即是类型，又是值可以调用静态成员
+
+class不能描述构造函数
+
+```ts
+class Animal{
+  constructor() {
+  }
+}
+function create<T extends Animal>(c:T):T { 
+  // 报错 c 是构造函数，不能用类描述
+  return new c()
+}
+```
+
+使用 `new()=>类` ，描述构造函数
+
+````ts
+function create<T>(c:new()=>T):T { // ts中new函数，表示类的构造函数
+  return new c()
+}
+````
+
+
+
+
+
 ### 泛型编程
 
-这里以**别名泛型**为例子，展示泛型如何编程返回新类型（**对象泛型**、**函数泛型**都是一样的道理）
-
-
-
-1、对泛型的约束（类比入参）
-
-* **泛型默认值**
-
-  与函数参数默认值语法相同
-
-  ```ts
-  type Factory<T = boolean> = T;
-  var a:Factory //a是boolean类型
-  ```
-
-  
-
-* **泛型约束**
-
-  类似于类继承的语法，`A extends B`表示A的类型比B更精细
-
-  如下，将入参T限制在了string类型内
-
-  ```ts
-  type Factory<T extends string> = T;
-  var a:Factory<"tom"> //类型为字面量 "tom"
-  ```
-
-  使用联合类型：B中的联合类型必须完全包含A
-
-  ```ts
-  var a:1|2|3 extends 1?'Yes':'No' //No类型
-  
-  var a:1|2|3 extends 1|2|3|4?'Yes':'No' //Yes类型
-  ```
-
-  例外情况，联合类型作为泛型参数时
-
-  * entends比较时，完全裸露会比较特殊
-  
-    ```ts
-    type Extract<T, U> = T extends U ? T : never;
-    var a:Extract<1|2|3,1|2>  //a是数字字面量类型 1
-    ```
-
-    extends会将T中的联合类型拆开，分别判断。最后合并成新的新的联合类型，即`1|2`
-  
-    ```ts
-    1 extends U ? 1 : never; //1
-    2 extends U ? 2 : never; //2
-    3 extends U ? 3 : never; //never
-    ```
-  
-  * 不裸露（用数组），则是正常表现
-  
-    ```ts
-    type t<T>=[T] extends [1|2]?"Yes":"No"
-    let a:t<1|2|3> //"No"类型
-    ```
-  
-  
-  
-
-2、对泛型处理（类比函数体）
+传入泛型T，我们可以对T进行处理，消费处理后的类型
 
 * **三元表达式**
 
@@ -1120,9 +1514,11 @@ q.enqueue<'1'>('1')
 
 TS内置了一些泛型工具，类似于JS中的内置函数，这些泛型工具传入一个泛型，就会返回一种新的类型 
 
-#### 其他
+#### 其他泛型工具
 
-* `Promise<T>`指定resolve参数的类型为T
+* Promise
+
+  `Promise<T>`指定resolve参数的类型为T
 
   ```ts
   async function fetchUserProfile(): Promise<string> {
@@ -1130,18 +1526,22 @@ TS内置了一些泛型工具，类似于JS中的内置函数，这些泛型工�
   }
   ```
 
-* `Array<T>`指定数组中的元素类型为T
+* 数组
 
+  `Array<T>`指定数组中的元素类型为T
+  
   ```ts
   const arr: Array<number> = [1, 2, 3];
-  ```
   
-  另一种写法
-  
-  ```ts
+  // 不用泛型，也能声明数组
   const arr:number[]=[1,2,3]
   ```
   
+  `ReadonlyArray<T>`只读数组
+  
+  ```ts
+  let a:ReadonlyArray<number>=[1]
+  ```
   
 
 
@@ -1347,55 +1747,89 @@ type Greet1 = Greet<"tom">; // "Hello tom"
 
 
 
-
-
-
-
 ## TS类型推导
 
-### 根据值推导
+### 最佳通用类型
 
-初始化时，确定变量类型
+在没有明确指定类型的情况下，根据变量的初始值推断出的类型
 
-```ts
-let a=1 //number类型
-```
-
-初始化时不指定类型，会被确定为any类型
+推断的类型是精准的，如果不符合我们的要求，可以扩大类型的范围
 
 ```ts
-let a //any类型
-a=1 
-```
-
-const关键字，初始化时会被推导为最为精确的字面量类型
-
-```ts
+//const关键字，初始化时会被推导为最为精确的字面量类型
 const a=1 //数字字面量类型 1
+
+//number类型
+let a=1 
 ```
 
-**函数**
+最佳通用类型推断，会尽量精确的推断类型
+
+```ts
+class Animal{
+  constructor() {
+  }
+}
+
+class Dog extends Animal{
+  move():void{}
+}
+
+class  Cat extends Animal{
+  run():void{}
+}
+
+let zoo=[new Dog(),new Cat()] //自动推断为联合类型 (Dog|Cat)[] 类型
+
+// 我们可以手动标记 let zoo:Animal[] 扩大类型
+```
 
 根据函数返回的值进行推导
 
 ```ts
-//函数返回值会被推导为number类型
+// 函数返回值会被推导为number类型
 function f(){
     return 1
 }
-```
 
-无return或只有一个return，返回值会被推导为void
-
-```ts
+// 无return或只有一个return，返回值会被推导为void
 function f(){
     return 
 }
 ```
 
+### 上下文类型
+
+根据表达式的上下文（即表达式在何处被使用）推断出表达式的类型
+
+```ts
+// onmousedown是内置的函数，ts会将该函数的类型推导到我们函数上
+window.onmousedown=function (e){
+  
+}
+```
+
+可以看到编辑器的类型提示
+
+![image-20231224201835118](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231224201835Pz3IK7.png)
+
+如果上下文推断不符合要求，我们可以扩大类型的范围
+
+```ts
+window.onmousedown=function (e:any){
+  
+}
+```
 
 
-### 流程控制推导
+
+### 类型保护
+
+对于联合类型的变量，只有在代码运行时才能确定具体的类型，所以 TS无法在确定其精准类型
+
+可以通过代码的方式手动使得TS收窄类型
+
+#### typeof
 
 TS会根据流程控制逻辑尝试收窄类型（注意最后类型被判断为never类型）
 
@@ -1412,7 +1846,7 @@ function f1(input:string|number){
 }
 ```
 
-#### is关键字
+####  **is（类型谓词）**
 
 **类型收窄失败**
 
@@ -1453,7 +1887,7 @@ function f1(input:string|number){
 }
 ```
 
-#### in关键字
+#### in
 
 in关键字判读对象中是否存在属性
 
@@ -1605,65 +2039,12 @@ feedCat(new Dog())
 
 * 非TS模块
 
-  项目中引入非TS模块，这些模块是没有类型，TS类型检查会报错。我们需要手写d.ts文件
-
-  ```ts
-  //global.d.ts
-  
-  declare module '*.vue' {
-      import type { DefineComponent } from 'vue'
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
-      const component: DefineComponent<{}, {}, any>
-      export default component
-  }
-  
-  declare module '*.md'{
-      const raw: string;
-      export default raw; //这里必须导出，才能在ts中import
-  }
-  
-  // 使用时  const raw = require('./README.md')
-  ```
-
-  ```ts
-  //global.d.ts
-  
-  // 补充： module <文件通配符|JS模块名>是一种特殊的语法，用来声明模块的（TS、JS、非代码的）。
-  declare module 'abc' {
-  		export let name:string //导出类似ESM的语法，导出的变量与类型的映射，就是引入时的类型
-      export let age:number
-  }
-  // 引入使用ESM还是commonJS语法？清醒点，这个是d.ts文件，是给编辑器看的。使用那种模块化是你的项目配置
-  // 使用时 const {name,age} = require('abc') ，代码里name,age就有类型了
-  
-  ```
-
-* 扩展类型
-
   项目中已经原本存在的类型，不满足我们的要求。我们需要手写d.ts文件
 
-  利用了同名的interface类型，会自动进行行合并的特点
-
-  下面这两个对象的类型都是内置在编辑器里的d.ts文件定义的，我们虽然不能修改，但是可以通过新增d.ts来补充
-
-  ```ts
-  //global.ts
-  
-  // --- 扩展window对象，其类型是Window ---
-  // 如下Window接口中，我们新增了userTracker属性。我们在使用该类型时就不会提示属性不存在了
-  interface Window {
-    userTracker: (...args: any[]) => Promise<void>;
-  }
-  window.userTracker("click!")
+  详见**编写d.ts**章节
   
   
-  // --- 扩展Date对象，其类型是Window ---
-  interface Date {
-    format: (date:Date,formatStr:string) => Promise<void>;
-  }
-  Date().format(xxx,xxx)
-  ```
-
+  
 * 引入了第三方npm包：
 
   * TS编写的包，这种包编译为JS时，会带着d.ts文件来做类型提示（定义文件一般在入口文件所在目录下index.d.ts/global.d.ts或者package.json的typings字段也可以指定）
@@ -1691,7 +2072,7 @@ JS项目没有类型检查，无需d.ts包。即使下载的npm包不支持类�
 如果，我们为JS项目编写d.ts文件会如何？
 
 * 编辑器会有输入提示，记住d.ts是给编辑器看的
-* 通过给JS文件开通增加 @ts-check ，来进行代码检查
+* 通过给JS文件增加 @ts-check ，来进行代码检查
 
 公司JS项目，我推荐给一些公共的函数编写d.ts文件，编码时的提示会极大地提高效率
 
@@ -1709,75 +2090,178 @@ JS项目没有类型检查，无需d.ts包。即使下载的npm包不支持类�
 
 ### 编写d.ts
 
-前面已经提到了，如何编写模块的d.ts文件和如何扩展已有类型的d.ts文件
+接下来，我们全面的讲解下
 
-下面，我们全面的讲解下：
+前提，请记住编写d.ts的核心是：声明全局变量+该变量的类型
 
-请记住编写d.ts的核心是如何给JS建立类型关系
+定义d.ts文件(declare表示全局定义的类型)
 
-* declare表示全局定义的类型
+```js
+//global.d.ts
 
-  ```js
-  //global.d.ts
-  
-  // 全局变量name的类型  ---> string类型
-  declare let name:string 
-  
-  // 全局函数，这里可以看到使用的函数签名的方式标记类型。（?:表示参数可选）
-  declare getNameById:(id:string,phone?:number)=>string 
-  declare function getNameById(id:string,phone?:number):string 
-  
-  // 全局类
-  declare class Person{
-    static name:string
-    constructor(name:string) // 构造函数的声明，与普通函数不同，是没有返回值的
-    static getName():string
-    //static getName:()=>string // 错误写法
+// 1、全局变量name的类型  ---> string类型
+declare let name:string 
+
+// 2、全局函数，这里可以看到使用的函数签名的方式标记类型。（?:表示参数可选）
+declare const getNameById:(id:string,phone?:number)=>string 
+declare function getNameById(id:string,phone?:number):string 
+
+// 利用TS的重载机制。指定不同入参
+declare const getNameById:(id:string)=>string 
+declare const getNameById:(phone:number)=>string 
+
+
+// 3、全局类
+declare class Person{
+  static name:string
+  constructor(name:string) // 构造函数的声明，与普通函数不同，是没有返回值的
+  static getName():string
+  //static getName:()=>string // 错误写法
+}
+
+// 4、全局的对象（命名空间）。namespace 是 ts 早期时为了解决模块化而创造的关键字，随着ES6开始支持模块化其模块化的功能已逐渐淘汰。目前，常用来表示全局变量是一个对象，包含很多子属性。
+// 比如，如果担心上面定义的全局变量的污染全局，就可以放入全局的命名空间中
+// 比如全局的name声明，会导致所有JS文件中的name都成了string类型，我们可以把他放在namespace中
+declare namespace Stu{
+ 	let name:string 
+	getNameById:(id:string,phone?:number)=>string 
+}
+// JS代码中输入`Stu.`就会出现输入提示
+
+
+// 5、interface。注意：接口不需要declare，就有全局作用域
+interface request {
+    method?: 'GET' | 'POST'
+    data?: any;
+}
+// 由于
+
+
+
+// 6、全局模块名（前面已经讲的很详细了）
+// 语法 module <文件通配符|JS模块名>，用来声明模块的（TS、JS模块、非代码的）。
+
+// 例子一：
+// nprogress这个模块是用来在项目中显示进度条的模块，但是官方没有类型定义文件，如果在ts项目中import这个包，会提示找不到声明文件： Cannot find module or its corresponding type declarations.
+// 由于我的项目只用到了start、done两个方法，所以导出了这两个类型定义，并不是这库只有这两个方法
+// 在d.ts文件中加入下面的声明就不会提示没有类型文件的错误了，而且点击代码中nprogress的方法会跳转到我们定义的这个d.ts文件中
+declare module 'nprogress' {
+  const nprogress: {
+    start: () => void
+    done: () => void
   }
+	// 官方文档的引入方式为： import nprogress from 'nprogress'。可知模块是默认导出。这里页默认导出类型
+  export default nprogress
+    
+  // 如果是 import {start,done} from 'nprogress'，那就具名导出
+  // declare module 'abc' {
+  //	  export const start: () => void
+  //   	export const done: () => void
+	// }
+    
+  // 特别注意，下面的写法是错误的。切记，我们导出的是类型
+  //export default {
+  //   start: () => void
+  //   done: () => void
+  //}
+}
+
+// 例子二：非代码文件
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue'
+  const component: DefineComponent<{}, {}, any>
+  export default component
+}
+ 
+// 7、扩展已存在的类型
   
-  // 全局的对象（命名空间）。如果担心上面的污染全局，可以放入全局的命名空间中
-  // 比如全局的name声明，会导致所有JS文件中的name都成了string类型，我们可以把他放在namespace中
-  declare namespace Stu{
-   	let name:string 
-  	getNameById:(id:string,phone?:number)=>string 
+// 7-1 扩展编辑器内置的类型（下面例子利用了同名的interface类型，会自动进行行合并的特点）
+// 如下Window接口中，我们新增了userTracker属性。我们在使用该类型时就不会提示属性不存在了
+interface Window {
+  userTracker: (...args: any[]) => Promise<void>;
+}
+window.userTracker("click!")
+
+// --- 扩展Date对象，其类型是Window ---
+interface Date {
+  format: (date:Date,formatStr:string) => Promise<void>;
+}
+Date().format(xxx,xxx)
+  
+// 7-2 扩展第三方模块的类型 注意：需要使用三斜线指令，引入对应包的类型，否则自己写的类型会覆盖包自带的类型
+
+/// <reference types="vite/client" />
+// import.meta.env.xxx 的类型提示
+interface ImportMetaEnv {
+  readonly VITE_BASE_URL: string //定义提示信息 数据是只读的无法被修改
+}
+  
+```
+
+注意：
+
+* 上面这些类型声明中的变量作用范围是全局，在任何地方都可以直接使用这些变量
+
+* d.ts文件只是告诉编辑器，存在这些全局变量以及他们的类型定义，但是不保证这些全局变量实际真实存在。以上面声明nprogress模块为例子，我们定义了模块存在start、done两个方法，但是实际模块是否存在start、done就是模块作者决定的了
+
+注意：如果想要d.ts文件生效
+
+在TS项目中，需要在tsconfig.josn中引入
+
+```json
+{
+  "include": ["types/**/*"], //需要在这里引入
+  "compilerOptions": {
+    
   }
-  // JS代码中输入`Stu.`就会出现输入提示
-  
-  
-  // 全局模块名（前面已经讲的很详细了）
-  // 语法 module <文件通配符|JS模块名>，用来声明模块的（TS、JS、非代码的）。
-  declare module 'abc' {
-    	//导出类似ESM的语法，导出的变量与类型的映射，就是引入时标记的类型
-    	//这个是d.ts文件，是给编辑器看的。abc模块使用的什么模块规范，需要看自己的代码
-  		export let name:string 
-      export function getName():string
-      //export getName:()=>string // 错误写法，模块内不能这样声明
+}
+```
+
+如果是JS项目，满足下面一条即可
+
+```
+1、给 package.json 中的 types 或 typings 字段指定一个d.ts文件地址
+
+2、在项目根目录下，编写d.ts文件，且命名必须为 index.d.ts 
+
+3、针对入口文件（package.json 中的 main 字段指定的入口文件），编写一个同名不同后缀的 .d.ts 文件
+```
+
+
+
+特殊的情况：
+
+有些时候，我们只是想扩展第三方模块已存在的类型。如果，我们直接导出同名类型就会覆盖掉原本的类型定义
+
+如下写法，会导致vue-router包内的所有方法引入都报错，点击跳转类型也会跳转到下面的这个d.ts文件，而不是官方的d.ts文件
+
+```ts
+// vue-router的自定义类型
+declare module 'vue-router' {
+  // 路由元信息
+  interface RouteMeta {
+    title?: string
+    icon?: string
+    hiddenMenuItem: boolean
   }
-  // 使用时 const {name,age} = require('abc') ，代码里name,age就有类型了
-  
-  ```
+}
+```
 
-* 函数的重载
+需要用下面的写法，才能扩展已有类型定义文件的包
 
-  JS代码中函数入参不同，可以利用TS的重载机制。指定不同入参
-
-  ```ts
-  declare getNameById:(id:string)=>string 
-  
-  declare getNameById:(phone:number)=>string 
-  ```
-
-*  d.ts文件的命名
-
-  ```text
-  全局的一般命名：global.d.ts
-  
-  特定模块的一般命名：moduleName.d.ts
-  ```
-
-  
-
-
+```ts
+// vue-router的自定义类型
+declare module 'vue-router' {
+  // 路由元信息
+  interface RouteMeta {
+    title?: string
+    icon?: string
+    hiddenMenuItem: boolean
+  }
+}
+// d.ts文件结尾增加`export {};`，你告诉 TypeScript 将当前文件视为一个模块
+export {}
+```
 
 
 
@@ -1787,9 +2271,87 @@ JS项目没有类型检查，无需d.ts包。即使下载的npm包不支持类�
 
 
 
+### 补充关于类型的配置
+
+**tsconfig.json文件的types**
+
+默认情况下，TypeScript 会加载 `node_modules/@types/` 下的所有声明文件，包括嵌套的 `../../node_modules/@types` 路径
+
+但如果只加载实际使用的类型定义包，就可以通过 types 配置。下面配置为只有 `@types/node`、 `@types/react` 会被加载。这时其他包定义的类型就不会再有类型提示了，所以一般别加这个
+
+```json
+{
+  "compilerOptions": {
+    "types": ["node","react"]
+  }
+}
+```
+
+还有一个typeRoots配置，用来指定加载类型的规则，默认为node_modules/@types（包括嵌套）下的所有文件
+
+我们通常可以在这里加上./typings，在项目中把d.ts放在这个文件夹中，就能被自动加载了
+
+```json
+{
+  "compilerOptions": {
+    // 注意这里的./是相对于baseUrl配置的路径（baseUrl默认为tsconfig.json文件目录）
+    "typeRoots": ["./node_modules/@types", "./node_modules/@team-types", "./typings"],
+    "types": ["react"],
+    "skipLibCheck": true
+  }
+}
+```
+
+**tsconfig.json文件的include**
+
+include是用来指定ts检查范围的。
+
+如果我们自定义的d.ts文件没有放在typeRoots指定的目录中，也可以通过include导入
+
+```json
+{
+  "include": ["types-dts/**/*"], 
+}
+```
+
+
+
+三斜线指令：目前发现可以在ts、d.ts引入，引入后相当于引入了对应的ts文件
+
+```
+/// <reference types="vite/client" />
+interface ImportMetaEnv {
+  readonly VITE_BASE_URL: string //定义提示信息 数据是只读的无法被修改
+}
+```
+
+
+
+
+
 ## TS配置
 
 参考：https://www.51cto.com/article/694463.html
+
+
+
+## 补充
+
+抽象类
+
+ https://pan.baidu.com/pfile/video?path=%2F%E7%BC%96%E7%A8%8B%E8%B5%84%E6%BA%90%2F330%20%E4%B8%8B%E4%B8%80%E4%BB%A3%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91%E8%AF%AD%E8%A8%80%20TypeScript%E4%BB%8E%E9%9B%B6%E9%87%8D%E6%9E%84axios%2F03%20%E7%AC%AC3%E7%AB%A0%20Typescript%20%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F%E3%80%90%E5%BF%85%E5%A4%87%E5%9F%BA%E7%A1%80%EF%BC%8C%E7%89%A2%E5%9B%BA%E6%8E%8C%E6%8F%A1%E3%80%91%2F16%203-16%20%E7%B1%BB%20-%20%E6%8A%BD%E8%B1%A1%E7%B1%BB%2B%20%E9%AB%98%E7%BA%A7%E6%8A%80%E5%B7%A7.mp4&theme=light&from=home
+
+### this标记类型
+
+函数中传入this标记
+
+![image-20231224021419947](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231224021420VQGGv8.png)
+
+
+
+回调函数中的this，需要标记否则没有提示
+
+![image-20231224022418754](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231224022419nxuKDk.png)
 
 
 

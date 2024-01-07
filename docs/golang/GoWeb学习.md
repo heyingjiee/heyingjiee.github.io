@@ -2984,6 +2984,7 @@ type NullTime struct {
 ```go
 type Node struct {
 		gorm.Model
+  	time    time.Time
 		Bool    bool
 		Int     int
 		Uint    uint
@@ -3008,6 +3009,7 @@ type Node struct {
 `created_at` datetime(3) NULL,
 `updated_at` datetime(3) NULL,
 `deleted_at` datetime(3) NULL,
+`time` datetime(3),
 `bool` boolean,
 `int` bigint,
 `uint` bigint unsigned,
@@ -3022,6 +3024,44 @@ type Node struct {
 `float64` double,
 `string` longtext
 `rune` int,
+```
+
+上面的是GO中的类型对应数据库的类型
+
+实际在生产环境更多的是先申请线上工单，确定数据库类型，所以我们更应该清楚数据库类型对应哪些Go中的类型，有些数据库类型没有对应的Go类型，但是标准库sql为我们提供了一些内置的类型
+
+如果，我们读取数据的name字段，映射到结构体的Name字段，可是name可以能为字符串或空。这时候就要用
+
+sql.NullString类型了。下面的类型都是兼容读取为空的情况
+
+```
+sql.NullString
+
+sql.NullInt16、sql.NullInt32、sql.NullInt64
+
+sql.NullByte
+sql.NullFloat64
+
+sql.NullBool
+
+sql.NullTime
+```
+
+以sql.NullString为例子，其定义为
+
+```go
+type NullString struct {
+	String string
+	Valid  bool // Valid is true if String is not NULL
+}
+```
+
+所以，我们可以
+
+```go
+if Name.Valid {
+	// Name字段有值，继续处理
+}
 ```
 
 ### 增删改查

@@ -459,7 +459,8 @@ export default defineConfig(({command,mode})=>{
     // 注意.env文件中的环境变量默认应该为VITE_xxxx格式，xxx将会被作为环境变量。
     // 在vite.base.config.js配置了envPrefix:'ENV_'，则环境变量必须是ENV_
     // 在项目中，环境变量被放置在import.meta.env中
-    loadEnv(mode,process.cwd())
+  	// vite.cofing文件中无法通过import.meta.env获取环境变量，但是loadEnv就是全部环境变量
+    const env=loadEnv(mode,process.cwd()) 
 
 
     //-------安装对应环境的返回对应环境的配置文件---------
@@ -505,6 +506,16 @@ import.meta.env.PROD: {boolean} 应用是否运行在生产环境。
 import.meta.env.DEV: {boolean} 应用是否运行在开发环境 (永远与 import.meta.env.PROD相反)。
 
 import.meta.env.SSR: {boolean} 应用是否运行在 server 上
+```
+
+
+
+为环境变量增加ts类型提示
+
+```ts
+interface ImportMetaEnv {
+  readonly VITE_BASE_URL:string; 
+}
 ```
 
 
@@ -901,7 +912,9 @@ Key是原本的类名，Value是新的类名。
 
 
 
-### 预处理器
+### 预处理器（less、scss）
+
+**less**
 
 Vite支持自动调用预处理器，由于其并没有内置预处理器，所以需要用户手动安装所需的预处理器。下面以less为例子：
 
@@ -928,6 +941,18 @@ div.className=cssModule.box
 ```
 
 Vite会自动将其插入网页
+
+
+
+**scss**
+
+注意还需要按照一个sass-loader
+
+```
+pnpm install sass sass-loader -D
+```
+
+
 
 ### postcss
 
@@ -1190,7 +1215,7 @@ export default defineConfig({
         //key是预处理器名 ，value是该预处理器配置
         preprocessorOptions:{  
           	scss:{
-              //指定文件启动全局变量
+              //指定全局变量所在的文件
               additionalData:'@import "./src/styles/variable.scss";' //注意:';'一定要写，否则报错
             },
             less:{//这里的配置项其实就是less的命令行参数。参考：https://lesscss.org/usage/#less-options
@@ -1392,13 +1417,11 @@ export default defineConfig({
 
 原理：
 
-项目中请求 `www.abc.com/api`接口，浏览器会直接发起访问，不会经过Dev Server。如果请求该接口出现了跨域问题
+项目中请求 `http://www.abc.com/api/123`接口出现跨域
 
-首先明确，如果项目启动在` http://10.168.168.71:8080`，那就改成请求`http://10.168.168.71:8080/api`
+但是配置代理，向`http://www.abc.com/api`发起请求的接口会被devServer拦截到
 
-这时候请求就会走到Dev Server，我们配置以下内容会让Dev Server将匹配到的请求转发到真正的地址
-
-（如果使用axios请求，不设置请求baseUrl，则默认请求Dev Server地址）
+devServer会再转发到${target}/api/123
 
 ```ts
 import { defineConfig, loadEnv } from 'vite'
@@ -1410,10 +1433,20 @@ export default defineConfig(({ command, mode }) => {
     return {
         server:{
             proxy:{
-                '/api': {
-                    target: 'http://www.abc.com',
+              	// 项目实际请求地址 http://www.cde.com/xxx
+              
+              	// 如果使用代理，必须让请求被devServe拦截到，有devServe向实际的地址请求
+              	// 项目需设置请求的BaseUrl为/api （请求地址就成了 '网址地址/api/xxx'）
+              	
+                '/api': {// 所有请求中的前缀能匹配到 '网址地址/api/xxx' 的请求被devServe拦截
+                  	
+                    target: 'http://www.cde.com', // devServer将这个请求的前缀替换为${target}/api/xxx。这与实际接口地址不符，需要使用rewrite字段重写请求
+                  
                     changeOrigin: true, //开启跨域
-                    rewrite: (path) => path.replace(/^\/api/, ''), //是否重写。这里是如果请求是${target}/api，则将/api替换为空格。即实际请求为${target}
+                  
+                    rewrite: (path) => path.replace(/^\/api/, ''), 
+                  	//是否重写devServe实际请求地址，这个取决于接口的地址
+                  	//例如：这里接口地址为http://www.cde.com/xxx，则需将/api替换为空格
                   },
             }
         },

@@ -58,7 +58,7 @@ HTTPS协议使用对称密钥和非对称密钥混合加密的方式，来进行
 
 [HTTPS图片地址](https://www.processon.com/embed/61bae30b0e3e740ea73891b1)
 
-![image-20220120100658906](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E8%B8%A9%E5%9D%91/image-20220120100658906%20.png)
+![image-20231205151720039](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231205151721dEKVX0.png)
 
 对于上图，有几点基本常识需要知道：
 

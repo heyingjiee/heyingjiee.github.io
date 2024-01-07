@@ -1,4 +1,7 @@
 module.exports = {
+  plugins: [
+    require('./baidu-report')
+  ],
   //页面相关配置
   title: "何叨叨的个人博客",
   description: "我的个人网站",
@@ -23,12 +26,20 @@ module.exports = {
     nav: [
       // 导航栏配置
       {
-        text: "前端基础",
+        text: "前端",
         items: [
           {text: "JS重刷笔记（持续更新）", link: "/frontBasic/JS重刷笔记.md"},
-          {text: "TS基础", link: "/frontBasic/TS学习笔记.md"},
-          {text: "CSS", link: "/frontBasic/CSS技术精炼.md"},
-          {text: "Vue", link: "/frontBasic/Vue2重刷笔记.md"},
+          {text: "TS笔记（持续更新）", link: "/frontBasic/TS学习笔记.md"},
+          {text: "CSS笔记", link: "/frontBasic/CSS技术精炼.md"},
+          {text: "Vue笔记", link: "/frontBasic/Vue2重刷笔记.md"},
+        ],
+      },
+      {
+        text: "Go语言",
+        items: [
+          {text: "Go 基础", link: "/golang/Go学习笔记.md"},
+          {text: "Go Web（持续更新）", link: "/golang/GoWeb学习.md"},
+          {text: "Go 微服务（持续更新）", link: "/golang/Go微服务.md"},
         ],
       },
       {
@@ -43,9 +54,8 @@ module.exports = {
       {
         text: "其他语言",
         items: [
-          {text: "Go语言", link: "/dealArticle/Go学习笔记.md"},
-          {text: "Go Web（持续更新）", link: "/dealArticle/GoWeb学习.md"},
-          {text: "Flutter（持续更新）", link: "/otherLanguage/Flutter.md"},
+
+          {text: "Flutter（暂停更新）", link: "/otherLanguage/Flutter.md"},
           {
             text: "Python爬虫",
             link: "/otherLanguage/python爬虫进阶学习笔记.md",

@@ -3518,11 +3518,26 @@ const Foo = {
 }
 ```
 
+### 注意
 
+`/`表示跟页面根路径 
 
-# Vue3学习笔记
+子级的path值是user-manager，页面地址就是 /acl/user-manager
 
+子级的path值是/user-manager，页面地址就是 /user-manager
 
-
-
+```js
+{
+    name: 'ACL',
+    path: '/acl',
+    redirect: '/acl/user-manager',
+    component: () => import('@/layout/IndexLayout.vue'),
+    children: [
+      {
+        name: 'UserManager', 
+        path: 'user-manager', // 这里不用加 `/`
+        component: () => import('@/views/ACL/UserManager.vue')
+      }
+}  
+```
 

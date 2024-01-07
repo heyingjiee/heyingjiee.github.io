@@ -44,11 +44,14 @@ Go项目中的依赖（module）并不会安装在项目下，而是默认安装
 
 * 最后的 “direct” 是一个特殊指示符，用于指示 Go 回到源地址去抓取（比如 GitHub 等）。当配置有多个代理地址时，如果第一个代理地址返回 404 或 410 错误时，Go 会自动尝试下一个代理地址，当遇见 “direct” 时回到源地址去抓取
 
+* 可以换用国内源
+
   ```shell
   export GOPROXY=https://goproxy.cn,direct
   
-  #或者
-  #export GOPROXY=https://goproxy.cn,direct
+  
+  #或者 
+  go env -w GOPROXY=https://goproxy.cn
   ```
 
 
@@ -317,7 +320,7 @@ import (
 )
 ```
 
-import导入的是路径
+import导入的是路径（习惯上我们在目录xx下，所有的Go文件都在文件开头声明为package xx）
 
 ```go
 import  "a/b/c"   // a/b/c是包所在的路径。一般情况下，包名与文件夹名一样。所以会给人import后是包的错觉
@@ -1658,6 +1661,8 @@ NumCPU 可查询本地机器的逻辑CPU数
 runtime.GOMAXPROCS(runtime.NumCPU()) //根据当前cup个数，将goroutine跑在多个系统线程上
 ```
 
+注意： GOMAXPROCS 默认值为CPU数，但是在容器中 runtime.GOMAXPROCS() 获取的是 宿主机的 CPU 核数 。这样会导致 P 值设置过大，导致生成线程过多。使用 uber 的 automaxprocs 库
+
 **Caller**
 
 Caller报告当前go程调用栈所执行的函数的文件和行号信息。可用于用户记录日志时，记录当前位置的信息
@@ -1753,7 +1758,7 @@ if _, err := io.Copy(hasher, f); err != nil {
 fmt.Printf("%x", hasher.Sum(nil))
 ```
 
-**sh256签名**
+**sha256签名**
 
 补充知识：
 
@@ -1788,10 +1793,6 @@ hmac.Equal(signA, signB)
 ```go
 sig, err := base64.RawURLEncoding.DecodeString("1234")
 ```
-
-
-
-
 
 
 
@@ -1895,6 +1896,25 @@ name := "jack"
 
 ```go
 var _ string = "jack"
+```
+
+注意：shadow 变量
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var v int=0
+	condition := true
+	if condition {
+    // 内层使用:=，相当于创建了新的变量 。应该直接使用 v = 2
+		v := 2
+		fmt.Println(v) // 2
+	}
+	fmt.Println(v) // 0
+}
 ```
 
 ### 常量
@@ -2070,32 +2090,61 @@ func main() {
 2：表示是十进制数字
 02：表示是八进制数字（0为前缀）
 0x2:表示十六进制数字（0x为前缀）
+0b1010：表示二进制数字（0b为前缀）
 
 数字2，在三种进制中区别不大，再换一个明显点的数字19
 19=023=0x13
 ```
 
-我们知道字符底层是使用数字表示的，所以，我们也可以直接使用数字表示某个字符串，但是必须换用`\x`开头
+我们知道字符底层是使用数字表示的，所以，我们也可以直接在代码中使用（"前缀+十六进制数字"）的形式表示某个字符
 
-```
-0x42是数字，其对应十进制数字66
+* `\x`：表示一个ASCII字符的十六进制编码。后面必须跟两个十六进制数字，且只能表示ASCII字符范围内的字符
 
-\x42是字符，其对应字符A（A的ASC编码是66，这被称为码点。ASC码字符集中的字符，都是由一个码点就能标识。一个码点占据一个字节的存储空间）
-```
+  ```
+  "\x41" => 十六进制41 => 对应字符 "A" (查询ASCII表)
+  ```
 
-其他字符标识
+  ![image-20240107170737303](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240107170738DZDflK.png)
 
-```
-\u开头标识为一个字符，后面接十六进制的Unicode编码（一个Unicode编码对应一个字符，也称为一个码点）
-```
+* `\u`：表示一个Unicode字符的十六进制编码。后面必须跟四个十六进制数字
+
+  ```
+  "\u0041"表示字符"A"
+  "\u00A9"表示版权符号"©"
+  
+  
+  \u开头标识为一个字符，后面接十六进制的Unicode编码（一个Unicode编码对应一个字符，也称为一个码点）
+  ```
 
 下面是等价对应关系
 
 ```
-"世" = "\xe4\xb8\x96" = "\u4e16" （十六进制数字4e16）
-```
+字符在ASCII范围内：
+
+"A" =	 "\x41"         = "\u0041"
+
+
+字符超出ASCII范围：
+"世" = "\xe4\xb8\x96" = "\u4e16" （十六进制数字4e16） 
 
 汉字 "世" ，已经超出了ASC码的编码范围，所以它用了多个码点标识这一个汉字
+```
+
+还有一点极易混淆
+
+"A"、"\u0041"、"\x41"都是是字符，代码里想用数字表示字符，需要用引号
+
+```
+str := "\u0041"
+fmt.Printf("%v\n", str)
+```
+
+而直接把字符按照十六输出的是**数字**，而不是**字符**，所以也不会有\x、\u的前缀
+
+```go
+str := "A"
+fmt.Printf("%x\n", str) // 41
+```
 
 
 
@@ -2142,14 +2191,14 @@ func main() {
 
 **基本概念**
 
-* **字节**：存储单位
+* **字节**：存储单位（B）
 * **字符**：字符串中的每一个元素叫做“字符”，例如一个汉字、一个字母
 
 一个字符，可能占用多个字节的存储空间
 
 **字符编码问题**
 
-基础：GO使用的是Uncode编码集，按照UTF-8编码存储，UTF-8是可变长度的，1个UTF-8字符，占据1～4个字节（byte）
+基础：GO使用的是Unicode编码集，按照UTF-8编码存储，UTF-8是可变长度的，1个UTF-8字符，占据1～4个字节（byte）
 
 * 一个汉字是1个UTF-8字符，占据3个字节
 
@@ -2229,8 +2278,7 @@ func main() {
   fmt.Printf("%T\n", str[0:1])//string
 	fmt.Printf("%x\n", str[0:1]) //e4 ，这里如果使用%v占位符就会输出乱码，所以使用%x输出第一个字节的16进制数字
   fmt.Printf("%v\n", str[0:3]) //你 ，这里如果使用%v占位符就会输出乱码
-  
-
+ 
 	//修改，注意：Go中的字符串是不允许修改的，所以返回一个字符串转化的rune切片，rune切片的每个元素是一个UTF8字符，对切片进行处理。（原字符串不变）
 	runeArr := []rune(str) //类型(变量)这是强制转换的语法
 	runeArr[0] = '我'
@@ -2375,6 +2423,8 @@ fmt.Printf("%#v\n", strings.Join(strSlice, "")) //"你好"
 
 额外的关于底层的一些介绍：
 
+string的底层是byte array（不可变字节数组），并不是slice或者数组，所以string与slice的转换是拷贝，会损耗性能
+
 ```go
 s := "abc"
 b := []byte(s) // 做了一次拷贝，分配了一个新的字节切片。所以修改b不会影响s
@@ -2386,7 +2436,7 @@ s2 := string(b) //构造一个字符串拷贝
 `bytes` 包还提供了 `Buffer` 类型用于字节 `slice` 的缓存。一个 `Buffer` 开始是空的，但是随着 `string` 、 `byte` 或 `[]byte` 等类型数据的写入可以动态增长，一个 `bytes.Buffer` 变量并不需要初始化，因为零值也是有效的：
 
 * WriteByte 写入一个字节，`ASCII` 字符是一个字节，因此这个函数多用于写入`ASCII` 字符
-* WriteRune 写入一个字符 
+* WriteString 写入字符串
 
 ```go
 package main
@@ -2546,6 +2596,8 @@ for{}
 
 ### for
 
+break、continue 与其他语言相同，注意：break只能结束一层for循环
+
 **一般形式**
 
 ```go
@@ -2564,6 +2616,16 @@ func main() {
 }
 ```
 
+**类while**
+
+Go中不支持while关键字，for可以到达相同的效果
+
+```
+for{
+	// xxx
+}
+```
+
 **for range**
 
 Go语言中可以使用`for range`遍历数组、切片、字符串、map 、通道（channel）
@@ -2572,7 +2634,7 @@ Go语言中可以使用`for range`遍历数组、切片、字符串、map 、通
 * map返回`键`、`值`。
 * 通道只返回通道内的`值`
 
-遍历字符串
+遍历字符串、切片
 
 ```go
 package main
@@ -2580,30 +2642,19 @@ package main
 import "fmt"
 
 func main() {
+  // 字符串
 	str := "a它e"
 	for index, value := range str {
-		fmt.Printf("%d-%c\n", index, value)
+		fmt.Printf("%v-%v\n", index, value)
 	}
-	//0-a
-	//1-它
-	//4-e
-}
-```
-
-遍历切片
-
-```go
-//两个变量接收
-s := []int{5, 2, 3}
-for index, value := range s {
-	fmt.Printf("%v:%v\n", index, value)
-}
-
-
-//一个变量接收，就是索引
-s := []int{5, 2, 3}
-for k := range s {
-	fmt.Printf("%v\n", k) //0 1 2
+  
+  
+  // 切片
+  s := []int{5, 2, 3}
+  for index, value := range s {
+    fmt.Printf("%v-%v\n", index, value)
+  }
+	
 }
 ```
 
@@ -2619,9 +2670,49 @@ for key, value := range m {
 }
 ```
 
+**注意点：**
+
+便利过程中，重新赋新值不会影响源数据
+
+```go
+type account struct {
+  balance float32
+}
+ 
+accounts := []account{
+    {balance: 100},
+    {balance: 200},
+    {balance: 300},
+}
+
+for _, a := range accounts {
+    a.balance += 1000  
+}
+// [{100} {200} {300}]
+```
+
+如果想要修改，必须直接修改源数据
+
+```go
+for i := range accounts {
+  accounts[i].balance += 1000
+}
+```
+
+slice的话，也是需要修改源数据
+
+```go
+func main() {
+	nameList := []string{"tom", "jack"}
+	for index, item := range nameList {
+		nameList[index] = item + "1"
+	}
+	fmt.Println(nameList)
+}
+//[tom1 jack1]
+```
 
 
-break、continue : 与其他语言相同，不再赘述
 
 ### switch
 
@@ -2686,7 +2777,195 @@ C语言中的`++i`、`--i`的用法，在Go中不存在
 
 ### 位运算符
 
-极少使用，不再赘述
+日常开发业务极少使用，但是涉及底层的库经常会用到
+
+位算法符是二进制计算符号，只不过我们代码中一般只写十进制。下面的例子都是使用5、3做运算，也可以使用对应的二进制0b0101、0b0011 
+
+位运算符包括：
+
+* `+`
+
+  二进制加法规则：0+0=0，0+1=1， 1+1=0向高位进1
+
+  ```go
+  5+3 = 8
+  
+  // 底层二进制表示是 
+  0101
+  0011
+  ------
+  1000
+  ```
+
+* `-`
+
+  二进制减法法规则：0-0=0，1-0=1，1-1=0，0-1=1从高位借1
+
+  ```go
+  5+3 = 2
+  
+  // 底层二进制表示是 
+  0101
+  0011
+  ------
+  1000
+  ```
+
+  
+
+* `&`（与）
+
+  二进制对应位都为1，结果为1。否则为0
+
+  ```go
+  5&3 = 1 
+  
+  // 底层二进制表示是 
+  0101
+  0011
+  -----
+  0001
+  ```
+
+  实际意义：x&0011表示：保留x后两位，其余位置为0
+
+* `|`（或)
+
+  对应位只要一个为1，结果为1。否则为0
+
+  ```go
+  5&3 = 7
+  
+  // 底层二进制表示是 
+  0101
+  0011
+  -----
+  0111
+  ```
+
+  实际意义：x|0000表示：低4位全部保留
+
+* `^`（异或）
+
+  位于两数之间，对应位不相同，结果为1。否则为0；
+
+  位于一个数之前，则按位取反
+
+  ```go
+  5^3 = 6
+  
+  // 底层二进制表示是 
+  0101
+  0011
+  -----
+  0110
+  ```
+
+  
+
+* `>>` (右移)
+
+  x>>y，表示x的二进制位右移y位
+
+  数高位补0，负数高位补1。结果正数仍然为正数，负数仍然为负数
+
+  ```go
+  12 >> 2 // 右移2位 ，输出: 3
+  
+  12对应的二进制为 1100 => 右移2位得 11 =>高位补0得 0011 => 转化为十进制 3
+  // 实际上：删除低y位，在剩余高位补0
+  ```
+
+  
+
+* `<<` (左移)
+
+  x<<y，表示x的二进制位右移y位,低位补0
+  
+  ```go
+  1<<2  // 左移2位
+  
+  100  
+  // 实际上：在低位不出y位
+  ```
+  
+  实际意义： for循环中使用1<<2，可以每次读入两位，然后<<2就会把读入的数据推到高位上，剩下低两位继续读入数据
+  
+  
+  
+* `&^`（按位清零）
+  
+  对于两个相应的二进制位，如果`&^`右侧的位是 1，则结果中的相应位为0（清零），否则保留左侧的值
+  
+  
+
+
+还有一个二进制计算，取负数。
+
+```go
+十进制取负数：
+	5 取负为 -5
+
+二进制如何取负数：
+0b00000101 取负为 0b11111011
+
+计算：
+第一点8位表表示一个数字 => 每位都取反后，最后一位+1
+
+注意：
+可通过最高位判断正负，0表示正数，1表示负数
+```
+
+
+
+二进制位运算最有意思的是：一大片看起来似乎没有意义的位运算，居然有实际的含义
+
+* `1<<n - 1 `取 n 位都是1的二进制数
+
+  ```go
+  // 1<<24 => 1后低位补24个0 =>00000001 00000000 00000000 00000000
+  // 1<<24-1 => 0-1向高位借1 => 00000000 11111111 11111111 11111111
+  
+  1<<24 - 1 // 取24位都是1
+  ```
+
+* 滑动窗口
+
+  例子窗口为3个字节（24位）
+  
+  例如文件内容为 abcde ,读取结果为 abc、bcd、cde
+  
+  ```go
+  tv := uint32(0)
+  n :=0
+  
+  // (1<<24 - 1) 表示24位都是1的二进制数
+  // x&(1<<24 - 1) 表示保留x的低24位，剩余高位置为0
+  
+  for{
+    // 读入文件(暂时不考虑错误处理)
+    temp=make([]byte,10)
+    n,_:=f.Read(temp)
+    temp=temp[:n]
+    
+    // 保留24位，低8位0
+    tv = (tv << 8) & (1<<24 - 1) 
+    // x|0000，表示保留x的低4位。这里表示 将temp的第一个字节（8位）赋值给tv的低8位
+    tv=tv|temp[0] 
+    
+    // 下一次循环 ，tv会把这一次读入的8个字节推到高位，留出来低8位继续放置读入的字节
+    
+    if n++; n > 3 {
+      	// 读入了3个字节，把数据处理下
+  			
+  	}
+  }
+  
+  ```
+  
+  
+
+
 
 ## 数组类型
 
@@ -2800,23 +3079,53 @@ func main() {
 
 > 与JS中的数组基本相同，区别是只能存储相同类型的数组元素
 
-**切片声明**
+**初始化**
 
-` [] 元素类型`
-
-未初始化的切片，是没有内存空间的，默认为nil值
+四种方式：
 
 ```go
-var arr []int 
-fmt.Printf("%T\n", arr) //[]int
-fmt.Println(arr == nil) //true
-fmt.Println(len(slice1)) //0  len切片长度，后面会讲到
-fmt.Println(cap(slice1))  //0  cap切片容量，后面会讲到
+func main() {
+  			// 方式1： 值为nil ,长度为0。 这种方式来的好处就是不用指定初始slice大小，使用append追加元素（用的最多）
+        var s []string
+        log(1, s)
+
+  			// 方式2： 值为nil ,长度为0。 用得少
+        s = []string(nil)
+        log(2, s)
+
+  			// 方式3：值为[]，长度为0。比较适合初始化一个已知元素的 slice
+        s = []string{}
+        log(3, s)
+
+  			// 方式4：值为[],长度为2
+        s = make([]string, 0)
+        log(4, s)
+}
+
+func log(i int, s []string) {
+	fmt.Printf("len=%v nil=%t\n", len(s) , s == nil)
+}
+
+
+// 输出
+len=0 nil=true
+len=0 nil=true
+len=0 nil=false
+len=0 nil=false
 ```
 
-Go语言与其他大多数语言一样，都是定长数组。这一点不如JS的可变长度数组使用的方便
+从上面例子可知，判断切片为空应该使用
 
-注意：Go中切片类型的变量不用初始化空间，就可以向其中追加元素，这是一种很常见的用法
+```
+len(xxx)==0
+
+而不是 
+xxx==nil
+```
+
+四种方式使用场景不同：
+
+方式1：初始化一个空的切片，然后后续通过append追加元素
 
 ```go
 str := "你好"
@@ -2825,58 +3134,64 @@ res := append(slice1, str[0:3]) //append向空切片中追加元素，后面会�
 fmt.Printf("%v\n", res) //[你]
 ```
 
-**数组初始化**
+方式2：不常用
 
-* 初始化内存空间
+方式3：已明确知道切片初始值
 
-  `make(切片类型,长度，容量)`，返回切片，make会默认把切片元素初始化为零值（下面例子是[]int，所以默认的零值是0）
+```go
+s = []string{"a","b"}
+```
 
-  ```go
-  slice1 := make([]int, 5, 10) 
-  fmt.Println(slice1) //[0 0 0 0 0]
-  
-  slice1 := make([]int, 5)  //一个参数，就 默认长度和容量都为5
-  fmt.Println(slice1) //[0 0 0 0 0]
-  ```
+注意：切片子元素是结构体的情况
 
-* 初始化值（默认分配内存空间，创建了一个底层数组[4]int{1,2,3,4}）
+```go
+type Stu struct {
+	Name string
+	Age  int
+}
 
-  ```go
-  arr1 := []int{1, 2, 3, 4}
-  fmt.Println(arr1) //[1 2 3 4]
-  ```
-  
-  看一个更复杂的例子，切片子元素是结构体
-  
-  ```go
-  type Stu{
-  	Name string
-    Age int
-  }
+func main() {
   
   var StuCollection=[]Stu{
-    {Name:"tom",Age:12},
-    {Name:"jack",Age:19}
-  }
-  //或者
+  	Stu{Name:"tom",Age:12},
+  	Stu{Name:"jack",Age:19}
+	}
+
+  // 简写
+	var StuCollection = []Stu{
+		{Name: "tom", Age: 12},
+		{Name: "jack", Age: 19},
+	}
+  
+  // 或者
   var StuCollection=[]Stu{
     {"tom",12},
     {"jack",19}
   }
-  ```
-  
-  注意：`[]Stu`已经指定了子元素是Stu类型了，其中就直接写结构体的值即可
-  
-  下面的写法是错误的
-  
-  ```go
-  var StuCollection=[]Stu{
-    Stu{Name:"tom",Age:12},
-    Stu{Name:"jack",Age:19}
-  }
-  ```
-  
-  
+}
+
+```
+
+方式4：
+
+`make(切片类型,长度，容量)`，返回切片，make会默认把切片元素初始化为零值（下面例子是[]int，所以默认的零值是0）
+
+```go
+slice1 := make([]int, 5, 10) 
+fmt.Println(slice1) //[0 0 0 0 0]
+
+slice1 := make([]int, 5)  //一个参数，就 默认长度和容量都为5
+fmt.Println(slice1) //[0 0 0 0 0]
+```
+
+这种很适合知道切片大小，但是不知道初始值的情况。具体来说就是赋值场景，提前用make申请一块空间，将其他切片存进来（copy会在后面讲到）
+
+```go
+slice1=[]int{1,2,3,4,5,6}
+
+slice2=make([]int,2)
+copy(slice2,slice1[0:2]) // 截取2位拷贝到slice2的空间里
+```
 
 **从数组截取切片**
 
@@ -2899,7 +3214,7 @@ fmt.Printf("%v", str[2:])//3789
 
 **从切片截取切片**
 
-注意：切片的切片，底层仍然是最初的数组，所以容量是4
+切片的切片，底层仍然是最初的数组，所以容量是4
 
 ```go
 arr1 := [...]int{1, 2, 3, 4, 5} //数组
@@ -2910,6 +3225,8 @@ slice2 := slice1[0:1]
 fmt.Println(slice2)      //res是[2]
 fmt.Println(cap(slice2)) //4
 ```
+
+
 
 **切片的长度和容量**
 
@@ -2940,6 +3257,8 @@ slice2[0] = 100
 fmt.Println(slice1) //[100 2 3 4]
 ```
 
+我们可以使用copy函数，实实在在的拷贝一份新的数据
+
 **切片注意点**
 
 ```
@@ -2960,7 +3279,7 @@ for index, value := range slice {
 
 **append：切片的追加**
 
-下面的例子可以看出来，追加函数并不是改变原本的切片，而是函数返回了新的追加后的切片，这个新的切片的底层数组对应原来的底层数组，只不过进行了扩容
+下面的例子可以看出来，append是对底层数组进行了扩容
 
 ```go
 slice1 := []int{1, 2, 3}
@@ -3020,6 +3339,33 @@ finalSlice := make([]int, finalLen)
 copy(finalSlice, slice1)
 copy(finalSlice[len(slice1):], slice2)
 fmt.Printf("%v\n", finalSlice)
+```
+
+
+
+**注意截取操作导致的内存泄露**
+
+如果arr很大，我们虽然只持有res，但是底层的数组仍然无法释放，会造成内存泄露
+
+```go
+res := arr[:36]
+// 后面一直持有res变量
+```
+
+可以使用copy拷贝arr的数据，存储到res中
+
+```go
+res:=make([]int,16)
+copy(res,arr[:36])
+```
+
+同理，虽然Go中的string底层不是数组，而是固定字节数组，但是截取字符串仍然可能造成内存泄露
+
+可是内置的Clone方法拷贝字符串
+
+```
+str := "cascascsaasa"
+str2 := strings.Clone(str[:3])
 ```
 
 
@@ -3440,6 +3786,50 @@ func main() {
 }
 ```
 
+defer 被调用的时候就已经确定了，而不是在 defer执行的时候
+
+```go
+// 这里调用defer时i=0
+func main() {
+	i := 0
+	defer fmt.Println(i) //0
+	i++
+	return
+}
+
+
+// 这里调用defer时传入的是一个函数。函数在最后执行时读取的i=2
+func main() {
+	i := 0
+	defer func() {
+		fmt.Println(i + 1) //2
+	}()
+	i++
+	return
+}
+```
+
+return后如果是表达式，会先执行 return的表达式 ==> defer ==> return 值
+
+```go
+package main
+
+import "fmt"
+
+func A() (int, error) {
+	defer fmt.Println(2)
+	return fmt.Println(1)
+}
+func main() {
+	A()
+} 
+
+//1
+//2
+```
+
+
+
 应用场景：提前设置关闭
 
 ```text
@@ -3454,6 +3844,8 @@ func fun1() {
 ```
 
 ![image-20220508233236211](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/image-20220508233236211.png)
+
+
 
 ### 函数类型
 
@@ -3526,6 +3918,23 @@ func main() {
 一般结构体与type一起使用，定义新类型
 
 ```go
+type Stu struct {
+	name  string
+	age   int
+	score []float64
+}
+```
+
+匿名结构体
+
+```go
+// 变量user的类型为一个匿名的结构体
+var user struct{Name string; Age int}
+```
+
+初始化结构体实例
+
+```go
 package main
 
 import "fmt"
@@ -3533,239 +3942,201 @@ import "fmt"
 type Stu struct {
 	name  string
 	age   int
-	score []float64
 }
 
 func main() {
-	//声明变量
-	var s Stu
-  //或者s:=Stu{}，两种方式均会创建一个结构体实例，字段值为默认零值
+	// 1、初始变量为 空的Stu实例，Stu字段值为默认零值
+	var s1 Stu
+  
+  // 2-1、与1效果相同
+  s2:=Stu{}
+  
+  // 2-2  初始化带值的实例
+  // 按字段顺序 (用的少)
+  s3 := Stu{
+		"男",
+		18,
+	}
+  // 按字段名 （用的多）
+  s := Stu{
+		name: "tom",
+		age:  20,
+	}
 
-	//初始化,未初始化的值是默认零值
-	s.name = "jack"
-	s.age = 18
-
-	//访问
-	fmt.Printf("%v\n", s.name) //jack
-
-	//
-	fmt.Printf("%T --- %v\n", s, s) //main.Stu --- {jack 18 []}
-
+  
 }
 ```
 
-**匿名结构体**
+通过结构体字段名，访问结构体实例
 
 ```go
-var user struct{Name string; Age int}
+p := Stu{
+		name: "jack",
+		age:  14,
+}
+
+// 获取
+fmt.Printf("%v\n", p.name) //jack
+
+// 修改
+p.name="tom"
 ```
 
-**结构体匿名字段**
+**特殊情况**
 
-* 匿名字段，即不需要变量名，只需要定一个变量类型就可以，Go会默认指定其字段名为类型名。初始化时，只能按照定义的字段类型顺序赋值
-* 匿名字段的类型只能出现一次，比如，不能出现两个int匿名字段
-* 匿名字段可以和命名字段一起啊混合使用
+下面的写法很少见到，但是也确实是正确的语法
+
+结构体字段也支持匿名字段，也支持匿名字段可以和命名字段混合使用，Go中匿名字段用类型当作key名
 
 ```go
-//声明
+//注意：因为匿名字段是以类型作为区分的，所以同一个类型只能充当一个匿名字段
 type Stu struct {
 	int //匿名字段
 	string //匿名字段
 	name string //命名
 }
+```
 
-//赋值1:用列表初始化 （后面会提到）
+初始化匿名字段的方式
+
+```go
+// 按字段顺序
 res := Stu{
 		18,
 		"男",
 		"jack",
 }
 
-//赋值2:用键值对初始化（后面会提到）,匿名字段用类型当作key
+// 按字段名
 res := Stu{
   int:18,
   string:"男",
   name:"jack",
 }
-
 ```
 
-注意
-
-* struct也支持简写
-
-  ```go
-  type Stu struct {
-  	name,age   int //name和age都为int类型
-  	score []float64
-  }
-  ```
-
-* **结构体嵌套**结构体内部字段的类型，不要想的太局限，这个类型除了基本类型，还可以是函数类型（后面讲到方法时，会提到这个情况）、结构体类型甚至结构体指针
-
-  **结构体类型**
-
-  ```go
-  type Address struct {
-  	country, city string
-  }
-  
-  type Stu struct {
-  	name string
-  	age  int
-  	Address //这里是混用匿名字段
-  }
-  
-  //键值对赋值
-  res := Stu{
-    name:"jack",
-    age:18,
-    Address:Address{ //把类型名当做键名
-  		"中国",
-  		"北京",
-  	,
-  }
-  //列表赋值
-  res := Stu{
-  		"jack",
-  		18,
-  		Address{ //这里是一个结构体实例
-  			"中国",
-  			"北京",
-  		},
-  }
-  
-  
-  // 使用类型名Address作为字段名 ，访问子结构体内部的属性
-  fmt.Println(res.Address.city) //北京
-  // 直接访问子结构体内部的属性，当结构体中没有这个字段，就回去子结构体查找
-  fmt.Println(res.city) //北京
-  ```
-  
-  如果结构体属性和子结构体属性名重复了，怎么访问子结构体属性？
-  
-  ```go
-  //必须使用类型名Address作为字段名 ，访问子结构体内部的属性
-  fmt.Println(res.Address.city) //北京
-  ```
-  
-  **结构体指针**
-  
-  访问字结构体的规则同上
-  
-  ```go
-  type Address struct {
-  	country, city string
-  }
-  
-  type Stu struct {
-  	name string
-  	age  int
-  	*Address //这里是混用匿名字段
-  }
-  
-  //赋值
-  res := Stu{
-  		"jack",
-  		18,
-  		&Address{ //这里是一个结构体实例
-  			"中国",
-  			"北京",
-  		},
-  	}
-  
-  //访问嵌套在内部的结构体
-  fmt.Println(res.Address.city) //北京
-  ```
-
-### 结构体实例
-
-* 两种实例化方法，最后一个字段都必须加逗号
-* 两种方式，不能混合使用
-
-**使用键值对赋值**
+访问匿名字段（以类型名作为key，所以使用类型名）
 
 ```go
-p := Stu{
-		name: "jack",
-		age:  14,
-}
-fmt.Printf("%v\n", p) //{jack 14}
+Stu.int  // 18
 ```
 
-**使用列表赋值**（值与声明结构体时的顺序需要对应）
-
-```go
-p := Stu{
-	"jack",
-	14,
-}
-fmt.Printf("%v\n", p) //{jack 14}
-```
-
-注意：
-
-实例化时，定义变量、赋值空结构体都是一样的，仅获得默认字段全部为零值的实例
-
-```go
-type Person struct {
-	Name string
-	Age  int
-}
-//方式1
-var p1 Person
-fmt.Printf("%#v\n", p1) //main.Person{Name:"", Age:0}
-
-//方式2
-p2 := Person{}
-fmt.Printf("%#v\n", p2) //main.Person{Name:"", Age:0}
-```
-
-**访问结构体实例**
-
-```go
-p := Stu{
-		name: "jack",
-		age:  14,
-}
-fmt.Printf("%v\n", p.name) //jack
-```
-
-**更改实例字段**
-
-```js
-p := Stu{
-		name: "jack",
-		age:  14,
-}
-p.name="tom"
-fmt.Printf("%v\n", p.name) //tom
-```
-
-### 结构体指针类型
+struct也支持简写
 
 ```go
 type Stu struct {
-	scoreinfo *score //结构体指针类型
-}
-type Score struct {
-	Math    int
-	English int
+	name,age   int //name和age都为int类型
+	score []float64
 }
 ```
 
-### 结构体指针实例
+### 嵌套结构体
 
-`&`取具体的实例地址
+结构体内部字段的类型除了基本类型，还可以是函数类型（后面讲到方法时，会提到这个情况）、其他结构体类型甚至结构体指针
+
+**嵌套子结构体**
 
 ```go
-s :=&Stu{
+package main
+
+import "fmt"
+
+type Address struct {
+	city string
+}
+
+type Stu struct {
+	name    string
+	age     int
+	Address //这里是混用匿名字段，嵌套了子结构体
+}
+
+func main() {
+	//键值对赋值
+	res := Stu{
+		name: "jack",
+		age:  18,
+		Address: Address{
+			city: "北京",
+		},
+	}
+	// 使用类型名Address作为字段名 ，访问子结构体内部的属性
+	fmt.Println(res.Address.city) //北京
+	// 直接访问子结构体内部的属性，当结构体中没有这个字段，就回去子结构体查找
+	fmt.Println(res.city) //北京
+}
+
+```
+
+如果结构体属性和子结构体属性名重复了，怎么访问子结构体属性？
+
+```go
+//必须使用类型名Address作为字段名 ，访问子结构体内部的属性
+fmt.Println(res.Address.city) //北京
+```
+
+**嵌套指针**
+
+访问字结构体的规则同上
+
+```go
+type Address struct {
+	city string
+}
+
+type Stu struct {
+	name string
+	age  int
+	*Address //这里是混用匿名字段 ， 字段的类型是指针
+}
+
+//赋值
+res := Stu{
+		"jack",
+		18,
+		&Address{ 
+      city:"北京",
+		},
+	}
+
+//访问嵌套在内部的结构体
+fmt.Println(res.Address.city) //北京
+```
+
+### 结构体指针
+
+`& 变量`取变量的地址
+
+```go
+s =&Stu{
   	name:"tom",
 		age: 20,
 },
 ```
 
-`new`关键字（为结构体开辟内存空间），创建空的实例，然后取其地址
+
+
+`* 类型`、`* 变量`
+
+指针类型
+
+```
+var s *Stu
+```
+
+取地址的值，要求变量存的必须为地址
+
+```
+p:=&Stu{
+	Name:"tom"
+}
+
+fmt.Println(*p)
+```
+
+
+
+`new(变量)`返回空实例的地址（等价于创建空的实例，然后取其地址）
 
 ```go
 s :=new(Stu)
@@ -3847,37 +4218,9 @@ func main() {
 
 
 
-### 构造函数
-
-类似于JS中工厂函数，返回一个对象
-
-函数返回值，一般是指针，而不是直接返回结构体
-
-```go
-package main
-
-import "fmt"
-
-type Stu struct {
-	name string
-	age  int
-}
-
-func newStu(name string, age int) *Stu {
-	return &Stu{
-		name, //这里是列表赋值
-		age,
-	}
-}
-func main() {
-	res := newStu("jack", 12)
-	fmt.Printf("%T\n", res) //*main.Stu
-}
-```
-
-
-
 ### 方法
+
+https://blog.csdn.net/zy_dreamer/article/details/132795614
 
 接触过面向对象语言的人，都知道方法指的就是，实例的函数。但是，在Go无论结构体是否实例化，都可以调用其方法
 
@@ -4070,93 +4413,197 @@ JSON对于一个前端来说最熟悉不过了，JS中的对象字面量可以�
 
 **注意**：这里有一个大坑，定义的结构体名和结构体字段，必须首字母大写，否则`encoding/json`库（序列化与反序列化的函数，都是用的这个库）中的方法不能接收到这个参数结构体
 
+**总结：** 
+
+* 序列化、Marshal、Encoder，转化为JSON
+* 反序列化、UnMarshal、Decoder，转化为GO语言的变量结构
+
 **序列化**
 
-在Go我们需要使用一个标准库将Go中的数据转化为JSON格式的字符串，这个过程叫做序列化
+将Go中的数据转化为JSON格式的字符串，这个过程叫做序列化
 
-```go
-data, err := json.Marshal(转化的结构) //data是返回的byte[]格式的字符串
-```
+* Marshal
 
-前面讲过的切片（slice）和映射（map），组合的数据就符合JSON的结果，能成功转化为JSON字符串
+  v可以是值、指针，对于复杂结构体推荐使用指针类型，减少拷贝v带来的性能损耗
 
-```go
-m := map[string][]string{
-	"姓名": {"tom", "jack"},
-	"性别": {"男", "男"},
-}
-data, err := json.Marshal(m)
-if err != nil {
-	fmt.Println("err")
-  return
-}
-fmt.Printf("%s", data) //{"姓名":["tom","jack"],"性别":["男","男"]}
-```
+  ```go
+  func Marshal(v interface{}) ([]byte, error)
+  ```
 
-切片（slice）和 结构体（struct）【实例化的结构体和map相似】也能达成这种效果
+  例子：前面讲过的切片（slice）和映射（map），组合的数据就符合JSON的结果，能成功转化为JSON字符串
 
-```go
-package main
+  ```go
+  m := map[string][]string{
+  	"姓名": {"tom", "jack"},
+  	"性别": {"男", "男"},
+  }
+  data, err := json.Marshal(m)
+  if err != nil {
+  	fmt.Println("err")
+    return
+  }
+  fmt.Printf("%s", data) //{"姓名":["tom","jack"],"性别":["男","男"]}
+  ```
 
-import (
-	"encoding/json"
-	"fmt"
-)
+  例子：切片（slice）和 结构体（struct）【实例化的结构体和map相似】也能达成这种效果
 
-//Student 学生
-type Student struct {
-	Name string
-	Age  int
-}
+  ```go
+  package main
+  
+  import (
+  	"encoding/json"
+  	"fmt"
+  )
+  
+  //Student 学生
+  type Student struct {
+  	Name string
+  	Age  int
+  }
+  
+  //Class 班级
+  type Class struct {
+  	Title    string
+  	Students []*Student
+  }
+  
+  func main() {
+  	c := &Class{
+  		Title:    "101",
+  		Students: make([]*Student, 0, 200),
+  	}
+  	stu := &Student{
+  		Name: "jack",
+  		Age:  18,
+  	}
+  	c.Students = append(c.Students, stu)
+  
+  	//JSON序列化：结构化数据-->JSON格式的字符串
+  	data, err := json.Marshal(c) //结构体一般使用地址，而不是值，以减少赋值带来的性能损失
+  	if err != nil { 
+  		fmt.Println("err")
+  		return
+  	}
+  	fmt.Printf("%s\n", data) //{"Title":"101","Students":[{"Name":"jack","Age":18}]}
+  
+  }
+  
+  ```
 
-//Class 班级
-type Class struct {
-	Title    string
-	Students []*Student
-}
+* Encoder 将Go语言中的结构对象编码成 JSON 数据，并写入输出流
 
-func main() {
-	c := &Class{
-		Title:    "101",
-		Students: make([]*Student, 0, 200),
-	}
-	stu := &Student{
-		Name: "jack",
-		Age:  18,
-	}
-	c.Students = append(c.Students, stu)
+  与Marshal不同，Encoder使用Encode方法读取变量，并写入Encoder实例。Encoder实例是一个io.Writer
 
-	//JSON序列化：结构化数据-->JSON格式的字符串
-	data, err := json.Marshal(c) //结构体一般使用地址，而不是值，以减少赋值带来的性能损失
-	if err != nil { 
-		fmt.Println("err")
-		return
-	}
-	fmt.Printf("%s\n", data) //{"Title":"101","Students":[{"Name":"jack","Age":18}]}
+  ```go
+  package handler
+  
+  import (
+      "encoding/json"
+      "net/http"
+  )
+  
+  type User struct {
+      FirstName string `json:"firstname"`
+      LastName  string `json:"lastname"`
+      Age       int    `json:"age"`
+  }
+  
+  func WriteJsonResponseHandler(w http.ResponseWriter, r *http.Request) {
+      p := User{
+          FirstName: "John",
+          LastName:  "Doe",
+          Age:       25,
+      }
+    // Set response header
+      w.Header().Set("Content-Type", "application/json")
+      err := json.NewEncoder(w).Encode(&p)
+      if err != nil {
+          //... handle error
+      }
+  }
+  
+  // router/router.go
+  indexRouter.HandleFunc("/get_json_response", handler.WriteJsonResponseHandler)
+  ```
 
-}
-
-```
+  
 
 **反序列化**
 
 反JSON序列化：JSON格式的字符串->结构化数据
 
-```go
-err := json.Unmarshal(byte[]类型的json字符串, &tempClass) //tempClass接收转化后的结果
-```
+* UnMarshal
 
-接收反序列化的变量也必须符合JSON的格式
+  将data写入v指向的变量，v必须符合JSON的格式，否则会报错
 
-```go
-str := `{"Title":"101","Students":[{"Name":"jack","Age":18}]}`
-var tempClass Class
-err := json.Unmarshal([]byte(str), &tempClass) 
-if err != nil {
-	fmt.Println(err)
-}
-fmt.Printf("%#v\n", tempClass) //main.Class{Title:"101", Students:[]*main.Student{(*main.Student)(0xc00000c198)}}
-```
+  注意：v应该是一个指针
+
+  ```go
+  func Unmarshal(data []byte, v interface{}) error
+  ```
+
+  例子
+
+  ```go
+  str := `{"Title":"101","Students":[{"Name":"jack","Age":18}]}`
+  var tempClass Class
+  err := json.Unmarshal([]byte(str), &tempClass) 
+  if err != nil {
+  	fmt.Println(err)
+  }
+  fmt.Printf("%#v\n", tempClass) //main.Class{Title:"101", Students:[]*main.Student{(*main.Student)(0xc00000c198)}}
+  ```
+
+* Decoder
+
+  与UnMarshal不同，Decoder从io.Reader读取json字符串，再写入变量
+
+  注意：v应该是一个指针
+
+  ```go
+  // 从io.Reader创建一个Decoder
+  func NewDecoder(r io.Reader) *Decoder
+  
+  // 从Decoder中反序列化到变量v中
+  func (dec *Decoder) Decode(v interface{}) error
+  ```
+
+  常用在读取request.body的数据
+
+  ```go
+  package handler
+  
+  import (
+      "encoding/json"
+      "fmt"
+      "net/http"
+  )
+  
+  type Person struct {
+      Name string
+      Age  int
+  }
+  
+  func DisplayPersonHandler(w http.ResponseWriter, r *http.Request) {
+      var p Person
+  
+      // 将请求体中的 JSON 数据解析到结构体中
+      // 发生错误，返回400 错误码
+      err := json.NewDecoder(r.Body).Decode(&p)
+      if err != nil {
+          http.Error(w, err.Error(), http.StatusBadRequest)
+          return
+      }
+  
+      fmt.Fprintf(w, "Person: %+v", p)
+  }
+  
+  // router/router.go
+  indexRouter.HandleFunc("/parse_json_request", handler.ParseJsonRequestHandler)
+  
+  ```
+
+  
 
 ### 结构体标签
 
@@ -4167,36 +4614,67 @@ fmt.Printf("%#v\n", tempClass) //main.Class{Title:"101", Students:[]*main.Studen
 Tag在结构体字段的后方定义，由一对**反引号**包裹起来，具体的格式如下：
 
 ```bash
-`key1:"value1" key2:"value2"`
+`key1:"value1" key2:"value2,value3"`
 ```
 
-结构体tag由一个或多个键值对组成。键与值使用冒号分隔，值用双引号括起来。同一个结构体字段可以设置多个键值对tag，不同的键值对之间使用空格分隔。
+不同函数或者工具会读取不同的key，得到对应的value，来实现其功能
+
+**JSON**
+
+使用Go内置的json/encoding库序列化函数时，读取key=json的tag
+
+| 标签值   | 含义                                                         |
+| -------- | ------------------------------------------------------------ |
+| -        | 该字段不进行序列化 例：`json:"-"`                            |
+| omitempy | 该字段为类型零值或空值，序列化时忽略该字段 <br />例：`json:"omitempy"` 字段名省略的话用结构体字段名 |
+| 别名     | 重新字段别名 例：`json:"age"`，给字段其别名                  |
+| 类型     | 见例子2                                                      |
+
+例子1：
 
 ```go
-type Class struct {
-	Title    string     `json:"title"`
-	Students []*Student `json:"students_list"`
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type Student struct {
+	Name string `json:"name"` // 序列化结果中字段名为name，反序列化把name放到结构体Name字段中
+	Age  int    `json:"age"`
 }
 
-//{"title":"101","students_list":[{"Name":"jack"}]}
+func main() {
+  // 序列化
+	s := &Student{
+		Name: "tom",
+		Age:  20,
+	}
+	dataJSON, _ := json.Marshal(s)
+	fmt.Printf("%s\n", dataJSON) // {"name":"tom","age":20}
+
+  // 反序列化
+	var temp Student
+	if err := json.Unmarshal(dataJSON, &temp); err != nil {
+		fmt.Printf("%v", err)
+	}
+	fmt.Printf("%#v", temp) //main.Student{Name:"tom", Age:20}
+
+}
 ```
 
-`json`表示当使用json库序列化时使用的替代字段名，还支持 `xml`、`yaml`等
+例子2：
 
 ```go
-type Class struct {
-	Title    string     `json:"title" xml:"xml_title"`
-	Students []*Student `json:"students_list"`
+type Student struct {
+	Age int `json:"age,string"` //Age字段对应json中age字段。且json中的age需为string，否则就会读入0（int类型的零值）
 }
 ```
 
-一个特殊的例子
+**其他工具的tags**
 
-```go
-type Class struct {
-	ID    int     `json:"id,string"` //id是指在json中取id字段的值。string是指该字段还可以接收string类型
-}
-```
+参见：https://juejin.cn/post/7208736503520886843#heading-3
 
 ## 接口类型
 
@@ -4532,9 +5010,9 @@ if err != nil {
   }
   ```
 
-* 二次封装错误对象
+* 包装错误对象（error wrap）
 
-* 向上面一样使用`fmt.Printf`可以 直接获取错误对象中的文本，但是丢失了错误对象的结构。如果想对一些Go标准库函数返回的错误对象再次包装，成为新的错误对象，应该使用下面的函数
+  向上面一样使用`fmt.Printf`可以 直接获取错误对象中的文本，但是丢失了错误对象的结构。如果想对一些Go标准库函数返回的错误对象再次包装，成为新的错误对象，应该使用下面的函数
 
   ```go
   fmt.Errorf("查询数据库失败，err:%w", err) //%w是err对象的位置，返回一个新的错误
@@ -4567,10 +5045,22 @@ if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 
 2、Is方法
 
-判断err是否是target类型的错误
+如果错误err1，使用Errorf包装了一层或多次最终返回了错误err2
+
+使用断言是无法判断err2中包含err1的
+
+判断err内部是否包含target类型的错误
 
 ```go
 func Is(err, target error) bool
+```
+
+例子：
+
+```go
+err1 := errors.New("错误")
+err2 := fmt.Errorf("%w", err1)
+fmt.Println(errors.Is(err2, err1)) //true
 ```
 
 ```go
@@ -4579,17 +5069,56 @@ if ok:=errors.Is(err,targetError);ok{
 }
 ```
 
-注意：err属于ErrorUser的子集，Is也会返回true
+3、As方法
+
+判断err中是否包含变量target对应类型的错误，如果包含返回true，且将这个错误对象写入变量target
 
 ```go
-var (
-	ErrorUser       = errors.New("用户错误")
-	ErrorUserUnAuth = fmt.Errorf("%w：用户权限错误", ErrorUser)
+func As(err error, target any) bool
+```
+
+例子
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
 )
 
-err := ErrorUserUnAuth
-fmt.Printf("%v\n", errors.Is(err, ErrorUser))
-fmt.Printf("%v\n", errors.Is(err, ErrorUserUnAuth))
+type MyError struct {
+	Message string
+}
+
+func (e *MyError) Error() string {
+	return e.Message
+}
+
+func main() {
+	err1 := &MyError{"Error 1"}
+	err2 := errors.New("Error 2")
+
+	// 创建一个错误链
+	errChain := fmt.Errorf("Wrapper: %w", err1)
+
+	// 使用 errors.As 提取错误
+	var targetErr *MyError
+	if errors.As(errChain, &targetErr) {
+		fmt.Println("成功提取错误：", targetErr)
+	} else {
+		fmt.Println("提取错误失败")
+	}
+
+	// 使用 errors.As 提取错误
+	var targetErr2 *MyError
+	if errors.As(err2, &targetErr2) {
+		fmt.Println("成功提取错误：", targetErr2)
+	} else {
+		fmt.Println("提取错误失败")
+	}
+}
+
 ```
 
 
@@ -5670,6 +6199,8 @@ func main() {
 
 ```
 
+注意，通常我们在每次调用协程前使用wg.Add增加计数器，而不是在协程内部使用wg.Add，这可能导致协程未执行时，主进程的wg.Wait就执行了，然后结束了主程序
+
 
 
 ### 临界资源
@@ -5796,13 +6327,25 @@ func main() {
 	例子：A、B读取剩余票数n，A售票窗口售出1张票，剩余n-1，B售票窗口售出1张票，剩余n-1。实际上售出了两张票，应该是n-2
 ```
 
+注意：
 
+* 加锁与解锁之间的代码称为临界区资源，如下临界区持有变量data，那任何一个时间点只能有一个goroutine在执行，即修复变量data
+
+  ```go
+  加锁
+  
+  data=1 
+  
+  解锁
+  ```
+
+* 当某一goroutine对某一临界资源加锁后，如果有其他的goroutine来执行上锁操作，会被阻塞，直到当前的goroutine释放锁后其他的goroutine才会继续加锁
 
 **互斥锁**
 
 当某个goroutine获得互斥锁后，其他goroutine均不可对资源进行读写
 
-代码中`mutex.Lock`与`mutex.Unlock`之间同一时间，只能存在一个goroutine访问
+代码中`mutex.Lock`与`mutex.Unlock，在同一时间，只能存在一个goroutine执行这段代码
 
 注意：加锁后一定记得解锁
 
@@ -5866,10 +6409,12 @@ func main() {
 
 同一时间
 
-* 如果有一个读操作进行（比互斥锁并发度高，适合多读写少的场景），其他读操作也可以进行，但是不允许写操作
-* 如果有一个写操作进行，不允许任何读操作
+* 上RLock读锁：所有读操作可以进行，但是不允许写操作
+* 上Lock写锁：仅有当前进程可以写，不允许任何读操作
 
 相关方法：
+
+Lock写锁、RLock读锁
 
 ![image-20230107132901103](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230107132901%20.png)
 
@@ -5932,33 +6477,50 @@ func main() {
 
 **struct字段为锁类型最为常见**
 
-这个例子中，定义了一个名为`Counter`的结构体，其中`mu`字段是一个`sync.Mutex`类型的值，对`mu`加锁就是对整个结构体加锁
+这个例子中，定义了一个名为`Counter`的结构体，其中`mu`字段是一个`sync.Mutex`类型的值
+
+下面例子中，在加锁、解锁直接访问的变量 value 会被加锁
 
 ```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
 type Counter struct {
-    count int
-    mu    sync.Mutex
+	mu    sync.Mutex
+	value int
 }
 
-//增加count值
 func (c *Counter) Increment() {
-    c.mu.Lock()
-    defer c.mu.Unlock()
-    c.count++
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.value++
 }
 
-//减少count值
-func (c *Counter) Decrement() {
-    c.mu.Lock()
-    defer c.mu.Unlock()
-    c.count--
+func (c *Counter) GetValue() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.value
 }
 
-//读取count值
-func (c *Counter) Value() int {
-    c.mu.Lock()
-    defer c.mu.Unlock()
-    return c.count
+func main() {
+	counter := Counter{}
+
+	// 启动多个 goroutine 修改和读取计数器的值
+	for i := 0; i < 5; i++ {
+		go func() {
+			counter.Increment()
+			fmt.Printf("Incremented: %d\n", counter.GetValue())
+		}()
+	}
+
+	time.Sleep(time.Second) // 等待所有 goroutine 执行完毕
+
+	fmt.Printf("Final Value: %d\n", counter.GetValue())
 }
 
 ```
@@ -5995,42 +6557,54 @@ channel是可以让一个 goroutine 发送特定值到另一个 goroutine ，从
 
 Go 语言中的通道是一种**引用**类型，像一个队列，总是遵循先入先出的规则，来保证收发数据的顺序。每一个通道内部元素必须指定其中元素的具体类型
 
-**声明通道类型**
+**初始化**
 
-channel是引用类型，默认零值为nil，需要使用make初始化空间才能使用
+方式1：
 
 ```go
-//1、定义通道类型的变量，通道内部元素为int
-var ch chan int 
+//1-1、定义双向通道类型，通道内部元素为int
+var ch1 chan int 
 
-//2、定向通道
-var a chan<- int //只能写入数据的通道
-var b <-chan int //只能读取数据的通道
+//1-2、定向通道
+var ch2 chan<- int //只能写入数据的通道
+var ch3 <-chan int //只能读取数据的通道
 
 
-//3、默认零值为nil
-fmt.Println(ch == nil) //true
-//4、容量为0
-fmt.Println(cap(ch)) //0
-//5、长度为0
-fmt.Println(len(ch)) //0
+// 默认零值为nil
+fmt.Println(ch1 == nil) //true
+// 容量为0
+fmt.Println(cap(ch1)) //0
+// 实际长度为0
+fmt.Println(len(ch1)) //0
 ```
 
-无论是未初始化，还是初始化后数据为空，判断通道为空，都是判断`len(ch)==0`（与切片相同）
-
-**始化空间**
-
-channel容量确定后不可更改
+方式2：使用make初始化空间
 
 ```go
-//上面声明的变量ch，需要使用make初始化空间才能使用
-ch= make(chan int) 
-
 //一般直接使用:=进行类型推断
-ch:=make(chan int，10) //第二个参数是通道容量
+ch:=make(chan int，10) //第二个参数是通道容量，channel容量确定后不可更改
 
-ch:=make(chan int)  //不传第二个参数，则默认为0
+
+//不传第二个参数，则默认为0。
+ch2:=make(chan int)  
+
+
+fmt.Println(ch2 == nil) // false
+fmt.Println(cap(ch2)) //0
+fmt.Println(len(ch2)) //0
 ```
+
+
+
+注意：
+
+* channel是引用类型，默认零值为nil，需要使用make初始化空间才能使用
+
+
+
+* 无论是未初始化，还是初始化后数据为空，判断通道为空，都是判断`len(ch)==0`（与切片相同）
+
+
 
 **写入和读取数据**
 
@@ -6091,6 +6665,8 @@ channel是同步的，同一时刻，只能有一个goroutine读/写通道
 
 ![image-20230107154446103](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107154446%20.png)
 
+**速记口诀：读关闭无数据返回空值，读空、写满阻塞，写关闭异常，关闭空、关闭已关闭异常**
+
 在实践中，上表的两种情况应该规避，避免出现死锁：
 
 * 通道未初始化（第2列）
@@ -6129,55 +6705,11 @@ data,ok:=<-ch
 
 
 
-通道关闭后，还是要继续读取数据的，判断ok为false后：
-
-* 结束不需要继续读取了（继续读返回无意义的零值）
-
-* 不要再执行close操作了，否则就会panic
-
-```go
-package main
-
-import (
-	"fmt"
-)
-
-func setData(ch chan int) {
-  //这段代码比较有意思的点，使用的是无缓冲区的通道，这就会导致for循环每写入一次，就会停止，等待数据被读走后，再次写入
-	for i := 0; i < 10; i++ {
-		ch <- i
-	}
-	close(ch)
-}
-
-func main() {
-	ch := make(chan int)
-	go setData(ch)
-	//主进程被for循环阻塞。这段代码记住，用于遍历channel，后面会再次提到
-	for {
-		value, ok := <-ch
-		if ok {
-			fmt.Printf("读取值：%v,%v\n", value, ok)
-
-		} else {
-			fmt.Println("读取结束")
-			break
-		}
-	}
-	fmt.Println("主goroutine结束")
-
-}
-```
-
-![image-20230107182512279](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107182512%20.png)
 
 
+**遍历读取通道**
 
-**读goroutine遍历读取通道**
-
-重点：写goroutine最后必须调用close，否则这两种方式均会出现死锁
-
-【如果写goroutine不close，这两种方式均会一直读取，而代码里又没有写的地方了，所以必然会发生】
+重点： close通道后，通道仍能读取剩余的数据，当数据读取完毕时继续读取将返回零值。为了不读取无效的零值，我们可以采用下面两种方法
 
 方式一：读取到管道为空时，ok变会为false，x为元素类型对应的零值
 
@@ -6223,11 +6755,53 @@ func main() {
 //结束
 ```
 
+重点：
+
+关闭的通道，不要再执行close操作了，否则就会panic，所以一般是写goroutine在最后关闭通道。
+
+如果通道一直不关闭，上面两种方式会一直阻塞读取，即发生死锁
 
 
 
+```go
+package main
 
-**主、子goroutine通讯实战**
+import (
+	"fmt"
+)
+
+func setData(ch chan int) {
+  //这段代码比较有意思的点，使用的是无缓冲区的通道，这就会导致for循环每写入一次，就会停止，等待数据被读走后，再次写入
+	for i := 0; i < 10; i++ {
+		ch <- i
+	}
+	close(ch)
+}
+
+func main() {
+	ch := make(chan int)
+	go setData(ch)
+	//主进程被for循环阻塞。这段代码记住，用于遍历channel，后面会再次提到
+	for {
+		value, ok := <-ch
+		if ok {
+			fmt.Printf("读取值：%v,%v\n", value, ok)
+
+		} else {
+			fmt.Println("读取结束")
+			break
+		}
+	}
+	fmt.Println("主goroutine结束")
+
+}
+```
+
+![image-20230107182512279](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230107182512%20.png)
+
+
+
+**主、子goroutine通讯**
 
 WaitGroup实际上是主goroutine与子goroutine通讯，在子goroutine均结束后，才终止主goroutine
 
@@ -6340,7 +6914,7 @@ default://可以没有default
   	ch2 := make(chan int, 1)
   
   	var data int
-    //两个通道都为空，肯定阻塞了，所以会走defalut。这个例子中甚至没有default会造成死锁，因为ch1、ch2均没有输入，他们会造成一直阻塞，即死锁
+    //两个通道都为空，肯定阻塞了，所以会走defalut。这个例子中如果没有default会造成死锁，因为ch1、ch2均没有输入，他们会造成一直阻塞，即死锁
   	select {
   	case data = <-ch1:
   		fmt.Println("执行了第一个case", data)
@@ -6712,9 +7286,42 @@ Background() //创建一个空的上下文
 
 指定最后的时间期限A，返回新的Context对象，如果给这个对象设置新的时间期限B，则新的Context以两个时间中最早的为准
 
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func main() {
+	// 创建一个父 Context
+	parentContext := context.Background()
+
+	// 设置截止时间为当前时间加上5秒
+	deadline := time.Now().Add(5 * time.Second)
+
+	// 使用 WithDeadline 创建带有截止时间的 Context
+	ctx, cancel := context.WithDeadline(parentContext, deadline)
+	defer cancel() // 确保在使用完成后取消 Context
+
+	// 模拟一个耗时操作
+	select {
+	case <-time.After(2 * time.Second):
+		fmt.Println("Operation completed successfully.")
+	case <-ctx.Done():
+		fmt.Println("Operation canceled due to deadline.")
+	}
+}
+
+```
+
 **WithTimeout**
 
-在指定的时间之后，`ctx.Done()`通道放入一个元素
+WithDeadline是指定一个截止时刻，WithTimeout是指定一个时间间隔
+
+WithTimeout在指定的时间间隔结束后，`ctx.Done()`通道放入一个元素
 
 如果想要提前取消，可直接调用cancel函数，则立即在`ctx.Done()`通道放入一个元素
 
@@ -6742,16 +7349,17 @@ func main() {
 
 将上下文对象包装下增加新的键值对，返回新的上下文
 
+```go
+ctx := context.Background()
+
+ctx = context.WithValue(ctx, "name", "jack")
+
+fmt.Println(ctx.Value("name")) //jack
+```
+
 Go官方不推荐直接使用string类型的值作为key，而是建议定义新的类型 
 
-```go
-Type contextKey string
-
-func main(){
-  ctx:=Background()
-	k:=contextKey("name")
-	Newctx:=ctx.WithValue(ctx,k,"hedaodao")
-}
+```
 ```
 
 
@@ -6972,6 +7580,8 @@ func main() {
 	fmt.Println(filepath.IsAbs(path)) //false
 
 	//转化为绝对路径func Abs(path string) (string, error)
+  // 注意： 是将代码运行路径（pwd）作为根路径，即：同一个go文件在不同路径下运行，根路径不同
+  // 例如： Abs(.)返回的就是代码运行路径。
 	fmt.Println(filepath.Abs(path)) //Users/yc/Documents/GO/GoProject/testFunc/a.txt <nil>
 
 	//拼接路径：func Join(elem ...string) string
@@ -7005,9 +7615,23 @@ func main() {
 }
 ```
 
+常见的写法，目录不存在则创建目录
+
+```go
+// Stat入参可以是目录、文件路径
+// 但是这里的功能是判断目录不存在，则创建目录，所以入参应该是目录路径
+if _, err := os.Stat(dst); err != nil {
+		if err := os.MkdirAll(dst, os.ModePerm); err != nil {
+			return nil, err
+		}
+}
+```
+
+
+
 ### 文件操作
 
-**获取文件信息**
+**文件信息**
 
 <span id="FileInfo">**FileInfo**</span>类型：FileInfo是一个接口类型，用来描述一个文件的信息
 
@@ -7022,20 +7646,22 @@ type FileInfo interface {
 }
 ```
 
+**获取文件信息**
+
 返回FileInfo类型的函数：
-
-* 参数都是文件路径
-
-* 如果出错，返回的错误值为*PathError类型
-* 区别：
-  * Stat：如果指定的文件对象是一个符号链接（软链接），返回的FileInfo**描述该符号链接指向的文件的信息**
-  * Lstat：如果指定的文件对象是一个符号链接（软链接），返回的FileInfo**描述该符号链接的信息**
 
 ```go
 func Stat(name string) (fi FileInfo, err error)
 
 func Lstat(name string) (fi FileInfo, err error)
 ```
+
+参数都是文件、目录路径，如果不存在，则返回的错误值为*PathError类型
+
+区别：
+
+* Stat：如果指定的文件对象是一个符号链接（软链接），返回的FileInfo**描述该符号链接指向的文件的信息**
+* Lstat：如果指定的文件对象是一个符号链接（软链接），返回的FileInfo**描述该符号链接的信息**
 
 例子
 
@@ -7441,7 +8067,7 @@ func main() {
 	var res []byte
 	for {
 		temp := make([]byte, 100)
-		_, err := file.Read(temp) //将数据读入temp中,n是读取的字节数
+		n, err := file.Read(temp) //将数据读入temp中,n是读取的字节数
 		if err == io.EOF||n=0 {
 			fmt.Println("读取文件结束")
 			break
@@ -7450,6 +8076,8 @@ func main() {
 			fmt.Println("读取文件失败")
 			break
 		}
+    // 这个技巧应该注意：temp是循环读取的，假设最后一次读取了10个字节，但是剩下的90个字节还是上一次读取的结果。这种赋值能保证temp中len长度内的都是本次循环的实际数据
+    temp=temp[:n]
 		res = append(res, temp...)
 	}
 	fmt.Printf("%s", string(res))
@@ -7498,7 +8126,7 @@ file, err := os.Create(fileName)
 
 
 
-### 读写游标
+### 设置游标位置
 
 前面我们只在写文件时，可以通过OpenFile的第二个参数指定，写入的数据追加到文件的末尾
 
@@ -7547,17 +8175,29 @@ func main() {
 	}
   
   //读取
-	file.Seek(1, 0)//指定游标起始位置是文件开头，向后移动1字节。应输出b
+	file.Seek(1, io.SeekStart)//io.SeekStart指定游标起始位置是文件开头，向后移动offset个字节。应输出b
 	temp := make([]byte, 1)
 	file.Read(temp)
 	fmt.Println(string(temp)) //b
   
   //写入
-  file.Seek(0, 2)//指定游标起始位置是文件末尾，向后移动0字节。文件会在默认追加写入字符f
+  file.Seek(0, io.SeekEnd)//指定游标起始位置是文件末尾，向后移动0字节。文件会在默认追加写入字符f
 	file.Write([]byte("f")) 
   
 }
+
+
+// Seek的第二个参数：
+//const (
+//	SeekStart   = 0 // 光标置为文件开头
+//	SeekCurrent = 1 // 光标置为当前位置
+//	SeekEnd     = 2 // 光标置为文件结尾
+//)
 ```
+
+**断点续传**
+
+
 
 
 
@@ -7570,11 +8210,6 @@ func ReadFull(r Reader, buf []byte) (n int, err error)
 ```
 
 这个函数非常好用
-
-```go
-```
-
-
 
 ### 复制文件
 
@@ -7589,8 +8224,6 @@ func Copy(dst Writer, src Reader) (written int64, err error)
 ```go
 tempSlice := make([]byte, 32*1024)
 ```
-
-
 
 Copy用于将src复制到dst，他的场景不仅仅是我们常规意义上的复制。例如：
 
@@ -7632,6 +8265,111 @@ func download(url, fileName string) {
 
 func main() {
 	download("https://heyingjiee.github.io/logo.png", "avatar.png")
+}
+```
+
+**断点续传**
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+)
+
+func main() {
+  // 根目录下放一个test.png图片
+	srcFilePath, _ := filepath.Abs("./test.png")
+	srcRootDir, err := filepath.Abs(filepath.Dir(srcFilePath))
+	if err != nil {
+		fmt.Printf("获取根目录失败，err -->%v", err)
+		return
+	}
+	srcFileName := strings.Split(filepath.Base(srcFilePath), ".")[0]
+	srcFileExt := strings.Split(filepath.Base(srcFilePath), ".")[1]
+
+	// 临时文件绝对路径（记录复制了多少个byte）
+	var tempFilePath = path.Join(srcRootDir, "./temp.txt")
+	// 目标文件绝对路径
+	var dstFilePath = path.Join(srcRootDir, srcFileName+"-copy."+srcFileExt)
+
+  // 打开三个文件
+	srcFile, err := os.Open(srcFilePath)
+	if err != nil {
+		fmt.Printf("打开源文件失败，err -->%v", err)
+		return
+	}
+	tempFile, err := os.OpenFile(tempFilePath, os.O_CREATE|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		fmt.Printf("打开临时文件失败，err -->%v", err)
+		return
+	}
+	dstFile, err := os.OpenFile(dstFilePath, os.O_CREATE|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		fmt.Printf("打开目标文件失败，err -->%v", err)
+		return
+	}
+
+	// defer 关闭三个文件
+	defer func(fileSlice []*os.File) {
+		for _, file := range fileSlice {
+			err := file.Close()
+			if err != nil {
+				continue
+			}
+		}
+
+	}([]*os.File{srcFile, tempFile, dstFile})
+
+	// 读取临时文件
+	var bs = make([]byte, 100)
+	totalCopyByte, err := tempFile.Read(bs)
+	totalCopyCount, err := strconv.ParseInt(strconv.Itoa(totalCopyByte), 10, 64)
+	if err != nil {
+		fmt.Printf("读取临时文件失败，err -->%v", err)
+		return
+	}
+
+	// 对源、目标文件设置游标
+	srcFile.Seek(int64(totalCopyCount), io.SeekStart)
+	dstFile.Seek(int64(totalCopyCount), io.SeekStart)
+	copyData := make([]byte, 1024)
+
+	n1 := -1
+	n2 := -1
+
+  // 循环复制
+	for {
+		n1, err = srcFile.Read(copyData)
+		if err == io.EOF || n1 == 0 {
+			fmt.Printf("文件复制完成")
+			os.Remove(tempFilePath)
+			break
+		}
+		if err != nil {
+			fmt.Printf("读取源文件失败，err -->%v", err)
+			return
+		}
+
+		n2, err = dstFile.Write(copyData)
+		if err != nil {
+			fmt.Printf("写入目标文件失败，err -->%v", err)
+			return
+		}
+
+		_, err = tempFile.WriteString(strconv.Itoa(totalCopyByte + n2))
+		if err != nil {
+			fmt.Printf("写入临时文件失败，err -->%v", err)
+			return
+		}
+	}
+
 }
 ```
 
@@ -9911,6 +10649,115 @@ func NewSingleHostReverseProxy(target *url.URL) *ReverseProxy {
 	return &ReverseProxy{Director: director}
 }
 ```
+
+## 加密相关基础知识
+
+加密大致分为以下几种：
+
+* 单项加密
+
+  即明文只能转化为密文，而密文不能解密为明文。例如：MD5、SHA
+
+* 双向加密
+
+  * 对称加密
+
+    秘钥把明文加密为密文，同一个秘钥可解密密文。例如：AES
+
+  * 非对称加密
+
+    公钥加密的内容只能用私钥解密。。例如：RSA
+
+### MD5
+
+MD5信息摘要算法，属于Hash算法的一种（类似一个单调函数，输入入参x，只返回唯一值y。且不同x，必然返回不同相同y）
+
+MD5算法对输入任意长度的信息进行运算，输出128bit的数据
+
+应用场景：文件一致性校验，下载文件后计算文件MD5值与线上文件MD5值是否一致，如果一致则文件完整
+
+### SHA
+
+由美国国家安全局（NSA）所设计，并由美国国家标准与技术研究院（NIST）发布
+
+SHA包含了一系列的具体算法(`-`后的数字表示生成的散列值为位数)：
+
+* SHA-1
+
+* SHA-2包括：SHA-224、SHA-256、SHA-384、SHA-512、SHA-512/224、SHA-512/256。
+
+* SHA-3包括：SHA3-224、SHA3-256、SHA3-384、SHA3-512
+
+目前，SHA256是最为常见的
+
+### AES
+
+对称加密
+
+AES 是一种区块加密算法，加密时会将原始数据按大小拆分成一个个区块进行加密，区块大小固定为 128 比特（即 16 字节）。AES 密钥长度可以是 128、192 或 256 比特（即 16、25 或 32 字节），密钥长度越长，安全性越高，而性能也就越低
+
+
+
+### RSA
+
+非对称加密
+
+应用场景：Https请求就是非对称加密
+
+
+
+
+
+## 进制相关基础知识
+
+最为常用二进制与十进制对应关系（如何算？这个就涉及到初中知识了）
+
+* 0001 对应 十进制1
+* 0010 对应 十进制2
+* 0100 对应 十进制4
+* 1000 对应 十进制8
+
+### 二进制转十进制
+
+快速计算方法：
+
+```
+1011 对应的十进制是11
+
+计算过程：
+		二进制 1000 + 0010 + 0001=1001
+		十进制 8    +     2+    1=11
+		
+所以，看到二进制数从右向左，每4位作为一组（不足4位，在高位补0），对应到十进制的加法，最后将每组计算出来的十进制数相加
+
+
+举个复杂的例子 
+101101 => 分组 0010 1101 =>(2)+(1+4+8)=15 ，最后结果是十进制的15
+
+
+```
+
+### 二进制与十六进制
+
+在Go中，以0x开头，后面跟的是具体的数字。例如0x12表示十六进制数12
+
+十六进制位的范围 （0~9、A、B、C、D、E），超过E则高位进1
+
+有一个规律，1+2+4+8=15刚好能表示一位十六进制，推理出：对应的4个二进制位也能表示一位十六进制数的
+
+```
+0x12A转二进制 计算过程：
+		12A => 每个十六进制位转为对应的4位二进制 0000 0001 0010 1010
+		
+100101010 转十六进制 计算过程：
+		100101010 => 分组 0001 0010 1010 => 每4位对应一个十六进制位 1 2 A 
+```
+
+
+
+
+
+
 
 
 

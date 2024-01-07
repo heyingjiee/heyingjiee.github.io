@@ -8,7 +8,7 @@ cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/gaituba
 ---
 # 系统的学习Git
 
-## 1.版本控制方式分类
+## 版本控制方式分类
 
 * 集中式 SVN (全称 Apache Subversion)
 * 分布式 Git
@@ -27,11 +27,11 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 在实际使用分布式版本控制系统的时候，其实很少在两人之间的电脑上推送版本库的修改，因为可能你们俩不在一个局域网内，两台电脑互相访问不了，也可能今天你的同事病了，他的电脑压根没有开机。因此，分布式版本控制系统通常也有一台充当“中央服务器”的电脑，但这个服务器的作用仅仅是用来方便“交换”大家的修改，没有它大家也一样干活，只是交换修改不方便而已。(来自廖雪峰的git教程)
 
-## 2.SVN
+## SVN
 
 ![rLb0I0](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/rLb0I0.png)
 
-### 2.1 下载
+### 下载
 
 * 提供SVN服务的版本控制服务器。VisualSVN：https://www.visualsvn.com/
 
@@ -45,7 +45,7 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 * 项目成员下载的，用于与服务端VisualSVN交互 。TortoiseSVN ：https://tortoisesvn.net/
 
-### 2.2 操作流程
+### 操作流程
 
 * 检出代码：在没有源代码的情况下，在本地建一个新目录，右键SVN Checkout ，输入仓库地址，User中成员的账号密码，可以把仓库中的代码下载下来
 
@@ -61,7 +61,7 @@ Linus一直痛恨的CVS及SVN都是集中式的版本控制系统，而Git是分
 
 * 右键 TortoiseSVN  ，选择Show log ，就可以看到已有的提交记录
 
-## 3.Git的使用
+## Git的使用
 
 
 
@@ -82,7 +82,7 @@ git remote --help
 git add --help
 ```
 
-### 3.1安装
+### 安装
 
 * 远程仓库，一般托管在GitHub或者是Gitee上，不用下载
 
@@ -107,7 +107,7 @@ git add --help
 
   ![image-20210108095402992](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108095402992.png)
 
-### 3.2 使用Git命令
+### 使用Git命令
 
 查阅更多内容[Git常用命令清单](http://www.ruanyifeng.com/blog/2015/12/git-cheat-sheet.html)
 
@@ -234,7 +234,7 @@ git add --help
     git push 
     ```
 
-### 3.3 GitHub上托管流程
+### GitHub上托管流程
 
 **情况一：GitHub新建空项目，本地没有项目，克隆到本地开发** 
 
@@ -344,7 +344,7 @@ git push --set-upstream 别名 分支名
 
 之后的每次提交直接输入`git push`就会提交到记住的 仓库和分支
 
-### 3.4 分支管理
+### 分支管理
 
 默认主分支是master，创建的各个分支之间，互不影响。Git中出现的`HEAD`指的是当前的分支
 
@@ -417,13 +417,13 @@ git push --set-upstream 别名 分支名
   git branch -d 分支名
   ```
 
-### 3.5 多人协作GitHub Collabrators
+### 多人协作GitHub Collabrators
 
 原本只有仓库所在的账户才能提交代码，所以要在GitHub上添加协作者，添加进来的协作者就可以在该仓库提交代码。
 
 ![image-20210108230251049](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Git相关/image-20210108230251049.png)
 
-## 4.Git工作流程
+## Git工作流程
 
 详细内容查阅[Git工作流程](http://www.ruanyifeng.com/blog/2015/12/git-workflow.html?utm_source=tuicool&utm_medium=referral)
 
@@ -451,9 +451,9 @@ git push --set-upstream 别名 分支名
   >
   > 目前第三方代码仓库托管服务有很多，其中 Github 最火，但是如果想要托管私有项目收费比较高,而且在国内受限于网络环境影响,鲜少有公司使用。例如京东、淘宝这种级别的公司，也不太常用别的第三方的托管服务。Gitlab是一个开源的类似于Github的一个系统，且开源免费，可以部署自己的公司内容。
 
-## 5.GitHub搭建静态博客
+## GitHub搭建静态博客
 
-### 5.1 必须注意
+### 必须注意
 
 本地初始化的是**Hexo的整个项目**，但是发布的是把本地项目变成**静态页面的项目**
 
@@ -463,7 +463,7 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 每次添加新的MarkDown文章后，先推送本地的**Hexo的整个项目**，然后再**发布**
 
-### 5.2 Hexo框架
+### Hexo框架
 
 * [官网](https://hexo.io/zh-cn/)
 
@@ -547,7 +547,7 @@ GitHub中发布的**静态页面的项目**不能直接修改相关内容，必�
 
 * 打开网页 https://heyingjiee.github.io/ ，就能显示博客了
 
-### 5.3 主题
+### 主题
 
 * 官网主题https://hexo.io/themes/
 * 选择需要的主题，进入对应的主题的github页，有对应的使用说明
@@ -571,7 +571,24 @@ cover:  # 标题背景图片,直接把图片网址放上去就行
 npm install --save hexo-browsersync
 ```
 
-## 6.Git命令补充
+
+
+## Git子模块
+
+仓库内包含其他仓库，会导致内部的仓库不会被提交
+
+这时候，需要使用子模块
+
+```
+git submodule add <url> interesting-project/femonitor-wx
+
+
+git rm --cached interesting-project/femonitor-w
+```
+
+
+
+## Git命令补充
 
 这一部分补充的是一些我用到过的非主要的Git命令
 
