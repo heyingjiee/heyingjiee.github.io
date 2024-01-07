@@ -3196,31 +3196,21 @@ translateX(100px); /*参数正数：水平右移；负数：水平左移*/
   ```
 
   **只设置：（正方形——>圆形） 过渡**
-
   ![2022-04-10 12.20.48](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/2022-04-10%2012.20.48.gif)
 
   ```html
-  <!DOCTYPE html>
-  <html>
-  <style type="text/css">
-      .box{
-          width: 100px;
-          height: 100px;
-          background-color: red;
-  
-      }
-      .box:hover{
-          border-radius: 50%;
-          transition:2s; /*变成圆形 花费2s*/
-      }
-  </style>
-  <body>
   <div class="box"></div>
-  </body>
-  </html>
-  
+   .box{
+    width: 100px;
+    height: 100px;
+    background-color: red;
+   }
+   .box:hover{
+    border-radius: 50%;
+    transition:2s; /*变成圆形 花费2s*/
+  }
   ```
-
+  
   记忆小技巧：transtion属性在哪个选择器设置，那个选择器中的属性，就是结束状态呈现的效果
 
 ### transition基础属性

@@ -1,11 +1,3 @@
----
-title: Python商业爬虫进阶--学习笔记
-date: 2021-1-10
-tags: [Python,爬虫,Redis,CSV,MySql]
-categories: Python 
-toc: true 
-cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/python.jpg
----
 # python爬虫进阶学习笔记
 
 ## 爬虫流程
@@ -33,7 +25,7 @@ cover: https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Python相关/pyth
   
   * 解析返回的数据
   
-* 数据持久化 【json,csv ,MongoDB ,resdis ,mysql】
+* 数据持久化：json、csv 、MongoDB 、resdis 、mysql
 
 
 
@@ -47,7 +39,7 @@ python3 提供的原生模块： urlib.request
 
 * Get请求：向url发送请求，参数是以键值对的形式传递的，使用urllib.request.urlopen(url)【注意参数不能包含中文否则报错】
   
-* 使用urllib.parse.quote 和string 将中文进行URL编码。具体网页如何解码，要看网页的<meta>的charset属性指定使用什么方式进行编码
+* 使用urllib.parse.quote 和string 将中文进行URL编码。具体网页如何解码，要看网页的meta标签的charset属性指定使用什么方式进行编码
   
     ```python
     import urllib.request
@@ -159,9 +151,9 @@ a={
   request.get_header("Cookie") #取出Cookie
   ```
 
-  应用
+应用
 
-  通常为了将请求伪装成浏览器发起的请求，往往向请求头添加User-agent字段，为了更加真实的模拟用户用浏览器访问，用random随机赋值User-agent，不容易被反爬虫机制发现
+通常为了将请求伪装成浏览器发起的请求，往往向请求头添加User-agent字段，为了更加真实的模拟用户用浏览器访问，用random随机赋值User-agent，不容易被反爬虫机制发现
 
   使用 random 模块，用random.choice 实现随机效果
 
@@ -816,29 +808,29 @@ with open("school.json","w",encoding="utf-8") as f:
 
 指定内容，一次匹配，能匹配的数量（符号前加要匹配的内容），比如 [0-9]{4}是匹配四个数字
 
-| 符号  | 含义                                      |
-| ----- | ----------------------------------------- |
-| *     | 匹配零个或多个[0-多]                      |
-| +     | 匹配一个或多个[1-多]                      |
-| ？    | 匹配零个或1个[0-1] ，即可用于表示，有无。 |
-| {n}   | 匹配n个                                   |
-| {n,}  | 匹配多余n个                               |
-| {n,m} | 匹配n到m个                                |
+| 符号    | 含义                                      |
+| ------- | ----------------------------------------- |
+| `*`     | 匹配零个或多个[0-多]                      |
+| `+`     | 匹配一个或多个[1-多]                      |
+| `？`    | 匹配零个或1个[0-1] ，即可用于表示，有无。 |
+| `{n}`   | 匹配n个                                   |
+| `{n,}`  | 匹配多余n个                               |
+| `{n,m}` | 匹配n到m个                                |
 
 匹配位置
 
 | 符号 | 含义          |
 | ---- | ------------- |
-| ^    | 匹配的开始    |
-| ^a   | 匹配以a开头的 |
-| $    | 匹配的结尾    |
-| f$   | 匹配以f结尾的 |
+| `^`  | 匹配的开始    |
+| `^a` | 匹配以a开头的 |
+| `$`  | 匹配的结尾    |
+| `f$` | 匹配以f结尾的 |
 
 匹配内容
 
 | 符号 | 含义                 |
 | ---- | -------------------- |
-| .    | 匹配任意字符（除\n） |
+| `.`  | 匹配任意字符（除\n） |
 
 默认贪婪模式，a123b456b匹配a.*b会匹配的最后一个b
 
@@ -1826,8 +1818,6 @@ result4=client.keys() #[b'pyone', b'one', b'two', b'three']
   * 查找master端IP（不同系统，方式不一样，具体百度）
   * redis.conf文件中，修改bind项为本机IP
   * 重启服务 ,`redis-server redis.windows.conf`/或者`redis-server`
-
-  ![image-20210115134428879](C:\Users\12704\AppData\Roaming\Typora\typora-user-images\image-20210115134428879.png)
 
 * 从服务器salve端，负责读数据
 
@@ -2948,7 +2938,7 @@ class CfSpider(CrawlSpider):
 
 博主以上面`segmentfault`通过微博第三方登录为例来详细说明`OAUTH`授权流程。
 
-**<1> 第一步**
+**1、第一步**
 
 首先用户点击微博图标进行第三方登录，然后页面跳转到微博登录界面等待用户输入账号密码授权。
 
@@ -2969,7 +2959,7 @@ scope=follow_app_official_microblog
 - **redirect_uri**：用户授权后需要跳转到的url地址。
 - **scope**：用户授权的权限范围和有效期。
 
-**<2> 第二步**
+**2、 第二步**
 
 页面跳转到上一步骤的`redirect_uri`地址并在末尾添加一个授权码`code`值，在后面步骤中会用`code`值来换取`token`。
 
@@ -2987,7 +2977,7 @@ code=e7ec7daeb7bbf8cb9d622152cd449ae0
 
 这也验证了`reponse_type`是`code`类型的正确性。
 
-**<3> 第三步**
+**3、 第三步**
 
 `segmentfault`客户端使用授权的`code`来获得钥匙`token`。
 
@@ -3005,7 +2995,7 @@ https://api.weibo.com/oauth2/access_token
 > - **code**：调用authorize获得的code值
 > - **redirect_uri**：回调地址，需需与注册应用里的回调地址一致
 
-**<4> 第四步**
+**4、 第四步**
 
 返回上步请求获得的token信息。一个实例结果如下：
 
@@ -3026,12 +3016,12 @@ https://api.weibo.com/oauth2/access_token
 
 
 
-> - ***\*access_token\****：用户授权的唯一票据，用于调用微博的开放接口，同时也是第三方应用验证微博用户登录的唯一票据，第三方应用应该用该票据和自己应用内的用户建立唯一影射关系，来识别登录状态，不能使用本返回值里的UID字段来做登录识别。
+> - **access_token**：用户授权的唯一票据，用于调用微博的开放接口，同时也是第三方应用验证微博用户登录的唯一票据，第三方应用应该用该票据和自己应用内的用户建立唯一影射关系，来识别登录状态，不能使用本返回值里的UID字段来做登录识别。
 > - **expires_in**：access_token的生命周期，单位是秒数。
 > - **remind_in**：access_token的生命周期。
 > - **uid**：授权用户的UID，本字段只是为了方便开发者，减少一次user/show接口调用而返回的，第三方应用不能用此字段作为用户登录状态的识别，只有access_token才是用户授权的唯一票据。
 
-**<5> 第五步**
+**5、 第五步**
 
 使用上一步获得的token获取用户的名称头像等信息。可以通过请求如下链接：
 
@@ -3045,14 +3035,8 @@ https://api.weibo.com/2/users/show.json
 
 同时请求需要携带以上获取的token和 uid参数。
 
-***\*<6> 第六步\****
+** 6、第六步**
 
 返回获取的用户名称头像等已授权信息。
 
 以上就是整个微博OAUTH授权流程的详细介绍。
-
-### OAUTH总结
-
-## Fiddler工具
-
-第三方文档https://www.cnblogs.com/yyhh/p/5140852.html

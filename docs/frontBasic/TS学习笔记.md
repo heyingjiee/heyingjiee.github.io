@@ -207,11 +207,6 @@ function func3() {
 let arr:string[]
 ```
 
-```go
-//TS与Go相反，Go的切片如下
-var slice []string 
-```
-
 泛型数组
 
 ```ts
@@ -289,7 +284,7 @@ let f1=(a:number,b:number):number=>{
 }
 ```
 
-在接口中使用函数签名用，可以用来实现面向接口编程，如何实现具体函数的方式参见<a href="#函数签名">这里</a>
+在接口中使用函数签名用，可以用来实现面向接口编程，如何实现具体函数的方式参见【函数签名】章节
 
 ```ts
 interface a{
@@ -329,6 +324,7 @@ const result2 = getAverage(strs);
 console.log(result2); // Output: 3
 ```
 
+
 TS中函数重载更多的作用还是用来处理一个函数，但是需要传入不同类型入参的情况
 
 所以，我们其实可以使用泛型来约束入参
@@ -352,7 +348,6 @@ console.log(result1); // Output: 3
 const result2 = getAverage(strs);
 console.log(result2); // Output: 3
 ```
-
 
 
 **注意**
@@ -516,7 +511,7 @@ let s:Stu={
 
 
 
-#### **函数签名</span>**
+#### **函数签名**
 
 前两种方式，本质都是声明了一个函数，必须实现函数体
 

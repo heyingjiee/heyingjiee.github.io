@@ -30,7 +30,6 @@
   例如，`Html`文件中，使用type指定引入ES Module模块
 
   ```html
-  <!DOCTYPE html>
   <html lang="en">
   <head>
       <meta charset="UTF-8">
@@ -44,32 +43,32 @@
   </body>
   </html>
   ```
-
+  
   from后只支持指定模块的路径，才能在这个路径下找到
-
+  
   如果，直接使用yarn安装模块
-
+  
   ```shell
   yarn init -y
   
   yarn add xxx
   ```
-
+  
   浏览器不知道要去node_modules下寻找该模块，而构建工具，可提供模块化支持（想想Vue-cli创建的项目中，依赖都安装在node_modules下，但是依然可以编译后，在浏览器运行，就是这个道理）
-
+  
   **补充问题**：为什么浏览器中的ESM不能像commonjs（服务端使用）那样，支持自动去node_modules下寻找安装的依赖？
-
+  
   ```js
   因为浏览器与服务端不同，html、css、js、安装的依赖+依赖的依赖都会被浏览器通过网络下载
   依赖关系往往是十分复杂的，一个依赖包可能依赖了几百个其他的依赖，这会严重降低前端的性能
   ```
-
-  打包工具如何解决?
-
-  详见[【依赖与构建阶段】](#依赖预构建)
-
   
-
+  打包工具如何解决?
+  
+  详见[【依赖与构建阶段】](#依赖预构建)
+  
+  
+  
 * 自动化集成其他工具（不是构建工具做的, 构建工具将这些语法对应的处理工具集成进来自动化处理）
   * 处理代码兼容类的工具： 比如babel语法降级，less、sass、ts 语法转换
   * 提高项目性能类的工具：压缩文件, ***代码分割***
@@ -152,9 +151,6 @@ yarn create vite
   方式一：注意，直接在`script`标签内使用node_modules中的包不行
 
   ```html
-  <!--index.html-->
-  
-  <!DOCTYPE html>
   <html lang="en">
   <head>
       <meta charset="UTF-8">
@@ -166,15 +162,12 @@ yarn create vite
   </script>
   <body>
   ```
-
-  方式二：使用路径引入的文件中，如果使用了node_modules中的包也不行
-
-  ```html
-  <!--index.html-->
   
-  <!DOCTYPE html>
+  方式二：使用路径引入的文件中，如果使用了node_modules中的包也不行
+  
+```html
   <html lang="en">
-  <head>
+<head>
       <meta charset="UTF-8">
       <title>Title</title>
   </head>
@@ -184,7 +177,7 @@ yarn create vite
   
   </body>
   </html>
-  ```
+```
 
   ```js
   //count.js
@@ -232,7 +225,7 @@ yarn create vite
 
 
 
-## 依赖预构建<span id='依赖预构建'>
+## 依赖预构建<span id='依赖预构建'></span>
 
 预构建：
 
@@ -555,9 +548,6 @@ export default defineConfig({
 当访问`http://localhoost:5137`路径时，就会发起一个HTTP请求，路由是`/`，就返回了`index.html`文件。所以，`index.html`是项目的入口
 
 ```html
-<!--index.html-->
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -585,9 +575,6 @@ export default defineConfig({
 这样的话打包后的index.html为下面的
 
 ```html
-<!--index.html-->
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1539,8 +1526,7 @@ export default defineConfig({
 
 index.html
 
-```html
-<!DOCTYPE html>
+```
 <html lang="en">
 <head>
     <meta charset="UTF-8">

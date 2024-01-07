@@ -89,13 +89,11 @@
 
   * 前端路由不同url装载不同页面
 
-    find-music,my-music,friend多个页面,在其页面向服务端取数据进行渲染，然后放入index的容器<div id="container">中显示
+    find-music,my-music,friend多个页面,在其页面向服务端取数据进行渲染，然后放入container中显示
 
     注意：下载jquery；sublime安装sublimeServer实现启动本地服务器（不安装就是直接打开本地文件，不支持跨域找下载的jquery.js文件）
 
     ```html
-    <!--index.html-->
-    <!DOCTYPE html>
     <html>
     <head>
     	<title>音乐</title>
@@ -107,7 +105,6 @@
     		<ul>
     			<!--a标签会跳转刷新，用锚点不会刷新,点击朋友，url改变浏览器显示："网址#/friend"。用window.onhashchange，同一个a标签点击多次，只有第一次触发-->
     			<!--通过 #/friend 变化，渲染-->
-    			
     			<li><a href="#/">发现音乐</a></li>
     			<li><a href="#/my-music">我的音乐</a></li>
     			<li><a href="#/friend">朋友</a></li>
@@ -147,7 +144,7 @@
     </body>
     </html>
     ```
-
+    
     ```html
     <!--find-music.html-->
     <div>查找音乐</div>
@@ -159,7 +156,7 @@
     <div>朋友</div>
     
     ```
-
+    
   * 以上的方式构建单页面应用太复杂，所以出现了Vue等框架
 
 ## Vue简介
