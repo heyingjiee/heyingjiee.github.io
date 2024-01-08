@@ -3359,7 +3359,6 @@ connection.end();
 
 **以下是token原理图**：
 
-![image-20200403224323747](C:\Users\12704\AppData\Roaming\Typora\typora-user-images\image-20200403224323747.png)
 
 服务端Nodejs实现
 
