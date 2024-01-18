@@ -11,11 +11,25 @@ features:
     details: 
         太忙了，一方面写业务更加熟练了，另一方面利用自己的时间也学了很多新东西，尤其是因为自研项目，开始接触Go语言<br/>
   - title: 24年计划
-    details: 
-        1、读完手里的几本小册子 <br/>
-        2、ts-axios完成 <br/>
-        4、Kafka、RocketMQ 挑一个学习 <br/>
-        5、继续Nginx学习 <br/>
-        6、研究code search源码 <br/>
+    details:
+        <div> <input type="checkbox"/ disabled> ts-axios完成 </div>
+        <div> <input type="checkbox"/ disabled> 研究code search源码 </div>
+        <div> 
+            <div><input type="checkbox"/ disabled> 读完手里的几本小册子（优先）</div>
+            <div style="padding-left:30px"><input type="checkbox"  disabled/> Electron 应用开发实践指南<div>
+            <div><input type="checkbox"  disabled/> Electron 应用开发实践指南<div>
+            <div><input type="checkbox"  disabled/> TypeScript类型体操通关秘籍<div>
+            <div><input type="checkbox"  disabled/> Babel插件通关秘籍<div>
+        <div>
+  - title: Leetcode刷题计划
+    details:
+      每日一题 👉  <a href="https://heyingjiee.github.io/docs/programBasic/leetcode%E5%88%B7%E9%A2%98%E8%AE%B0%E5%BD%95.html">跳转</a>
+        
 ---
+
+
+
+
+
+
 

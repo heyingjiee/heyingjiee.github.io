@@ -2304,7 +2304,7 @@ console.log(arr)//[ 'a', 'b', 'c', 'd', 'b' ]
 
 **reverse()**
 
-数组元素反转，返回值也是反转的数组
+原数组元素反转，返回值也是反转的数组
 
 * 参数：无
 
@@ -3072,6 +3072,8 @@ for(const value of [...map]){
 console.log(newArray)//输出 ["张三", 60] ["王五", 80]
 ```
 
+
+
 ## 解构赋值
 
 结构赋值：等号后侧可以是任何**可迭代对象**解构，赋值给新的变量 
@@ -3207,7 +3209,7 @@ for(let key in stu){
 // score
 ```
 
-### 遍历可迭代对象
+### for value of遍历可迭代对象
 
 **可迭代对象的遍历**
 
@@ -3339,9 +3341,9 @@ for(const value of arr.values()){
     console.log(value)
 }//输出a b c
 
-//遍历所有键和值，[value,key]是解构
-for(const [value,key] of arr.entries()){
-    console.log(value,key)
+//遍历所有键和值，[key,value]是解构
+for(const [key,value] of arr.entries()){
+    console.log(key,value)
 }
 // 0 a
 // 1 b
@@ -3362,6 +3364,10 @@ console.log(set.values())//输出 SetIterator {"a", "b", "c"}
 //所有键和值
 console.log(set.entries())//输出 SetIterator {"a" => "a", "b" => "b", "c" => "c"}
 
+//直接遍历
+for (const value of set) {
+  console.log(value);
+}//输出a b c
 
 //遍历所有键
 for(const value of set.keys()){
@@ -3394,6 +3400,11 @@ console.log(map.keys())//输出 MapIterator {"a", "b"}
 //所有键和值
 console.log(map.entries())//输出 MapIterator {"a" => 1, "b" => 2}
 
+
+// 直接遍历
+for(const value of map{
+    console.log(value)
+}//输出[a,1] [b,2]
 
 //遍历值
 for(const value of map.values()){

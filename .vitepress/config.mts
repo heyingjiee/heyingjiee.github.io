@@ -7,7 +7,7 @@ export default defineConfig({
   description: "我的个人网站",
   head: [
     // 注入到当前页面的 HTML <head> 中的标签
-    ["link", {rel: "icon", href: "/logo.png"}], // 增加一个自定义的 favicon(网页标签的图标)
+    ["link", {rel: "icon", href: "https://heyingjiee.github.io/logo.png"}], // 增加一个自定义的 favicon(网页标签的图标)
   ],
   markdown: {
     lineNumbers: true, // 代码块显示行号
@@ -18,6 +18,10 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/heyingjiee' }
     ],
+    outline: {
+      level:[2,6],
+      label:'文章大纲'
+    },
     nav: [
       // 导航栏配置
       {

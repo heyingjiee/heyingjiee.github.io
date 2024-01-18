@@ -888,5 +888,397 @@ var threeSum = function (nums) {
 
 ## 字符串
 
+涉及回文，可以优先思考使用left、right指针指向字符串的两侧
 
+通过 while限制条件，满足条件可以缩小范围
+
+直到left、right相遇为止（也可能是其他条件结束）
+
+### [5. 最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/)
+
+暴力枚举法：
+
+```js
+/**
+ * @param {string} s
+ * @return {string}
+ */
+var longestPalindrome = function(s) {
+
+    // 校验是否为回文子串
+    function validPalindrome(s,left,right){
+        while (left<=right){//注意：等于情况
+            if(s[left]!==s[right]){
+                return false
+            }
+            left++
+            right--
+        }
+        return true
+    }
+
+    // 最大回文子串长度
+    let maxCount=1// 一个字母，也是一个回文子串。所以maxCount初始为1
+    // 最大回文子串开始索引
+    let begin=0
+
+
+    for(let i=0;i<s.length-1;i++){// 注意：这里到倒数第二位为止
+        for(let j=i;j<s.length;j++){
+            if(validPalindrome(s,i,j)){
+                let span=j-i+1
+                if(span>maxCount){
+                    maxCount= span
+                    begin=i
+                }
+
+            }
+        }
+    }
+
+    return s.slice(begin,begin+maxCount)
+
+};
+```
+
+中心扩散法：有对称性的可以用
+
+```js
+var longestPalindrome = function(s) {
+    // xyx（回文串为奇数） 、 xx（回文串为偶数） 两种情况
+
+    // 最大回文子串长度
+    let maxCount=1// 一个字母，也是一个回文子串。所以maxCount初始为1
+    // 最大回文子串开始索引
+    let begin=0
+
+    let n=s.length
+
+
+    // 从中心扩展开
+    function h(left,right){
+        // (left>=0||right<=n-1) 防止溢出数组
+        while((left>=0||right<=n-1) && s[left]===s[right]){
+            if(right-left+1>maxCount){
+                maxCount=right-left+1
+                begin=left
+            }
+
+            left--
+            right++
+
+        }
+    }
+
+    for(let i =0;i<n;i++){
+        // 假设i为最长回文子串的中心
+        // 如果为奇数
+        h(i-1,i+1) // i=0时，i-1溢出边界；i=n-1时，i+1溢出边界；都需在h中处理
+        // 如果为偶数
+        h(i,i+1)
+    }
+    return s.slice(begin,begin+maxCount)
+};
+```
+
+
+
+动态规划法：
+
+![image-20240115131407055](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240115131408ZP4HK2.png)
+
+状态转移方程：
+
+```js
+// 初始：i指向target数组最左侧，j从i到target.length
+// dp[i][j] 表示 i~j 之间是否为回文子串
+dp[i][j]= target[i]===target[j]&&(j-i<=1||dp[i+1][j-1]) //j-i<=1  表示i、j之间只有一个数 + i、j指向一个数，直接算为回文
+```
+
+
+
+### [680. 验证回文串 II](https://leetcode.cn/problems/valid-palindrome-ii/)
+
+删除一个如何做？ 验证如果 i~j 之间的字符串不是回文，不要结束，再增加一个判断 即 i+1~j 和 i~j-1判断是否为回文
+
+这个比较简单的点在于最多删除一个。301题难度高，是因为不限制删除个个数
+
+```js
+var validPalindrome = function(s) {
+    // 是否为回文字符串
+    function isPalindrome(s,left,right){
+        while (left<=right){
+            if(s[left]!==s[right]){
+                return false
+            }
+            left++
+            right--
+        }
+        return true
+    }
+
+    let left=0,right=s.length-1
+    while (left<=right){
+        // 找到第一个不相等的，删除这个。计算剩下的是否为回文字符串
+        if(s[left]!==s[right]){
+            // 这里left+1、rigth-1可能会越界，但是这种情况只有长度为1时会发生，s[0]一定等于s[0]，不会进入这个逻辑里；
+            // 只要长度大于1，left+1、rigth-1的范围就会向内缩
+            return  isPalindrome(s,left+1,right)||isPalindrome(s,left,right-1)
+        }
+        left++
+        right--
+    }
+    return true
+
+};
+```
+
+### [32. 最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)
+
+错误解法：这种解法不是求最长的子串，子串需要连续
+
+用例：`"()(()"`，代码输出4，实际结果为2
+
+```
+var longestValidParentheses = function(s) {
+    let stackList=[]
+    for(let i=0;i<s.length;i++){
+        if(s[i]==='('){ // 遇到（
+            stackList.push('(')
+        }else {//遇到 ）
+            if(stackList.length>0&&stackList[stackList.length-1]==='('){
+                stackList.pop()
+            }else{
+                stackList.push(')')
+            }
+        }
+    }
+    return s.length-stackList.length
+};
+```
+
+解答：
+
+```js
+var longestValidParentheses = function(s) {
+    // 栈是做括号匹配的好帮手，但是我们需要找到合法的连续子串，栈无法记录是否连续
+    // 这里我们使用
+  	// 1、栈，入栈元素为s中字母的索引。（ s[index]才能获取实际元素 ）
+  	// 2、辅助数组asset=[0,1,1,1,0]，1表示可以匹配的括号，0表示不可匹配的括号
+    let stack=[]
+    let asset=[]
+
+    for (let i=0;i<s.length;i++){
+        if(s[i]==='('){
+            stack.push(i)
+            asset[i]=0
+        }else{
+          	// 这里比较绕，如果当前是 ），如果栈顶是（，则直接出栈
+            let tackTop=stack[stack.length-1] // 栈里是字符串索引
+
+            if(i>=1&&s[tackTop]==='('){
+                stack.pop()
+                asset[i]=1
+                asset[tackTop]=1
+            }else{
+                stack.push(i)
+                asset[i]=0
+            }
+        }
+    }
+
+    let maxCount=0
+    let temp=0
+
+    for (let i=0;i<asset.length;i++){
+        if(asset[i]===1){
+            temp++
+            maxCount=Math.max(maxCount,temp)
+        }else {
+            temp=0
+        }
+
+    }
+
+    return maxCount
+
+};
+```
+
+
+
+动态规划解法：略
+
+### [301. 删除无效的括号](https://leetcode.cn/problems/remove-invalid-parentheses/)（难度大，跳过）
+
+返回所有最优的解
+
+bfs 广度优先遍历
+
+视频：https://xiaochen1024.com/series/6196129fc1553b002e57bef5/6197453ddafc4b002e653728 第一个题
+
+
+
+### [387. 字符串中的第一个唯一字符](https://leetcode.cn/problems/first-unique-character-in-a-string/)
+
+```js
+var firstUniqChar = function(s) {
+    // 哈希计数
+    // 因为这个题是返回索引，并不是字符。所以map的value除了计数外还有存索引
+    let m= new Map()
+    for(let i=0;i<s.length;i++){
+        if(m.has(s[i])){
+            let {count,index}=m.get(s[i])
+            m.set(s[i],{
+                count:count+1,
+                index:index+','+i
+            })
+        }else {
+            m.set(s[i],{
+                count:1,
+                index:i
+            })
+        }
+    }
+    //
+    for(let value of m.values()){
+        if(value.count===1){
+            return value.index
+        }
+    }
+    return -1
+
+
+};
+```
+
+### [14. 最长公共前缀](https://leetcode.cn/problems/longest-common-prefix/)（待补充前缀树解法）
+
+横向扫描：
+
+```js
+var longestCommonPrefix = function(strs) {
+  	// 为啥排序? 用例： ['abc','ab']，我们应该以最短的作为基准，在最后return sortList[0]是返回的是应该是ab
+    const sortList=strs.sort((a,b)=>a.length-b.length)
+
+    let minLen=200
+    for (let i=0;i<sortList.length;i++){
+        minLen=Math.min(minLen,sortList[i].length)
+    }
+
+    for(let j=0;j<=minLen;j++){//索引位置
+        let temp=''
+        for(let i=0;i<sortList.length;i++){//遍历所有子元素
+            if(i===0){
+                temp=sortList[0][j]
+                //0或1个元素情况： ['']结果'' 、 ['a']结果'a'的情况
+                if(sortList.length<=1){
+                    return sortList[0]
+                }
+            }else{
+                if(temp!==sortList[i][j]){
+                    return sortList[0].slice(0,j)
+                }
+            }
+        }
+    }
+    return sortList[0]
+
+};
+```
+
+
+
+前缀树（字典树）
+
+gin框架的路由使用的就是前缀树
+
+```js
+```
+
+
+
+### [151. 反转字符串中的单词](https://leetcode.cn/problems/reverse-words-in-a-string/)
+
+这中解法依赖于JS中存在的trim函数，去除首尾空格
+
+slplit函数分割
+
+```js
+"1 2".split(" ")  // ['1','2']
+
+"1  2".split(" ")  //1与2之间两个空格， ['1','','2']
+```
+
+解法：
+
+```js
+var reverseWords = function(s) {
+    // 这里需要先把字符串首尾的空格去掉。 
+    // 例如：输入"   a b c"，如果不加trim，a不是arr中的第一个元素，无法命中if(i===0)逻辑，最后结果会多一个空格： "c b a "
+    const arr=s.trim().split(' ') 
+    let res=''
+    for (let i=arr.length-1;i>=0;i--){
+        if(arr[i]===''){
+            continue
+        }
+        if(i===0){
+            res+=arr[0].trim()
+        }else {
+            res+=`${arr[i].trim()} `
+        }
+
+    }
+    return res
+};
+```
+
+如何使用o(1)空间，解决问题
+
+```
+```
+
+
+
+
+
+## 补充
+
+很多东西都是大学是数据结构学的，但是时间太过久远了，很多东西都忘记了，这里整理下遇到的吧
+
+### 广度优先（BFS）
+
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+需要辅助队列
+
+思想：从根节点开始寻找子节点，先遍历寻找兄弟节点，依次从上往下，按层级依次搜索
+
+代码实现：根节点入队，之后出队节点x，会将其左右子节点入队，然后继续循环出队，入队子节点的流程，直到队列为空
+
+模拟过程：
+
+* 第一次入队根节点  3   【3】
+* 3 出队，9、20入队  【9,20】
+* 9 出队 ，没有子节点入队  【20】
+* 20出队 ，入队 15、7 【15,7】
+* 出队 15
+* 出队 7
+* 队空结束
+
+### 深度优先（DFS）
+
+需要辅助栈、数组、递归DFS函数
+
+思想：从根开始，遇到一个节点，就先查询的它未被访问过的子节点，如果子节点还有未被访问过的子节点就继续往下寻找直到最后没有为止，再从根子节点的兄弟节点开始依次向下寻找节点
+
+代码实现：根节点入栈，如果有子节点（优先入栈左孩子）就记录下下访问过后，继续入栈。直到没有子节点可以入栈了，就开始出栈每一个出栈的节点检查其是否还有未被访问过的孩子，如果有就录下访问过后，入栈该孩子节点，直到栈空结束
+
+模拟过程：
 
