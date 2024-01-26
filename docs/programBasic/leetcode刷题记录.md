@@ -681,9 +681,50 @@ return nums
 
 ### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
 
-0向左放，2向右放，剩下1就在中间了
-
 **双指针法**
+
+```js
+var sortColors = function(nums) {
+
+    // 利用快排的思想
+    // [0,left) 都是0
+    // [left,i) 都是1 (i是从0开始++的，s[i]相当于视口，判断其值并放入对应区间)
+    // (right,nums.length] 都是2
+    function swap(nums,left,right){
+        temp=nums[left]
+        nums[left]=nums[right]
+        nums[right]=temp
+    }
+
+    let left=0,right=nums.length-1
+    let i=0
+
+
+    while(i<right){
+        if(nums[i]===0){
+            swap(nums,left,i)
+
+            left++
+            // 换到i的值一定是 1，可以放心++
+            i++
+        }
+        if(nums[i]===1){
+            i++
+        }
+        if(nums[i]===2){
+            // 交换
+            swap(nums,i,right)
+
+            right--
+            // 注意这里没有i++，换到i的值有可能还是2
+        }
+
+    }
+
+};
+```
+
+
 
 
 
@@ -1233,18 +1274,468 @@ var reverseWords = function(s) {
 };
 ```
 
-如何使用o(1)空间，解决问题
+快慢指针
+
+```js
+var reverseWords = function(s) {
+    s=s.trim()
+    let resArr=[]
+
+    let left=s.length-1
+    let right=left
+
+    while(left>=0){
+        while (left>=0&&s[left]!==' '){
+            left--
+        }
+        resArr.push(s.slice(left+1,right+1))
+        while (left>=0&&s[left]===' '){
+            left--
+        }
+        right=left
+    }
+
+		// "xxx yyy zzz"，由于最后一个单词没有空格，其他单词有尾空格，还需要判断，不如直接用join
+    return resArr.join(' ')
+
+};
+```
+
+### [557. 反转字符串中的单词 III](https://leetcode.cn/problems/reverse-words-in-a-string-iii)
+
+解答：
+
+```js
+var reverseWords = function(s) {
+    let res=[]
+    let arr=s.split(' ')
+    arr.forEach(item=>{
+        res.push(item.split('').reverse().join(''))
+    })
+    return res.join(' ')
+};
+```
+
+双指针
+
+```js
+var reverseWords = function(s) {
+    let len=s.length
+    let left=0,right=0
+
+    let res=''
+
+    function reverseStr(s){
+        return s.split('').reverse().join('')
+    }
+
+    while (right<=len-1){
+        while (right<=len-1&&s[right]!==' '){
+            right++
+        }
+        res+=reverseStr(s.slice(left,right))
+        while (right<=len-1&&s[right]===' '){
+            right++
+            res+=' '
+        }
+        left=right
+    }
+
+    return res
+
+};
+```
+
+
+
+### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
+
+动态规划
+
+```js
+dp[i][j] 表示 `text1从第一个到第i个字符` 与 `text2从第一个到第i个字符` 最长公共子串的长度
+```
+
+有两种情况： 关键是text1与text2的下一个字符，是否一样。
+
+* 一样的话，公共子序列个数+1
+* 不一样的话，需要比较两个情况哪个大
+
+![image-20240119235952587](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240119235954ZSk85d.png)
+
+
+
+解法：与图的索引有些出入，但是思路一致
+```js
+var longestCommonSubsequence = function(text1, text2) {
+
+    dp=new Array(text1.length).fill(0).map(()=>new Array(text2.length).fill(0))
+    // 初始值
+    if(text1[0]===text2[0]){
+        dp[0][0]=1
+    }
+
+		// test1[0]逐一与test2的每一个元素对吧，发现有一样的，后面就都是1了
+    for(let i=0;i<text2.length;i++){
+        if(text1[0]===text2[i]){
+            while (i<text2.length){
+                dp[0][i]=1
+                i++
+            }
+            break
+        }
+    }
+
+    for(let i=0;i<text1.length;i++){
+        if(text1[i]===text2[0]){
+            while (i<text1.length){
+                dp[i][0]=1
+                i++
+            }
+            break
+        }
+    }
+
+    for(let i=1;i<text1.length;i++){
+        for (let j=1;j<text2.length;j++){
+            // 这个判断有关很严重的问题
+            // 第二次循环 i=2，j=1时，
+            if(text1[i]===text2[j]){
+                dp[i][j]=dp[i-1][j-1]+1 // 需要初始值dp[0][0]
+            }else {
+                dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1])// 需要初始值dp[1][0]、dp[0][1]
+            }
+
+        }
+    }
+
+    return dp[text1.length-1][text2.length-1]
+
+};
+longestCommonSubsequence('ezupkr','ubmrapg')
+```
+
+### [115. 不同的子序列](https://leetcode.cn/problems/distinct-subsequences/)
+
+
+
+```js
+dp[i][j] 表示 s[0~(i-1)]包含t[0~(j-1)]的个数
+
+情况1：s[i-1]!==t[j-1] 
+	dp[i][j]=dp[i-1][j] // 那直接扣掉s[i-1]对结果一定影响都没有，例子： ab与a，第一个串扣掉b
+
+
+情况2：s[i-1]===t[j-1]
+	s[0~(i-1)]包含t[0~(j-1)]的个数分成两种情况:
+		t[0~(j-1)]包含s[i-1]的有a个      a=dp[i-1][j-1] //s[i]===t[j]，需要一下扣掉两个s[i-1]、t[j-1]
+		t[0~(j-1)]不包含s[i-1]的有b个    b=dp[i-1][j] // i-1就是扣掉s[i-1]
+	两种情况加起来就是 dp[i][j] = a+b = dp[i-1][j-1] + dp[i-1][j]
+  	
+	
+```
+
+解法
+```js
+var numDistinct = function(s, t) {
+    dp=new Array(s.length+1).fill(0).map(()=>new Array(t.length+1).fill(0))
+    // 初始值
+    dp[0][0]=1 // 空字符串包含1个空字符串
+
+    for(let i=0;i<=s.length;i++){
+        // 其实这个在i=0时，已经包含dp[0][0]=1了
+        // 空字符串在任何字符串中都出现一次
+        dp[i][0]=1
+    }
+
+    for (let i=1;i<=s.length;i++){
+        for (let j=1;j<=t.length;j++){
+            if(s[i-1]!==t[j-1]){
+                dp[i][j]=dp[i-1][j]
+            }else {
+                dp[i][j]=dp[i-1][j]+dp[i-1][j-1]
+            }
+        }
+    }
+
+
+    return dp[s.length][t.length]
+};
+```
+
+需要注意:
 
 ```
+s中第i个字母是s[i-1]，t中第j个字母是t[j-1]
+
+s中前i个字母包含t中前j个字母的个数是 dp[i][j]，也就是dp[0][0]这个位置跳过去了，这是因为考虑了空字符串dp[0][0]是s中空、t中空
 ```
 
 
+
+![image-20240120233449183](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240120233450cbYG3D.png)
+
+### [125. 验证回文串](https://leetcode.cn/problems/valid-palindrome/)
+
+```js
+var isPalindrome = function(s) {
+
+    function isValid(str){
+        return /^[A-Za-z0-9]+$/.test(str)
+    }
+
+    let left=0,right=s.length-1
+    while (left<right){ // 注意这里和下面都不能用left<=right ,输入" "，会出现left=0，right=0，符合left<=right进入循环，会出现left++变为1的情况，这样就数组越界了
+        while (left<right&&!isValid(s[left])){// 遇到过这种情况，注意外层while的条件，在内层改变，这种情况必须在内存限制外层的条件left<right。否则，内层一直left++很有可能内部已经不满足left<=right了
+            left++
+        }
+        while (left<right&&!isValid(s[right])){
+            right--
+        }
+        if(s[left].toLowerCase()!==s[right].toLowerCase()){
+            return false
+        }
+        left++
+        right--
+    }
+    return true
+};
+```
+
+### [796. 旋转字符串](https://leetcode.cn/problems/rotate-string/)
+
+暴力
+
+```js
+var rotateString = function(s, goal) {
+    let arr=s.split('')
+
+    let len=arr.length
+
+
+    for (let i=0;i<len;i++){
+        if(arr.join('')===goal){
+            return true
+        }
+        arr.push(arr.shift())
+    }
+
+    return false
+
+};
+```
+
+官方解答
+
+如果符合条件，那么s长度一定等于goal，且s+s的连续子串一定包含goal
+
+```js
+var rotateString = function(s, goal) {
+    return s.length === goal.length && (s + s).indexOf(goal) !== -1;
+};
+
+作者：力扣官方题解
+链接：https://leetcode.cn/problems/rotate-string/solutions/1398076/xuan-zhuan-zi-fu-chuan-by-leetcode-solut-4hlp/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+### [844. 比较含退格的字符串](https://leetcode.cn/problems/backspace-string-compare/)
+
+```js
+var backspaceCompare = function(s, t) {
+    function actualStr(str){
+        let res=[]
+        for (let i=0;i<str.length;i++){
+            if(str[i]==='#'){
+                res.pop()
+            }else{
+                res.push(str[i])
+            }
+        }
+        return res.join('') // join没有参数，默认使用逗号连接
+    }
+
+    if(actualStr(s)===actualStr(t)){
+        return true
+    }
+    return false
+};
+```
+
+
+
+### 394
 
 
 
 ## 补充
 
 很多东西都是大学是数据结构学的，但是时间太过久远了，很多东西都忘记了，这里整理下遇到的吧
+
+### KMP
+
+https://leetcode.cn/circle/discuss/yCI2iS/
+
+看下面例子：
+
+```
+// |表示匹配上了，x表示没匹配上
+
+abbaabbaaba  总串
+||||||x
+abbaaba      子串
+
+// 一般思路是:重新从总串[1]开始继续和子串[0]匹配，这样之前总串[0]与[0]比较的前6位相等的计算就浪费了。可以看下动图
+abbaabbaaba  总串
+
+ abbaaba      子串
+
+// KML思路是尽可能少回退比较
+// 第一次匹配上了前6位，这前六位是abbaab，他自己和自己有首位有重叠部分
+abbaab
+		||
+		abbaab
+		
+// 我们直接把		
+abbaabbaaba
+||||||x
+abbaaba // 第一次匹配  
+		||  
+    abbaaba  // 我们直接子串开头的ab，顶到把"匹配上的串(前6位) 的重叠部分
+
+
+```
+
+一般思路：
+
+![KMP-前后缀](https://pic.leetcode-cn.com/582531e394be21276cda1339a815dd1f9cd853db912b9c91989e0c7bb1688415.gif)
+
+具体实现参考：https://leetcode.cn/circle/discuss/VMJeMU/
+
+```
+```
+
+
+
+Go模版：
+
+```js
+func KMP(src, pat string) int {
+	if pat == "" {
+		return 0
+	}
+	ls := len(src)
+	lp := len(pat)
+	next := make([]int, lp)
+	for i, j := 1, 0; i < lp; i++ {
+		for j > 0 && pat[i] != pat[j] {
+			j = next[j-1]
+		}
+		if pat[i] == pat[j] {
+			j++
+		}
+		next[i] = j
+	}
+	for i, j := 0, 0; i < ls; i++ {
+		for j > 0 && src[i] != pat[j] {
+			j = next[j-1]
+		}
+		if src[i] == pat[j] {
+			j++
+		}
+		if j == lp {
+			return i - lp + 1
+		}
+	}
+	return -1
+}
+```
+
+
+
+### 前缀树
+
+[208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/)
+
+```
+https://mp.weixin.qq.com/s/_4K-zDZgCPvSBmjHbj6GGA
+```
+
+```go
+package main
+
+import "fmt"
+
+type TrieNode struct {
+	//next      [26]*TrieNode // 这个设计很精巧，没有存储单词的值，而是用索引表示。下一个找a，就去next[0]
+	next      map[rune]*TrieNode
+	passCount int
+	end       bool
+}
+type Trie struct {
+	root *TrieNode
+}
+
+func NewTrie() *Trie {
+	return &Trie{
+		root: &TrieNode{},
+	}
+}
+
+func (t *Trie) Insert(word string) {
+	move := t.root
+	for _, letter := range word {
+		if _, ok := move.next[letter]; !ok {
+			//没有,就直接插入
+			if move.next == nil {
+				move.next = make(map[rune]*TrieNode)
+			}
+			move.next[letter] = &TrieNode{}
+		}
+		move = move.next[letter]
+		move.passCount++
+
+	}
+	move.end = true
+}
+
+func (t *Trie) Search(word string) bool {
+	move := t.root
+	for _, value := range word {
+		if _, ok := t.root.next[value]; !ok {
+			//没有
+			return false
+		} else {
+			//有
+			move = move.next[value]
+		}
+	}
+
+	if move.end {
+		return true
+	}
+	return false
+
+}
+
+func main() {
+	searchStr := []string{"abc", "ac", "c"}
+
+	trie := NewTrie()
+
+	for _, value := range searchStr {
+		trie.Insert(value)
+	}
+
+	res := trie.Search("ac")
+
+	fmt.Printf("%v", res)
+
+}
+```
+
+
 
 ### 广度优先（BFS）
 
@@ -1281,4 +1772,6 @@ var reverseWords = function(s) {
 代码实现：根节点入栈，如果有子节点（优先入栈左孩子）就记录下下访问过后，继续入栈。直到没有子节点可以入栈了，就开始出栈每一个出栈的节点检查其是否还有未被访问过的孩子，如果有就录下访问过后，入栈该孩子节点，直到栈空结束
 
 模拟过程：
+
+
 

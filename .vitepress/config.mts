@@ -34,6 +34,13 @@ export default defineConfig({
         ],
       },
       {
+        text: "移动端",
+        items: [
+          // {text: "鸿蒙", link: "/docs/mobileBasic/鸿蒙.md"},
+          {text: "Flutter（暂停更新）", link: "/docs/mobileBasic/Flutter.md"},
+        ],
+      },
+      {
         text: "Go语言",
         items: [
           {text: "Go 基础", link: "/docs/golang/Go学习笔记.md"},
@@ -53,8 +60,6 @@ export default defineConfig({
       {
         text: "其他语言",
         items: [
-
-          {text: "Flutter（暂停更新）", link: "/docs/otherLanguage/Flutter.md"},
           {
             text: "Python爬虫",
             link: "/docs/otherLanguage/python爬虫进阶学习笔记.md",

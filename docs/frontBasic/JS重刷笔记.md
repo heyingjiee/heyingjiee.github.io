@@ -2483,6 +2483,9 @@ let arr=["A","B","C","D"]
 console.log(arr.slice())//输出["A", "B", "C", "D"]，无参数截取所有
 console.log(arr.slice(1))//输出["B", "C", "D"]，截取标号1到最后
 console.log(arr.slice(1,3))//输出["B", "C"]，截取：索引1——索引2
+
+// 二个参数都可以为负数，是一个很实用的能力，可以实现按倒数位置截取
+console.log(arr.slice(0,-2)) // 其实就是[0,len-2) 即["A","B"]
 ```
 
 ### 不操作数组元素——>返回拼接
