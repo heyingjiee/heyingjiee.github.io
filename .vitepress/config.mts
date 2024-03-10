@@ -36,7 +36,7 @@ export default defineConfig({
       {
         text: "移动端",
         items: [
-          // {text: "鸿蒙", link: "/docs/mobileBasic/鸿蒙.md"},
+          {text: "鸿蒙Next", link: "/docs/mobileBasic/鸿蒙.md"},
           {text: "Flutter（暂停更新）", link: "/docs/mobileBasic/Flutter.md"},
         ],
       },

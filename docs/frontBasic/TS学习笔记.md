@@ -199,6 +199,42 @@ function func3() {
 
 ## 复杂类型
 
+### 字面量类型
+
+在TS中值也是一种类型
+
+```js
+// type关键字用于定义类型
+type Code = 1;
+
+let x:Code=1 // x是Code类型，所以其值只能是1
+```
+
+字面量
+
+```js
+type Greet = `Hello ${string}`;  // 这里${}内需要是类型
+let x:Greet='Hello jack' 
+
+
+type Greet = `Hello ${number}`;  // 这里${}内需要是类型,这里必须是number类型
+let x:Greet='Hello 11' 
+```
+
+注意:
+
+```
+// 空数组类型
+[]
+
+[1,2,3]
+
+// 空对象类型
+{}
+
+{name:1,age:2}
+```
+
 ### 数组与元组
 
 **数组**
@@ -220,6 +256,14 @@ let arr:Array<string>
 ```ts
 let arr:[string,string]
 ```
+
+**数组字面量**
+
+```
+[]
+```
+
+
 
 ### 函数
 
@@ -648,13 +692,6 @@ class B extends A implements Iselect{
 
 
 
-**实现构造函数**
-
-```
-```
-
-
-
 #### **继承**
 
 **接口继承接口**
@@ -913,8 +950,6 @@ let stu:any
 console.log((stu as user).name)
 ```
 
-
-
 非空类型断言
 
 ```ts
@@ -947,14 +982,6 @@ type MaybeArray<T> = T | T[];
 function ensureArray<T>(input: MaybeArray<T>): T[] {
   return Array.isArray(input) ? input : [input];
 }
-```
-
-### 字面量类型
-
-```js
-type Code = 10000;
-
-type str = 'hello';
 ```
 
 ### 联合类型、交叉类型
@@ -997,21 +1024,29 @@ getAnimal.name
 
 **交叉类型**
 
-全部符合才可以
+将多个类型合并为一个新的类型，新的类型包含全部成员的特征
 
 ```ts
-type UnionIntersection2 = (string | number | symbol) & string; // string
+type newType = {a: number } & {c: boolean};
+
+// 必须包含a、c字段
+let x:newType={
+    a:1,
+    c:true
+}
 ```
 
-注意：两个互斥的类型的交叉会被推断为never，即不存在的类型（不可能有值即是字符串也是数字）
+对应基础类型，不可能存在兼容两种基础类型的值，所以其相当于never
 
 ```ts
 type a = string & number; //never
 ```
 
-接口、对象中同层级且同名的字段，类型互斥，也会直接推断为never类型，例如上面例子的` Composed['primitiveProp']`
+```ts
+type UnionIntersection2 = (string | number | symbol) & string; // string
+```
 
-
+接口、对象中同层级且同名的字段，类型互斥，也会直接推断为never类型
 
 ### 索引类型 keyof
 
@@ -1092,16 +1127,21 @@ type Stringify<T> = {
 };
 ```
 
-更综合的例子：keyof将变量的key转换为联合类型
+更综合的例子：变成可选类型
 
 ```ts
 type Stringify<T> = {
-  [K in keyof T]: string;
+  [K in keyof T]?: T[K];
 };
 
-let student:{
- 	name:string,
+interface Stu{
+  name:string
   age:number
+}
+
+let student:Stringify<Stu>={
+       name:'tom',
+       age:20
 }
 ```
 
@@ -1164,29 +1204,6 @@ type关键字命名新类型时，可以在类型名后的`<>`中，指定入参
 type Factory<T> = T;
 var a:Factory<string> //声明变量a的类型时，必须指定传入得泛型。a是string类型
 ```
-
-
-
-#### **字符串字面量**
-
-这个很特殊，其他形式都是定义类型时使用泛型
-
-注意而这里，泛型定义
-
-```
-名<泛型约束>=`xxx {泛型}`
-```
-
-例子
-
-```ts
-Greet<T extends string | number> = `Hello ${T}`;
-
-//注意这里才是定义
-type Greet1 = Greet<"tom">; // "Hello tom"
-```
-
-
 
 #### **泛型接口**
 
@@ -2320,7 +2337,9 @@ interface ImportMetaEnv {
 }
 ```
 
+## 总结
 
+参考掘金小册子 《TypeScript类型体操通关秘籍》
 
 
 

@@ -489,6 +489,59 @@ module.exports = "p2包";
 }
 ```
 
+### 特别注意
+
+如果我们开发一个npm包，一定要注意：项目在不同环境引入这个npm包时，读取包的入口字段不一样
+
+* 浏览器环境
+
+  * ESM引入读取 module
+
+  * CJS引入读取 main 字段
+
+* Node环境
+  * ESM引入，因为Node环境不支持module字段，所以一定要定义exports字段
+  * CJS 引入读取 main 字段
+
+我遇到一个情况，在Node环境中引入了一个第三方的包
+
+* 使用ESM引入（需要配置package.json的"type":"module"）提示
+
+  可以看到虽然使用了ESM引入，但是Node环境直接将其视为了一个CJS的包，这种大多是因为没有配置exports字段
+
+  ![image-20240126160344878](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240126160348hbnFHq.png)
+
+* 使用CJS引入，必须加一个default属性
+
+  https://www.cnblogs.com/PeunZhang/p/12736940.html
+
+  这个有可能是打包工具导致的，比如：这个npm包使用的是ESM开发的，但是打包为支持ESM、CJS的。ESM的export default xxx语法，在CJS中没有，所以打包工具处理为exports.defalut=xxx
+
+  ```js
+  const PluginAES = require('@armor/plugin-aes').default
+  ```
+
+  
+
+  
+
+```json
+"main": "./dist/index.js", // 
+  
+"module": "./dist/esm/index.js", // 
+  
+  "type": "module", //Node环境中支持该字。可选字段：module、commonjs 。描述该包的格式类型，决定是否将 .js 文件加载为 CJS 或 ESM 的格式
+  
+  "exports": { //Node环境中支持该字段。 条件导出。作用和 main/module 作用差不多，只不过支持条件导出优先级大于 main 等高级用法
+    ".": {
+      "require": "./dist/index.js", // 当使用 CJS 导入模块时，会从此入口查找。
+      "import": "./dist/esm/index.js" // 当使用 ESM 导入模块时，会从此入口查找。
+    }
+  }
+```
+
+
+
 
 
 ## 模块化规范

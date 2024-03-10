@@ -2283,6 +2283,14 @@ console.log(arr3.splice(1,0,"张三"))//[]
 console.log(arr3)//["A", "张三", "B", "C", "D"]
 ```
 
+注意
+
+```
+[1].splice(2, 1, '*')
+```
+
+
+
 **copyWithin（target[, start, end]）**
 
 将指定范围的元素复制后，***覆盖***到数组的其他位置（注意：复制的元素如果超出了数组长度，则只覆盖处在数组长度范围内的元素）
@@ -2318,14 +2326,17 @@ console.log(arr)//[ 'a', 'b', 'c', 'd', 'b' ]
 
 * 返回值：排序后的数组（原数组发生变化和返回值相同）
 
+* sort回调函数返回值 
+  * 如果返回值小于 0，换位置
+
+  * 如果返回值大于等于 0，位置不变
+
+
 ```js
 let arr=[1,8,3,4]
 arr.sort((a,b)=>{ //第一轮，a=8，b=1
-    if(a>b){
-        return -1 //小于等于0，换
-    }else{
-        return 1 //大于0，不换
-    }
+    return b-a //从大到小
+  	return a-b //从小到大
 })
 //arr是 [ 8, 4, 3, 1 ]
 ```
@@ -3405,7 +3416,7 @@ console.log(map.entries())//输出 MapIterator {"a" => 1, "b" => 2}
 
 
 // 直接遍历
-for(const value of map{
+for(const value of map){
     console.log(value)
 }//输出[a,1] [b,2]
 
@@ -3511,7 +3522,7 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
   ```js
   function f1(params){
       params.callback1() // this指向params对象。（调用关系:callback1<=params对象 ）
-      params.callback2() // this指向window。callback2所在作用域是f1的函数作用域，这里的this是指向window的
+      params.callback2() 
     	params.action.getInfo()//this指向action对象。（调用关系:getInfo<=action对象<=params对象 ）
   }
   
@@ -3526,6 +3537,8 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
     },
     callback2:()=>{
       //箭头函数this指向，其自身函数所在上下文中的this
+      //this指向window。箭头函数的指向不必关心函数f1内部如何调用，
+      //只需看到，这里入参对象{}，不是作用域，需要继续向上找，callback2所在作用域=调用f1的函数作用域，所以这里的this是指向window的
       console.log(2,this)
   	},
     action:{
@@ -3764,99 +3777,29 @@ let res=show.bind({name:"张三"},19)
 res(20,100)//输出 张三 19 20，res调用时的20，自动略去了
 ```
 
-**应用**
+### 应用
 
-点击按钮时，弹出包含按钮文字的提示框
+其实，最主要的应用分为两种场景：this指向当前上下文、指向使用上下文
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-
-<button>H</button>
-<button>D</button>
-    <script>
-function show(){ 
-    alert(this.innerHTML)
-}
-let buttons=document.querySelectorAll("button")
-for(let i=0;i<buttons.length;i++){
-    buttons[i].addEventListener("click",event=>{
-        show.call(event.target)//当鼠标点击按钮时，返回event对象，包含这鼠标点击的相关信息，其中event.target就是button的dom对象。点击按钮时，触发show.call,并把其总的this替换为button对象j(否则this就是window对象)，call会立即执行show方法，
-    })
-}
-
-    </script>
-</body>
-</html>
 ```
+以小程序为例子
 
-求数组中的最大值
+封装了工具函数handlerXXX
 
-```js
-//js数组中未提供求最大值的方法，我们借用Math.max，参数是一串数字，不能是数组
-
-//方法一
-let arr=[1,2,3,4,5,6]
-console.log(Math.max(...arr))//输出6
-
-//方法二
-console.log(Math.max.apply(Math,arr))//输出6
-
+import handlerXXX from 'xxx.js'
+Page({
+	onLoad(){
+		// 函数中的this指向函数内部
+		handlerXXX()
+		// 函数中的this指向当前页面
+		handlerXXX.call(this)
+	}
+})
 ```
 
 
 
-用在不需要立即执行的函数中，把函数中的this替换成传递的内容
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <button>详细信息</button>
-    <script>
-
-document.querySelector("button").addEventListener(
-    "click",
-    function(age,score){
-        console.log(this.name,age,score)
-    }.call({name:"张三"},20,90)
-)
-    </script> 
-</body>
-</html>
-
-//点击按钮，控制台输出 张三 20 90 <button>详细信息</button>
-
-//这里如果用call和apply，不用点击按钮就会触发函数
-```
-
-每间隔1秒，网页背景变换颜色
-
-```js
-function Color(elem){
-    this.elem=elem
-    this.colors=["#33FF66","#FF9966","#00CCFF","#FFCC66"]
-    this.run=function(){
-        setInterval(function(){
-            let i=Math.floor(Math.random()*this.colors.length)
-            this.elem.style.backgroundColor=this.colors[i]
-        }.bind(this),1000)//重点在这里，this.color中的this原本应该是window对象，但是这里通过bind将Color对象传递进去。这里应该看清楚，setInterval中的this指向的是Color对象，setInterval中的function出现原本应该是window对象，这里用bind传递了下，才变成了也是Color对对象
-    }
-}
-let obj=new Color(document.body)
-obj.run()
-```
 
 ## Math对象
 
@@ -7298,9 +7241,14 @@ import React from "react";
 
   在一个文件中导入又导出，可以直接这样写：
 
+  一般用法是在index文件中把整个npm包需要导出的重新具名导出
+  
   ```js
+  // module中如果有具名导出name，通过下面可以再次具名导出
   export { name } from "./module.js";
-  export { age } from "./module2.js";
+  
+  // 从module2拿到默认导出，在改成具名导出NewCar
+  export { default as NewCar } from './src/main/ets/pages/Index'
   ```
 
 **注意**
@@ -8059,7 +8007,7 @@ MDN canvasAPI :https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API
 
 ### 创建
 
-在canvas标签上指定width、height（单位px），或者获取canvas对象设置width、height（单位px）指定的是canvas画布大小。（不设置会初始化宽度为300像素和高度为150像素）
+在canvas标签上指定width、height（单位px），或者获取canvas对象设置width、height属性（单位px）指定的是canvas画布大小。（不设置会初始化宽度为300像素和高度为150像素）
 
 使用CSS指定的是实际可视区大小，canvas画布会被强制拉伸为CSS指定的宽高。（不设置会以canvas画布的大小为可视区域）
 
@@ -8247,6 +8195,46 @@ context.fillStyle='red'
 ```
 
 ![image-20230506173431238](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230506173431%20.png)
+
+### 圆弧
+
+```js
+context.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+
+// x：圆心的 x 坐标。
+// y：圆心的 y 坐标。
+// radius：圆的半径。
+// startAngle：起始角度，以弧度表示 （ 范围 0-2*Math.PI ）
+// endAngle：结束角度，以弧度表示。
+// anticlockwise：一个布尔值，可选参数，表示绘制方向是顺时针还是逆时针。默认是 false，即顺时针。
+```
+
+环形进度条
+
+![image-20240226101258023](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202402261012581ENOdI.png)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <canvas width="200" height="200" id="canvas"></canvas>
+</body>
+<script>
+    const canvas=document.getElementById('canvas')
+    const context=canvas.getContext('2d')
+
+    context.lineWidth=10
+    context.strokeStyle='#eee'
+    context.arc(canvas.width/2,canvas.height/2,50,(3/4)*Math.PI,(2+1/4)*Math.PI,false)
+    context.stroke()
+    
+</script>
+</html>
+```
 
 
 
@@ -9578,7 +9566,7 @@ JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，�
 在内存占用接近临界值的时候，开始回收内存
 全局变量：只在程序执行完成才会被回收，否则永久保留
 
-### 响应状态码
+### http状态码
 
 **1开头**  代表请求已被接受，需要继续处理。这类响应是临时响应
 
@@ -9594,7 +9582,7 @@ JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，�
 
 **4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理。**
 
-401 表示发送的请求需要有通过 HTTP 认证的认证信息
+401 Unauthorized， 表示未经授权
 
 403 forbidden，表示对请求资源的访问被服务器拒绝
 
@@ -9608,9 +9596,7 @@ JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，�
 
 **强缓存**
 
-强缓存就是给资源设置个过期时间，客户端每次请求资源时都会看是否过期；只有在过期才会去询问服务器。
-
-当浏览器去请求某个文件的时候，服务端就在respone header里面对该文件做了缓存配置。缓存的时间、缓存类型都由服务端控制，具体表现为：
+**服务端主动**在respone header里面通过字段通知浏览器需要进行缓存的方式
  respone header 的`cache-control`字段，常见的值有max-age, public ,private ,no-cache ,no-store等
 
 如下图respon header中,**cahe-control:max-age=31536000,public,immutable**
@@ -9644,9 +9630,7 @@ JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，�
 
 **协商缓存**
 
-上面说到的强缓存就是给资源设置个过期时间，客户端每次请求资源时都会看是否过期；只有在过期才会去询问服务器。所以，强缓存就是为了给客户端自给自足用的。
-
-协商缓存指的是，客户端向服务器发送请求，如果服务端发现该静态资源未发生变化，则直接返回304，客户端使用缓存的静态资源。如果发生变化，返回新的静态资源
+**客户端主动**请求资源，如果服务端发现该静态资源未发生变化，则直接返回304，客户端使用缓存的静态资源。如果发生变化，返回新的静态资源
 
 ***怎么设置协商缓存？***
 
@@ -10656,10 +10640,6 @@ request({
 	}
 })
 ```
-
-
-
-
 
 
 

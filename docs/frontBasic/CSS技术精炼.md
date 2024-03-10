@@ -1750,6 +1750,10 @@ grid-auto-flow: column;
 
 `place-*`简写
 
+
+
+item表示网格子元素布局，content表示子元素内容布局
+
 * **justify-item、align-item、place-item（前两个的简写）属性**
 
   子元素在所属网格中的位置
@@ -2908,7 +2912,7 @@ table-layout:fixed; //默认为auto
 
 **线性渐变**
 
-![image-20231027150030612](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/minprogram-template/20231027150031%20.png)
+![image-20240129164720699](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240129164722yQpED3.png)
 
 ```html
 <div class="box"></div>
@@ -2917,7 +2921,8 @@ table-layout:fixed; //默认为auto
 .box{
 	width:100px;
 	height:100px;
-	background:linear-gradient(red,yellow); //
+	background:linear-gradient(0deg,red,yellow); 
+  /*linear-gradient(red,yellow); 不写度数，默认为180deg*/
 }
 </style>
 ```
@@ -5283,7 +5288,9 @@ css
 .progress-wave这个元素边旋转、边上升
 ```
 
+### 进度条
 
+https://code.juejin.cn/pen/7329835658690691107
 
 ## 回流与重绘
 

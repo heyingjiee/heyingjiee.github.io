@@ -3446,7 +3446,7 @@ var a map[string]int //key是string，value是int类型的map
 fmt.Println(a == nil) //true
 ```
 
-想要在map中保存数据，必须初始化（回一下前面，切片不初始化也可以保存数据）
+想要在map中保存数据，必须初始化（回忆下前面，切片不初始化也可以保存数据）
 
 **初始化map类型变量**
 

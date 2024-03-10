@@ -29,6 +29,8 @@ ESlint、Prettier、JS转译等功能，实际上都是通过下面的流程，�
 
 ## Babel
 
+官网：https://www.babeljs.cn/
+
 AST语法树，首先应该明确它是一个树形结构，代码中的每个部分都会生成树的一个节点
 
 使用不同的parse（解析器）生成的AST节点会有差异
