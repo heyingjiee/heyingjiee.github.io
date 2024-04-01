@@ -1,4 +1,7 @@
 import { defineConfig } from 'vitepress'
+// import mk from '@iktakahiro/markdown-it-katex'
+
+import mk from 'markdown-it-mathjax3'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -11,6 +14,9 @@ export default defineConfig({
   ],
   markdown: {
     lineNumbers: true, // 代码块显示行号
+    config:(md)=>{
+      md.use(mk)
+    }
   },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -113,5 +119,5 @@ export default defineConfig({
     },
 
   },
-  ignoreDeadLinks:true
+  ignoreDeadLinks:true,
 })
