@@ -2802,7 +2802,7 @@ var totalFruit = function(fruits) {
 
 递归是什么？
 
-递归是一种编程技巧，代码上具体表现为自己调用自己。**分治算法**、**回溯算法**都是应用递归技巧的具体案例
+递归是一种编程技巧，代码上具体表现为函数自己调用自己。**分治算法**、**回溯算法**都是应用递归技巧的具体案例
 
 
 
@@ -2821,11 +2821,11 @@ var totalFruit = function(fruits) {
 * 其余每层公用的逻辑（return是返回上一层的结果）
 
 * 层与层之间的通讯
-  * **return通讯**： n+1层 ---> n层 发送数据。这个数据会最终返回最顶层（2-1注释）
+  * **return通讯**： n+1层 ---> n层 发送数据。这个数据会最终返回最顶层，即从下到上（2-1注释）
   
     注意并不是所有题的答案都必须return到顶层。有可能定义个全局变量，然后在每一层中做逻辑，最后答案是这个值。例如，定义全局变量max，每层比较大小存入最大值，最后返回这个最大值
   
-  * **递归入参通讯**：n+1层 <--- n层 发送数据。每一层的入参，一般都用来标识本层的一些信息，比如自己是第几层（2-2注释）
+  * **递归入参通讯**：n+1层 <--- n层 发送数据。每一层的入参，一般都用来标识本层的一些信息，比如自己是第几层。即从上到下（2-2注释）
 
 很多题是很难看出来每一层是什么，所以将递归问题转换为层次图，会更为直观分析
 
@@ -3373,7 +3373,7 @@ for(let val1 of str1){
 
 ![image-20240316000454556](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202403160004558GsTBy.png)
 
-回溯是一种试探性的搜索算法，它会尝试增量构建一个解，如果解不可行就回退到之前的状态并尝试其他选项（剪枝，回溯本质=DFS+剪枝，）
+回溯是一种试探性的搜索算法，它会尝试增量构建一个解，如果解不可行就回退到之前的状态并尝试其他选项（当回溯用于树的时候，就是深度优先搜索DFS）
 
 分治是将大问题分解为结构一样的小问题求解，小问题合并为新的解，最后保留一个解
 
@@ -4411,6 +4411,46 @@ var permute = function(nums) {
 
 ## 动态规划
 
+[好文](https://github.com/azl397985856/leetcode/blob/master/thinkings/dynamic-programming.md)介绍记忆化搜索到动态规划的内容
+
+其中很重要的一段内容，区分了贪心和动态规划（递归搜索）的区别
+
+>将问题每个阶段抽象为状态（用圆圈来表示），状态之间可能会发生转化（用箭头表示）。可以画出类似如下的图
+>![image-20240330191616356](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240330191617foCEML.png)
+>
+>那我们应该做出如何的**决策序列**才能使得结果最优？换句话说就是每一个状态应该如何选择到下一个具体状态，并最终到达目标状态。这就是动态规划研究的问题。
+>
+>每次决策实际上**不会考虑之后的决策，而只会考虑之前的状态。** 形象点来说，其实是走一步看一步这种短视思维。为什么这种短视可以来求解最优解呢？那是因为：
+>
+>1. 我们将**所有可能的转移全部模拟了一遍**，最后挑了一个最优解。
+>2. 无后向性（这个我们后面再说，先卖个关子）
+>
+>而如果你没有模拟所有可能，而直接走了一条最优解，那就是贪心算法了
+
+动态规划模版
+
+```js
+function xxx(){
+	// 创建dp数组，一维数组or二维数组
+  // dp是递归转化来的，递归函数入参是几个，就是几维数组
+  dp=new Array(x).fill(y)
+  
+  // 可直接确定的dp边界数据，可以直接给值
+  dp[0]=z
+  
+  // 
+  for(){
+    // 定义状态转移方程
+    // 动态规划就是最优决策的过程   本次决策的结果= option(上次决策的结果)
+    dp[i]= option(dp[i-1])
+  }
+}
+```
+
+ 
+
+### 记忆化搜索
+
 记忆化搜索=递归+保存每一层递归结果
 
 以下图斐波那契递归为例子，递归会将所有可能尝试一遍，其中存在大量重复的。我们可以将结果存在下来，来提高性能
@@ -4499,7 +4539,7 @@ var rob = function(nums) {
 };
 ```
 
-用最经典的递归思路，加上记忆化，就不会超时了
+用最经典的递归思路，return之前先存储下结果（这就是记忆化），就不会超时了
 
 ```js
 var rob = function(nums) {
@@ -4524,7 +4564,15 @@ var rob = function(nums) {
 };
 ```
 
-其实这等同于动态规划的思路
+其实这等同于**动态规划思路** ，上面是在递归中使用数组存储结果（322 递归函数有两个入参，我们可以使用map存储，将两个拼接上作为key）
+
+我们可以转化为动态规划
+
+使用for循环，直接用每层数据存入dp数组索引就是，递归函数也都换成dp
+
+为什么不判断`Math.max(dp[i-1],dp[i-2]+nums[i])`中的两个dp数据是否存在，就直接赋值给 dp[i]？
+
+i是从小到大的，dp[i]前面的数据一定是存在的
 
 ```js
 var rob = function(nums) {
@@ -4548,25 +4596,378 @@ var rob = function(nums) {
 
 有0-1背包、完全背包两类问题
 
-* 0-1背包
+#### 0-1背包
 
-  ```
-  Capacity:背包容量
-  w[i]: 第i件物品的体积
-  v[i]: 第i件物品的价值
-  
-  求：所选物品不超过Capacity的情况下，获取最大价值
-  ```
+```
+Capacity:背包容量
+w[i]: 第i件物品的体积
+v[i]: 第i件物品的价值
 
-  ```js
-  思路：枚举选与不选两种可能，
-  ```
+求：每个物品只能选1件或者不选，所选物品不超过Capacity的情况下，获取最大价值
 
-  ![image-20240325010454074](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240325010455vY47lO.png)
+常见题目变形： 
+最多装Capacity的情况，求方案数/最大价值和
+恰好装Capacity的情况，求方案数/最大价值和/最小价值和
+至少装Capacity的情况，求方案数/最小价值和
+```
 
-  
+```js
+思路：枚举选与不选两种可能，
+
+回溯：在非最后一层的其他任意一层枚举选与不选两个递归，在每层处理sum，本层两个递归函数分别递归
+
+0-1背包： 使用return通讯，本层返回最大值。在本层直接最比较两个递归值中的最大值return到上层
+```
+
+![image-20240325010454074](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240325010455vY47lO.png)
+
+##### [494. 目标和](https://leetcode.cn/problems/target-sum/)
+
+题目
+
+```js
+//给你一个非负整数数组 nums 和一个整数 target 。
+//
+// 向数组中的每个整数前添加 '+' 或 '-' ，然后串联起所有整数，可以构造一个 表达式 ：
+//
+//
+// 例如，nums = [2, 1] ，可以在 2 之前添加 '+' ，在 1 之前添加 '-' ，然后串联起来得到表达式 "+2-1" 。
+//
+//
+// 返回可以通过上述方法构造的、运算结果等于 target 的不同 表达式 的数目。
+//
+//
+//
+// 示例 1：
+//
+//
+//输入：nums = [1,1,1,1,1], target = 3
+//输出：5
+//解释：一共有 5 种方法让最终目标和为 3 。
+//-1 + 1 + 1 + 1 + 1 = 3
+//+1 - 1 + 1 + 1 + 1 = 3
+//+1 + 1 - 1 + 1 + 1 = 3
+//+1 + 1 + 1 - 1 + 1 = 3
+//+1 + 1 + 1 + 1 - 1 = 3
+//
+//
+// 示例 2：
+//
+//
+//输入：nums = [1], target = 1
+//输出：1
+//
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= nums.length <= 20
+// 0 <= nums[i] <= 1000
+// 0 <= sum(nums[i]) <= 1000
+// -1000 <= target <= 1000
+//
+//
+// Related Topics 数组 动态规划 回溯 👍 1887 👎 0
+
+```
+
+回溯：输入视角，选+或-
+
+```js
+var findTargetSumWays = function(nums, target) {
+
+    let count=0
+    function backtrace(curIndex,sum){
+        // 最后一层
+        if (curIndex===nums.length){
+            if (sum===target){
+                count++
+            }
+
+            return
+        }
+
+        // 其余任意层
+
+        // 选+
+        sum+=nums[curIndex]
+        backtrace(curIndex+1,sum)
+        sum-=nums[curIndex]
 
 
+        // 选-
+        sum-=nums[curIndex]
+        backtrace(curIndex+1,sum)
+        sum+=nums[curIndex]
+
+
+    }
+
+    backtrace(0,0)
+
+    return count
+};
+```
+
+背包问题：两个背包，一个背包放全部正数、另一个放全部负数
+
+```js
+package_a - package_b = target;
+package_a + package_b = sum;
+
+=>解方程： package_a =(target+sum)/2
+题目转化为：给定一个大小为package_a的背包，有多少种组合方式能把背包装满
+
+注意题目说是元素使非负整数，所以target+sum肯定是偶数才符合条件
+```
+
+```js
+```
+
+#### 完全背包
+
+核心区别，可重复选
+
+```
+Capacity:背包容量
+w[i]: 第i件物品的体积
+v[i]: 第i件物品的价值
+
+求：每个物品可以不选或选（可重复选），所选物品不超过Capacity的情况下，获取最大价值
+
+常见题目变形： 
+最多装Capacity的情况，求方案数/最大价值和
+恰好装Capacity的情况，求方案数/最大价值和/最小价值和
+至少装Capacity的情况，求方案数/最小价值和
+```
+
+![image-20240327002110418](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240327002110QofBWL.png)
+
+##### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+题目
+
+```js
+//给你一个整数数组 coins ，表示不同面额的硬币；以及一个整数 amount ，表示总金额。
+//
+// 计算并返回可以凑成总金额所需的 最少的硬币个数 。如果没有任何一种硬币组合能组成总金额，返回 -1 。
+//
+// 你可以认为每种硬币的数量是无限的。
+//
+//
+//
+// 示例 1：
+//
+//
+//输入：coins = [1, 2, 5], amount = 11
+//输出：3
+//解释：11 = 5 + 5 + 1
+//
+// 示例 2：
+//
+//
+//输入：coins = [2], amount = 3
+//输出：-1
+//
+// 示例 3：
+//
+//
+//输入：coins = [1], amount = 0
+//输出：0
+//
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= coins.length <= 12
+// 1 <= coins[i] <= 2³¹ - 1
+// 0 <= amount <= 10⁴
+//
+//
+// Related Topics 广度优先搜索 数组 动态规划 👍 2789 👎 0
+
+```
+
+记忆化搜索，这里用map存储，当然也可以使用二位数组存储（行、列对应两个参数）
+
+```js
+var coinChange = function(coins, amount) {
+    let cache=new Map()
+    function dfs(endIndex,amount){
+        // 最后一层
+        if (endIndex<0){
+            return amount===0?0:Infinity
+        }
+
+        // 其余层
+        const key= `${endIndex},${amount}` // 以两个入参拼接在一起，作为key缓存结果
+        if (amount<coins[endIndex]){// 剪枝，如果当前物品价值大于了背包剩余空间，就剪枝掉
+            if(!cache.has(key)){
+                cache.set(key,dfs(endIndex-1,amount))
+            }
+            return cache.get(key)
+        }else {
+            if(!cache.has(key)){
+              	// dfs(endIndex-1,amount) 跳过
+              	// dfs(endIndex,amount-coins[endIndex])+1 不跳过，可能加1
+                cache.set(key,Math.min(dfs(endIndex-1,amount),dfs(endIndex,amount-coins[endIndex])+1))
+            }
+            return cache.get(key)
+        }
+
+    }
+
+    const res= dfs(coins.length-1,amount)
+    return res===Infinity?-1:res
+};
+```
+
+动态规划，将计算结果存在dp数组中，这个题是需要缓存的函数是两个参数，所以得用二维数组
+
+行、列分别对应两个参数。不在使用函数递归实现数据递归，而是for循环数组递推到最终的结果
+
+如下图，数组的最后一个值就是结果
+
+![image-20240329010609972](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240329010610IyhNJW.png)
+
+```js
+var coinChange = function(coins, amount) {
+    // dp[i][j] 凑成总和为i, 当前第j个面值的硬币，所需最少硬币个数
+    let dp=new Array(amount+1).fill(Infinity).map(()=>new Array(coins.length+1).fill(Infinity))
+
+    for (let i=0;i<=coins.length;i++){
+        dp[0][i]=0
+    }
+
+
+    for (let i=1;i<=amount;i++){
+        for (let j=1;j<=coins.length;j++){
+          	// 把这里想成每一层，dp是用来存储每一层dfs递归函数返回值的。所以这里将dfs函数替换为dp
+            // 为什么不判断dp[x][y]存在后再赋值dp[i][j]？
+            // dp是for循环按顺序递推的，dp[i][j]前的值一定是有的
+            if (i>=coins[j-1]){
+                dp[i][j]=Math.min(dp[i][j-1],dp[i-coins[j-1]][j]+1)
+            }else{
+                dp[i][j]=dp[i][j-1]
+            }
+        }
+    }
+    return dp[amount][coins.length]===Infinity?-1:dp[amount][coins.length]
+
+};
+```
+
+进一步处理为一维dp数组，参考：https://github.com/azl397985856/leetcode/blob/master/thinkings/dynamic-programming.md
+
+##### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
+
+题目
+
+```js
+//给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。
+//
+// 一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
+//
+//
+// 例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。
+//
+//
+// 两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。
+//
+//
+//
+// 示例 1：
+//
+//
+//输入：text1 = "abcde", text2 = "ace"
+//输出：3
+//解释：最长公共子序列是 "ace" ，它的长度为 3 。
+//
+//
+// 示例 2：
+//
+//
+//输入：text1 = "abc", text2 = "abc"
+//输出：3
+//解释：最长公共子序列是 "abc" ，它的长度为 3 。
+//
+//
+// 示例 3：
+//
+//
+//输入：text1 = "abc", text2 = "def"
+//输出：0
+//解释：两个字符串没有公共子序列，返回 0 。
+//
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= text1.length, text2.length <= 1000
+// text1 和 text2 仅由小写英文字符组成。
+//
+//
+// Related Topics 字符串 动态规划 👍 1537 👎 0
+
+```
+
+递归
+
+前置思路：假设两个字符串text1、text2，此时text1指针指向字符x，此时text2指针指向字符y，递推有四种情况
+
+* 选x，选y
+* 选x，不选y
+* 不选x，选y
+* 不选x，不选y（都不选就是保持他自己，没有递推）
+
+一般化：dfs的值表示回文字符串的长度，s、t分别是两个字符串
+$$
+dfs(i,j)=\begin{cases}
+
+max(dfs(i-1,j),dfs(i,j-1),dfs(i-1,j-1)+1)& s[i]=t[j] \\ 
+max(dfs(i-1,j),dfs(i,j-1),dfs(i-1,j-1))& s[i]!=t[j]\\
+
+\end{cases}
+$$
+逻辑上是可以继续化简情况的
+$$
+dfs(i,j)=\begin{cases}
+
+max(dfs(i-1,j-1)+1)& s[i]=t[j] \\ 
+max(dfs(i-1,j),dfs(i,j-1))& s[i]!=t[j]\\
+
+\end{cases}
+$$
+可以想下，
+
+* `s[i]!=t[j]`时，如果递归到了`dfs(i-1,j)`，他的下一层依旧是选不选的情况，下一层如果不选j，就是`dfs(i-1,j-1)`，所以包含了重复的情况
+
+```js
+var longestCommonSubsequence = function(text1, text2) {
+    function dfs(cur1,cur2){
+        // 最后一层
+        if (cur1<0||cur2<0){ // 注意这里要小于0，等于0还是符合其余层的计算规则的
+            return 0
+        }
+
+        // 其余层
+        if (text1[cur1]===text2[cur2]){
+            return dfs(cur1-1,cur2-1)+1
+        }else {
+            return  Math.max(dfs(cur1-1,cur2),dfs(cur1,cur2-1))
+        }
+
+    }
+
+    return  dfs(text1.length-1,text2.length-1)
+};
+```
 
 
 
@@ -6109,4 +6510,8 @@ class Heap {
   }
   
 ```
+
+## 资料
+
+[OI Wiki](https://oi-wiki.org/)
 

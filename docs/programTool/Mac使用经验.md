@@ -91,6 +91,10 @@ https://xclient.info/a/74559ea2-7870-b992-ed53-52a9d988e382.html
 
 ### 免费下载网站
 
+appstorrent https://appstorrent.ru/
+
+![image-20240330202449486](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240330202449O0NIT4.png)
+
 Xclient https://xclient.info/
 
 ![image-20221102161153728](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221102161154%20.png)
