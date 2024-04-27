@@ -775,7 +775,7 @@ console.log(Animal.animalName) // 1
 
 - public：此类成员在**类、子类、类的实例**中都能被访问
 - private：此类成员仅能在**类的内部**被访问
-- protected：此类成员仅能在**类与子类中**被访问，你可以将类和类的实例当成两种概念，即一旦实例化完毕（出厂零件），那就和类（工厂）没关系了，即**不允许再访问受保护的成员**
+- protected：此类成员仅能在**类与子类的内部**被访问，你可以将类和类的实例当成两种概念，即一旦实例化完毕（出厂零件），那就和类（工厂）没关系了，即**不允许再访问受保护的成员**
 - readonly：给**类的实例**设置只读属性
 
 **public成员**
@@ -2346,6 +2346,85 @@ interface ImportMetaEnv {
 ## TS配置
 
 参考：https://www.51cto.com/article/694463.html
+
+### 编译目标相关
+
+使用tsc编译TS才会读取这些参数，而使用rollup、vite编译打包则不一定会读取这些配置
+
+#### target
+
+编译为JS的版本
+
+```
+"target": "es2016", // 一般配置为es2016
+```
+
+#### removeComments
+
+编译为JS，是否移除注释
+
+```
+"removeComments": false, // false为ts编译为js时保留注释
+```
+
+#### sourceMap
+
+```
+是否生成sourceMap
+```
+
+### 模块化相关
+
+#### module
+
+编译为js代码，使用哪种模块化风格
+
+#### resolveJsonModule
+
+默认false，开启后才能在代码中引入json文件，并获得类型提示
+
+```
+import jsonFile from 'xx.json'
+```
+
+#### moduleResolution
+
+默认值node，查找模块的规则
+
+```
+node // 就是node的查找规则
+```
+
+#### esModuleInterop、allowSyntheticDefaultImports
+
+这两个配置主要还是为了解决使用 ES Module 方式引入 CommonJS 的问题
+
+esModuleInterop、allowSyntheticDefaultImports默认值都是false
+
+目前，esm是主流的方案。所以，我们不去想ts如何编译为cmj解决问题，重点放在使用
+
+esModuleInterop开启，allowSyntheticDefaultImports也会默认开启：他们会为cmj模块模拟一个default导出（下面例子）
+
+```js
+// cmj
+module.exports=a
+module.exports=b
+
+// esm.js如何导入？
+//--------未开启 （默认）
+import * as utils from 'cmj'
+
+
+//-------- 开启esModuleInterop:true ，相当于为cmj模拟一个module.default={a,b} 
+import utils1 from 'cmj' //当然，如果cmj中原本就提前为了兼容做了 module.exports.default={a,b}，即使不开启esModuleInterop，也能直接使用这种导入
+
+import * as utils2 from 'cmj' // 也还能使用这种方式，只不过多了一个default的用法
+console.log(utils.a)
+console.log(utils.default)
+
+```
+
+
 
 
 

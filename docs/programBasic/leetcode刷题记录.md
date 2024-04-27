@@ -432,13 +432,6 @@ var coinChange = function(coins, amount) {
 };
 ```
 
-### 编辑距离（跳过）
-
-[leetcode题号72](https://leetcode.cn/problems/edit-distance/)
-
-```js
-```
-
 ## 贪心算法
 
 ### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
@@ -930,7 +923,7 @@ var lengthOfLIS = function(nums) {
 
 二分+贪心
 
-这种方式可以求出最长递增子序列是什么，动态规格只能求出来结果的长度
+这种方式可以求出最长递增子序列是什么，动态规划只能求出来结果的长度
 
 ```js
 var lengthOfLIS = function(nums) {
@@ -4863,7 +4856,9 @@ var coinChange = function(coins, amount) {
 
 进一步处理为一维dp数组，参考：https://github.com/azl397985856/leetcode/blob/master/thinkings/dynamic-programming.md
 
-##### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
+### 线性DP
+
+#### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)(LCS)
 
 题目
 
@@ -4948,7 +4943,10 @@ $$
 
 * `s[i]!=t[j]`时，如果递归到了`dfs(i-1,j)`，他的下一层依旧是选不选的情况，下一层如果不选j，就是`dfs(i-1,j-1)`，所以包含了重复的情况
 
+递归思路：
+
 ```js
+// ------超时------
 var longestCommonSubsequence = function(text1, text2) {
     function dfs(cur1,cur2){
         // 最后一层
@@ -4967,7 +4965,1049 @@ var longestCommonSubsequence = function(text1, text2) {
 
     return  dfs(text1.length-1,text2.length-1)
 };
+
+// ------使用记忆化------
+var longestCommonSubsequence = function(text1, text2) {
+    let cache = new Map()
+    function dfs(cur1,cur2){
+        // 最后一层
+        if (cur1<0||cur2<0){ // 注意这里要小于0，等于0还是符合其余层的计算规则的
+            return 0
+        }
+
+        // 其余层
+        if (text1[cur1]===text2[cur2]){
+            const key=`${cur1-1},${cur2-1}`
+            if (!cache.has(key)){
+               cache.set(key,dfs(cur1-1,cur2-1))
+            }
+            return cache.get(key)+1
+        }else {
+            const key1=`${cur1-1},${cur2}`
+            const key2=`${cur1},${cur2-1}`
+
+            if (!cache.has(key1)){
+                cache.set(key1,dfs(cur1-1,cur2))
+            }
+            if (!cache.has(key2)){
+                cache.set(key2,dfs(cur1,cur2-1))
+            }
+            return  Math.max(cache.get(key1),cache.get(key2))
+        }
+
+    }
+
+    return  dfs(text1.length-1,text2.length-1)
+};
 ```
+
+动态规划
+
+```js
+var longestCommonSubsequence = function(text1, text2) {
+    const len1=text1.length
+    const len2=text2.length
+    
+    // 为什么二位数组大小是 （len1+1） *（len2+1）？
+    // dp[0][j] 或 dp[i][0] 表示其中一个字符串为空字符串的情况
+    const dp=new Array(len1+1).fill(0).map(()=>new Array(len2+1).fill(0))
+
+    // t e x t 2
+    // t
+    // e
+    // x
+    // t
+    // 1
+
+    for (let i=1;i<=len1;i++){
+        for  (let j=1;j<=len2;j++){
+           	// 为什么是text1[i-1]、text2[j-1] ？
+   					// dp[i][j]是 text1从索引0到i-1，text2从索引0到j-1
+            if (text1[i-1]===text2[j-1]){
+                dp[i][j]=dp[i-1][j-1]+1
+            }else{
+                dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1])
+            }
+        }
+    }
+
+    return dp[len1][len2]
+
+};
+```
+
+
+
+#### [72. 编辑距离](https://leetcode.cn/problems/edit-distance/)
+
+题目
+
+```js
+//给你两个单词 word1 和 word2， 请返回将 word1 转换成 word2 所使用的最少操作数 。 
+//
+// 你可以对一个单词进行如下三种操作： 
+//
+// 
+// 插入一个字符 
+// 删除一个字符 
+// 替换一个字符 
+// 
+//
+// 
+//
+// 示例 1： 
+//
+// 
+//输入：word1 = "horse", word2 = "ros"
+//输出：3
+//解释：
+//horse -> rorse (将 'h' 替换为 'r')
+//rorse -> rose (删除 'r')
+//rose -> ros (删除 'e')
+// 
+//
+// 示例 2： 
+//
+// 
+//输入：word1 = "intention", word2 = "execution"
+//输出：5
+//解释：
+//intention -> inention (删除 't')
+//inention -> enention (将 'i' 替换为 'e')
+//enention -> exention (将 'n' 替换为 'x')
+//exention -> exection (将 'n' 替换为 'c')
+//exection -> execution (插入 'u')
+// 
+//
+// 
+//
+// 提示： 
+//
+// 
+// 0 <= word1.length, word2.length <= 500 
+// word1 和 word2 由小写英文字母组成 
+// 
+//
+// Related Topics 字符串 动态规划 👍 3349 👎 0
+
+```
+
+
+$$
+dfs(i,j)=
+\begin{cases}
+	dfs(i-1,j-1) & word1[i]=word2[j] \\
+	min(dfs(i,j-1),dfs(i-1,j),dfs(i-1,j-1)) & word1[i]!=word2[j] \\
+\end{cases}
+$$
+
+![image-20240403003507294](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202404030035088EkQop.png)
+
+操作的是i，
+
+ `dfs(i,j-1)`这个为什么是插入？`dfs(i-1,j-1)`的基础上i增加了一位
+
+```js
+// 递归 超时
+var minDistance = function(word1, word2) {
+    let len1=word1.length
+    let len2=word2.length
+    function dfs(endIndex1,endIndex2){
+        // 最后一层
+        if (endIndex1<0){
+            return endIndex2+1
+        }
+        if (endIndex2<0){
+            return endIndex1+1
+        }
+
+        // 其余层
+        if (word1[endIndex1]===word2[endIndex2]){
+            return dfs(endIndex1-1,endIndex2-1)
+        }else{
+            return Math.min(dfs(endIndex1,endIndex2-1),dfs(endIndex1-1,endIndex2),dfs(endIndex1-1,endIndex2-1))+1
+        }
+    }
+    return  dfs(len1-1,len2-1)
+};
+
+// 记忆化
+var minDistance = function(word1, word2) {
+    let cache=new Map()
+    let len1=word1.length
+    let len2=word2.length
+    function dfs(endIndex1,endIndex2){
+        // 最后一层
+        if (endIndex1<0){
+            return endIndex2+1
+        }
+        if (endIndex2<0){
+            return endIndex1+1
+        }
+
+        // 其余层
+        if (word1[endIndex1]===word2[endIndex2]){
+            const key=`${endIndex1-1},${endIndex2-1}`
+            if(!cache.has(key)){
+                cache.set(key,dfs(endIndex1-1,endIndex2-1))
+            }
+            return cache.get(key)
+        }else{
+            const key1=`${endIndex1},${endIndex2-1}`
+            const key2=`${endIndex1-1},${endIndex2}`
+            const key3=`${endIndex1-1},${endIndex2-1}`
+            if (!cache.has(key1)){
+                cache.set(key1,dfs(endIndex1,endIndex2-1))
+            }
+            if (!cache.has(key2)){
+                cache.set(key2,dfs(endIndex1-1,endIndex2))
+            }
+            if (!cache.has(key3)){
+                cache.set(key3,dfs(endIndex1-1,endIndex2-1))
+            }
+
+            return Math.min(cache.get(key1),cache.get(key2),cache.get(key3))+1
+        }
+    }
+    return  dfs(len1-1,len2-1)
+};
+```
+
+动态规划
+
+```js
+var minDistance = function(word1, word2) {
+
+    let len1=word1.length
+    let len2=word2.length
+
+    // 二维数组，第一个是行，第二个是列
+    let dp=new Array(len1+1).fill(0).map(()=>new Array(len2+1).fill(0))
+
+    // 补上边界数据
+    dp[0][0]=0 // word1、word2都为空字符
+    for (let i=1;i<=len1;i++){
+        dp[i][0]=i // word2为空字符，word1有几位就操作几次删除
+    }
+    for (let j=1;j<=len2;j++){
+        dp[0][j]=j // word1为空字符，word2有几位就操作几次删除
+    }
+
+    for (let i=1;i<=len1;i++){ // 行
+        for (let j=1;j<=len2;j++){ // 列
+            // 这两个索引，代表位置word1的i个字符、word2的j个字符
+            // 所以，for循环的不是索引，而是序数位置
+            if (word1[i-1]===word2[j-1]){
+                dp[i][j]=dp[i-1][j-1]
+                // 当i=1，j=1。  dp[0][j]、dp[i][0] 表示word1、word2位置为0的位置，也就是空字符串
+                // 因为有空字符串的情况，所以这也是for循环从1开始的原因
+            }else {
+                dp[i][j]=Math.min(dp[i][j-1],dp[i-1][j],dp[i-1][j-1])+1
+            }
+        }
+    }
+    // console.log(dp)
+
+    return dp[len1][len2]
+
+};
+```
+
+#### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
+
+题目
+
+```js
+//给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。
+//
+// 子序列 是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子
+//序列。
+//
+// 示例 1：
+//
+//
+//输入：nums = [10,9,2,5,3,7,101,18]
+//输出：4
+//解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+//
+//
+// 示例 2：
+//
+//
+//输入：nums = [0,1,0,3,2,3]
+//输出：4
+//
+//
+// 示例 3：
+//
+//
+//输入：nums = [7,7,7,7,7,7,7]
+//输出：1
+//
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= nums.length <= 2500
+// -10⁴ <= nums[i] <= 10⁴
+//
+//
+//
+//
+// 进阶：
+//
+//
+// 你能将算法的时间复杂度降低到 O(n log(n)) 吗?
+//
+//
+// Related Topics 数组 二分查找 动态规划 👍 3612 👎 0
+
+```
+
+递归，从枚举结果的角度
+
+```js
+// --------- 递归超时
+var lengthOfLIS = function(nums) {
+    function dfs(i){
+      // 最后一层
+      if (i===0){
+        return 1
+      }
+
+      // 其余层，从枚举结果的角度
+      let max=0
+      for (let j=0;j<i;j++){ // [x,x,x,j,x,x,i] i之前的每一个都可能是其递增子序列的上一个元素
+        if(nums[j]<nums[i]){
+          max=Math.max(max,dfs(j))
+        }
+      }
+      return max+1
+    }
+
+    // 枚举所有可能得结尾
+    let ans=0
+    for (let i=0;i<nums.length;i++){
+      ans=Math.max(ans,dfs(i))
+    }
+
+    return ans
+};
+
+// ---------记忆化搜索
+var lengthOfLIS = function(nums) {
+
+    let cache=new Array(nums.length).fill(-1)
+    function dfs(i){
+      // 最后一层
+      if (i===0){
+        return 1
+      }
+
+      // 其余层，从枚举结果的角度
+      let max=0
+      for (let j=0;j<i;j++){
+        if(nums[j]<nums[i]){
+          if (cache[j]===-1){
+            cache[j]=dfs(j)
+          }
+          max=Math.max(max,cache[j])
+        }
+      }
+      return max+1
+    }
+
+    // 枚举所有可能得结尾
+    let ans=0
+    for (let i=0;i<nums.length;i++){
+      if (cache[i]===-1){
+        cache[i]=dfs(i)
+      }
+      ans=Math.max(ans,cache[i])
+    }
+
+    return ans
+};
+```
+
+改造为动态规划（dfs改成数组，递归改成循环）
+
+```js
+var lengthOfLIS = function(nums) {
+    let dp=new Array(nums.length).fill(0)
+
+    for (let i=0;i<nums.length;i++){
+      for (let j=0;j<i;j++){
+        if(nums[j]<nums[i]){
+          dp[i]=Math.max(dp[i],dp[j])
+        }
+      }
+      dp[i]+=1
+    }
+
+    return Math.max(...dp)
+};
+```
+
+### 状态机DP
+
+分成两类：不限交易次数、恰好/至少/至多交易k次
+
+![image-20240407233550075](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240407233551E6bf3o.png)
+
+#### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+题目
+
+```
+//给你一个整数数组 prices ，其中 prices[i] 表示某支股票第 i 天的价格。
+//
+// 在每一天，你可以决定是否购买和/或出售股票。你在任何时候 最多 只能持有 一股 股票。你也可以先购买，然后在 同一天 出售。
+//
+// 返回 你能获得的 最大 利润 。
+//
+//
+//
+// 示例 1：
+//
+//
+//输入：prices = [7,1,5,3,6,4]
+//输出：7
+//解释：在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
+//     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6 - 3 = 3 。
+//     总利润为 4 + 3 = 7 。
+//
+// 示例 2：
+//
+//
+//输入：prices = [1,2,3,4,5]
+//输出：4
+//解释：在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
+//     总利润为 4 。
+//
+// 示例 3：
+//
+//
+//输入：prices = [7,6,4,3,1]
+//输出：0
+//解释：在这种情况下, 交易无法获得正利润，所以不参与交易可以获得最大利润，最大利润为 0 。
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= prices.length <= 3 * 10⁴
+// 0 <= prices[i] <= 10⁴
+//
+//
+// Related Topics 贪心 数组 动态规划 👍 2458 👎 0
+
+```
+
+分析
+
+![image-20240408235532286](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240408235532t2THSZ.png)
+
+从枚举结果的角度看，第i天共有四种情况：
+
+* i天持有股票
+  * i-1天卖出，i天买入
+  * i-1天持有，i天继续持有
+* i天未持有股票
+  *  i-1天卖出，i天仍然不买
+  * i-1天持有，i天卖出
+
+![image-20240409000618092](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240409000618ugqWVq.png)
+
+递归边界不采用图中的（理解成本比较高），我们直接让i=0作为边界，即第1天
+
+第一天持有收益是-prices[0]，第一天不持有收益是0
+
+```js
+// --------- 回溯，会超时
+var maxProfit = function(prices) {
+    // 递归从枚举结果角度，枚举第i天卖出(i从0开始)
+    // false表示该天不持有股票，true表示持有股票
+
+    // 每层返回值是利润
+    function dfs(i,hold){
+      // 最后一层
+      if (i===0){
+        return hold?-prices[0]:0
+      }
+
+      // 其余层（互斥的两种情况）
+      if (hold){
+        // 第i天持有
+        return Math.max(dfs(i-1,true),dfs(i-1,false)-prices[i])
+      }else {
+        //不持有
+        return Math.max(dfs(i-1,false),dfs(i-1,true)+prices[i])
+      }
+    }
+
+   return dfs(prices.length-1,false) // 最后一天一定是卖出的，所以这里是false
+
+};
+
+
+// --------- 记忆化
+var maxProfit = function(prices) {
+    let cache=new Array(prices.length).fill(-1).map(()=>new Array(2).fill(-1))
+    function dfs(i,hold){
+      // 最后一层
+      if (i===0){
+        return hold?-prices[0]:0
+      }
+
+      // 其余层（互斥的两种情况）
+
+      // 记忆化（0对应false，1对应true）
+      if (cache[i-1][0]===-1){
+        cache[i-1][0]=dfs(i-1,0)
+      }
+      if (cache[i-1][1]===-1){
+        cache[i-1][1]=dfs(i-1,1)
+      }
+
+      if (hold){
+        // 第i天持有
+        return Math.max(cache[i-1][1],cache[i-1][0]-prices[i])
+      }else {
+        //不持有
+        return Math.max(cache[i-1][0],cache[i-1][1]+prices[i])
+      }
+    }
+
+   return dfs(prices.length-1,0) // 最后一天一定是卖出的，所以这里是false
+
+};
+```
+
+动态规划
+
+递归改动态规划，有一点需要注意：关于for循环索引含义、递推公式中dp索引含义
+
+```
+例子
+
+// 递归中 第i天持有股票
+dfs(i,true)=Math.max(dfs(i-1,true),dfs(i-1,false)-prices[i])
+
+
+// 换成dp  第i天持有股票
+
+// 直接一对一转换是错的，注意 i=0时，dp[i-1]就是dp[-1]明显越界了
+let dp=new Array(prices.length).fill(-1).map(()=>new 
+for (let i=0;i<prices.length;i++){
+    dp[i][1]= Math.max(dp[i-1][1],dp[i-1][0]-prices[i])  
+}
+
+// 我们统一口径。i是索引，对应第i+1天。即price[0] 是第1天
+// for循环需要从1开始
+let dp=new Array(prices.length).fill(-1).map(()=>new 
+// 补上边界数据
+dp[0][1]=-prices[0]
+dp[0][0]=0
+for (let i=1;i<prices.length;i++){
+    dp[i][1]= Math.max(dp[i-1][1],dp[i-1][0]-prices[i])  
+}
+```
+
+```js
+var maxProfit = function(prices) {
+    // 二维数组，第一个是行，第二个是列
+    let dp=new Array(prices.length).fill(-1).map(()=>new Array(2).fill(-1))
+
+    // 补上边界数据
+    dp[0][1]=-prices[0]
+    dp[0][0]=0
+
+    for (let i=1;i<prices.length;i++){
+      dp[i][1]= Math.max(dp[i-1][1],dp[i-1][0]-prices[i])
+      dp[i][0]= Math.max(dp[i-1][0],dp[i-1][1]+prices[i])
+    }
+
+    return dp[prices.length-1][0] // 最后一天，一定要卖出
+};
+```
+
+动态数组降维优化
+
+整个递归公式仅仅涉及 i 与 i+1 两个状态点，我们可以用两个存储。不必使用一个数组的空间去存储
+
+```js
+var maxProfit = function(prices) {
+    // 二维数组，第一个是行，第二个是列
+    let dp=new Array(prices.length).fill(-1).map(()=>new Array(2).fill(-1))
+
+    // 补上边界数据
+    f1=-prices[0]
+    f0=0
+
+    for (let i=1;i<prices.length;i++){
+      [f0,f1]=[Math.max(f0,f1+prices[i]),Math.max(f1,f0-prices[i])]
+    }
+
+    return f0// 最后一天，一定要卖出
+};
+```
+
+#### [309. 买卖股票的最佳时机含冷冻期](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+
+题目
+
+```js
+//给定一个整数数组
+// prices，其中第 prices[i] 表示第 i 天的股票价格 。
+//
+// 设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:
+//
+//
+// 卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。
+//
+//
+// 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+//
+//
+//
+// 示例 1:
+//
+//
+//输入: prices = [1,2,3,0,2]
+//输出: 3
+//解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]
+//
+// 示例 2:
+//
+//
+//输入: prices = [1]
+//输出: 0
+//
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= prices.length <= 5000
+// 0 <= prices[i] <= 1000
+//
+//
+// Related Topics 数组 动态规划 👍 1716 👎 0
+
+```
+
+递归解法
+
+```js
+// --------- 超时
+var maxProfit = function(prices) {
+    function dfs(i,hold){
+        // 最后一层
+        if (i===0){
+            return hold?-prices[0]:0
+        }
+        // 其余层
+        if(hold){
+           return Math.max(dfs(i-1,true),dfs(i-2,false)-prices[i]) // 注意冻结期为1天，即第i-1天不能卖出，所以i-1与i-2是相同的。同时由于只能交易完成才能进行下一笔交易【1】i-1如果持有，则i-2一定也是持有的，无需考虑 【2】i-1如果持有，则i-2需要保证未持有，即递推式：dfs(i-2,false)-prices[i]
+        }else{
+           return Math.max(dfs(i-1,false),dfs(i-1,true)+prices[i])
+        }
+    }
+
+    return dfs(prices.length-1,false)
+
+};
+
+// --------- 记忆化
+
+```
+
+动态规划
+
+转动态规划时，由于存在dp[i-2]，所以i改为从2来开始
+
+当i=2时，dp[i-2]就是dp[0]，这里就计算了第一天的状态，所以不用担心丢失
+
+```js
+var maxProfit = function(prices) {
+    if(prices.length<=1){
+        return 0
+    }
+
+    dp=new Array(prices.length).fill(0).map(()=>new Array(2).fill(0))
+
+    dp[0][0]=0
+    dp[0][1]=-prices[0]
+    dp[1][0]=Math.max(0,-prices[0]+prices[1])
+    dp[1][1]=Math.max(-prices[0],-prices[1])
+
+    for (let i=2;i<prices.length;i++){
+        dp[i][0]=Math.max(dp[i-1][0],dp[i-1][1]+prices[i])
+        dp[i][1]=Math.max(dp[i-1][1],dp[i-2][0]-prices[i])
+    }
+    
+    return  dp[prices.length-1][0]
+
+};
+```
+
+
+
+#### [188. 买卖股票的最佳时机 IV（最多k次交易）](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
+
+题目
+
+```
+//给你一个整数数组 prices 和一个整数 k ，其中 prices[i] 是某支给定的股票在第 i 天的价格。 
+//
+// 设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。也就是说，你最多可以买 k 次，卖 k 次。 
+//
+// 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。 
+//
+// 
+//
+// 示例 1： 
+//
+// 
+//输入：k = 2, prices = [2,4,1]
+//输出：2
+//解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。 
+//
+// 示例 2： 
+//
+// 
+//输入：k = 2, prices = [3,2,6,5,0,3]
+//输出：7
+//解释：在第 2 天 (股票价格 = 2) 的时候买入，在第 3 天 (股票价格 = 6) 的时候卖出, 这笔交易所能获得利润 = 6-2 = 4 。
+//     随后，在第 5 天 (股票价格 = 0) 的时候买入，在第 6 天 (股票价格 = 3) 的时候卖出, 这笔交易所能获得利润 = 3-0 = 3 
+//。 
+//
+// 
+//
+// 提示： 
+//
+// 
+// 1 <= k <= 100 
+// 1 <= prices.length <= 1000 
+// 0 <= prices[i] <= 1000 
+// 
+//
+// Related Topics 数组 动态规划 👍 1155 👎 0
+
+```
+
+分析
+
+还是四种状态，但是这里多个一个变量j记录交易次数
+
+只有在最后一天卖出，才会是最大收益，所以（买入-卖出）一定是成对存在的，这一对算是一笔交易，注意图中 卖出、买入，只要保证一个是j，另一个是j-1就行
+
+图中时将买入记为一次交易
+
+![image-20240409233707843](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240409233708V78wvm.png)
+
+![image-20240409234222329](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240409234222PL2gtX.png)
+
+递归
+
+```js
+// 会超时，可以改为记忆化
+var maxProfit = function(k, prices) {
+    function dfs(i,j,hold){
+        // 最后一层
+        if (j===0){
+            return 0
+        }
+        if (i===0){
+            return hold?-prices[0]:0
+        }
+
+        // 其余层
+        if (hold){ // 第i+1天是否持有
+            return Math.max(dfs(i-1,j,true),dfs(i-1,j-1,false)-prices[i]) // dfs(i-1,j-1,false)-prices[i] 是买入，记为一次交易
+        }else {
+            return Math.max(dfs(i-1,j,false),dfs(i-1,j,true)+prices[i])
+        }
+
+    }
+
+    return  dfs(prices.length-1,k,0)
+};
+```
+
+动态规划
+
+上一题提到了统一for循环变量的含义，这个题有个特殊点 交易存在0次的概念，从0到k次，这是k+1个数，需要用k+1长度的数组来存储
+
+```js
+var maxProfit = function(k, prices) {
+		// 三维数组，for循环时按照创建的顺序遍历。例如这里先创建了prices.length的数组，for循序先循序prices.length
+    const dp=new Array(prices.length).fill(0).map(()=>new Array(k+1).fill(0).map(()=>new Array(2).fill(0))) // 这里是k+1
+
+    // dp[0][1][1]=-prices[0]
+    // dp[0][0][0]=0
+    // dp[0][1][0]=0
+	   
+    for (let j = 1; j <= k; j++) {
+        dp[0][j][1] = -prices[0];
+    }
+
+
+    for (let i=1;i<prices.length;i++){ // i表示i+1天（正常情况）
+        for (let j=1;j<=k;j++){ // k表示k次交易。因为交易是有0-k，共k+1个情况。注意这里是 <=k
+            dp[i][j][1]=Math.max(dp[i-1][j][1],dp[i-1][j-1][0]-prices[i])
+            dp[i][j][0]=Math.max(dp[i-1][j][0],dp[i-1][j][1]+prices[i])
+        }
+    }
+    
+    return  dp[prices.length-1][k][0] // 注意这里最后一位是 [k]，不是[k-1]
+};
+```
+
+动态规划降维，暂时跳过
+
+### 区间dp
+
+线性dp一般是在 前缀、后缀上转移（dp[i] 与 dp[i-1]、dp[i-2]之间转移），而区间dp是从小区间转化为大区间
+
+#### [1039. 多边形三角剖分的最低得分](https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/)
+
+题目
+
+```js
+//你有一个凸的
+// n 边形，其每个顶点都有一个整数值。给定一个整数数组
+// values ，其中
+// values[i] 是第 i 个顶点的值（即 顺时针顺序 ）。
+//
+// 假设将多边形 剖分 为 n - 2 个三角形。对于每个三角形，该三角形的值是顶点标记的乘积，三角剖分的分数是进行三角剖分后所有 n - 2 个三角形的值之
+//和。
+//
+// 返回 多边形进行三角剖分后可以得到的最低分 
+```
+
+k从i点开始，顺时针遍历
+
+![image-20240424002207374](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202404240022080GpXNf.png)
+
+![image-20240424002220954](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240424002221yk8Wu0.png)
+
+递归解法
+
+```js
+// 超时
+var minScoreTriangulation = function(values) {
+
+    function dfs(i,j){
+        // 最后一层
+        if (i+1===j){
+            return 0 // 只有两个点，无法组成三角形
+        }
+
+        let minScore=Infinity
+
+        // 其余层
+        for (let k=i+1;k<=j-1;k++){ // 这个for循环一直在缩小区间
+            minScore= Math.min(minScore,dfs(i,k)+dfs(k,j)+values[i]*values[j]*values[k])
+        }
+        return minScore
+
+    }
+    return dfs(0,values.length-1)
+};
+
+// 记忆化
+var minScoreTriangulation = function(values) {
+
+    const cacheMap={}
+    function dfs(i,j){
+        // 最后一层
+        if (i+1===j){ 
+            return 0
+        }
+
+        let minScore=Infinity
+
+        // 其余层
+        for (let k=i+1;k<=j-1;k++){ 
+            if (!cacheMap[`${i},${k}`]){
+                cacheMap[`${i},${k}`]=dfs(i,k)
+            }
+            if (!cacheMap[`${k},${j}`]){
+                cacheMap[`${k},${j}`]=dfs(k,j)
+            }
+            minScore= Math.min(minScore,cacheMap[`${i},${k}`]+cacheMap[`${k},${j}`]+values[i]*values[j]*values[k])
+        }
+        cacheMap[`${i},${j}`]=minScore
+        return minScore
+
+    }
+    return dfs(0,values.length-1)
+};
+```
+
+动态规划
+
+区间dp类问题，从递归改成循环时，注意遍历顺序
+
+![image-20240424002637459](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202404240026382j1lrN.png)解释下循环顺序：
+
+必须让递推是能一步一步推过来，上一步的dp值必须有了，才能退出下一步的dp，所以，必须有顺序
+
+目标求`dp[i][j]`，根据递推公式必须先有 `dp[i][k]`、 `dp[k][j]`
+
+![image-20240424004259070](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240424004259AD5tu8.png)
+
+简单记：从大的推来的，倒序；从小的推来的，正序；
+
+而`i<k<j`关系原因见下图：
+
+![image-20240424003422894](/Users/yiche/Library/Application Support/typora-user-images/image-20240424003422894.png)
+
+动态规划
+
+```js
+function minScoreTriangulation(values) {
+
+    let n= values.length
+    let dp=new Array(n).fill(0).map(()=>new Array(n).fill(0))
+
+    // i<k<j
+    for (let i=n-2;i>=0;i--){ // 下面递推公式初始k=i+1，我们必须保证value[k]、dp[i][k]、dp[k][j]其中的k有意义
+        for (let j=i+2;j<n;j++){ // j是三角形右边界，所以一定比i大2
+            let maxCount=Infinity
+            for(let k=i+1;k<j;k++){
+                maxCount=Math.min(maxCount,Math.min(dp[i][k]+dp[k][j]+values[i]*values[j]*values[k]))
+            }
+            dp[i][j]=maxCount
+        }
+    }
+    return dp[0][n - 1];
+}
+```
+
+#### [516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)
+
+```js
+//给你一个字符串 s ，找出其中最长的回文子序列，并返回该序列的长度。
+//
+// 子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
+//
+//
+//
+// 示例 1：
+//
+//
+//输入：s = "bbbab"
+//输出：4
+//解释：一个可能的最长回文子序列为 "bbbb" 。
+//
+//
+// 示例 2：
+//
+//
+//输入：s = "cbbd"
+//输出：2
+//解释：一个可能的最长回文子序列为 "bb" 。
+//
+//
+//
+//
+// 提示：
+//
+//
+// 1 <= s.length <= 1000
+// s 仅由小写英文字母组成
+//
+//
+// Related Topics 字符串 动态规划 👍 1200 👎 0
+
+```
+
+求得子序列就是子集，很容易想到选、不选的回溯解法。但是超时！！！
+
+```js
+// 由于不是将结果return到顶层，所以不能用记忆化
+var longestPalindromeSubseq = function(s) {
+    let maxCount=0
+    function dfs(startIndex,path){
+        //
+        if(startIndex===s.length){
+           if(path.join('')===path.slice().reverse().join('')){
+               maxCount = Math.max(maxCount,path.length)
+           }
+           return
+        }
+
+        // 不选
+        dfs(startIndex+1,path)
+
+        // 选
+        path.push(s[startIndex])
+        dfs(startIndex+1,path)
+        path.pop()
+        
+    }
+
+    dfs(0,[])
+    return maxCount
+
+};
+
+// 可以记忆化
+
+```
+
+区间动态规划（猜想子集型回溯都能，这种方式解，还未验证）
+
+* i是左指针、j是右指针。分别指向字符串的左右两侧
+* 当左右指针指向的字符一样时，则回文子串长度+2
+* 不一样，则看下左、右哪个回文子串长度大，选那个
+* i==j，只有一个字符即回文长度为1
+
+$$
+dfs(i,j)=\begin{cases}
+
+dfs(i-1,j-1)+2 & s[i]=t[j] \\ 
+max(dfs(i-1,j),dfs(i,j-1))& s[i]!=t[j]\\
+
+\end{cases}
+$$
+
+```js
+var longestPalindromeSubseq = function(s) {
+    const n=s.length
+    const dp=new Array(n).fill(0).map(()=>new Array(n).fill(0))
+
+
+    // 将边界带入递推公式，需要下面边界
+    // dp[n-1][n-2]  // i是左边界、j是右边界，这种情况是没有实际含义的，回文子串长度为0
+    // dp[n-1][n-1]、dp[n-2][n-2] // 循环初始化
+    for (let i = 0; i < s.length; i++) {
+        dp[i][i] = 1;
+    }
+
+    for (let i=n-2;i>=0;i--){
+        for (let j=i+1;j<n;j++){
+            if(s[i]===s[j]){
+                dp[i][j]= dp[i+1][j-1]+2
+            }else{
+                dp[i][j]= Math.max(dp[i+1][j],dp[i][j-1])
+            }
+        }
+    }
+
+    return dp[0][n-1]
+
+};
+```
+
+### 树形dp
 
 
 

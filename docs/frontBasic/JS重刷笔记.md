@@ -8459,7 +8459,7 @@ export async function createIndexSharePostImage(qrCode) {
 
 ```js
 //下载
-const link = document. createElement('a');
+const link = document.createElement('a');
 link.style.display = 'none';
 link.href = canvasBase64;
 link.setAttribute ('download', 'yc-qrcode.png'); 

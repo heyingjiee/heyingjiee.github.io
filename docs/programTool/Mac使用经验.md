@@ -132,3 +132,11 @@ XXMac https://www.xxmac.com/
 [下载地址](https://xclient.info/s/caffeinated.html#versions)
 
 ![image-20221102161600023](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20221102161600%20.png)
+
+
+
+### Magnet PRO
+
+Mac分屏软件
+
+![image-20240422141813178](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240422141814ocPz4h.png)
