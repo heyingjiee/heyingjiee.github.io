@@ -337,17 +337,17 @@ docker commit [容器名/容器id][新的镜像名:版本号]
 * 给待发布的镜像打标记（给镜像起个新名字+版本号，打标记会在本地重新生成以tag命名的新镜像）
 
   ```shell
-  docker tag local-image:tag new-repo:tag
+  docker tag local-image:tag remote-repo:tag
   
   # username是用户名
   # local-image:tag  是本地待发布的镜像的名字和版本号
-  # new-repo:tag  是发布到远程后的名字和版本号 
+  # remote-repo:tag  是发布到远程后的名字和版本号 
   
   ```
 
-  **注意**：new-repo是远程镜像仓库的地址，即：用户名/镜像仓库名
+  **注意**：远程镜像仓库的地址，官方远程仓库地址一般为：用户名/镜像仓库名
 
-  例如，我的用户名为hyjhyj1098，镜像仓库名为test，所以我的标记为
+  例如，我的远程仓库地址：hyjhyj1098/test，其中hyjhyj1098是用户名，test是仓库名，所以我的标记为
 
   ```shell
   docker tag test:v1 hyjhyj1098/test:v1
@@ -362,7 +362,7 @@ docker commit [容器名/容器id][新的镜像名:版本号]
 * 推送到远程仓库
 
   ```shell
-  docker push new-repo:tag 
+  docker push remote-repo:tag 
   ```
 
   可以在网站看到上传的镜像
@@ -449,11 +449,17 @@ docker commit [容器名/容器id][新的镜像名:版本号]
 
 ## Dockerfile详解
 
-Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一个步骤。编写好Dockerfile后，调用构建镜像的命令（docker build），Docker 引擎会逐一按顺序解析 Dockerfile 中的指令，并根据它们的含义执行对应的操作
+Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一个步骤。编写好Dockerfile后，调用构建镜像的命令（docker build）
+
+```shell
+docker build -t 镜像名:版本号  
+```
+
+Docker 引擎会逐一按顺序解析 Dockerfile 中的指令，并根据它们的含义执行对应的操作
 
 ### Dockerfile指令
 
-* **FROM **
+* **FROM**
 
    `Dockerfile`的第一个指令一定是 `FROM` ，该指令指定基础镜像。之后的所有操作都是在该镜像运行的运行的容器中进
 
@@ -553,19 +559,18 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
 
 * **RUN**
 
-  执行shell 命令，有两种书写形式
+  在**Docker容器内**执行的命令。注意不是在宿主机执行，常用来在COPY将代码源文件从宿主机复制到Docker容器后，使用RUN安装依赖、编译源码
 
-  shell格式：
+  有两种书写形式：
 
   ```dockerfile
+  # shell格式
   RUN <命令行命令> 
-  ```
-
-  exec 格式（双引号）：
-
-  ```dockerfile
-  RUN ["可执行文件", "参数1", "参数2"]
-  # RUN ["./test.php", "dev", "offline"] 等价于 RUN ./test.php dev offline
+  
+  # exec 格式（双引号）
+  RUN ["可执行文件", "参数1", "参数2"] 
+  
+  # 例如：RUN ./test.php dev offline 等价于 RUN ["./test.php", "dev", "offline"] 
   ```
 
   **注意**：RUN命令可以有多个，但是，指令每执行一次都会在 docker 上新建一层（Layer）。所以过多无意义的层，会造成镜像膨胀过大。例如：
@@ -601,45 +606,46 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
 
   虽然 RUN 指令也可以执行shell命令，但是CMD指令是容器启动后才执行
 
-  **注意**：如果 Dockerfile 中如果存在多个 CMD 指令，仅最后CMD指令生效
-
-  格式：
+  两种格式：
 
   ```dockerfile
-  CMD <shell 命令> 
   CMD ["<可执行文件或命令>","<param1>","<param2>",...] 
   CMD ["<param1>","<param2>",...]  # 该写法是为 ENTRYPOINT 指令指定的程序提供默认参数
   ```
-
+  
   推荐使用第二种格式，执行过程比较明确。第一种格式实际上在运行的过程中也会自动转换成第二种格式运行，并且默认可执行文件是 `*.sh`文件
-
+  
+  **注意**：如果 Dockerfile 中如果存在多个 CMD 指令，仅最后⌘ 指令生效。所以如果存在多条指令可以将命令写入shell脚本，使用CMD执行脚本
+  
   docker run如何覆盖CMD指令?
-
+  
   只需要在run命令后，加上其他命令，下面的例子是加了`echo 1`，这样Dockerfile中指定的CMD就不会执行，而是执行`echo 11`
-
+  
   ```shell
   docker run --name 容器名  镜像名:版本 echo "11"
   ```
-
   
-
+  
+  
 * **ENTRYPOINT**
 
-  ENTRYPOINT 指令是容器启动后执行的shell命令，一般用作程序的入口。当 ENTRYPOINT 与 CMD 同时给出时，CMD 中的内容会作为 ENTRYPOINT 定义命令的参数，最终执行容器启动的只有 ENTRYPOINT 中给出的命令
+  ENTRYPOINT 指令是容器启动后执行的shell命令，一般用作程序的入口
 
   只有exec格式：
 
   ```dockerfile
   ENTRYPOINT ["<executeable>","<param1>","<param2>",...]
+  
+  # 注意：支持多条命令 ， 例如： 两条命令用 "--" 分割。tini和houndd -conf .
+  ENTRYPOINT ["tini","--","houndd","-conf","."]
   ```
 
-  因为ENTRYPOINT可以通过`docker run`追加参数，所以很适合启动时，可以动态传递参数的程序
+  可以通过`docker run`追加参数，所以很适合启动时，可以动态传递参数的程序
 
-  例子
+  例子：
 
   ```dockerfile
   FROM centos
-   
   ENTRYPOINT ["/bin/echo","this is test entrypoint"]
   ```
 
@@ -647,8 +653,21 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
 
   ```shell
   docker run 镜像名:版本号 123 
-  
   # 输出 this is test entrypoint 123
+  ```
+
+  与CMD结合(当 ENTRYPOINT 与 CMD  同时存在时，CMD 中的内容会作为 ENTRYPOINT 定义命令的参数，最终执行容器启动的只有 ENTRYPOINT 中给出的命令)。也可以参考下面**最佳实践**的例子
+
+  ```dockerfile
+  # dockerfile
+  FROM centos
+  
+  CMD ["默认值"]
+  ENTRYPOINT ["/bin/echo"]
+  
+  # docker run 镜像名:版本号 传入值
+  
+  # 当docker run不传入参数时，默认使用CMD作为参数
   ```
 
   运行 docker run 时，使用了 --entrypoint 选项，将覆盖 ENTRYPOINT 指令指定的命令
@@ -658,10 +677,6 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
   
   ## 输出 空行
   ```
-
-  **优点**：在执行 docker run 的时候可以指定 ENTRYPOINT 运行所需的参数。
-
-  **注意**：如果 Dockerfile 中如果存在多个 ENTRYPOINT 指令，仅最后一个生效。
 
   **最佳实践**：
 
@@ -734,9 +749,10 @@ Dockerfile文件类似于说明书，定义了构建目标镜像所需的每一�
   docker run  -v /data:/data2  nginx:latest
   ```
 
-  
 
-### 多阶段构建
+### 优化技巧
+
+#### 多阶段构建
 
 使⽤多阶段构建，可以在⼀个 Dockerfile 中使⽤多个 FROM 语句。每个 FROM 指令都可以使⽤不同的基础镜像，并表示开始⼀个新的构建阶段。同时可以将⼀个阶段的⽂件复制到另外⼀个阶段，在最终的镜像中保留下需要的内容即可
 
@@ -775,6 +791,89 @@ EXPOSE 8888
 CMD ["./app"]
 ```
 
+#### 利用缓存
+
+以一个nest服务为例子
+
+```dockerfile
+FROM node:18
+
+WORKDIR /app
+
+COPY package.json .
+
+COPY *.lock .
+
+RUN npm config set registry https://registry.npmmirror.com/
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "node", "./dist/main.js" ]
+```
+
+先复制`package.json`，安装完依赖后再复制其他文件。为什么不直接复制全部文件？如下：
+
+```dockerfile
+FROM node:18
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm config set registry https://registry.npmmirror.com/
+
+RUN npm install
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD [ "node", "./dist/main.js" ]
+```
+
+docker 是分层存储的，dockerfile 里的每一行指令是一层，docker引擎会做缓存。每次 docker build 的时候，只会从变化的层开始重新构建，没变的层会直接复用。
+
+如果 package.json 没变，那么就不会执行 npm install，直接复用之前的，可以大幅节省安装依赖的时间。如果一开始就把所有文件复制进去，不管 package.json 变没变，只要任何一个文件变了，都会重新 npm install，这样没法充分利用缓存，性能不好
+
+与**多阶段构建**结合
+
+```dockerfile
+# 构建阶段
+FROM node:18 as build-stage
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+# production stage
+FROM node:18 as production-stage
+
+COPY --from=build-stage /app/dist /app
+COPY --from=build-stage /app/package.json /app/package.json
+
+WORKDIR /app
+
+RUN npm install --production # 只安装生产依赖
+
+EXPOSE 3000
+
+CMD ["node", "/app/main.js"]
+```
+
+
+
 ### 忽略文件
 
 build命令用于根据dockerfile指定的任务构建镜像
@@ -806,6 +905,19 @@ CMD ["nodemon","app.js"]
 ```
 node_modules
 ```
+
+### 其他技巧
+
+写 Dockerfile 时经常遇到一些运行错误，依赖错误等问题，我们可以运行基础依赖，然后进入容器命令行执行构建步骤。成功后，在做过的步骤写入Dockerfile即可
+
+例如：
+
+```shell
+docker pull node:16
+docker run -it -d node:16 bash # 跑起来后进入容器终端配置依赖的软件，然后尝试跑起来自己的软件，最后把所有做过的步骤写入到 Dockerfile 就好了
+```
+
+
 
 ## Docker容器
 
@@ -877,7 +989,15 @@ docker logs 容器ID/名  # 查看容器内终端输出
 
 遇到 `exec xxx: exec format error` ，考虑容器内的镜像是否不支持指定的shell
 
+### 容器网络
+
+参考：https://blog.51cto.com/u_16213614/7554657
+
+
+
 ### 多容器通信
+
+参考：https://docker.easydoc.net/doc/81170005/cCewZWoN/U7u8rjzF
 
 一个项目不是独立运行，可能会依赖多个软件，比如：一个web项目需要mysql数据库、redis等，这就需要多容器之间相互通信
 
@@ -885,7 +1005,7 @@ docker logs 容器ID/名  # 查看容器内终端输出
 
 ![image-20220927150314301](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/20220927150314%20.png)
 
-图中的三个容器可以相互ping通是因为有Docker0存在（Docker0相当于一个路由器或者网关），三个容器并不是直接容器ping通容器，而是以Docker0为中介。每新建一个容器就会出现一个成对存在的网卡，新建容器如果没有指定网络那么默认会在docker0下
+图中的三个容器可以相互ping通是因为有Docker0存在（Docker0相当于一个路由器或者网关），三个容器是以Docker0为中介。每新建一个容器就会出现一个成对存在的网卡，新建容器如果没有指定网络那么默认会在docker0下
 
 > Veth：可以简单理解成虚拟网卡，新容器后其总是成对出现，一端发送数据，另一端就能接收
 
@@ -1006,7 +1126,7 @@ Mounts左侧是容器内路径，右侧是该容器内路径对应的本地路�
 
 Docker-Compose[中文文档](https://www.runoob.com/docker/docker-compose.html)
 
-**安装Docker-Compose**
+### 安装
 
 * 桌面版Docker，自带Docker-Compose
 
@@ -1016,9 +1136,7 @@ Docker-Compose[中文文档](https://www.runoob.com/docker/docker-compose.html)
 
   ![image-20220201115026305](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker/image-20220201115026305%20.png)
 
-
-
-**Docker-Compose配置文件**
+### 配置文件
 
 Docker-Compose读取配置文件`docker-compose.yml`或`docker-compose.yaml`，来组织起多个容器。
 
@@ -1040,6 +1158,9 @@ services:
   		- postnet
     build: . # build指定Dockerfil文件所在的目录，`.`代表Dockerfile文件在当前目录
     depends_on: myredis # 依赖，用来指定顺序，本服务依赖于myredis启动，myredis启动后myapp才启动（这里注意有一个大坑，myredi服务启动后，myapp就启动了，这时候redis可能还未就绪）
+    # 依赖可以指定多个，用数组形式
+    # -myredis1
+    # - myredi2
     ports:   # 指定映射端口
       - 80:8080
     volumes: # 挂载数据卷，将容器内./data挂载到宿主机/app目录下
@@ -1186,7 +1307,7 @@ docker-compose logs [service-name] # 查看容器运行log
 **构建镜像(images)**
 
 ```shell
-docker build -t 镜像名:版本号  -f Dockerfile的路径 发给Docker引擎的目录
+docker build -t 镜像名:版本号  -f Dockerfile的路径 发送给Docker引擎的目录
 
 # -t指定构建镜像的名字和版本号
 # 如果执行该命令的目录，就是Dockerfile所在的目录，路径一般写`.`，代表当前路径，即把当前路径发送给Docker引擎
@@ -1274,6 +1395,29 @@ node:<version>-slim
 node:<version>-alpine
 基于alpine, 比Debian小的多。如果想要最小的镜像，可以选择这个做为base。需要注意的是，alpine使用musl代替glibc。一些c环境的软件可能不兼容。但大部分没问题。
 ```
+
+例子
+
+```dockerfile
+FROM node:16
+
+# 修改时区
+ENV TZ=Asia/Shanghai
+RUN echo "${TZ}" > /etc/timezone \
+    && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && apt update \
+    && apt install -y tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+
+RUN mkdir app
+WORKDIR /app
+COPY . .
+
+RUN npm config set registry https://registry.npm.taobao.org && npm install
+```
+
+
 
 ### Go镜像
 
@@ -1386,6 +1530,8 @@ docker commit <容器ID> 镜像名:版本
 
 ## 踩坑第三弹：容器时间
 
+容器默认时间不是北京时间
+
 本地开发使用的北京时间（东八区时间），但是容器内使用的是UTC时间。导致容器的设置的定时任务无法按时执行
 
 定时任务使用的是`node-schedule`这个库
@@ -1403,13 +1549,13 @@ schedule.scheduleJob('0 0 8 * * *', ()=>{
 
 **解决方案**：
 
-更改容器内部系统的时区，通过
+登录容器内部系统，输入`apt`、`apk`，能正常输出相关命令，就能判断系统使用了哪个包管理器
 
 ```
 docker exec -it 容器id
 ```
 
-登录容器内部系统，输入`apt`、`apk`，能正常输出相关命令，就能判断系统使用了哪个包管理器
+dockerfile增加
 
 ```dockerfile
 #环境变量先设置
@@ -1430,7 +1576,122 @@ RUN echo "${TZ}" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 ```
 
+参考：https://juejin.cn/post/7082670118257295391
+
+## 踩坑第四弹：环境变量
+
+背景：
+
+做音视频开发，需要按照ffmpeg。但是ffmpeg按照比较耗时，就决定自制一个镜像，里面提前下载好ffmpeg
+
+因为还需要node环境，直接使用了node镜像
+
+```shell
+FROM node:18
+```
+
+使用上面的Dockerfile构建镜像，运行到容器，进入终端
+
+我用的idea作为开发工具，打开Dockerfile直接点击运行的监听就会直接运行起来容器
+
+![image-20240529155402098](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240529155402eRyH6E.png)
+
+进入容器终端
+
+![image-20240529155534075](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240529155534m7bM2n.png)
+
+执行安装ffmpeg的命令
+
+```shell
+# 下载
+wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+
+# 解压到 /usr/local/ffmpeg 目录下 。注意：需先创建好/usr/local/ffmpeg目录
+tar -xvf ffmpeg-release-amd64-static.tar.xz  --strip-components 1 -C /usr/local/ffmpeg
+
+# 进入解压后的目录
+cd /usr/local/ffmpeg 
+
+# profile文件中加入环境变量，无论使用什么shell都可以访问到
+vim /etc/profile  加入 export PATH="$PATH:/usr/local/ffmpeg"
+
+source /etc/profile
+```
+
+当时试了下输入`ffmpeg -version`可以正常使用了
+
+打包为镜像
+
+```
+docker commit 容器名 镜像名:版本号
+```
+
+问题：
+
+部署后容器内无法问到ffmpeg命令
+
+```
+原因：
+
+/etc/profile等shell的配置文件，都是在登录shell启动时才会被读取
+
+Docker容器默认不会启动登录shell，所以profile中的环境变量不会立即生效
+```
+
+解决：
+
+在Dockerfile中直接写环境变量配置
+
+```shell
+ENV PATH="$PATH:/usr/local/ffmpeg"
+```
 
 
 
+
+
+## 随手记
+
+
+
+
+
+可以下载，但是是版本 3 
+
+```
+是的，你可以使用RPM（Red Hat Package Manager）来安装FFmpeg，但通常情况下，直接使用默认的RPM源可能找不到FFmpeg，因为不是所有的Linux发行版官方仓库都包含FFmpeg，尤其是考虑到版权和许可证问题。为了在基于RPM的系统（如CentOS、RHEL或Fedora）上安装FFmpeg，你可以采取以下步骤：
+
+使用额外的软件仓库
+启用EPEL（Extra Packages for Enterprise Linux）: EPEL是一个由Fedora团队维护的附加软件包集合，它为RHEL和兼容系统（包括CentOS）提供了许多常用的软件包。首先，你需要启用EPEL仓库。
+
+Shell
+sudo yum install -y epel-release
+启用RPM Fusion: 对于FFmpeg这类多媒体软件，RPM Fusion是一个非常好的额外软件源，它提供了许多因许可证限制而不在标准仓库中的包。
+
+对于Fedora:
+
+Shell
+sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+对于CentOS/RHEL 8及更高版本:
+
+Shell
+sudo dnf install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
+对于CentOS/RHEL 7:
+
+Shell
+sudo yum install https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
+安装FFmpeg: 一旦你启用了相应的仓库，就可以直接使用yum或dnf(在Fedora和较新版本的CentOS/RHEL中)来安装FFmpeg了。
+
+Shell
+sudo yum install ffmpeg
+或对于使用dnf的系统：
+
+Shell
+sudo dnf install ffmpeg
+使用预编译的RPM包
+另外，如果你找到了直接提供FFmpeg的RPM包（例如，从FFmpeg官方网站或第三方源），你也可以直接使用rpm命令安装这些包，但需要注意依赖关系的解决。
+
+总结
+通过上述方法，你可以顺利地在基于RPM的Linux发行版上安装FFmpeg。选择哪种方法取决于你的具体需求和所使用的Linux发行版。
+```
 

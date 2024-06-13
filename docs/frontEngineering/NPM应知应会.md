@@ -947,7 +947,69 @@ pnpm store path
 pnpm store prune
 ```
 
-## 上传包到npm
+## 发布npm包
+
+### 包内容
+
+npm上传完整项目还是打包后的结果？
+
+* 上传整个项目（包括源码、打包后dist目录）
+
+  * 不上传node_modules。当其他开发者安装该npm包时，npm会自动下载依赖
+
+  * package.json需配置包入口
+  * 打包项目开启sourcemap，当使用者查找npm函数定义时，编辑器会跳转npm源码，（不是打包后代码）
+  * 项目A使用改npm，项目A打包时只会将npm的构建产物打包进去
+
+* 打包后产物
+
+  * 使用 `.npmignore` 忽略其他文件，保留dist目录、package.json文件（package.json需配置包入口）
+
+package.json如何配置npm包入口？
+
+下面是package.json的配置文件相关字段的含义
+
+```json
+{
+  //----入口文件----
+  "main": "./dist/index.js", // 用于 CommonJS 规范的模块加载器。比如你用 require 导入时，默认情况下都是从这里进入的。
+  
+  "module": "./dist/esm/index.js", // 用于 ES Modules 规范的模块加载器。非 NodeJS 官方的字段，所以 NodeJS 并不识别该字段。它主要被各大打包工具（比如 Rollup、Webpack）识别并使用。并且不支持 .mjs 后缀的文件。相关文档：https://github.com/rollup/rollup/wiki/pkg.module
+  
+  "type": "module", //Node环境中支持该字。可选字段：module、commonjs 。描述该包的格式类型，决定是否将 .js 文件加载为 CJS 或 ESM 的格式
+  
+  "exports": { //Node环境中支持该字段。 条件导出。作用和 main/module 作用差不多，只不过支持条件导出优先级大于 main 等高级用法
+    ".": {
+      "require": "./dist/index.js", // 当使用 CJS 导入模块时，会从此入口查找。
+      "import": "./dist/esm/index.js" // 当使用 ESM 导入模块时，会从此入口查找。
+    }
+  }
+}
+```
+
+实际场景中我们要考虑使用者的环境以及模块化方式：
+
+* Node、浏览器两种环境
+* CJS、ESM两种模块
+
+他们之间两两组合共四种情况：
+
+* Node环境使用CJS
+* Node环境使用ESM
+* 浏览器环境使用CJS
+* 浏览器环境使用ESM
+
+注意：例如在Vue项目中，我们引入的包实际上是在Node环境中，但是打包工具会替我们做处理，使其在浏览器环境中使用。
+
+
+
+前端的依赖管理太混乱了，我非常喜欢rollup文档里的一段话，希望依赖管理黑暗的日子早日结束
+
+![image-20240509105514147](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240509105514UUMypJ.png)
+
+
+
+### 发布
 
 查看源
 
@@ -968,7 +1030,7 @@ npm adduser
 #输入用户名和密码 
 ```
 
-发布npm包（发布的是构建的目录，就是这里的dist文件夹下的内容）
+发布npm包
 
 ```shell
 npm publish  # 如果推不上去，一般是包的名字和npm仓库中其他包的名字重复了
@@ -977,136 +1039,4 @@ npm publish  # 如果推不上去，一般是包的名字和npm仓库中其他�
 npm官网登陆自己的账户，就能看到这个包了
 
 ![image-20220320201043339](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320201043339%20.png)
-
-## 简单组件库
-
-**新建vue项目**
-
-使用vue-cli脚手架，生成一个项目
-
-```shell
-vue create hello-world
-```
-
-在项目src目录下新建
-
-```text
-hello-world
-		|-src
- 			|--packages #组件目录
-            |--hdd-button # hdd-button组件文件夹
-                  |--index.vue
-            |--index.js  # 入口文件
-```
-
-在index.vue中添加
-
-```vue
-<template>
-  <div>
-    <button class="hdd-btn">hdd按钮</button>
-  </div>
-</template>
-
-<script>
-
-export default {
-  name: 'hdd-button',
-  data() {
-    return {}
-  },
-
-}
-</script>
-
-<style  scoped>
-.hdd-btn{
-  width: 100px;
-  height: 50px;
-  background: #eeeeee;
-  border-radius: 5px;
-  border: unset;
-}
-
-</style>
-```
-
-index.js
-
-```js
-import HddButton from "@/packages/hdd-button/index.vue";
-const componentList=[HddButton]
-const install=function (Vue, options){
-    componentList.forEach(component=>{
-        Vue.component(component.name,component)
-    })
-
-}
-export default install //使用组件时，Vue.use(xxx) ,自动调用install方法，我们在这个方法中，使用Vue.component进行全局组册注册
-```
-
-**构建**
-
-在项目根目录中的package.json中添加脚本，并运行 `npm run build:packages `
-
-```json
-"scripts": {
-    "build:packages":"vue-cli-service build --target lib ./src/packages/index.js --dest ./src/packages/dist/ --name=hdd2"
-}
-```
-
-```text
-build   #构建
---target lib <src>   #构建<src>的文件为一个库
---dest <dest> #输出目录
---name #构建的文件名
-```
-
-在输入目录下，执行，新建一个package.json
-
-```shell
-npm init -y #生成package.json文件
-
-#修改name字段，这个字段会成为上传后的包名。这里改为 "hdd-test1"
-```
-
-
-
-![image-20220320200541253](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320200541253%20.png)
-
-**上传npm包**
-
-详情见上一章节
-
-**安装npm包**
-
-其实就是将我们上面构建的文件，下载到了项目的 `node_modules/包名` 目录下（就是这里的`node_modules/hdd-test1` ）
-
-![image-20220320202137590](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320202137590%20.png)
-
-```shell
-npm install hdd-test1  
-```
-
-**在main.js中添加**
-
-```js
-import hdd from 'hdd-test1' //这个名字是npm的包
-import 'hdd-test1/hdd2.css' //css文件需要单独引入，这里的hdd2.css的名字是 构建时的--name的值
-Vue.use(hdd)
-```
-
-**App.vue添加**
-
-这里的组件的名字`<hdd-button>`是 index.js 中起的
-
-```
-import HddButton from "@/packages/hdd-button/index.vue";
-```
-
-```vue
-<hdd-button></hdd-button>
-```
-
-
 

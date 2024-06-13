@@ -37,6 +37,7 @@ export default defineConfig({
           {text: "TS笔记（持续更新）", link: "/docs/frontBasic/TS学习笔记.md"},
           {text: "CSS笔记", link: "/docs/frontBasic/CSS技术精炼.md"},
           {text: "Vue笔记", link: "/docs/frontBasic/Vue2重刷笔记.md"},
+          {text: "Nest笔记（持续更新）", link: "/docs/frontBasic/Nest.md"},
         ],
       },
       {
@@ -98,7 +99,7 @@ export default defineConfig({
         text: "工具",
         items: [
           {text: "WebStorm", link: "/docs/programTool/WebStorm.md"},
-          {text: "Charles", link: "/docs/programTool/charles的学习笔记.md"},
+          {text: "Charles", link: "/docs/programTool/Charles的学习笔记.md"},
           {
             text: "Mac使用经验",
             link: "/docs/programTool/Mac使用经验.md",

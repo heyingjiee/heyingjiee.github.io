@@ -165,30 +165,32 @@ yarn create vite
   
   方式二：使用路径引入的文件中，如果使用了node_modules中的包也不行
   
-```html
+  ```html
   <html lang="en">
-<head>
-      <meta charset="UTF-8">
-      <title>Title</title>
-  </head>
-  <script src="./count.js" type="module">
-  </script>
-  <body>
-  
-  </body>
+  	<head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <script src="./count.js" type="module">
+    </script>
+    <body>
+    
+    </body>
   </html>
-```
-
+  ```
+  
   ```js
   //count.js
   
   import _ from 'loadsh'
   console.log('loadsh',_)
   ```
+  
+  
 
   两种方式都会报错，提示使用路径引入
 
-  ![image-20220925014604987](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Engineering/20220925014605%20.png)
+![image-20220925014604987](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Engineering/20220925014605%20.png)
 
   本例中，使用第二种方式
 
@@ -229,7 +231,9 @@ yarn create vite
 
 预构建：
 
-* vite启动时，发现import from不是路径，则会找到node_modules下的这个包
+* vite启动时，就会预构建了项目依赖
+
+* 浏览器向devServer请求html页面，浏览器会向import from的路径发起请求（ `./count.js` 对应的请求地址就是 当其页面地址+ `./count.js` ），devServer对应的文件
 
 * 如果这个包是不是ESM，则会使用esbuild将该包转化为ESM
 

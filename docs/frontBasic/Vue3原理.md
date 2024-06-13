@@ -9,7 +9,9 @@
 
 简单来说，就是代码运行过程中执行的任务
 
-例如：[Vue3](https://github.com/vuejs/core)项目的`packages/runtime-core`目录下存放的就是Vue3的运行时核心代码，其中暴露出来一个render函数，用于**编程式**的创建虚拟Dom树
+例如：[Vue3](https://github.com/vuejs/core)项目的`packages/runtime-core`目录下存放的就是Vue3的运行时核心代码，其中暴露出来render、h函数
+
+Vue在运行过程中，使用h动态创建虚拟Dom，使用render将虚拟Dom渲染到html中
 
 
 
@@ -785,30 +787,403 @@ class RefImpl<T> {
     const obj=reactive({
         name:'张三',
     })
-    const computedObj=computed(()=>{ // 返回值是一个Ref
+    
+    // 创建ReactiveEffect实例， 将计算回调存在fn属性中
+    // 创建ComputedRefImpl实例，ReactiveEffect存入ComputedRefImpl.effect属性
+    // 返回ComputedRefImpl实例
+    const computedObj=computed(()=>{ 
         return '姓名:'+obj.name
     })
 
+    // 创建ReactiveEffect实例，fn属性为effect回调，并存入全局activeEffect，执行effect回调
+    // 触发computedObj.value的getter，触发依赖收集，收集activeEffect到ComputedRefImpl实例的dep属性，并且执行ComputedRefImpl的effect函数，返回数据显示到页面。
+    
+    // 执行ComputedRefImpl的effect函数:
+    // 1、创建新的ReactiveEffect，fn为计算属性回调，并存到全局activeEffect中
+    // 2、`return '姓名:'+obj.name`，会触发reactive的getter，造成reactive的依赖收集，收集全局activeEffect，即ComputedRefImpl的回调，存到全局的targetMap
+    
+    //（注意两次依赖收集，存到不同的地方了）
     effect(()=>{
-        document.querySelector('#app').innerText=computedObj.value //Ref的getter
+        document.querySelector('#app').innerText=computedObj.value 
     })
 
 
     setTimeout(()=>{
-        obj.name='李四' // reactive的setter
+        obj.name='李四' // reactive的setter。触发reactive收集的依赖（存在全局的targetMap中），执行计算属性回调
     },2000)
 </script>
 </html>
 
 ```
 
+大体思路：reactive的setter触发导致计算属性回调重新计算
+
+#### 脏变量
+
+dirty变量
+
+* true 代表数据过时，应该更新
+* false 代表数据无需更新
+
+#### 缓存
+
+只有依赖的变量更新，才会重新触发computed的回调函数，否则直接返回缓存的值
+
+#### 实现
+
+* 创建计算属性 （ ComputedRefImpl 类型）
+
+  ```js
+  constructor(getter) {
+    	// ReactiveEffect构造函数
+      // 第一个参数：把计算属性的回调，存在ReactiveEffect实例的fn属性中
+      // 第二个参数：存在ReactiveEffect实例的scheduler属性中(reactive改动，触发的setter时，就会触发依赖，然后执行scheduler)
+      this.effect = new ReactiveEffect(getter, () => {
+        if (!this._dirty) {
+          // computed返回的ref被修改，数据置为脏。重新触发依赖
+          this._dirty = true;
+          triggerRefValue(this);
+        }
+      });
+      this.effect.computed = this;
+    }
+  ```
+
+* 计算属性变量( ComputedRefImpl 类型)触发get后，进行依赖收集后，dirty置为false
+
+  ```js
+  get value() {
+      // Ref的依赖收集，存到dep属性中
+      trackRefValue(this);
+      // 数据脏了，才要重新运行计算属性回调，获取计算属性的值
+      if (this._dirty) {
+        this._dirty = false; // 数据置为有效
+        this._value = this.effect.run();
+      }
+      // xx.value 返回值
+      return this._value;
+  }
+  ```
+
+* reactive的setter触发依赖，在触发依赖的的函数中
+
+  ```js
+  export function triggerEffect(effect: ReactiveEffect) {
+    // 遍历set,执行触发依赖
+    if (effect.scheduler) {
+      // computed 会将依赖触发的函数放在属性scheduler中，run函数运行的是属性fn
+      effect.scheduler();
+    } else {
+      effect.run();
+    }
+  }
+  ```
+
+  
+
+### scheduler调度器
+
+* 控制依赖触发的优先级
+
+  依赖触发时有scheduler优先执行，没有才会执行fn
+
+  ```html
+  <script>
+    const {effect ,reactive} = Vue
+  
+    const obj=reactive({
+      count:1
+    })
+  
+    // 第一个参数存入ReactiveEffect实例的fn属性、第二个存入scheduler属性
+    effect(()=>{
+      console.log(obj.count);
+    },{
+      scheduler(){
+        setTimeout(()=>{
+          console.log(obj.count);
+        })
+      }
+    })
+  
+  
+    obj.count=2
+  
+    console.log('结束');
+  </script>
+  
+  //输出： 1 结束 2
+  
+  // effect会先执行一遍fn，打印1
+  // obj.count=2 依赖触发执行setTimeout
+  // 打印结束
+  // setTimeout回调执行打印2
+  ```
+
+  实现
+  
+  ```js
+  export function effect<T = unknown>(
+    fn: () => T,
+    options?: ReactiveEffectOptions,
+  ) {
+    
+    const _effect = new ReactiveEffect(fn);
+  
+    // option中如有scheduler，就会直接合并到ReactiveEffect实例中。依赖触发时，会优先执行scheduler
+    if (options) {
+      extend(_effect, options);
+    }
+  
+    if (!options || !options.lazy) {
+      //  非懒执行
+      _effect.run(); 
+    }
+}
+  ```
+
+* 控制依赖触发的规则
+
+  ```html
+  <script>
+    const {effect ,reactive,queuePreFlushCb} = Vue
+   
+    const obj2=reactive({
+      count:1
+    })
+  
+    effect(()=>{
+      console.log(obj2.count);
+    },{
+      scheduler(){
+        queuePreFlushCb(()=>console.log(obj2.count))
+      }
+    })
+  
+    // 宏任务，触发依赖时，会执行scheduler，放入微任务队列中
+    obj2.count=2
+    obj2.count=3
+    
+    
+    // 输出: 1 3 3
+  </script>
+  ```
+
+  实现
+
+  ```js
+  // runtime-core/scheduler.js
+  
+  // 微任务队列是否pending
+  let isFlushPending: boolean = false;
+  
+  // 微任务队列
+  const pendingPreFlushCbs: Function[] = [];
+  
+  const resolvePromise = Promise.resolve() as Promise<any>; // 默认为 Promise<void>，需要断言
+  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let currentFlushPromise: Promise<void> | null = null;
+  
+  /**
+   * 加入微任务队列
+   * queueCb函数：cb推入pendingQueue
+   * queueFlush函数：微任务未pending，使用Promise.resolve创建一个微任务执行flushJobs
+   *
+   * 第二次执行，cb函数推入pendingQueue后，不会创建一个微任务了
+   */
+  export function queuePreFlushCb(cb: Function) {
+    queueCb(cb, pendingPreFlushCbs);
+  }
+  
+  function queueCb(cb: Function, pendingQueue: Function[]) {
+    pendingQueue.push(cb);
+    queueFlush();
+  }
+  
+  function queueFlush() {
+    if (!isFlushPending) {
+      isFlushPending = true;
+      currentFlushPromise = resolvePromise.then(flushJobs);
+    }
+  }
+  
+  /**
+   * 宏任务执行完毕后，会自动执行微任务flushJobs
+   * 执行后，重置微任务队列为 `未pending`
+   * 执行微任务队列的全部函数
+   */
+  function flushJobs() {
+    isFlushPending = false;
+    flushPreFlushCbs();
+  }
+  
+  export function flushPreFlushCbs() {
+    if (pendingPreFlushCbs.length) {
+      // 去重拷贝一份
+      const activePreFlushCbs = [...new Set(pendingPreFlushCbs)];
+      pendingPreFlushCbs.length = 0;
+  
+      for (let i = 0; i < activePreFlushCbs.length; i++) {
+        activePreFlushCbs[i]();
+      }
+    }
+  }
+  
+  ```
+
+### watch部分
+
+测试案例
+
+```js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<script src="../../dist/vue.global.js"></script>
+<body>
+<div id="app"></div>
+</body>
+<script>
+  const {reactive,watch}=Vue
+
+  const obj=reactive({
+    name:'张三',
+  })
+
+  // watch监听数据obj
+  watch(obj,(newVal,oldVal)=>{
+    console.log('watch被触发');
+    console.log('newVal',JSON.stringify(newVal));
+    console.log('oldVal',JSON.stringify(oldVal));
+  })
+
+  setTimeout(()=>{
+    obj.name='李四' // reactive的setter
+  },2000)
+
+</script>
+</html>
+
+```
+
+大体思路：reactive的setter触发导致flushJobs触发，导致job执行（job就是watch的回调）
+
+## 运行时
+
+在运行时
+
+* 渲染器（renderer）会遍历整个虚拟Dom树，并根据虚拟Dom树构建真实Dom，这个过程称为**挂载（mount）**
+
+* 当VNode变化时，对比新、旧VNode之间的区别，并应用这些变化都真实Dom上，这个过程称为**更新（patch）**
+
+在Vue3中
+
+* [h()](https://cn.vuejs.org/api/render-function.html#h)
+
+  负责创建虚拟Dom。虚拟Dom节点的类型：
+
+  * Text：文本节点
+  * Comment：注释节点
+  * Static：静态Dom节点
+  * Fragment：片段，即包含多个根节点的模板
+  * ELEMENT：Dom节点
+  * COMPONENT：组件
+  * TELEPORT、SUSPENSE：Vue3的内置组件
+  * 等...
+
+  
+
+* [render](https://cn.vuejs.org/api/options-rendering.html#render)
+
+  将虚拟Dom负责生成真实Dom（挂载、更新）
+
+代码分布在`runtime-core`、`runtime-dom`目录下
+
+* `runtime-core`负责渲染的核心逻辑，与平台无关（例如uniapp之类的，并不是在浏览器环境渲染页面）
+* `runtime-dom`是浏览器端的实现
 
 
 
 
 
+Vue
 
-## 疑问点
+## 补充
+
+#### Object.assign()
+
+可以合并类的实例，通过这种方式也可以向实例添加方法、属性
+
+```js
+class A{
+
+}
+
+const a= new A()
+
+Object.assign(a,{
+	sum(a,b){
+		return a+b
+	}
+})
+console.log(a)
+```
+
+#### 断言
+
+`__DEV__`用于区分开发、生产环境
+
+```ts
+export const createVNode = (
+  __DEV__ ? createVNodeWithArgsTransform : _createVNode
+) as typeof _createVNode  // _createVNode是个函数，这里用typeof获取这个函数的类型
+```
+
+#### symbol
+
+* Symbol.for(key:string)
+
+  如果全局存在，则返回对应的 symbol；如果不存在，则会创建一个新的 symbol，并将其添加到全局 symbol 注册表中，并返回该 symbol
+
+  ```js
+  // 创建一个全局 symbol，并添加到全局 symbol 注册表中
+  const symbol1 = Symbol.for('mySymbol');
+  
+  // 获取全局 symbol 注册表中已有的 symbol
+  const symbol2 = Symbol.for('mySymbol');
+  
+  console.log(symbol1 === symbol2); // 输出: true，symbol1 和 symbol2 是同一个 symbol
+  ```
+
+* Symbol.keyFor(Symbol)
+
+  ```js
+  // 创建一个具有描述符 'mySymbol' 的全局 symbol
+  const symbol = Symbol.for('mySymbol');
+  
+  // 检查全局 symbol 注册表中是否存在 'mySymbol' 的键
+  if (Symbol.keyFor(symbol)) {
+    console.log('Symbol exists');
+  } else {
+    console.log('Symbol does not exist');
+  }
+  ```
+
+  
+
+
+
+## 待完成
 
 1、Proxy只能代理对象的一层，对于深层对象Vue3时如何处理的
+
+2、toRow、shallow
+
+3、watch目前只支持reactive入参，且effect.stop方法未实现、watch监听oldValue没有深拷贝
+
+4、h函数，仅实现了 type为 ELEMENT、TEXT_CHILDREN两种类型
 

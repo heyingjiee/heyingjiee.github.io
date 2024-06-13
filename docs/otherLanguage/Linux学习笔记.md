@@ -1,5 +1,5 @@
 ---
-title: Linux基础-学习笔记
+/title: Linux基础-学习笔记
 date: 2020-4-15
 tags: [常用Linux命令,命令格式]
 categories: 版本控制  
@@ -396,6 +396,12 @@ anaconda-ks.cfg install.log install.log.syslog
 
 `touch 文件名`:创建文件
 
+`tail 文件名`：从末尾查看文件
+
+````shell
+tail -n 100 -f 文件名 # 这个非常适合用在查看日志。-n 100查看文件最后100行；-f实时查看文件末尾内容的变化，当日志写入时文件会一直更新显示出来
+````
+
 `cat 文件名`：查看文件内容，当文件内容很多，会直接显示到文件末尾，可以向上滚动滑轮，找开头
 
 `less 文件名`：窗口不能输入命令了，直接从开头显示整个文件，向下滚轮，看文件。注意：按q键，退出
@@ -434,6 +440,9 @@ mv bols lmls #把 bols 改名为 lmls
 `mv`移动文件位置
 
 ```shell
+mv A B # 把文件夹A移动到了文件夹B
+mv A/* B # 把文件夹A下的文件（不包括A文件夹）移动到了文件夹B
+
 mv xxx.txt /path/to/news  #移动文件位置（第二个参数是路径）
 
 mv xxx.txt /path/to/news/yyy.txt #移动文件位置，再重命名（第二个参数是路径结尾是文件名）
@@ -730,36 +739,22 @@ vim分为命令模式、编辑模式、输入模式
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 在命令模式下也可以移动光标，但是不能编辑文件内容，输入的内容会作为命令，回车执行
 
 **注意**：输入命令`:w`和`:q`前，必须是命令模式，否则就是直接把命令写进文件里了。命令中的冒号是英文冒号
 
 ## 用户相关
 
+root用户：用户目录在 `/root`
+
+其他用户：用户目录在`/home/用户名`
+
+
+
 **切换用户——命令基本格式**
 
 ```shell
-[root@localhost ~]# su [选项] 用户名
+su [选项] 用户名
 ```
 
 **切换root用户**
@@ -890,6 +885,10 @@ lsof -i:端口号
 
 ##如果提示没有lsof,就要先安装下
 yum install -y lsof
+```
+
+```shell
+netstat -tunlp
 ```
 
 **结束进程**
@@ -1146,16 +1145,32 @@ tar -tvf a.tar #会用长格式显示a.tar文件包中文件的详细信息
 
 上面我们说了目录不能直接压缩，需要先打包在压缩，但是在Linux中将tar命令，只需要加入一个参数，就能在打包后直接压缩。这样就不用区分目录还是文件了，一个tar命令就能【打包+压缩】+【解压缩+解打包】
 
-- `-z`：压缩和解压缩 ".tar.gz" 格式
-- `-j`：压缩和解压缩 ".tar.bz2"格式
+* **.tar.xz**
 
-```shell
-#压缩为.tar.gz
-tar -zcvf a.tar.gz b.txt c.cpp /text
+  格式无需解压命令参数
 
-#解压.tar.gz格式,到/temp目录下
-tar -zxvf a.tar.gz -C /temp
-```
+  ```shell
+  # 解压
+  tar -xvf a.tar.xz -C /temp
+  ```
+
+- **.tar.gz**
+
+  `-z`：压缩和解压缩该格式
+
+  ```shell
+  #压缩为.tar.gz
+  tar -zcvf a.tar.gz b.txt c.cpp /text
+  
+  
+  #解压.tar.gz格式,到/temp目录下。temp下会出现a文件夹，其中就是解压文件
+  tar -zxvf a.tar.gz -C /temp
+  
+  # 注意： 解压默认会以压缩包名创建一个文件夹，将解压资源放入该文件夹下。可以--strip-components 1，指明删除上一级解压文件夹
+  tar -zxvf a.tar.gz --strip-components 1 -C /temp
+  ```
+
+
 
 **zip格式**，**gz格式**，**bz2格式**
 
@@ -1187,6 +1202,12 @@ uname -a
 
 ```ls
 lscpu
+```
+
+### 可执行文件路径
+
+```shell
+whereis xxx   # 查看全局可执行文件路径 例如：`whereis node` 
 ```
 
 
@@ -1481,6 +1502,12 @@ source filename
 
 . filename
 ```
+
+
+
+
+
+
 
 
 

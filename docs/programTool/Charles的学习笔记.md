@@ -189,14 +189,15 @@ charles时一款**代理**抓包工具，即所有的请求经过charles，charl
 
 
 ## 常见问题
-> 安装charles的电脑，不能抓到自己的包
+### 安装charles的电脑，不能抓到自己的包
 
 安装charles的电脑默认已经配置了代理 （未安装ssl证书 ，需要手动安装），如果不能抓到包，很有可能是电脑安装了其他的代理工具（VPN），或者是使用的浏览器安装了某些代理插件导致的
 
-> 给手机配置好代理以后，部分App无法联网或报网络错误
+### 给手机配置好代理以后，部分App无法联网或报网络错误
 
 想要理解这个原因，就需要对[证书的原理](https://blog.csdn.net/huangyaa729/article/details/88175425?spm=1001.2101.3001.6650.1&utm_medium=distribute.wap_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1.wap_blog_relevant_default&depth_1-utm_source=distribute.wap_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1.wap_blog_relevant_default)有一定的了解，抓包工具之所以能够通过给手机安装证书的方式，解析https包的内容，其原理类似于**中间人攻击的手段**，即，将charles证书安装到手机系统中，当服务端返回信息被charles截获后，charles获取了真正的公钥，同时charles生成了一对假的公钥/私钥，再将信息使用假的私钥加密，发送到手机，手机的**浏览器/App**会从系统受信任证书中寻找charles证书，完成数据签名的校验和解密。
 
 注意，因为google和apple开始重视安全因素，所以引入了SSL-Pinning技术：开发者预先把证书相关信息预置到App中再打包，这样在https通讯过程中，App会在**内置证书和系统默认预置证书**中查找服务器返回的证书，然后做签名校验，但是我们下载的charles证书是第三方证书，App根本找不到服务器返回的证书对应的本地证书，那么就被判定可能为**中间人攻击（比如Fiddler/Charles抓包工具）**，App客户端就会终止https链接，所以显示无法联网或报网络错误
 
 解决方案：https://blog.csdn.net/w08023176/article/details/120333337
+

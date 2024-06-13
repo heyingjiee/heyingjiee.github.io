@@ -60,7 +60,13 @@ HTTPS协议使用对称密钥和非对称密钥混合加密的方式，来进行
 
 ![image-20231205151720039](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231205151721dEKVX0.png)
 
-对于上图，有几点基本常识需要知道：
+对于上图，有下面几点需要知道：
+
+* 服务端返回的证书结构：证书明文信息+公钥+签名
+
+  ![image-20240513110451000](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240513110451Iy622e.png)
+
+  
 
 * 公钥和私钥是一对的，服务端开发者从CA申请的证书中有私钥，而对应的公钥在客户端，只不过对应的客户端有大量CA颁发的公钥，需要通过上图的方式让客户端知道该使用哪个公钥
 * 公钥加密的信息，只有私钥能解密。私钥加密的信息，只有公钥能解密
@@ -87,3 +93,5 @@ https://blog.51cto.com/11883699/2160032
 https://zhuanlan.zhihu.com/p/45173862
 
 https://blog.csdn.net/huangyaa729/article/details/88175425?spm=1001.2101.3001.6650.1&utm_medium=distribute.wap_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1.wap_blog_relevant_default&depth_1-utm_source=distribute.wap_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-1.wap_blog_relevant_default
+
+https://zhuanlan.zhihu.com/p/615877560?utm_id=0

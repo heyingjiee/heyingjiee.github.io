@@ -2789,6 +2789,69 @@ var totalFruit = function(fruits) {
 };
 ```
 
+### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
+
+滑动窗口暴力解法超时
+
+```js
+// 经典模版
+var maxSlidingWindow = function(nums, k) {
+    let res=[]
+    let left=right=0
+    
+    // for 右指针 ， for循环会先把窗口扩大到k，然后触发while维护窗口
+    for (;right<nums.length;right++){
+
+       // while 维护滑动窗口
+        while (right-left+1===k){
+            // [1,2].slice(1,9) 。slice函数第二个参数溢出，也能正常使用
+            res.push(Math.max(...nums.slice(left,right+1)))
+          
+          	// 推动左指针
+            left++
+        }
+        
+    }
+
+    return res
+};
+```
+
+单调**队列**
+
+视频讲解：https://www.bilibili.com/video/BV1bM411X72E/?p=27&spm_id_from=pageDriver
+
+![image-20240512210738183](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202405122107380VvqXp.png)
+
+```js
+var maxSlidingWindow = function(nums, k) {
+    let deque=[] //单调递减。存的是nums的索引
+    let ans=[]
+
+    for (let i=0;i<nums.length;i++){
+        // 不符合单调递减，队尾一直出队
+        while (deque.length&&nums[deque[deque.length-1]]<nums[i]){
+            deque.pop()
+        }
+        // 符合单调递减，再入队索引
+        deque.push(i)
+
+        // 队头是最大值，但是如果对头在窗口之外，要剔除
+        while (deque[0]<=i-k){
+            deque.shift()
+        }
+
+        // 存入答案 注意：必须够k个了，才才是存答案
+        // ans.push(nums[deque[0]])
+        if (i >= k - 1) ans.push(nums[deque[0]]);
+    }
+
+    return ans
+};
+```
+
+
+
 ## 递归问题
 
 ### 递归分析
@@ -2878,56 +2941,9 @@ function factorial(n){
 }
 ```
 
-#### [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+#### 树的部分
 
-return通讯，将结果返回顶层
-
-```js
-var maxDepth = function(root) {// 0 层
-    // 最后一层 （root -> root.left、root.right，一步步下移为null）
-    if(root===null){
-        return 0
-    }
-  
-    // 其它层（假设是1层）
-  	// maxDepth(root.left)\maxDepth(root.right)是第2层
-  	// 这里计算的是1层的结果
-    const latter=Math.max(maxDepth(root.left),maxDepth(root.right)) // n+1层结果做逻辑处理。这里是取最大值
-    return 1+latter
-};
-```
-
-参数通讯
-
-注意：
-
-* leetcode给的模板`var maxDepth = function(root){}`，如果使用maxDepth作为递归函数，那就没法自定义每层的参数。所以，我们可以在自定义一个全新的递归函数
-
-* 参数想下传递最后无法取出，所以我们一般定义个全局的变量去收集每层的数据
-
-```js
-var maxDepth = function(root) {
-    let ans=0
-    function recursion(root,count){
-        // 最后一层
-        if(root===null){
-            return 0
-        }
-
-        // 其余层
-        count++
-        ans=Math.max(count,ans)
-        recursion(root.left,count)
-        recursion(root.right,count)
-    }
-    recursion(root,0)
-
-    return ans
-
-};
-```
-
-
+参加树章节dfs的题
 
 ### 分治
 
@@ -2962,53 +2978,6 @@ function divide_conquer(problem, param1, param2, ...){
 
 #### [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
 
-题目
-
-```js
-//实现 pow(x, n) ，即计算 x 的整数 n 次幂函数（即，xⁿ ）。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：x = 2.00000, n = 10
-//输出：1024.00000
-//
-//
-// 示例 2：
-//
-//
-//输入：x = 2.10000, n = 3
-//输出：9.26100
-//
-//
-// 示例 3：
-//
-//
-//输入：x = 2.00000, n = -2
-//输出：0.25000
-//解释：2-2 = 1/22 = 1/4 = 0.25
-//
-//
-//
-//
-// 提示：
-//
-//
-// -100.0 < x < 100.0
-// -231 <= n <= 231-1
-// n 是一个整数
-// 要么 x 不为零，要么 n > 0 。
-// -104 <= xⁿ <= 104
-//
-//
-// Related Topics 递归 数学 👍 1316 👎 0
-
-```
-
-解
-
 ```js
 var myPow = function(x, n) {
     if (n===0){
@@ -3029,45 +2998,6 @@ var myPow = function(x, n) {
 ```
 
 #### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
-
-题目
-
-```js
-//给定一个大小为 n 的数组 nums ，返回其中的多数元素。多数元素是指在数组中出现次数 大于 ⌊ n/2 ⌋ 的元素。 
-//
-// 你可以假设数组是非空的，并且给定的数组总是存在多数元素。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：nums = [3,2,3]
-//输出：3 
-//
-// 示例 2： 
-//
-// 
-//输入：nums = [2,2,1,1,1,2,2]
-//输出：2
-// 
-//
-// 
-//提示：
-//
-// 
-// n == nums.length 
-// 1 <= n <= 5 * 10⁴ 
-// -10⁹ <= nums[i] <= 10⁹ 
-// 
-//
-// 
-//
-// 进阶：尝试设计时间复杂度为 O(n)、空间复杂度为 O(1) 的算法解决此问题。 
-//
-// Related Topics 数组 哈希表 分治 计数 排序 👍 2150 👎 0
-
-```
 
 哈希计数
 
@@ -3092,46 +3022,6 @@ var majorityElement = function(nums) {
 ```
 
 #### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
-
-题目
-
-```js
-//二叉树中的 路径 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 至多出现一次 。该路径 至少包含一个 节点，且不一定
-//经过根节点。
-//
-// 路径和 是路径中各节点值的总和。
-//
-// 给你一个二叉树的根节点 root ，返回其 最大路径和 。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：root = [1,2,3]
-//输出：6
-//解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6
-//
-// 示例 2：
-//
-//
-//输入：root = [-10,9,20,null,null,15,7]
-//输出：42
-//解释：最优路径是 15 -> 20 -> 7 ，路径和为 15 + 20 + 7 = 42
-//
-//
-//
-//
-// 提示：
-//
-//
-// 树中节点数目范围是 [1, 3 * 10⁴]
-// -1000 <= Node.val <= 1000
-//
-//
-// Related Topics 树 深度优先搜索 动态规划 二叉树 👍 2181 👎 0
-
-```
 
 解
 
@@ -3167,54 +3057,6 @@ var maxPathSum = function(root) {
 ```
 
 #### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
-
-题目
-
-```js
-//给你一个整数数组 nums ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
-//
-// 子数组 是数组中的一个连续部分。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
-//输出：6
-//解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
-//
-//
-// 示例 2：
-//
-//
-//输入：nums = [1]
-//输出：1
-//
-//
-// 示例 3：
-//
-//
-//输入：nums = [5,4,-1,7,8]
-//输出：23
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= nums.length <= 10⁵
-// -10⁴ <= nums[i] <= 10⁴
-//
-//
-//
-//
-// 进阶：如果你已经实现复杂度为 O(n) 的解法，尝试使用更为精妙的 分治法 求解。
-//
-// Related Topics 数组 分治 动态规划 👍 6565 👎 0
-
-```
 
 滑动窗口：
 
@@ -3266,42 +3108,6 @@ var maxSubArray = function(nums) {
 ```
 
 #### [938. 二叉搜索树的范围和](https://leetcode.cn/problems/range-sum-of-bst/)
-
-题目
-
-```js
-//给定二叉搜索树的根结点 root，返回值位于范围 [low, high] 之间的所有结点的值的和。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：root = [10,5,15,3,7,null,18], low = 7, high = 15
-//输出：32
-//
-//
-// 示例 2：
-//
-//
-//输入：root = [10,5,15,3,7,13,18,1,null,6], low = 6, high = 10
-//输出：23
-//
-//
-//
-//
-// 提示：
-//
-//
-// 树中节点数目在范围 [1, 2 * 10⁴] 内
-// 1 <= Node.val <= 10⁵
-// 1 <= low <= high <= 10⁵
-// 所有 Node.val 互不相同
-//
-//
-// Related Topics 树 深度优先搜索 二叉搜索树 二叉树 👍 369 👎 0
-
-```
 
 递归
 
@@ -6009,9 +5815,1024 @@ var longestPalindromeSubseq = function(s) {
 
 ### 树形dp
 
+#### 路径
+
+##### [543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
+
+```js
+//给你一棵二叉树的根节点，返回该树的 直径 。 
+//
+// 二叉树的 直径 是指树中任意两个节点之间最长路径的 长度 。这条路径可能经过也可能不经过根节点 root 。 
+//
+// 两节点之间路径的 长度 由它们之间边数表示。 
+//
+// 
+//
+// 示例 1： 
+// 
+// 
+//输入：root = [1,2,3,4,5]
+//输出：3
+//解释：3 ，取路径 [4,2,1,3] 或 [5,2,1,3] 的长度。
+// 
+//
+// 示例 2： 
+//
+// 
+//输入：root = [1,2]
+//输出：1
+// 
+//
+// 
+//
+// 提示： 
+//
+// 
+// 树中节点数目在范围 [1, 10⁴] 内 
+// -100 <= Node.val <= 100 
+// 
+//
+// Related Topics 树 深度优先搜索 二叉树 👍 1534 👎 0
 
 
-## 深度/广度优先
+//leetcode submit region begin(Prohibit modification and deletion)
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val, left, right) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.left = (left===undefined ? null : left)
+ *     this.right = (right===undefined ? null : right)
+ * }
+ */
+/**
+ * @param {TreeNode} root
+ * @return {number}
+ */
+```
+
+分析：最长直径一定是包含拐点的
+
+这个题有个特征，二叉树的递归并不是答案，递归仅仅是计算节点深度的
+
+但是，我们在这个递归中不断更新答案ans
+
+```js
+var diameterOfBinaryTree = function(root) {
+  let ans=0
+  function dfs(node){
+    // 最后一层
+    if (node===null){
+      return 0
+    }
+
+    // 其余层
+    let left = dfs(node.left)
+    let right = dfs(node.right)
+
+    // return 的是每层的最大深度 ，ans才是直径
+    // 深度-1，才是直径（边数）
+    // left+right=left直径+right直径+2 这是对的
+    ans=Math.max(ans,left+right)
+
+    return Math.max(left,right)+1  // 这里是计算左右子树最大深度
+    
+  }
+  dfs(root)
+  return ans
+};
+```
+
+##### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+
+上一题直径是边数之和，这题路径和是节点val之和
+
+上一题直径是边数肯定是正数，即越大越好；这题路径节点val可能是负数
+
+```js
+//二叉树中的 路径 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 至多出现一次 。该路径 至少包含一个 节点，且不一定
+//经过根节点。 
+//
+// 路径和 是路径中各节点值的总和。 
+//
+// 给你一个二叉树的根节点 root ，返回其 最大路径和 。 
+//
+// 
+//
+// 示例 1： 
+// 
+// 
+//输入：root = [1,2,3]
+//输出：6
+//解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6 
+//
+// 示例 2： 
+// 
+// 
+//输入：root = [-10,9,20,null,null,15,7]
+//输出：42
+//解释：最优路径是 15 -> 20 -> 7 ，路径和为 15 + 20 + 7 = 42
+// 
+//
+// 
+//
+// 提示： 
+//
+// 
+// 树中节点数目范围是 [1, 3 * 10⁴] 
+// -1000 <= Node.val <= 1000 
+// 
+//
+// Related Topics 树 深度优先搜索 动态规划 二叉树 👍 2216 👎 0
+
+```
+
+解
+
+```js
+var maxPathSum = function(root) {
+    let ans=-Infinity
+    function dfs(node){
+        if (node===null){
+            return 0
+        }
+
+        let left=dfs(node.left)
+        let right=dfs(node.right)
+        
+        // 答案
+        ans=Math.max(ans,left+right+node.val)
+      
+        // 递归 ，这里的关键是0
+      	// 下面二叉树， 最长路径的起始一定得是正数，也就是不能从-2开始，而是4开始
+      	// 
+        //      0
+        //     / \
+        //    -1   2
+        //   / \
+        //  3   4
+        //      /
+        //    -2
+        return Math.max(0,Math.max(left,right)+node.val)
+    }
+    dfs(root)
+    return ans
+};
+```
+
+##### [2246. 相邻字符不同的最长路径](https://leetcode.cn/problems/longest-path-with-different-adjacent-characters/)
+
+#### 最大独立集
+
+![image-20240512112138734](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240512112138ppk1or.png)
+
+##### [337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)
+
+情况：
+
+* 根节点选，左右孩子不能选
+* 根节点不选，左右孩子都选（都选才能最大）
+
+![image-20240512101129364](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240512101129zBSLJm.png)
+
+错误解法
+
+```js
+var rob = function(root) {
+    function dfs(node){
+        // 最后一层
+        if(node===null){
+            return 0
+        }
+        // 其余层
+        let left=dfs(node.left)
+        let right=dfs(node.right)
+
+        // 错误点：这里丢掉了一层关系啊。选当其节点，必定是左（右）子树中的根节点不选，否则就相连了
+        return  Math.max(left+right,node.val+left,node.val+right)
+
+    }
+
+    return  dfs(root)
+};
+```
+
+解
+
+```js
+var rob = function(root) {
+    function dfs(node){
+        // 最后一层
+        if(node===null){
+            return [0,0]
+        }
+        // 其余层
+        let [leftSelectRoot,leftNoSelectRoot]=dfs(node.left)
+        let [rightSelectRoot,rightNoSelectRoot]=dfs(node.right)
+
+
+        // 选当前。不选左右孩子的根节点
+        let selectRoot=node.val+leftNoSelectRoot+rightNoSelectRoot
+        // 不选当前。选左右孩子 。这里有个点：左（右）子树的根选与不选，需要比较哪个大
+        let noSelectRoot=Math.max(leftSelectRoot,leftNoSelectRoot)+Math.max(rightSelectRoot,rightNoSelectRoot)
+
+        return [selectRoot,noSelectRoot]
+
+    }
+
+    return Math.max(...dfs(root))
+};
+```
+
+![image-20240512111859144](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/2024051211185916PrDd.png)
+
+#### 树上最小支配集
+
+##### [968. 监控二叉树](https://leetcode.cn/problems/binary-tree-cameras/)
+
+![image-20240512113012222](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240512113012EwhEoF.png)
+
+```js
+var minCameraCover = function(root) {
+    function dfs(node){
+        // 最后一层
+        if (node==null){
+            return [Infinity,1,0] // Infinity表示无意义，这题求最小值，所以是正无穷
+        }
+
+        // 其余层
+        const [l_by_self,l_by_father,l_by_children]= dfs(node.left)
+        const [r_by_self,r_by_father,r_by_children]= dfs(node.right)
+
+        // 仅当前节点装监控（左节点、左节父节点、左节点孩子）
+        let self=Math.min(l_by_self,l_by_father,l_by_children)+Math.min(r_by_self,r_by_father,r_by_children)+1
+        // 仅当前节点的父结点装监控（左节点，左节子节点。当其节点就是左子节点父节点，已明确不安装监控）
+        let father=Math.min(l_by_self,l_by_children)+Math.min(r_by_self,r_by_children)
+        // 仅当前节点的孩子结点装监控（哪个孩子节点安装？即左、右、左+右）
+        let children=Math.min(l_by_self+r_by_children,l_by_children+r_by_self,l_by_self+r_by_self)
+
+        return [self,father,children]
+    }
+
+    const [self,,children]=dfs(root) // 根节点
+    return  Math.min(self,children)
+};
+```
+
+![image-20240512133552761](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202405121335535AVlm7.png)
+
+```js
+仅当前节点装监控这步
+
++1 改成 cost[node]
+```
+
+## 树
+
+### dfs（递归）
+
+####  [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+
+return通讯，将结果返回顶层
+
+```js
+var maxDepth = function(root) {// 0 层
+    // 最后一层 （root -> root.left、root.right，一步步下移为null）
+    if(root===null){
+        return 0
+    }
+  
+    // 其它层（假设是1层）
+  	// maxDepth(root.left)\maxDepth(root.right)是第2层
+  	// 这里计算的是1层的结果
+    const latter=Math.max(maxDepth(root.left),maxDepth(root.right)) // n+1层结果做逻辑处理。这里是取最大值
+    return 1+latter
+};
+```
+
+参数通讯
+
+注意：
+
+* leetcode给的模板`var maxDepth = function(root){}`，如果使用maxDepth作为递归函数，那就没法自定义每层的参数。所以，我们可以在自定义一个全新的递归函数
+
+* 参数想下传递最后无法取出，所以我们一般定义个全局的变量去收集每层的数据
+
+```js
+var maxDepth = function(root) {
+    let ans=0
+    function recursion(root,count){
+        // 最后一层
+        if(root===null){
+            return 0
+        }
+
+        // 其余层
+        count++
+        ans=Math.max(count,ans)
+        recursion(root.left,count)
+        recursion(root.right,count)
+    }
+    recursion(root,0)
+
+    return ans
+
+};
+```
+
+#### [111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
+
+这个题很容易做错，直接把上一题的取左右子树最大的，改成取左右子树最小的
+
+```
+Math.min(minDepth(root.left),minDepth(root.right))
+```
+
+可以看下面的例子，因为把并不存在的右子树算上了，右子树不存在但是被错误的认为其最小高度为0，导致计算错误
+
+![image-20240610165549167](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240610165549ym0eO5.png)
+
+```
+var minDepth = function(root) {
+    function dfs(node){
+        //
+        if (node===null) {
+            return 0
+        }
+
+        //
+        if(node.left&&node.right===null){
+            return  dfs(node.left)+1
+        }
+
+        if (node.left===null&&node.right){
+            return  dfs(node.right)+1
+        }
+        return  Math.min(dfs(node.left),dfs(node.right))+1
+    }
+
+    return dfs(root)
+};
+```
+
+#### [100. 相同的树](https://leetcode.cn/problems/same-tree/)
+
+```js
+var isSameTree = function(p, q) {
+    function dfs(p,q){
+        // 最后一层
+        if (p===null||q===null){
+            if (p===q){
+                return true
+            }else {
+                return false
+            }
+        }
+
+        // 其余层
+        if(dfs(p.left,q.left)&&dfs(p.right,q.right)&&p.val===q.val){
+            return true
+        }else {
+            return false
+        }
+    }
+    return  dfs(p,q)
+};
+```
+
+#### [101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)
+
+![image-20240513084039419](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240513084039Fvln5t.png)
+
+与上个题一样的，是中轴对称所以把根节点的左右子树传入，且
+
+* 左节点的左孩子=右节点的右孩子
+* 左节点的右孩子=右节点的左孩子
+
+```js
+var isSymmetric = function(root) {
+    function dfs(leftNode,rightNode){
+        // 最后一层
+        if (leftNode===null||rightNode===null){
+            return leftNode===null&&rightNode===null
+        }
+
+        // 其余层
+        if (leftNode.val===rightNode.val&&dfs(leftNode.left,rightNode.right)&&dfs(leftNode.right,rightNode.left)){
+            return true
+        }
+        return false
+    }
+
+    return dfs(root.left,root.right)
+};
+```
+
+#### [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/)
+
+```js
+var invertTree = function(root) {
+    if (root===null){
+        return null
+    }
+
+    let left=invertTree(root.left)
+    let right=invertTree(root.right)
+
+    root.left=right
+    root.right=left
+
+    return root
+    
+};
+```
+
+```js
+var invertTree = function(root) {
+  	// 最后一层
+    if (root===null){
+        return null
+    }
+
+  	// 其余层的处理逻辑
+    let temp=root.left
+    root.left=root.right
+    root.right=temp
+    // 递归到下一层，下一层也是其余层处理逻辑
+    invertTree(root.left)
+    invertTree(root.right)
+    
+    return root
+
+};
+```
+
+#### [112. 路径总和](https://leetcode.cn/problems/path-sum/)
+
+最近的几道题总是遇到叶子节点的问题
+
+```
+    1
+   / \ 
+  2   3
+     /
+    4
+    
+上面的节点3，他本身不是叶子节点，但是他的右节点是null
+
+我们常用的递归终点都是 if(node===null){ xxx } ，如果题目求的是类似根节点到叶子节点路径的问题，很容易将3作为叶子节点误判
+
+叶子节点边界： 
+if(node.left===null&&node.right===null)
+由于3这种节点的存在，递归过程过程中使用左右节点都要判断（过去使用node===null作为边界，不用判断，就算node.left是null，进入dfs(node.left)也会被边界拦住）
+if(node.left){
+	dfs(node.left)
+}
+if(node.right){
+	dfs(node.right)
+}
+
+
+```
+
+```js
+var hasPathSum = function(root, targetSum) {
+
+    if (root===null){ // 输入用例：[]，输出false
+        return false
+    }
+
+    let ans=false
+    function dfs(node,sum){
+      	// 注意：上部分讲解中节点3，就不是叶子节点
+        if (node.left===null&&node.right===null){
+            if(sum+node.val===targetSum){
+                ans=true
+            }
+
+            return
+        }
+
+        //
+        if (node.left){
+            dfs(node.left,sum+node.val)
+        }
+        if (node.right){
+            dfs(node.right,sum+node.val)
+        }
+
+    }
+
+    dfs(root,0)
+    return ans
+};
+```
+
+
+
+#### [110. 平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/)
+
+平衡二叉树：所有节点左右子树深度只差小于等于1
+
+一直递归返回深度，但是在递归过程中计算是否平衡。
+
+这是一种思路：保持递归，用额外变量存储题目的解。**非常常见的就是利用利用深度**
+
+```js
+var isBalanced = function(root) {
+    let isBalancedStatus=true
+    function dfs(node){
+        // 最后一层
+        if (node===null){
+            return 0
+        }
+
+        if (isBalancedStatus){
+            isBalancedStatus=Math.abs(dfs(node.left)-dfs(node.right))<=1
+        }
+
+        // 其余
+        return Math.max(dfs(node.left),dfs(node.right))+1
+    }
+
+    dfs(root)
+    return isBalancedStatus
+};
+```
+
+#### [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
+
+这题还是利用深度递归，只不过我们是从上向下传入深度的
+
+主要是因为这个题的思路：
+
+![image-20240515233931627](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240515233932ITIwwL.png)
+
+从图可以看到最后的结果不一定都是右子树，我们利用深度递归，优先递归右子树并放入数组（深度是索引），如果深度d存过了，就不再存了。这样就能保证每层都存第一个
+
+```js
+var rightSideView = function(root) {
+    let res=[]
+    function dfs(node,depth){
+        // 最后一层
+        if (node===null){
+            return
+        }
+
+        // 其余层
+        if(res[depth]===undefined){
+            res[depth]=node.val
+        }
+        dfs(node.right,depth+1)
+        dfs(node.left,depth+1)
+    }
+    dfs(root,0)
+    return res
+};
+```
+
+#### [236. 二叉树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
+
+当前节点p或q，则当前节点就是公共父节点
+
+![image-20240604232556363](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240604232556b7IhyT.png)
+
+只有当前节点，左右子树分别含有p、q，当前节点才是公共父节点
+
+这题和常规的递归有些不同。if判断不是边界，而是找到目标，每层向上返回的最终结果是节点
+
+```js
+var lowestCommonAncestor = function(root, p, q) {
+    //
+    if (root===null||root===p||root===q){
+        return root
+    }
+
+    // left只有三种情况，要么是null、p、q、公共父节
+    const left=lowestCommonAncestor(root.left,p,q)
+    const right=lowestCommonAncestor(root.right,p,q)
+    if (left&&right){
+        return root // 公共父节点
+    }
+    if (left){
+        return left
+    }
+    if (right){
+        return right
+    }
+};
+```
+
+#### [235. 二叉搜索树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-search-tree/)
+
+上一题的代码在这里也能用
+
+与上一题不同点在于二叉搜索树。其特性为 ：任意节点右子树所有节点大于其本身，左子树所有节点小于其本身。我们可以利用这个特性优化
+
+形式仍然与传统的递归不一样，这里是因为return root，隐含了root是null的情况
+
+```js
+var lowestCommonAncestor = function(root, p, q) {
+
+    if (p.val<root.val&&q.val<root.val){
+       return lowestCommonAncestor(root.left,p,q)
+    }
+
+    if (p.val>root.val&&q.val>root.val){
+        return lowestCommonAncestor(root.right,p,q)
+    }
+
+    // 这里就是p、q分别在左右子树上。由于递归是从底层向上返回的，第一个一定是最近公共子父节点
+    return root 
+
+};
+```
+
+### 前、中、后序遍历
+
+本质仍然是dfs。下面的都是从上到下通过数组收集结果
+
+#### [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)（中序）
+
+二叉搜索树：任意节点右子树所有节点大于其本身，左子树所有节点小于其本身
+
+````
+    	8
+  	 / \ 
+    4   10  
+ 	 / \
+  3   5
+````
+
+遍历树的方式：前序、中序、后序，每种遍历方式都有其独特的特性和应用场景：
+
+```js
+前序遍历（Preorder Traversal）：
+
+	特性：访问顺序为根节点 -> 左子树 -> 右子树（VLR）。
+	应用：前序遍历常用于复制一颗二叉树或构造表达式树，因为操作（如打印、计算表达式）先于访问子树，适用于需要优先处理根节点的场景。它也是许多算法和数据结构的基础，比如编译原理中的语法分析、哈夫曼编	码树的构建等
+ 
+  
+  
+中序遍历（Inorder Traversal）：
+
+	特性：访问顺序为左子树 -> 根节点 -> 右子树（LVR）。
+	应用：中序遍历在二叉搜索树（BST）中特别有用，它可以保证遍历的结果是升序的，因此常用于对二叉搜索树进行排序和查找操作。此外，它也适用于需要中间节点值参与决策的算法中，比如符号表的实现。
+
+  
+  
+后序遍历（Postorder Traversal）：
+
+	特性：访问顺序为左子树 -> 右子树 -> 根节点（LRV）。
+	应用：后序遍历适用于那些需要先处理子节点再处理父节点的场景，例如计算表达式的逆波兰表示（Reverse Polish Notation, RPN）、树的删除操作等。它在计算表达式树的值时特别有用，因为先计算子表达式再合并结果的逻辑与后序遍历的顺序相吻合。
+```
+
+判断一棵树是否为二叉搜索树，可以利用中序遍历结果是升序的特性
+
+中序遍历
+
+```c
+var isValidBST = function(root) {
+
+    let path=[]
+      
+    // 中序遍历
+    function inOrder(node){
+        if(node===null){
+            return
+        }
+        inOrder(node.left)
+        path.push(node.val)
+        inOrder(node.right)
+
+    }
+
+    inOrder(root)
+
+    let res=true
+    path.reduce((pre,cur)=>{
+        if(pre>=cur){
+            res=false
+        }
+        return cur
+    })
+    return res
+};
+```
+
+在中序遍历的过程中做比较(这种比较难理解，需要一直记录上一个元素，)
+
+```js
+var isValidBST = function(root) {
+    //
+    let pre=-Infinity
+    function dfs(node){
+        // 最后一层
+        if(node===null){
+            return true
+        }
+
+        // 其余
+        let isLeftBST= dfs(node.left)
+
+        if (!isLeftBST||pre>=node.val){
+            return false
+        }
+
+        pre=node.val
+
+        return dfs(node.right)
+
+    }
+
+    return dfs(root)
+};
+```
+
+#### [144. 二叉树的前序遍历](https://leetcode.cn/problems/binary-tree-preorder-traversal/)
+
+```js
+var preorderTraversal = function(root) {
+    let ans=[]
+    function preOrder(node){
+        if (node===null){
+            return
+        }
+        ans.push(node.val)
+        preOrder(node.left)
+        preOrder(node.right)
+    }
+    preOrder(root)
+    return ans
+};
+```
+
+#### [94. 二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/)
+
+```
+var inorderTraversal = function(root) {
+    let ans=[]
+    function preOrder(node){
+        if (node===null){
+            return
+        }
+
+        preOrder(node.left)
+        ans.push(node.val)
+        preOrder(node.right)
+
+    }
+    preOrder(root)
+    return ans
+};
+```
+
+
+
+### 层次遍历（bfs）
+
+bfs广度优先，在树的范畴内就是层次遍历
+
+推荐记忆102题层次遍历的代码作为模版。while...for的方式
+
+#### [102. 二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
+
+层次遍历实现
+
+```js
+var levelOrder = function(root) {
+    let queue=[root]
+    let ans=[]
+    while (queue.length!==0){
+        const node=queue.shift()
+        ans.push(node.val)
+        if (node.left){
+            queue.push(node.left)
+        }
+        if (node.right){
+            queue.push(node.right)
+        }
+
+    }
+    return ans
+
+};
+```
+
+本题重点是
+
+![image-20240604235737632](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240604235738PedL6K.png)
+
+```
+答案是：[[3],[9,20],[15,7]]
+
+层次遍历的结果：[ 3, 9, 20, 15, 7 ]
+
+正确答案每层都在一个数组内
+```
+
+解法1：bfs思路
+
+```js
+var levelOrder = function(root) {
+    if (root===null){
+        return []
+    }
+
+    let queue=[root]
+    let ans=[]
+    while (queue.length!==0){ // 当前层元素个数
+        ans.push([])
+        const len= queue.length // 注意：开始的时候for循环直接使用queue.length。但是for循环过程中queue长度在变换，所以这里必须要存下长度
+        for (let i=0;i<len;i++){ // for循环把本层的数据出队处理完
+            const node=queue.shift()
+            ans[ans.length-1].push(node.val)
+
+            // 在queue继续追加子元素，但是for循环只读完了本层。
+            if (node.left){
+                queue.push(node.left)
+            }
+            if (node.right){
+                queue.push(node.right)
+            }
+        }
+    }
+
+    return ans
+
+};
+```
+
+
+
+解法2：dfs思路。这个思路遇到过好几次，利用树的深度递归。在递归过程中收集答案
+
+```js
+var levelOrder = function(root) {
+    let ans=[]
+    function dfs(node,depth){
+        // 最后一层
+        if(node===null){
+            return
+        }
+        // 其余任意层n
+        // 不使用return传递数据，而是从上到下。两个dfs是指导第n+1层的逻辑，本层逻辑只有下面一段
+        if(!ans[depth]){
+            ans[depth]=[]
+        }
+        ans[depth].push(node.val)
+        
+        // 这里需要保持左递归、右递归。才能是一层从左到右排列
+        dfs(node.left,depth+1)
+        dfs(node.right,depth+1)
+
+    }
+
+    dfs(root,0)
+
+    return ans
+
+};
+```
+
+#### [107. 二叉树的层序遍历 II](https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/)
+
+与上题一致的地方是，返回的值还是子数组构成的大数组。返回值就是上一题结果反过来
+
+解法1：是把上题的dfs、bfs的结果 reverse 后返回
+
+解法2：
+
+```js
+ans[depth].push(node.val)
+
+改为
+ans[depth].unshift(node.val)
+```
+
+#### [297. 二叉树的序列化与反序列化](https://leetcode.cn/problems/serialize-and-deserialize-binary-tree/)
+
+注意，根据层次遍历结果是无法还原原来的树的
+
+```
+   1
+  / \
+ 2   3
+    / \
+   4   5
+   
+   
+    1
+  /  \
+ 2    3
+  \  /
+   4 5
+   
+// 层次遍历结果都是: 1,2,3,4,5。无法确定原本的树
+
+// 但是，我们可以改造层次遍历，以完全二叉树的形式存储 1,2,3,null,null,4,5 ，技能明确原来树结构
+```
+
+但是serialize生成的字符串序列，把空白节点补全为null了
+
+```
+   1
+  / \
+ 2   3
+    / \
+   4   5
+   
+//serialize结果： 1,2,3,null,null,4,5,null,null
+
+   1
+    \
+     3
+    / \
+   4   5
+//serialize结果： 1,null,3,4,5,null,null 【特别注意：null节点的左右孩子就不补充null了】
+```
+
+```js
+/**
+ * 序列化为完全二叉树的表示形式
+ */
+var serialize = function(root) {
+    if (root===null){
+        return ''
+    }
+
+    let ans=[]
+    let queue=[root]
+    while (queue.length!==0){
+        const len=queue.length
+        // 消费本层数据。queue会推入下一层数据，作为下一轮while循环使用
+        for (let i=0;i<len;i++){
+            const node = queue.shift()
+            // 注意2：下面注意1提示会推入null，这里shift出队的node就可能是null
+            if (node){ 
+                ans.push(node.val)
+                // 注意1：node如果是叶子节点，这里node.left、node.right就是null
+                queue.push(node.left) 
+                queue.push(node.right)
+            }else {
+                // 如果是null，就不没有左右孩子了
+                ans.push(null)
+            }
+
+        }
+    }
+
+    return ans.join(',') 
+};
+
+/**
+ * Decodes your encoded data to tree.
+ *
+ * @param {string} data
+ * @return {TreeNode}
+ */
+var deserialize = function(data) {
+    // 最后一个节点索引=Math.floor(最后一个节点索引/2)
+    // 父节点索引为i，左孩子=(2*i)+1
+
+    if (data===''){
+        return null
+    }
+
+    const list=data.split(',')
+    const root=new TreeNode(list.shift())
+    let queue=[root] // 这里也需要一个队列，是因为要一直存下一层的所有节点
+
+    while (list.length!==0){
+        const len=queue.length
+        for (let i=0;i<len;i++){
+            const node=queue.shift()
+            if (node){
+                let leftVal=list.shift()
+                if (leftVal){
+                    let leftNode= new TreeNode(leftVal)
+                    node.left=leftNode
+                    queue.push(leftNode)
+                }
+                let rightVal=list.shift()
+                if (rightVal){
+                    let rightNode=new TreeNode(rightVal)
+                    node.right=rightNode
+                    queue.push(rightNode)
+                }
+            }
+
+        }
+
+    }
+    return root
+};
+```
+
+
+
+
+
+## 深度/广度优
 
 ![image-20240311235231416](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240311235231eneoRX.png)
 
@@ -6506,14 +7327,77 @@ RecentCounter.prototype.ping = function(t) {
 
 ## 栈
 
+单调栈的特征：
+
+![image-20240512191145425](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240512191145hBC1Py.png)
+
 ### [739. 每日温度](https://leetcode.cn/problems/daily-temperatures/)
 
-单调栈思路
+单调栈思路：及时去掉无用数据，保持栈内元素单调有序
 
+```js
+var dailyTemperatures = function(temperatures) {
+    
+    let n=temperatures.length
+    let stack=[]
+    let res=[]
+
+    
+    for (let i=0;i<n;i++){
+      	// 第一次，stack没有数据，直接跳过while，将数据push进去
+        while (stack.length&&stack[stack.length-1].value<temperatures[i]){
+            const {index,value}= stack.pop()
+            res[index]=(i-index)
+        }
+        stack.push({index:i,value: temperatures[i]})
+
+    }
+
+    // 最后栈里还可能有剩余
+    // 例如输入：3 1 。 stack=[3,1]
+
+    while (stack.length!==0){
+       const {index,value}= stack.pop()
+        res[index]=0
+    }
+
+    return res
+};
 ```
+
+### [42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
+
+栈内元素单调递减，遇到4时开始接雨水
+
+![image-20240512180908990](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240512180909WxJsgq.png)
+
+```js
+var trap = function(height) {
+    // 递减
+    let stack=[]
+    let n=height.length
+    let res=0
+
+    for (let i=0;i<n;i++){
+        const curValue = height[i]
+        // 遇到大于栈顶的元素，循环出栈，接雨水
+        while (stack.length&&curValue>=stack[stack.length-1].value){
+            const {index,value} = stack.pop()
+            // 需要 前前个元素，所以这里判断了栈中是否还有元素
+            if (stack.length===0){
+                break
+            }
+            const {index:preIndex,value:preValue} = stack[stack.length-1]
+            
+            // 注意这里的 (i-preIndex-1)， 存在疑问，为啥不是 (i-index)
+            res+= (i-preIndex-1) * (Math.min(preValue,curValue)-value)
+        }
+        // 入栈
+        stack.push({index:i,value:curValue})
+    }
+    return res
+};
 ```
-
-
 
 ### [20. 有效的括号](https://leetcode.cn/problems/valid-parentheses)
 
@@ -6617,6 +7501,8 @@ MyQueue.prototype.empty = function() {
   return this.stack1.length===0&&this.stack2.length===0
 };
 ```
+
+
 
 
 

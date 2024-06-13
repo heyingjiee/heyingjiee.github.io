@@ -2590,6 +2590,8 @@ export default{
 </script>
 ```
 
+### 跨组件通信（Vuex）
+
 
 
 ### 跨组件通信（Vuex）
@@ -2967,9 +2969,93 @@ v-if在页面中进行判断，显示对应的组件
 
 ### keep-alive
 
-keep-alive应该包裹组件，参照<a href="#keep-alive">动态组件</a>部分
+keep-alive应该包裹组件，参照<a href="#keep-alive">动态组件</a>部分。
 
-keep-alive会影响组件生命周期
+#### 基础
+
+* `include` ：启动缓存的组件名
+* `exclude`：不启用缓存的组件名
+
+不设置两个属性，默认被包裹的组件都会启用缓存
+
+以include为例子，属性值可以是：
+
+```vue
+<!-- 逗号分隔字符串 -->
+<keep-alive include="a,b">
+  <component :is="view"></component>
+</keep-alive>
+
+<!-- 正则表达式 (使用 `v-bind`) -->
+<keep-alive :include="/a|b/">
+  <component :is="view"></component>
+</keep-alive>
+
+<!-- 数组 (使用 `v-bind`) -->
+<keep-alive :include="['a', 'b']">
+  <component :is="view"></component>
+</keep-alive>
+```
+
+启用缓存的组件，会多出两个生命周期的钩子: `activated` 与 `deactivated`
+
+#### 与router-view结合
+
+keep-alive可以包裹router组件，实现返回上一页面不重新加载（默认会重新加载）
+
+```vue
+<keep-alive>
+  <router-view></router-view>
+</keep-alive>
+```
+
+注意1：
+
+如果`router-view`加载的页面中有动态组件，该动态组件是不会被缓存的。需要手动在动态组件上使用`keep-alive`
+
+注意2：
+
+实践中遇到的问题，动态控制缓存页面
+
+A->B（加载页面）->C->B（缓存页面）->A->B（缓存页面）
+
+https://juejin.cn/post/6918167129627820040
+
+https://juejin.cn/post/7355011823277719552?searchId=202405081139119936F595DAB784F634F6
+
+```js
+export default [
+  {
+    path: '/',
+    name: 'home',
+    component: Home,
+    meta: {
+      keepAlive: true // 需要被缓存
+    }
+  }, {
+    path: '/:id',
+    name: 'edit',
+    component: Edit,
+    meta: {
+      keepAlive: false // 不需要被缓存
+    }
+  }
+]
+```
+
+```vue
+<router-view v-slot="{ Component, route }">
+              <keep-alive>
+                   <component v-if="$route.meta.keepAlive" :is="Component" />
+              </keep-alive>
+          </div>
+</router-view>
+```
+
+第三方解决方案：https://zhuanlan.zhihu.com/p/513641725
+
+* vue2版本 ：https://github.com/deep-fish-pixel/keep-alive-router
+* vue3版本：
 
 ### 异步组件
 
@@ -3216,9 +3302,12 @@ routes数组的所有第一层组件会被放置到在这里的`router-view`区�
     
   ]
   
+  // . 匹配除了换行符以外的任何单个字符
   // * 0到多个
   // ? 0或1个
   // + 大于等于1个
+  
+  // (.*) 可以匹配任意长度的字符串(包括空字符串)
   ```
   
   

@@ -1928,7 +1928,7 @@ function Rabbit() {}
 /*
 	rebbit的`[[prototype]]`是{ constructor: Rabbit }
 */
-let rebbit=new Rabbit()
+let rabbit=new Rabbit()
 
 
 /*
@@ -2339,6 +2339,7 @@ arr.sort((a,b)=>{ //第一轮，a=8，b=1
   	return a-b //从小到大
 })
 //arr是 [ 8, 4, 3, 1 ]
+
 ```
 
 简写
@@ -4485,20 +4486,27 @@ class ValidationError extends Error {
 function produce(base, recipe) {
   // 预定义一个 copy 副本
   let copy;
+  let lastKey;  
   // 定义 base 对象的 proxy handler
   const baseHandler = {
-    get(target,prop){
-        const val=Reflect.get(target,prop)
-        if(val instanceof Object){
-            return  new Proxy(val,baseHandler)
+    get(target,key){ // a.b.c=1
+        if (!copy) {
+         copy = { ...target };
         }
+        const val=Reflect.get(target,key)
+        
+        if(val instanceof Object){
+            lastKey=key
+            return new Proxy(val,baseHandler)
+        }
+        return val
     },
     set(target, key, value) {
       // 先检查 copy 是否存在，如果不存在，创建 copy
       if (!copy) {
-        copy = { ...target };
+        copy[lastKey] = { ...target };
       }
-      copy[key] = value;
+      copy[lastKey][key] = value;
 
       return true;
     },
@@ -5223,6 +5231,31 @@ async function run (){
 run()
 ```
 
+### 限制Promise并发量
+
+JS是单线程的，all、allSettle都是将大量任务委托给宿主。如果任务占据资源太多很容易造成CPU或内存占用过多
+
+```js
+class pool{
+  #pool=new Set()
+  #waitQueue=[]
+  #excuteQueue=[]
+  #size=10
+  
+  constructor(){
+    
+  }
+ 
+  pushTask(asyncTask){
+    #excuteQueue.push(asyncTask)
+  }
+  
+  excuteTask(){
+    
+  }
+}
+```
+
 
 
 ## 实现Promise
@@ -5896,8 +5929,6 @@ static race(promises) {
 
 ## 事件循环
 
-[目前，为止找到的最正确的答案](https://www.bbsmax.com/A/A2dmD4AW5e/)
-
 [演示事件循环的可视化工具：loupe](http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D)
 
 [Philip Roberts的视频](https://www.bilibili.com/video/av413179257/)
@@ -5913,7 +5944,7 @@ static race(promises) {
   * 宏任务：
 
     ```text
-    script(主代码)
+    script(同步代码)
     
     setTimeout()
     setInterval()
@@ -6365,6 +6396,19 @@ p.getName()
 **构造函数、普通方法**在其函数内部可以通过this访问到普通成员、私有成员（静态方法才能访问静态成员）
 
 new  class创造的实例仅能通过`点`操作符访问普通成员，无法访问私有成员
+
+```
+# 语法是ECMAScript 2022（ES12）开始支持
+
+# node16以上版本才支持
+
+# eslint 选指定
+module.exports = {
+  parserOptions: {
+    ecmaVersion: '12', 
+  },
+};
+```
 
 ```js
 class Person {
@@ -7533,8 +7577,6 @@ class EventBus {
 }
 
 ```
-
-
 
 EventEmitter 是一个 Node.js 中的模块，使用它可以定义和触发事件
 
@@ -9244,8 +9286,8 @@ function cachingDecorator(func) {
     };
 }
 
-slow = cachingDecorator(slow) // 这里就是入参func
-slow(1) // 这里是入参func的参数
+slowWrapper = cachingDecorator(slow) // 这里就是入参func
+slowWrapper(1) // 这里是入参func的参数
 ```
 
 ​	
@@ -9356,7 +9398,7 @@ node index.js
   
   
 
-### 文件与目录
+### 文件
 
 **fs.readFileSync**、**fs.writeFileSync ** 读写文件
 
@@ -9369,7 +9411,24 @@ fs.writeFileSync(path.resolve(__dirname, '../data/audio.ass'), data)
 
 读不存在的目录、文件会报错
 
-写不存在的目录会报错，写不存在的文件会新建一个文件后写入
+写不存在的目录会报错，写不存在的文件会新建一个文件后写入，如果同名文件存在，默认会覆盖原有文件内容
+
+文件存在时不希望覆盖原有内容，可以先使用`fs.exists()`或`fs.promises.access()`（推荐使用，因为`fs.exists()`已被废弃）来检查文件是否存在，然后决定是否写入或以追加模式写入。例如，使用追加模式(`a`)写入内容而不覆盖原文件：
+
+```js
+
+```
+
+
+
+判读目录不存在，创建目录
+
+```shell
+const { existsSync, mkdirSync } = require("fs");
+if (!existsSync(filePath)) {
+    mkdirSync(filePath,{ recursive: true });
+}
+```
 
 **文件流**
 
@@ -9397,8 +9456,6 @@ if (isExist) {
   });
 }
 ```
-
-
 
 **fs.statSync** 获取指定路径的文件夹、文件的描述信息
 
@@ -9437,6 +9494,19 @@ statInfo Stats {
 statInfo.isDirectory() //返回布尔值
 ```
 
+### 目录
+
+mkdir
+
+```
+只能创建一层目录
+
+// 从 Node.js v10.12.0 开始，支持递归创建多级目录
+fs.mkdirSync('path/to/new/directory', { recursive: true });
+```
+
+
+
 ### 执行Shell命令
 
 同步：**[`child_process.execSync(command[, options])`](http://nodejs.cn/api/child_process.html#child_process_child_process_execsync_command_options)**
@@ -9468,6 +9538,18 @@ let res=process.exec('shell命令',{
 execSync(`git log -1 HEAD --pretty='%s'`,{ 
   encoding: 'utf-8',
   cwd:'执行命令所在的路径' 
+})
+```
+
+### 全局捕获Error
+
+```js
+process.on('uncaughtException', function (err) {
+  console.error('捕获到全局异常:', err.message);
+});
+
+process.on('unhandledRejection', function (err) {
+  console.error('捕获到全局 Promise 异常:', err.message);
 })
 ```
 
@@ -9870,13 +9952,13 @@ if-modified-since: Mon, 24 Dec 2018 09:49:49 GMT
 
 第二步：客户端浏览器获取到了www.baidu.com的对应IP地址，接下来浏览器会请求获得的IP地址对应的Web服务器，Web服务器接收到客户的请求并响应处理，将客户请求的内容返回给客户端浏览器；
 
-### 暂未分类
+## 暂未分类
 
 节流防抖：
 
 https://segmentfault.com/a/1190000018428170
 
-防抖
+防抖：第一次触发后，在delay内再次再次触发会重新计时
 
 ```javascript
 function debounce(fn,delay){
@@ -9890,7 +9972,7 @@ function debounce(fn,delay){
 }
 ```
 
-节流
+节流：第一次触发后，在delay内再次触发无效，在delay时间后执行函数fn
 
 ```javascript
 function throttle(fn,delay){
@@ -10943,6 +11025,36 @@ lmn() //外层捕获 Error: 抛出的错误
 
 **for循环中使用await**
 
+* for循环按照promise数组的顺序执行。且上一个promise执行完毕后，下一个才会执行
+
+  ```js
+  function f1(){
+      return new Promise((resolve)=>{
+          setTimeout(()=>{
+            resolve('f1执行')
+          },1000)
+      })
+  }
+  function f2(){
+      return new Promise((resolve)=>{
+          setTimeout(()=>{
+            resolve('f2执行')
+          },2000)
+      })
+  }
+  async function test(){
+      let promiseList=[f1(),f2()]
+      for(let item of promiseList){
+          const res= await item //item就已经是promise了
+          console.log(res)
+      }
+  }
+  test()
+  
+  // f1执行
+  // f2执行
+  ```
+
 * await结果是reject，会中断整个for循环
 
   从结果看出第二次循环，到await处直接被结束了
@@ -11009,7 +11121,7 @@ lmn() //外层捕获 Error: 抛出的错误
 
   
 
-* 如果只想结束当前循
+* 如果只想结束当前循环
 
   下面的写法是有语法错误的
 
@@ -11113,7 +11225,48 @@ lmn() //外层捕获 Error: 抛出的错误
   })
   ```
 
-  
+
+
+
+**嵌套promise的没有await的执行顺序**
+
+process函数中的step没有加await
+
+实际的执行顺序是先进入step执行同步代码，遇到await就不继续执行了，开始执行外部的代码
+
+所以，这种执行顺序是混乱的，所以一定要保证step的执行与外部没有依赖关系
+
+```js
+function p(){
+    return new Promise((resolve)=>{
+        setTimeout(resolve,3000)
+    })
+}
+
+async function step(){
+    console.log('step1 开始')
+    await p()
+    console.log('step1 结束')
+}
+
+
+function process(){
+    console.log('process 开始')
+    step()
+    console.log('process 结束')
+}
+process()
+
+
+// 输出
+process 开始
+step1 开始
+process 结束
+step1 结束
+
+```
+
+
 
 ### 链式调用
 
@@ -11880,5 +12033,27 @@ export default {
 - 阮一峰的《ECMAScript 6 入门》：https://es6.ruanyifeng.com/
 - ES6 视频教程：http://t.kuick.cn/RaR3
 
+## 面试
 
+### 字节
+
+前端性能指标、优化方案
+
+https服务器返回的证书内容
+
+二叉搜索树的公共父节点
+
+### 滴滴文档方向
+
+css的postion是基于谁定位的 ：祖先元素中position: relative、position: absolute、position: fixed
+
+前端性能指标、优化方案
+
+SSO实现原理
+
+axios请求是否能种下cookie
+
+PWA缓存
+
+实现promise.all方法
 
