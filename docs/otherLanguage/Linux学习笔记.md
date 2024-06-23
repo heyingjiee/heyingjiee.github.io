@@ -1198,7 +1198,7 @@ uname -a
 
 ![image-20230924005751443](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230924005751%20.png)
 
-### cup数
+### cpu数
 
 ```ls
 lscpu

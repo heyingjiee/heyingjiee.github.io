@@ -4,6 +4,8 @@
 
 https://github.com/linbudu599/TypeScript-Tiny-Book
 
+参考掘金小册子 《TypeScript类型体操通关秘籍》
+
 ## TS环境
 
 ### VSCode配置
@@ -2108,6 +2110,8 @@ JS项目没有类型检查，无需d.ts包。即使下载的npm包不支持类�
 
 定义d.ts文件(declare表示全局定义的类型)
 
+基础语法：
+
 ```js
 //global.d.ts
 
@@ -2210,6 +2214,21 @@ interface ImportMetaEnv {
   
 ```
 
+导出语法：
+
+```js
+// 标准ESM导出
+export xx  // TS中导入模块，import * as yy from '模块名' 、 import {xx} from '模块名'
+export default xx // TS中导入模块，import xx from '模块名'
+
+
+// 下面这种是特殊语法，cmj模块的默认导出语法
+// 要么使用cjs导入，const xx =require('模块名')
+// 如果使用esm导入，必须是 import * as xx from '模块名'
+// 注意：ts配置esModuleInterop设置为true，ts会为我们最一层处理，可以直接导入 import xx from '模块名'
+export = xx // TS中导入模块
+```
+
 注意：
 
 * 上面这些类型声明中的变量作用范围是全局，在任何地方都可以直接使用这些变量
@@ -2281,7 +2300,36 @@ export {}
 
 通过declare声明的类型或者变量或者模块，在include包含的文件范围内，都可以直接引用而不用去import或者import type相应的变量或者类型。
 
+### 例子
 
+md5包的类型定义文件
+
+```ts
+/**
+ * Calculate the MD5 hash of a message.
+ *
+ * @param message - Message to hash.
+ * @param options - Input and output options.
+ * @returns MD5 hash.
+ */
+declare function md5(message: string | number[] | Uint8Array, options: md5.Options & { asBytes: true }): number[];
+declare function md5(
+    message: string | number[] | Uint8Array,
+    options?: Pick<md5.Options, "asString" | "encoding">,
+): string;
+declare function md5(message: string | number[] | Uint8Array, options?: md5.Options): string | number[];
+
+declare namespace md5 {
+    interface Options {
+        asBytes?: boolean | undefined;
+        asString?: boolean | undefined;
+        encoding?: "binary" | string | undefined;
+    }
+}
+
+export = md5;
+
+```
 
 ### 补充关于类型的配置
 
@@ -2337,10 +2385,6 @@ interface ImportMetaEnv {
 }
 ```
 
-## 总结
-
-参考掘金小册子 《TypeScript类型体操通关秘籍》
-
 
 
 ## TS配置
@@ -2377,33 +2421,44 @@ interface ImportMetaEnv {
 
 #### module
 
-编译为js代码，使用哪种模块化风格
+module并不是指定TS项目的模块化规范，而是指定TS编译为JS后，JS代码使用的模块化风格
 
-#### resolveJsonModule
+常见值如下：
 
-默认false，开启后才能在代码中引入json文件，并获得类型提示
-
-```
-import jsonFile from 'xx.json'
-```
+* **commonjs**
+  * 编译后的JS使用CJS模块方案
+  * moduleResolution默认为classic，注意不要使用这个默认值。推荐设置为nodenext，支持esm+cjs方式引入
+  * esModuleInterop默认为false
+  * allowSyntheticDefaultImports默认为false
+* **es6/es2015**、**esnext**
+  * 编译后的JS使用ESM模块方案
+  * moduleResolution默认值为classic，注意不要使用这个默认值。推荐设置为nodenext，支持esm+cjs方式引入
+  * esModuleInterop默认为false
+  * allowSyntheticDefaultImports默认为false
+* **nodenext**
+  * 编译后的JS，同时使用CJS、ESM两种模块，原本TS使用CJS的编译后还是CJS，原来TS使用ESM的编译后还是CJS
+  * moduleResolutionz只能为nodenext，TS项目同时支持ESM、CJM引入导出
+  * esModuleInterop默认为false
+  * allowSyntheticDefaultImports默认为false
 
 #### moduleResolution
 
-默认值node，查找模块的规则
+TS代码引入模块的方式（查找模块的规则）
 
 ```
-node // 就是node的查找规则
+// 就是node的查找规则
+node // 只支持cjs模块
+nodenext // 同时支持esm+cjs方式引入
+
+// 不推荐使用，不支持 Node.js 风格的 node_modules 文件夹查找
+classic 
 ```
 
 #### esModuleInterop、allowSyntheticDefaultImports
 
-这两个配置主要还是为了解决使用 ES Module 方式引入 CommonJS 的问题
+这两个配置主要还是为了解决使用 ES Module 项目中引入 CommonJS 的问题
 
-esModuleInterop、allowSyntheticDefaultImports默认值都是false
-
-目前，esm是主流的方案。所以，我们不去想ts如何编译为cmj解决问题，重点放在使用
-
-esModuleInterop开启，allowSyntheticDefaultImports也会默认开启：他们会为cmj模块模拟一个default导出（下面例子）
+esModuleInterop设置为true、allowSyntheticDefaultImports默认被设置为true
 
 ```js
 // cmj
@@ -2421,14 +2476,31 @@ import utils1 from 'cmj' //当然，如果cmj中原本就提前为了兼容做�
 import * as utils2 from 'cmj' // 也还能使用这种方式，只不过多了一个default的用法
 console.log(utils.a)
 console.log(utils.default)
+```
 
+例子
+
+```ts
+import * as dayjs from 'dayjs';
+dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss')
+
+
+// esModuleInterop设置为true后，可以使用默认导出
+import  dayjs from 'dayjs';
+dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss')
 ```
 
 
 
+#### resolveJsonModule
 
+默认false，开启后才能在代码中引入json文件，并获得类型提示
 
-## 补充
+```
+import jsonFile from 'xx.json'
+```
+
+## 实践
 
 抽象类
 
@@ -2446,9 +2518,51 @@ console.log(utils.default)
 
 ![image-20231224022418754](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231224022419nxuKDk.png)
 
+### 类型不精准
 
+例如，变量a定义为object类型
 
+* 如果已明确其中存在字段name，如何使用？使用断言
 
+  ```ts
+  let a: object = { name: "Alice", age: 30 };
+  
+  // 使用尖括号语法进行类型断言
+  let name = (<{ name: string }>a).name.length;
+  
+  // 使用as关键字进行类型断言
+  let name2 = (a as { name: string }).name.length;
+  ```
+
+* 如果是否包含name不确定
+
+  ```ts
+  let a: object = { name: "Alice", age: 30 };
+  
+  if ('name' in a) {
+        console.log(this.a.name);
+  }
+  ```
+
+  TS中的if只能对已明确存在的类型进行收紧，并不能判断未标注的类型是否存在。下面的代码会提示name不存在
+
+  ```ts
+  let a: object = { name: "Alice", age: 30 };
+  
+  if (a.name) { // TS2339: Property name does not exist on type object
+        console.log(this.a.name);
+  }
+  ```
+
+  ```ts
+  function f1(input:string|number){
+      if(typeof input==='string'){
+          console.log('string类型',input)//推导为string类型
+      }
+  }
+  ```
+
+### 类型信息扩充
 
 
 

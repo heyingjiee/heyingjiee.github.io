@@ -3187,7 +3187,7 @@ ans = [];
 
 function backtrack (level,path) {
     if (最后收尾) // 判断此时path已收集完整
-        ans.push(path);
+        ans.push(path.slice()); // 这里必须拷贝一份path，否则ans放入引用类型，path后续修改会影响到ans
         return // 这里的return只是结束递归。
     }
 
@@ -6086,7 +6086,7 @@ var minCameraCover = function(root) {
 +1 改成 cost[node]
 ```
 
-## 树
+## 二叉树
 
 ### dfs（递归）
 
@@ -6266,7 +6266,7 @@ var invertTree = function(root) {
 };
 ```
 
-#### [112. 路径总和](https://leetcode.cn/problems/path-sum/)
+#### [112. 路径总和](https://leetcode.cn/problems/path-sum/)（叶子节点类型总结）
 
 最近的几道题总是遇到叶子节点的问题
 
@@ -6284,13 +6284,13 @@ var invertTree = function(root) {
 叶子节点边界： 
 if(node.left===null&&node.right===null)
 由于3这种节点的存在，递归过程过程中使用左右节点都要判断（过去使用node===null作为边界，不用判断，就算node.left是null，进入dfs(node.left)也会被边界拦住）
+
 if(node.left){
 	dfs(node.left)
 }
 if(node.right){
 	dfs(node.right)
 }
-
 
 ```
 
@@ -6327,7 +6327,100 @@ var hasPathSum = function(root, targetSum) {
 };
 ```
 
+#### [437. 路径总和 III](https://leetcode.cn/problems/path-sum-iii/)
 
+这道题写了两遍递归。
+
+rootSum(node,sum) 是以node作为根节点，递归找出的符合条件的路径。这也是常写的递归，以前没有注意到，dfs是从固定节点开始的递归
+
+dfs(node)是递归数，把全部节点作为根节点传入rootSum
+
+```js
+var pathSum = function(root, targetSum) {
+
+    let count=0
+
+    function dfs(node){
+        //
+        if (node===null){
+            return
+        }
+
+        //
+        rootSum(node,0)
+        dfs(node.left)
+        dfs(node.right)
+
+    }
+
+    function rootSum(node,sum){
+        //
+        if (node===null){
+            return
+        }
+
+        sum+=node.val
+        if (sum===targetSum){
+            count++
+        }
+
+        // 选左
+        rootSum(node.left,sum)
+
+        // 选右
+        rootSum(node.right,sum)
+
+        sum-=node.val
+
+    }
+
+    dfs(root)
+    return count
+};
+```
+
+#### [257. 二叉树的所有路径](https://leetcode.cn/problems/binary-tree-paths/)
+
+这个题常规思路，从选当前节点的左、右，分出两种可能
+
+有一点需要注意，写的时候很犹豫，path.pop的位置在哪里？
+
+注意：选左孩子、右孩子是互斥的不会同时发生，所以只会执行一个pop
+
+```js
+var binaryTreePaths = function(root) {
+    // 子集型回溯
+    let ans=[]
+    function dfs(node,path){
+
+        // 最后一层
+        if (node.left===null&&node.right===null){
+            // 注意：叶子节点记得推
+            path.push(node.val)
+            ans.push(path.join('->')) 
+            return
+        }
+
+        // 其余层，当前层n
+        path.push(node.val)
+
+        // n+1层选左
+        if (node.left){
+            dfs(node.left,path)
+            path.pop() 
+        }
+        // n+1层选右
+        if (node.right){
+            dfs(node.right,path)
+            path.pop()
+        }
+    }
+
+    dfs(root,[]) // 通过数组收集每一条路径
+
+    return ans
+};
+```
 
 #### [110. 平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/)
 
@@ -6828,11 +6921,9 @@ var deserialize = function(data) {
 };
 ```
 
+### 补充：dfs、bfs
 
 
-
-
-## 深度/广度优
 
 ![image-20240311235231416](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240311235231eneoRX.png)
 
@@ -6923,6 +7014,105 @@ function bfs(root){
 
 
 ```
+
+## 前缀树
+
+节点除了存储字符，还要存储是否为单词结尾
+
+单词`no`，到o节点就是终点了。对于单词`nova`到a节点才是终点
+
+前缀树常用做搜索提示，Gin框架匹配路由也是使用前缀树实现的路由匹配
+
+![image-20240616000325384](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240616000325Ha4wFZ.png)
+
+
+
+### [208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/)
+
+JS实现版本
+```js
+```
+
+
+
+Go语言实现版本
+
+```go
+// https://mp.weixin.qq.com/s/_4K-zDZgCPvSBmjHbj6GGA
+
+package main
+
+import "fmt"
+
+type TrieNode struct {
+	//next      [26]*TrieNode // 这个设计很精巧，没有存储单词的值，而是用索引表示。下一个找a，就去next[0]
+	next      map[rune]*TrieNode
+	passCount int
+	end       bool
+}
+type Trie struct {
+	root *TrieNode
+}
+
+func NewTrie() *Trie {
+	return &Trie{
+		root: &TrieNode{},
+	}
+}
+
+func (t *Trie) Insert(word string) {
+	move := t.root
+	for _, letter := range word {
+		if _, ok := move.next[letter]; !ok {
+			//没有,就直接插入
+			if move.next == nil {
+				move.next = make(map[rune]*TrieNode)
+			}
+			move.next[letter] = &TrieNode{}
+		}
+		move = move.next[letter]
+		move.passCount++
+
+	}
+	move.end = true
+}
+
+func (t *Trie) Search(word string) bool {
+	move := t.root
+	for _, value := range word {
+		if _, ok := t.root.next[value]; !ok {
+			//没有
+			return false
+		} else {
+			//有
+			move = move.next[value]
+		}
+	}
+
+	if move.end {
+		return true
+	}
+	return false
+
+}
+
+func main() {
+	searchStr := []string{"abc", "ac", "c"}
+
+	trie := NewTrie()
+
+	for _, value := range searchStr {
+		trie.Insert(value)
+	}
+
+	res := trie.Search("ac")
+
+	fmt.Printf("%v", res)
+
+}
+```
+
+
 
 
 
@@ -8235,98 +8425,9 @@ func KMP(src, pat string) int {
 }
 ```
 
-
-
-### 前缀树
-
-[208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/)
-
-```
-https://mp.weixin.qq.com/s/_4K-zDZgCPvSBmjHbj6GGA
-```
-
-```go
-package main
-
-import "fmt"
-
-type TrieNode struct {
-	//next      [26]*TrieNode // 这个设计很精巧，没有存储单词的值，而是用索引表示。下一个找a，就去next[0]
-	next      map[rune]*TrieNode
-	passCount int
-	end       bool
-}
-type Trie struct {
-	root *TrieNode
-}
-
-func NewTrie() *Trie {
-	return &Trie{
-		root: &TrieNode{},
-	}
-}
-
-func (t *Trie) Insert(word string) {
-	move := t.root
-	for _, letter := range word {
-		if _, ok := move.next[letter]; !ok {
-			//没有,就直接插入
-			if move.next == nil {
-				move.next = make(map[rune]*TrieNode)
-			}
-			move.next[letter] = &TrieNode{}
-		}
-		move = move.next[letter]
-		move.passCount++
-
-	}
-	move.end = true
-}
-
-func (t *Trie) Search(word string) bool {
-	move := t.root
-	for _, value := range word {
-		if _, ok := t.root.next[value]; !ok {
-			//没有
-			return false
-		} else {
-			//有
-			move = move.next[value]
-		}
-	}
-
-	if move.end {
-		return true
-	}
-	return false
-
-}
-
-func main() {
-	searchStr := []string{"abc", "ac", "c"}
-
-	trie := NewTrie()
-
-	for _, value := range searchStr {
-		trie.Insert(value)
-	}
-
-	res := trie.Search("ac")
-
-	fmt.Printf("%v", res)
-
-}
-```
-
-
-
-
-
-
-
 ### 堆(Heap)
 
-https://blog.csdn.net/Twinkle_sone/article/details/129580158
+https://blog.csdn.net/Tnkle_sone/article/details/129580158
 
 堆一定是完全二叉树，所以可以使用数组数据存储
 

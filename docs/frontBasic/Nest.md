@@ -1,4 +1,4 @@
-Nest
+# Nest
 
 ## 简介
 
@@ -246,7 +246,7 @@ nest g -h  # 查看支持的模块
 
 ```shell
 # 生成一个resource。在src下生成一整套文件，其app.module.ts中会自动引入person这个模块
-nest g resource person
+nest g resource person --no-spec # --no-spec 是不生成测试文件
 
 # 选择API风格
 ? What transport layer do you use? (Use arrow keys)
@@ -348,8 +348,6 @@ export class AppModule {}
 
 ## 注入相关
 
-在模块X中，可以将Service注入到本模块的Controller中，也可以注入到其他模块的Controller、Service中（使用工厂模式）
-
 ### 获取注入
 
 ```ts
@@ -372,9 +370,31 @@ export class PersonController {
 }
 ```
 
-### providers注入
+### 注入类
 
-providers用于指定注入，一般用于注入service类，注意需要`@Injectable()`修饰该类
+Modle的作用就是清晰的维护注入
+
+* providers所有类可以向controllers类中注入
+
+* providers类之间可以互相注入
+
+```ts
+//-------- app.module.ts --------
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import {BService} from './B/b.service'
+
+@Module({
+  imports: [PersonModule],
+  controllers: [AppController],
+  providers: [AppService,BService] 是其简写方式
+})
+export class AppModule {}
+
+```
+
+@Injectable()装饰器表示该类可以注入，可以被注入
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -388,7 +408,7 @@ export class AppService {
 
 ```
 
-#### 自定义注入名
+#### 自定义providers注入名
 
 一般都是使用简写方式
 
@@ -430,7 +450,7 @@ export class AppController {
 
 ```
 
-#### 自定义注入名、值
+#### 自定义providers注入名、值
 
 这种方式适用于注入一些配置选项。再结合后面的**全局模块**，就可以在其他模块中直接注入配置
 
@@ -473,7 +493,7 @@ export class AppController {
 
 ```
 
-#### 工厂模式
+#### providers工厂模式
 
 ```ts
 //-------- app.module.ts --------
@@ -520,7 +540,11 @@ export class AppController {
 
 ```
 
-### 注入其他服务
+### 注入模块
+
+一般我们通过providers注入类
+
+其实模块可以明确export哪个类，我们可以把整个模块导出的类注入
 
 #### 基础写法
 
@@ -645,19 +669,17 @@ export class UserModule {}
 
 ```
 
-全局模块只要在app模块中引入，所有引入的模块都能访问到其导出的服务
+UserModule不是全局模块，所以一定要记得在app模块中引入UserModule
 
 ```ts
 //-------- app.module.ts --------import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PersonModule } from './person/person.module';
 import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    UserModule,
-    PersonModule
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -668,7 +690,56 @@ export class AppModule {}
 
 #### 动态模块
 
-结合全局模块，通过传参的形式动态导出服务
+前面遇到的模块都是下面这种，通过@Module定义了模块的特性，但是class UserModule是空的
+
+```ts
+//-------- person.module.ts --------
+import { Global, Module } from '@nestjs/common';
+import { PersonService } from './person.service';
+import { PersonController } from './person.controller';
+
+@Global()
+@Module({
+  controllers: [PersonController],
+  providers: [PersonService],
+  exports: [PersonService], // 注意：需要导出
+})
+export class PersonModule {}
+```
+
+在其他模块通过import引入时，是固定的功能
+
+```ts
+//-------- user.module.ts --------
+import { Module } from '@nestjs/common';
+import { UserService } from './user.service';
+import { UserController } from './user.controller';
+
+@Module({
+  imports: [PersonModule], // 引导静态的模块
+  controllers: [UserController],
+  providers: [UserService],
+})
+export class UserModule {}
+```
+
+其实我们可以给模块类，增加静态方法。在其他模块import导入该模块时，可以通过给静态方法传入参数来动态改变模块的功能，这就是**动态模块**
+
+静态方法叫什么名字都可以，但是Nest内约定了3个函数名，代表不同类型的功能
+
+* forRoot
+
+  用于那些只需要在整个应用生命周期中初始化一次的全局服务或配置
+
+* register
+
+  每次使用都需要重新调用
+
+* forFeature
+
+  在forRoot的基础上，在项目局部增加新功能。例如：用 forRoot 指定了数据库链接信息，再用 forFeature 指定某个模块访问哪个数据库和表。TypeORM是典型的这种方式，详见【TypeORM】章节
+
+例子：
 
 ```ts
 //-------- app.module.ts --------
@@ -700,12 +771,12 @@ interface Options {
   path: string;
 }
 
-@Global()
 @Module({})
 export class ConfigModule {
   // 定义静态函数
   static forRoot(options: Options): DynamicModule {
     return {
+      // 静态函数只比@Module多了一个module属性，module属性为类名
       module: ConfigModule,
       providers: [
         {
@@ -725,7 +796,7 @@ export class ConfigModule {
 
 ```
 
-### 注意注入失败
+### 注入失败
 
 依赖自动注入其实是通过Nest容器来管理依赖的结果，@Injectable修饰表示可注入、被注入
 
@@ -1345,8 +1416,6 @@ intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 
   intercept的入参ExecutionContext 里可以拿到目标 class 和 handler，进而通过 reflector 拿到handler的 metadata 等信息的，这些是 middleware 做不到的
 
-
-
 ### 管道(pipe)
 
 Pipe 是在参数传给 handler 之前对参数做一些验证和转换的类。
@@ -1529,23 +1598,39 @@ pnpm install -D class-validator class-transformer
 ```
 
 ```ts
-// dto/create-person.dto.ts
-import { IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreatePersonDto {
-  @IsString() // 通过装饰器限制参数信息
+  // 一个字段可以被多个装饰器修饰
+  // 校验不通过抛出异常携带的信息是英语， message可以手动设置抛出的信息
+  @IsString({
+    message: 'name字段不是字符串',
+  })
+  @IsNotEmpty({
+    message: 'name字段必传',
+  })
   name: string;
 
-  @IsString({
-    message: 'school字段不是字符串',  // 默认抛出的异常信息是英文提示，也可以自定义文案
-  })
-  school: number;
+  @IsNotEmpty()
+  @IsNumber()
+  age: number;
 }
 
-// 每个装饰器字段不太一致，建议使用时直接查看类型定义
 ```
 
 其他装饰器：https://www.npmjs.com/package/class-validator#validation-decorators
+
+再补充几个常用的吧
+
+```ts
+// 限制长度
+@Length(6, 10,{message:'长度在6-10个字符之间'})
+
+// 正则匹配
+@Matches(/^[a-zA-Z0-9#$%_-]+$/, {
+    message: '用户名只能是字母、数字或者 #、$、%、_、- 这些字符'
+})
+```
 
 使用
 
@@ -1554,6 +1639,33 @@ export class CreatePersonDto {
   handlePost(@Body(ValidationPipe) person: CreatePersonDto) {
     console.log(person);
 }
+```
+
+异常处理
+
+前面提到一旦参数校验不通过会抛出异常，异常会被exception filter捕获。后面会提到如何捕获
+
+```ts
+const exceptionRes = exception.getResponse() 
+console.log(exceptionRes)
+
+
+// 输出--------
+message: [
+    'name字段必传',
+    'name字段不是字符串',
+    'age must be a number conforming to the specified constraints',
+    'age should not be empty'
+  ],
+
+```
+
+这里只需注意：message可以设置抛出异常携带的信息。多个装饰器修饰一个字段，如果都不满足会有多条错误信息。错误信息顺序是就近原则
+
+```
+@IsString() // 然后输出这里的错误
+@IsNotEmpty() // 先输出这里的错误
+name: string;
 ```
 
 
@@ -1731,6 +1843,12 @@ Nest内置的 Exception Filter 会捕获错误对象，根据其中的信息生�
 
 * 中间件、路由守卫、拦截器、管道抛出（待补充）
 
+* JS错误对象，比如 语法报错
+
+  ```
+  throw Error('错误')
+  ```
+
 #### 自定义处理
 
 使用Exception Filter 
@@ -1739,34 +1857,58 @@ Nest内置的 Exception Filter 会捕获错误对象，根据其中的信息生�
 nest g filter hello --flat --no-spec # 生成 exception.filter.ts
 ```
 
-```ts
-// exception.filter.ts
+注意下面的错误处理只能处理HttpException，因为里面有exception.getStatus获取http状态码的逻辑
 
+普通的Error对象是没有的
+
+```ts
 import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
-@Catch() //捕获所有抛出的错误。也接受HttpException作为参数，代码仅处理对应的错误。例如：@Catch(BadRequestException)
-export class HttpFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
-    // host可以获取上下文对象
+@Catch()
+export class Filter implements ExceptionFilter {
+  catch(exception: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const request = ctx.getRequest<Request>();
+    // const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
 
-    // exception就是抛出的异常
-    const status = exception.getStatus(); // http状态码
-    
-    
-    // 设置响应信息。
+    // 如果Error对象不小心漏到这里，是没有getStatus方法的，默认返回服务器内部错误
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let msg = '服务器内部错误';
+
+    // 确定抛出的是HttpException
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      const exceptionRes = exception.getResponse() as
+        | string
+        | { message: string[] | string };
+
+      if (typeof exceptionRes === 'object') {
+        if (typeof exceptionRes.message === 'string') {
+          // throw抛出具体的HttpException子类，例如NotFoundException、BadRequestException
+          msg = exceptionRes.message;
+        }
+        if (Array.isArray(exceptionRes.message)) {
+          // ValidationPipe 校验参数错误，抛出的是BadRequestException，exception.message是Bad Request Exception。
+          // 不能显示具体哪些字段错误了，但是有个response.message是个数组其中是ValidationPipe验证错误的提示。
+          msg = exceptionRes.message[0];
+        }
+      } else {
+        // throw抛出的HttpException
+        msg = exceptionRes;
+      }
+    }
+
     response.status(status).json({
       code: -1,
       data: null,
-      msg: `${request.url} is error`,
+      msg,
     });
   }
 }
@@ -1820,6 +1962,593 @@ export class AppController{
 
 我们可以定义多种内部错误类型，并定义对应的filter，从而针对每种错误返回特定的json
 ```
+
+## Dto对象（待补充）
+
+用于接收Post参数、函数之间传递数据的对象
+
+```ts
+import { PartialType } from '@nestjs/mapped-types';
+import { RegisterUserDto } from './register-user.dto';
+
+
+// PartialType、PickType、OmitType、IntersectionType 四个函数可以实现LoginUserDto继承RegisterUserDto的字段，同时RegisterUserDto使用的装饰器也会继承下来
+// 注意：RegisterUserDto的每个字段都需要至少一个装饰器
+export class LoginUserDto extends PartialType(RegisterUserDto) {}
+```
+
+## 基础集成
+
+### 配置文件
+
+### 日志
+
+### Swagger
+
+### Compoddoc
+
+## TypeORM
+
+TypeORM中文网：https://typeorm.bootcss.com/
+
+### Nest集成
+
+```shell
+npm install --save @nestjs/typeorm typeorm mysql2 
+
+# typeorm 是orm工具，依赖于驱动mysql2
+
+# @nestjs/typeorm 是对typeorm的封装，对外暴露了 **动态模块TypeOrmModule**
+```
+
+第一步：全部引入动态模块TypeOrmModule，在其中配置数据库连接信息。项目启动时就会自动连接数据库
+
+```ts
+// --------- app.module.ts ---------
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PersonModule } from './person/person.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Person } from './person/entities/person.entity';
+
+@Module({
+  imports: [
+    PersonModule,
+    TypeOrmModule.forRoot({
+      type: 'mysql', // 数据库类型，TypeORM目前支持mysql、 postgres、oracle、sqllite等
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'hedaodao',
+      database: 'nest_practice', // 数据库名（也叫schema）。这里指定的数据库需要存在，否则会报错
+      synchronize: true, // 是否自动同步entities内的实体到数据库
+      migrations: [], // synchronize:true自动将表结构的变动同步到数据库，这十分不安全的。migrations会生成sql文件，我们手动执行sql文件来修改数据库
+      logging: true, // 打印生成的sql语句
+      entities: [Person], // 支持glob ['./**/entities/*.ts']、导入的Class对象
+      subscribers: [],
+      poolSize: 10, // 连接池中连接的最大数量
+      connectorPackage: 'mysql2', // 指定用什么驱动包。这里用的是mysql2，所以需要安装 npm install --save mysql2
+    }),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+```
+
+第二步：定义数据库实体对象（表结构）。这个文件放在了Person模块的entities目录下
+
+全部装饰器文档：https://typeorm.bootcss.com/decorator-reference
+
+```ts
+// --------- src/person/entities/person.entity.ts ---------
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity() // 默认表名规则 （首字母小写，下划线链接，例如类名为AdminUser，表名为admin_user） ， 也可以手动传入{name: 'person'}设置
+export class Person {
+  // 主键自增列
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  // 列
+  // 常用字段如下:
+  // name:string 数据库字段名（默认为变量名）
+  // type:string 数据库字段类型（默认js类型会对应一个数据库类型，例如string对应 VARCHAR(255)）
+  // length:number 字段长度（仅针对于Mysql的特点类型，比如变量类型是string,设置长度为50，数据库存的类型就是VARCHAR(50)）
+  // unique:boolean 是否唯一，默认false
+  // nullable:boolean 是否可为空，默认值false
+  // default:any  默认值
+  // comment:string 注释
+  @Column({
+    length: 50,
+  })
+  name: string;
+
+  @Column({})
+  age: number;
+  
+  // 自动维护创建时间，更新时间
+  @CreateDateColumn()
+  createDate: Date;
+
+  @UpdateDateColumn()
+  updateDate: Date;
+}
+
+```
+
+第三步：定义接口
+
+dto对象，描述请求体的结构
+
+```ts
+// --------- src/person/dto/create-person.dto.ts ---------
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+export class CreatePersonDto {
+  // 注意下面修饰name的两个，装饰器会触
+  @IsString({
+    message: 'name字段不是字符串',
+  })
+  @IsNotEmpty({
+    message: 'name字段必传',
+  })
+  name: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  age: number;
+}
+
+
+// --------- src/person/dto/update-person.dto.ts ---------
+import { PartialType } from '@nestjs/mapped-types';
+import { CreatePersonDto } from './create-person.dto';
+import { IsNumber } from 'class-validator';
+
+export class UpdatePersonDto extends PartialType(CreatePersonDto) {
+  @IsNumber()
+  id: number;
+}
+
+```
+
+```ts
+// --------- src/person/person.controller.ts ---------
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  ValidationPipe,
+} from '@nestjs/common';
+import { PersonService } from './person.service';
+import { responseError, responseSuccess } from '../utils/responseUtil';
+import { CreatePersonDto } from './dto/create-person.dto';
+import { UpdatePersonDto } from './dto/update-person.dto';
+
+@Controller('person')
+export class PersonController {
+  constructor(private readonly personService: PersonService) {}
+
+  // 查询
+  @Get()
+  async findAllUser() {
+    try {
+      const res = await this.personService.findAll();
+      return responseSuccess(res);
+    } catch (err) {
+      return responseError(err);
+    }
+  }
+
+  // 更新
+  @Post('update')
+  async updateUser(@Body(ValidationPipe) person: UpdatePersonDto) {
+    try {
+      const { name, age } = person;
+      const res = await this.personService.update(person.id, { name, age }); 
+      return responseSuccess(res);
+    } catch (err) {
+      return responseError(err);
+    }
+  }
+
+  // 这里写死id是null，save就是新增，主键id设置的自增。传入的id如果存在就是更新
+  @Post('save')
+  async saveUser(@Body(ValidationPipe) person: CreatePersonDto) {
+    try {
+      const res = await this.personService.save(null, person); 
+      return responseSuccess(res);
+    } catch (err) {
+      return responseError(err);
+    }
+  }
+
+  // 删除
+  @Delete(':id')
+  async removeUser(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.personService.remove(id);
+      return responseSuccess(null);
+    } catch (err) {
+      responseError(err);
+    }
+  }
+}
+
+```
+
+第四步：在服务中调用数据库操作
+
+* 方式1：@InjectEntityManager注入ORM管理器，缺点是每次操作都必须传入Person，才能确定是对Person表进行操作
+
+  ```ts
+  // --------- src/person/person.service.ts ---------
+  import { Injectable } from '@nestjs/common';
+  import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+  import { EntityManager, Repository } from 'typeorm';
+  import { UpdatePersonDto } from './dto/update-person.dto';
+  import { Person } from '../entities/person.entity';
+  import { CreatePersonDto } from './dto/create-person.dto';
+  
+  @Injectable()
+  export class PersonService {
+    @InjectEntityManager()
+    private readonly manager: EntityManager;
+  
+    @InjectRepository(Person)
+    private readonly personRepository: Repository<Person>;
+  
+    // 查找
+    findAll() {
+      return this.personRepository.findBy({
+        id: 1,
+      });
+    }
+  
+    // 更新
+    update(id: number, createPersonDto: CreatePersonDto) {
+      return this.personRepository.update(id, createPersonDto);
+    }
+  
+    // id存在就是更新，不存在就是增加
+    save(id: number, createPersonDto: CreatePersonDto) {
+      return this.personRepository.save({ id, ...createPersonDto });
+    }
+  
+    // 删除
+    remove(id: number) {
+      return this.personRepository.delete(id);
+    }
+  }
+  
+  ```
+
+* 方式2：forFeature方法，在服务中使用@InjectRepository(Person)指定表为Person
+
+  动态模块TypeOrmModule除了提供forRoot来初始化数据库连接，还提供了forFeature设置操作哪张表
+
+  在Person模块中注入
+
+  ```ts
+  // --------- src/person/person.module.ts ---------
+  import { Global, Module } from '@nestjs/common';
+  import { PersonService } from './person.service';
+  import { PersonController } from './person.controller';
+  import { TypeOrmModule } from '@nestjs/typeorm';
+  import { Person } from './entities/person.entity';
+  
+  @Global()
+  @Module({
+    imports: [TypeOrmModule.forFeature([Person])],
+    controllers: [PersonController],
+    providers: [PersonService],
+    exports: [PersonService],
+  })
+  export class PersonModule {}
+  
+  
+  
+  // --------- src/person/person.service.ts --------
+  import { Injectable } from '@nestjs/common';
+  import { InjectRepository } from '@nestjs/typeorm';
+  import { EntityManager, Repository } from 'typeorm';
+  import { UpdatePersonDto } from './dto/update-person.dto';
+  import { Person } from './entities/person.entity';
+  
+  @Injectable()
+  export class PersonService {
+   
+    @InjectRepository(Person)
+    private readonly personRepository: Repository<Person>;
+  
+    // 查找
+    findAll() {
+      return this.personRepository.find();
+    }
+  
+    // 增加
+    update(id: number, updatePersonDto: UpdatePersonDto) {
+      return this.personRepository.save({
+        id,
+        ...updatePersonDto,
+      });
+    }
+  
+    // 删除
+    remove(id: number) {
+      return this.personRepository.delete(id);
+    }
+  }
+  
+  ```
+
+### Nest集成迁移
+
+参考：https://article.juejin.cn/post/7175519060468170810
+
+TypeORM的设置字段migrations单独拿出来讲下
+
+synchronize设置为true，只要代码中entity发生变化就会立即修改表结构，这十分危险，所以生产环境一般还是使用migrations
+
+typeorm的CLI提供了命令生成表结构文件，其中提供两个方法up、down
+
+* up就是表结构改变的SQL语句
+* down是运行up修改表结构后的恢复SQL语句
+
+我们可以手动复制up函数中的SQL去数据库执行表结构
+
+第一步：把orm配置单独提出来
+
+```ts
+// --------- src/config/db.config.ts ---------
+import { Person } from '../person/entities/person.entity';
+import { DataSource, DataSourceOptions } from 'typeorm';
+
+const baseConfig: DataSourceOptions = {
+  type: 'mysql', // 数据库类型，TypeORM目前支持mysql、 postgres、oracle、sqllite等
+  host: 'localhost',
+  port: 3306,
+  username: 'root',
+  password: 'hedaodao',
+  database: 'nest_practice', // 数据库名（也叫schema）。这里指定的数据库需要存在，否则会报错
+  synchronize: false, // 是否自动同步entities内的实体到数据库
+  migrations: ['./migrations'], // synchronize:true自动将表结构的变动同步到数据库，这十分不安全的。migrations会生成sql文件，我们手动修改数据库
+  logging: true, // 打印生成的sql语句
+  entities: [Person], // 支持glob ['./**/entities/*.ts']、导入的Class对象
+  subscribers: [],
+  poolSize: 10, // 连接池中连接的最大数量
+  connectorPackage: 'mysql2', // 指定用什么驱动包。这里用的是mysql2，所以需要安装 npm install --save mysql2
+};
+
+// orm全局模块配置
+const ormConfig = baseConfig;
+
+// package脚本中typeorm生成migrations文件使用
+const ormConfigForCLI = new DataSource(baseConfig);
+
+export { ormConfig };
+
+export default ormConfigForCLI;
+
+```
+
+第二步：app模块中引入，配置到orm上
+
+```ts
+// --------- src/app.module.ts ---------
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PersonModule } from './person/person.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ormConfig } from './config/db.config';
+
+@Module({
+  imports: [PersonModule, TypeOrmModule.forRoot(ormConfig)],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+```
+
+第三步：在package.json中配置脚本
+
+```ts
+{
+  	// typeorm-ts-node-esm是typeorm cli在esm、ts中使用的命令
+  	// -d 配置的是导出 export default ormConfigForCLI 的文件
+  	"typeorm-cli": "typeorm-ts-node-esm -d ./src/config/db.config.ts",
+    
+  	// 生成迁移文件。
+    // typeorm-cli是上面指定输入配置的脚本
+    // 需要路径，路径最后一层是文件后缀名，如下：
+    // 运行后，在根目录自动生成migrations目录，目录下生成文件的名：`时间戳-alert-table.ts`
+    // 多次执行后生成多个文件，但是每个文件的变动都是执行时的entity定义与当前数据库对比后生成的。所以，一定要在迁移数据库之前再生成，避免使用了旧的
+  	"migration:generate": "npm run typeorm-cli migration:generate ./migrations/alert-table",
+    
+    // 执行表结构变更的SQL。其根据ormConfigForCLI配置的migrations字段查找迁移文件，选取最新的文件执行
+    "migration:run": "npm run typeorm-cli migration:run",
+    // 撤回表变更SQL。也是读取migrations字段
+    "migration:revert": "npm run typeorm-cli migration:revert",
+}
+```
+
+第四步：
+
+使用脚本：migration:generate，生成文件
+
+```ts
+// --------- migrations/1718697302609-alert-table.ts ---------
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class AlertTable1718697302609 implements MigrationInterface {
+    name = 'AlertTable1718697302609'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE \`person\` CHANGE \`score\` \`score\` int NOT NULL`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE \`person\` CHANGE \`score\` \`score\` int NULL`);
+    }
+
+}
+```
+
+migration:run可以执行表结构改变的SQL，但是很多公司不允许直接操作线上数据库，所以可以直接复制迁移文件中up函数中SQL提交数据库变更工单
+
+### 增删改查
+
+以上面Nest例子中personRepository为例子，即查询person表
+
+```ts
+// person 是实体对象 {id:number,name:string}
+
+
+// 显示查询数据在不在，存在则更新，不存在就插入
+personRepositor.save(person) 
+
+
+// 查询多条
+personRepositor.find() // 不传参数是全部数据，入参是对象可以做很细致的查询，详细查看d.ts定义文件(官方文档：https://typeorm.bootcss.com/find-options)
+personRepositor.findBy({id:1}) // 根据条件查询
+const [users, count] = await personRepositor.findAndCount() // 额外返回数据条数
+personRepositor.findAndCountBy({id:1})// 根据条件查询
+
+// 查询后仅返回一条
+personRepositor.findOne({ 
+   			select: {
+            firstName: true,
+            age: true
+        },
+        where: {
+            id: 4
+        },
+        order: {
+            age: 'ASC'
+        }
+})
+personRepositor.findOneBy({id:1}) // 根据条件查询
+
+// 默认查询不到也不会报错，findOneOrFail查不到会抛出错误
+personRepositor.findOneOrFail({
+  where:{id:1}
+})
+
+// 删除
+personRepositor.delete(person,1) // 删除id为1的
+personRepositor.delete(person,[1,2]) // 批量删除id为1、2的
+personRepositor.remove(person) // remove不是通过id删除，而是直接传入person对象
+
+```
+
+### 关联查询
+
+
+
+### 树形实体
+
+官方文档：https://typeorm.bootcss.com/tree-entities
+
+第一步：新建City实体
+
+```ts
+// --------- src/entities/city.entity.ts ---------
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
+} from 'typeorm';
+
+@Entity({
+  name: 'city',
+})
+@Tree('closure-table') // 推荐使用closure-table（闭合表）这种方式，其他方式查询官方文档
+export class City {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+
+ 	// 孩子节点是数组
+  @TreeChildren()
+  children: City[];
+
+  // 父亲节点
+  @TreeParent()
+  parent: City;
+}
+
+```
+
+第二步：controller中添加接口就省略了啊。这里直接把service中如何使用typeorm写出来
+
+注意：使用树实体没法用装饰器直接注入这个实体，只能@InjectEntityManager注入实体管理器
+
+```ts
+// --------- src/person/person.service.ts ---------
+import { Injectable } from '@nestjs/common';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { Person } from '../entities/person.entity';
+import { CreatePersonDto } from './dto/create-person.dto';
+import { City } from '../entities/city.entity';
+
+@Injectable()
+export class PersonService {
+  @InjectEntityManager()
+  private readonly manager: EntityManager;
+
+  // 插入节点
+  async addCity() {
+    // 保存节点
+    const city = new City();
+    city.name = '河南';
+    await this.manager.save(City, city); 
+
+    // 查出来，添加到子节点的parent字段，再保存
+    const parent = await this.manager.findOne(City, {
+      where: {
+        name: '河南',
+      },
+    });
+
+    if (parent) {
+      childCity.parent = parent;
+    }
+
+    const childCity = new City();
+    childCity.name = '郑州';
+    await this.manager.save(City, childCity); // 保存节点
+  }
+
+  // 查找一级节点
+  findRoots() {
+    return this.manager.getTreeRepository(City).findRoots();
+  }
+  
+  // 其他的详见文档：https://typeorm.bootcss.com/tree-entities#%E9%97%AD%E5%90%88%E8%A1%A8
+}
+
+```
+
+## Redis
+
+
+
+
 
 
 
@@ -1911,7 +2640,7 @@ module.exports = {
 ## 疑问
 
 * 在Nest中对于业务异常是否作为Exception来处理？
-
 * 现在服务都是多节点部署，如果服务需要持有资源，例如直播服务预约会加载素材到服务机器上，如何保证开播时的机器就是预约的机器？
+* Nest默认脚手架的package.json、tsconfig中配置都是commonjs，但是项目中仍然可以用ESM
 
  

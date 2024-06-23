@@ -7226,6 +7226,9 @@ import React from "react";
   
   //as关键字可以重命名
   export { name as myName, hi as hello, Person as People };
+  
+  // as default是一个特殊名字，相当于把name作为默认导出
+  export { name as default, hi };
   ```
 
   引入模块
@@ -7238,8 +7241,6 @@ import React from "react";
   import * as xxx from "yyy";
   console.log(xxx.name)
   ```
-
-  
 
 * 默认导出（仅导出一个值）
 
@@ -7294,6 +7295,30 @@ import React from "react";
   // 从module2拿到默认导出，在改成具名导出NewCar
   export { default as NewCar } from './src/main/ets/pages/Index'
   ```
+
+**易错点**
+
+export多值导出的并不是对象，所以切记不能写成下面键值对语法
+
+```js
+// 错误语法
+export {
+  name:11
+}
+```
+
+多值导出、默认导出，实际导出的都是声明+值，下面导出一个变量值的写法是错误的
+
+```js
+const a=1
+// 错误语法
+export a
+
+// 正确语法，多值导出
+export {a}
+```
+
+
 
 **注意**
 
