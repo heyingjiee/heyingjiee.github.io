@@ -7229,6 +7229,12 @@ import React from "react";
   
   // as default是一个特殊名字，相当于把name作为默认导出
   export { name as default, hi };
+  
+  
+  // !!!! 错误语法 : export多值导出的并不是对象，所以切记不能写成下面键值对语法
+  export {
+    name:11
+  }
   ```
 
   引入模块
@@ -7256,14 +7262,14 @@ import React from "react";
   }
   ```
 
-  默认导出后不能是表达式
+  默认导出后不能是语句
 
   ```js
   //！！！！报错
   export default const add= function(){}
   
   
-  // 可以zhe'yang'xie
+  // 可以
   const add = function(){}
   export default add
   ```
@@ -7295,28 +7301,6 @@ import React from "react";
   // 从module2拿到默认导出，在改成具名导出NewCar
   export { default as NewCar } from './src/main/ets/pages/Index'
   ```
-
-**易错点**
-
-export多值导出的并不是对象，所以切记不能写成下面键值对语法
-
-```js
-// 错误语法
-export {
-  name:11
-}
-```
-
-多值导出、默认导出，实际导出的都是声明+值，下面导出一个变量值的写法是错误的
-
-```js
-const a=1
-// 错误语法
-export a
-
-// 正确语法，多值导出
-export {a}
-```
 
 
 
@@ -11025,7 +11009,7 @@ catch作为promise链上的方法，只能捕获其promise作用链上传递的r
 ```js
 function lmn(){
     f1(true).then(resf1=>{
-        f2(false)
+        f2(false)  // 这里需要加上await，catch才能捕获到
     }).catch(err=>{
         console.log("外层捕获",err)
     })
@@ -11033,20 +11017,6 @@ function lmn(){
 }
 lmn() //报错，未捕获rejected状态的Promise
 ```
-
-```js
-function lmn(){
-    f1(true).then(resf1=>{
-        throw new Error("抛出的错误")
-    }).catch(err=>{
-        console.log("外层捕获",err)
-    })
-
-}
-lmn() //外层捕获 Error: 抛出的错误
-```
-
-
 
 **for循环中使用await**
 
@@ -12076,7 +12046,7 @@ css的postion是基于谁定位的 ：祖先元素中position: relative、positi
 
 SSO实现原理
 
-axios请求是否能种下cookie
+axios请求是否能种下cookie，通过withCrenxxx那个字段
 
 PWA缓存
 

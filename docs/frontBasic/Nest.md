@@ -222,6 +222,10 @@ class Person {
 const tom:Person = new Person('tom')
 ```
 
+### Metadata、Reflector
+
+
+
 ## Nest脚手架
 
 创建启动项目
@@ -342,13 +346,88 @@ export class AppModule {}
 
 ```
 
-## Nest生命周期（待补充）
+## Nest生命周期
 
-实际场景：项目有warmup的状态，在warmup时间内初始化资源，待warnup完成后才对外提供服务
+文档：https://docs.nestjs.cn/10/fundamentals?id=%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e4%ba%8b%e4%bb%b6
+
+实际场景：
+
+* 项目有warmup的状态，在warmup时间内初始化资源，待warnup完成后才对外提供服务
+* 优雅关机
+
+生命周期图示（深色的4个模块就是Nest暴露出来的钩子）：
+
+![lifecycle-events](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240709182305cnnaCY.png)
+
+### 启动生命周期
+
+流程：
+
+* 递归初始化模块，会依次调用模块内的 controller、provider 、 module 的 onModuleInit 方法
+
+* 依次调用调用模块内的 controller、provider 、module 的 onApplicationBootstrap 方法
+* 监听端口
+* 应用运行
+
+例子：以service为例子，controller、module也支持
+
+```ts
+import { Injectable, OnModuleInit } from '@nestjs/common';
+
+@Injectable()
+export class XxxxService implements OnModuleInit,onApplicationBootstrap {
+  onModuleInit() {
+    console.log('onModuleInit');
+  }
+  onApplicationBootstrap(){
+    console.log('onApplicationBootstrap');
+  }
+}
+```
+
+### 关机生命周期
+
+流程：
+
+* 调用每个模块的 controller、provider 、Module 的 onModuleDestroy 方法
+
+* 调用每个模块的 controller、provider、Module 的 beforeApplicationShutdown 方法（可以拿到 signal 系统信号的，比如 SIGTERM）
+
+* 然后停止监听网络端口。
+
+* 调用每个模块的 controller、provider 、Module 的 onApplicationShutdown 方法
+* 应用关机
+
+例子:以module为例子
+
+```ts
+import { Module, OnModuleDestroy, BeforeApplicationShutdown, OnApplicationShutdown  } from '@nestjs/common';
+
+@Module({
+  controllers: [XxxController],
+  providers: [XxxService]
+})
+export class CccModule implements OnModuleDestroy, BeforeApplicationShutdown, OnApplicationShutdown  {
+
+  onModuleDestroy() {
+    console.log('onModuleDestroy');
+  }
+
+  beforeApplicationShutdown(signal: string) {
+    console.log('beforeApplicationShutdown', signal);
+  }
+
+  onApplicationShutdown() {
+    console.log('onApplicationShutdown');
+  }
+}
+```
+
+
 
 ## 注入相关
 
-### 获取注入
+### 获取注入值
 
 ```ts
 @Controller()
@@ -370,13 +449,12 @@ export class PersonController {
 }
 ```
 
-### 注入类
+### 模块内部注入
 
-Modle的作用就是清晰的维护注入
+Modle的作用就是清晰的维护注入，下面是模块内部的导入规则
 
-* providers所有类可以向controllers类中注入
-
-* providers类之间可以互相注入
+* providers类之间可以互相注入，所有类可以向controllers类中注入
+* import引入的外部模块，可以注入本模块。具体可以注入到本模块的providers、controllers【这部分在下一节讲解】
 
 ```ts
 //-------- app.module.ts --------
@@ -388,7 +466,7 @@ import {BService} from './B/b.service'
 @Module({
   imports: [PersonModule],
   controllers: [AppController],
-  providers: [AppService,BService] 是其简写方式
+  providers: [AppService,BService] //是其简写方式
 })
 export class AppModule {}
 
@@ -408,9 +486,11 @@ export class AppService {
 
 ```
 
-#### 自定义providers注入名
+#### 自定义providers注入名、类
 
 一般都是使用简写方式
+
+IOC容器会创建类的实例
 
 ```ts
 //-------- app.module.ts --------
@@ -425,7 +505,7 @@ import { AppService } from './app.service';
   // providers: [AppService] 是其简写方式
   providers: [
     {
-      provide: 'ABC', // 服务名
+      provide: 'ABC', // token（其实就是一个字符串名字）
       useClass: AppService, // 服务类
     },
   ],
@@ -540,11 +620,9 @@ export class AppController {
 
 ```
 
-### 注入模块
+### 注入外部模块
 
-一般我们通过providers注入类
-
-其实模块可以明确export哪个类，我们可以把整个模块导出的类注入
+模块通过export字段指明暴露哪些类
 
 #### 基础写法
 
@@ -669,18 +747,18 @@ export class UserModule {}
 
 ```
 
-UserModule不是全局模块，所以一定要记得在app模块中引入UserModule
+一定要记得在app模块中引入PersonModule才会在项目启动时在全局导入
 
 ```ts
 //-------- app.module.ts --------import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
+import { PersonModule } from './person/person.module';
+
 
 @Module({
-  imports: [
-    UserModule
-  ],
+  imports: [UserModule,PersonModule],
   controllers: [AppController],
   providers: [AppService],
 })
@@ -690,42 +768,26 @@ export class AppModule {}
 
 #### 动态模块
 
-前面遇到的模块都是下面这种，通过@Module定义了模块的特性，但是class UserModule是空的
+前面两种模块导出的都是固定的功能
+
+动态模块会暴露一个静态方法，通过传参配置信息，并在app.module中注册，就可以达到下面的效果：
+
+* 项目启动时需要初始化的逻辑
+* 通过传参可以控制模块的功能
+* 通过globel属性，可配置为全局模块
 
 ```ts
-//-------- person.module.ts --------
-import { Global, Module } from '@nestjs/common';
-import { PersonService } from './person.service';
-import { PersonController } from './person.controller';
-
-@Global()
+// ---------- src/app.module.ts ----------
 @Module({
-  controllers: [PersonController],
-  providers: [PersonService],
-  exports: [PersonService], // 注意：需要导出
+  imports: [TypeOrmModule.forRoot(ormConfig)], // ormConfig是数据库连接的参数
+  controllers: [AppController],
+  providers: [AppService],
 })
-export class PersonModule {}
+export class AppModule {}
+
 ```
 
-在其他模块通过import引入时，是固定的功能
-
-```ts
-//-------- user.module.ts --------
-import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-
-@Module({
-  imports: [PersonModule], // 引导静态的模块
-  controllers: [UserController],
-  providers: [UserService],
-})
-export class UserModule {}
-```
-
-其实我们可以给模块类，增加静态方法。在其他模块import导入该模块时，可以通过给静态方法传入参数来动态改变模块的功能，这就是**动态模块**
-
-静态方法叫什么名字都可以，但是Nest内约定了3个函数名，代表不同类型的功能
+动态模块的静态方法叫什么名字都可以，但是Nest内约定了3个函数名，代表不同类型的功能
 
 * forRoot
 
@@ -740,6 +802,42 @@ export class UserModule {}
   在forRoot的基础上，在项目局部增加新功能。例如：用 forRoot 指定了数据库链接信息，再用 forFeature 指定某个模块访问哪个数据库和表。TypeORM是典型的这种方式，详见【TypeORM】章节
 
 例子：
+
+```ts
+import { DynamicModule, Global, Module } from '@nestjs/common';
+
+interface Options {
+  path: string;
+}
+
+@Module({})
+export class ConfigModule {
+  // 定义静态函数
+  static forRoot(options: Options): DynamicModule {
+    
+    const xxxProvider: Provider = {
+      provide: 'xxx',
+      useValue: new XXX(),
+    };
+    
+    return {
+      // 1、动态模块特有属性，module属性为类名
+      module: ConfigModule,
+      // 2、动态模块特有属性，指定是否为全局模块（默认不是全局模块）
+      global: true,
+      providers: [
+        {
+          provide: 'Config',
+          useValue: { baseApi: '/api' + options.path },
+        },
+        xxxProvider
+      ],
+      exports: ['Config',xxxProvider] // 一般场景的就两种形式。导出token、或者导出Provider（携带创建的对象）
+    };
+  }
+}
+
+```
 
 ```ts
 //-------- app.module.ts --------
@@ -764,45 +862,48 @@ export class AppModule {}
 
 ```
 
+### 特殊全局注入
+
+前面提到全局模块、动态模块设置globel属性为true，两种方式可以将类注入到全局。在任何模块无需引用即可注入全局对象
+
+在【Nest AOP核心】章节会讲到，一般情况providers只能在本模块注入，有些特殊token：APP_GUARD、APP_PIPE、APP_INTERCEPTOR、APP_FILTER可以实现全局注入
+
+还可以同一个token定一个多个不同的类，如下：注册全局守卫，代码会按顺序经过： LoginGuard-->PermissionGuard
+
 ```ts
-import { DynamicModule, Global, Module } from '@nestjs/common';
+//-------- app.module.ts --------
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { LoginGuard } from './common/login.guard';
+import { PermissionGuard } from './common/permission.guard';
 
-interface Options {
-  path: string;
-}
-
-@Module({})
-export class ConfigModule {
-  // 定义静态函数
-  static forRoot(options: Options): DynamicModule {
-    return {
-      // 静态函数只比@Module多了一个module属性，module属性为类名
-      module: ConfigModule,
-      providers: [
-        {
-          provide: 'Config',
-          useValue: { baseApi: '/api' + options.path },
-        },
-      ],
-      exports: [
-        {
-          provide: 'Config',
-          useValue: { baseApi: '/api' + options.path },
-        },
-      ],
-    };
-  }
-}
-
+@Module({
+  imports: [PersonModule],
+  controllers: [AppController],
+  
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD', // 特殊token:APP_GUARD，
+      useClass: LoginGuard, // 登录守卫
+    },
+    {
+      provide: 'APP_GUARD', // 特殊token:APP_GUARD，
+      useClass: PermissionGuard, // 权限守卫
+    },
+  ],
+})
+export class AppModule {}
 ```
 
-### 注入失败
+### 注意
 
-依赖自动注入其实是通过Nest容器来管理依赖的结果，@Injectable修饰表示可注入、被注入
+#### 注入失败
 
-Nest会自动创建对象，并放入容器
+依赖自动注入是将@Injectable修饰的类实例化为对象后，放入IOC容器。如果该类还依赖了其他注入，IOC容器也自动为我们处理好
 
-如果手动new创建对象，则依赖注入失效
+但是，手动new创建对象，如果该类还依赖了其他注入就会失败
 
 ```ts
 @Injectable()
@@ -816,7 +917,35 @@ class xxx{
 new xxx()
 ```
 
+最常见的场景就是【Nest AOP核心】章节中的例子，即全局注册方式1的形式
 
+#### exports导出
+
+providers的内容才会被注入到IOC容器中。即使你的模块仅仅用作导出，但是仍然需在providers中声明
+
+```ts
+import { Global, Module } from '@nestjs/common';
+
+@Global()
+@Module({
+  providers: [
+    {
+      provide: 'Config',
+      useValue: 'Config的值',
+    },
+  ],
+  exports: ['Config'], // 这里指明导出哪个token就行
+})
+export class TestModule {}
+```
+
+## 模块通讯（待补充）
+
+* 注入
+* 订阅发布
+* ModuleRef
+
+![image-20240709183840406](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407091838407uPA7V.png)
 
 ## 发起请求
 
@@ -1179,8 +1308,37 @@ import { Observable } from 'rxjs';
 export class LoginGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     console.log('login check')
-    return false; // 不放行
+    return false; // true放行，false不放行。
   }
+}
+```
+
+关于参数ExecutionContext类型，需要根据请求协议转换为具体Host对象
+
+```ts
+// switchToRpc(): RpcArgumentsHost;
+// switchToHttp(): HttpArgumentsHost;
+// switchToWs(): WsArgumentsHost;
+
+// 例子：
+import { Request,Response } from 'express';
+const host:HttpArgumentsHost = context.switchToHttp();
+const req:Request=host.getRequest() // 获取请求
+const res:Response=host.getResponse() // 获取响应
+```
+
+如果守卫是加在全局的，不能确定有哪些协议的请求会经过守卫，可以获取类型
+
+```ts
+const isWebSocket = context.getType() === 'ws';
+const isHttp = context.getType() === 'http';
+
+if(isWebSocket){
+  // 是ws的守卫
+}
+
+if(isHttp){
+  // 是http的守卫
 }
 ```
 
@@ -1234,7 +1392,7 @@ import { LoginGuard } from './common/login.guard';
   providers: [
     AppService,
     {
-      provide: 'APP_GUARD', // 服务名
+      provide: 'APP_GUARD', // 特殊名字APP_GUARD，一般情况providers只能在本模块生效，但是APP_GUARD会注入全局
       useClass: LoginGuard, // 服务类
     },
   ],
@@ -1398,23 +1556,24 @@ intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 }
 ```
 
-
-
-#### 与middleware的区别
+#### 与中间件、守卫异同
 
 * interceptor 里是可以用 rxjs 的操作符来组织响应处理流程的
 
-* 参数不同
+* 参数
 
   ```ts
   // 中间件函数签名
   use(req: Request, res: Response, next: NextFunction)
   
+  
+  // 守卫
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean>
   // 拦截器函数签名
   intercept(context: ExecutionContext, next: CallHandler): Observable<Data<T>>
   ```
-
-  intercept的入参ExecutionContext 里可以拿到目标 class 和 handler，进而通过 reflector 拿到handler的 metadata 等信息的，这些是 middleware 做不到的
+  
+  守卫、拦截器入参ExecutionContext 里可以当前请求的controller class 和 handler，进而通过 reflector 拿到handler的 metadata 等信息的，这些是 middleware 做不到的
 
 ### 管道(pipe)
 
@@ -1917,9 +2076,34 @@ export class Filter implements ExceptionFilter {
 
 全局注册
 
+方式1：
+
 ```ts
 // main.ts的bootstrap函数中添加
 app.useGlobalFilters(new HttpFilter());
+```
+
+方式2：
+
+```ts
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { HttpFilter } from '../common/custom-exception.filter'; 
+
+@Module({
+  imports: [],
+  controllers: [AppController],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_FILTER', // 特殊token
+      useClass: HttpFilter,
+    },
+  ],
+})
+export class AppModule {}
+
 ```
 
 局部注册
@@ -1977,21 +2161,454 @@ import { RegisterUserDto } from './register-user.dto';
 export class LoginUserDto extends PartialType(RegisterUserDto) {}
 ```
 
+## Express请求、响应对象
+
+Nest默认使用Express作为底层框架。在开发过程中，经常会遇到操作请求、响应对象，这里补充下
+
+### Request
+
+```ts
+// 取请求头字段
+const authorization = request.header('authorization')
+const userAgent = request.headers['user-agent'];
+
+const { ip, method, path } = request;
+```
+
+### Response
+
+```ts
+// 状态码
+response.statusCode
+```
+
+
+
 ## 基础集成
 
 ### 配置文件
 
 ### 日志
 
+常用的[winston](https://www.npmjs.com/package/winston)、[log4js](https://www.npmjs.com/package/log4js)
+
+本文介绍Nest集成winston的方式，中文文档参考： https://zhuanlan.zhihu.com/p/687492563
+
+集成流程：
+
+* 封装为动态模块并设置为全局模块，通过入参传入winston日志配置数据，导出日志对象CustomLogger。在任何模块中可注入日志对象，打印日志
+
+  ```ts
+  // ----------------- logger.module.ts -----------------
+  
+  // ----------------- 这里是导出动态模块
+  import {
+    DynamicModule,
+    Injectable,
+    LoggerService,
+    Module,
+  } from '@nestjs/common';
+  import { createLogger, format, Logger, transports } from 'winston';
+  import * as chalk from 'chalk';
+  import * as dayjs from 'dayjs';
+  import 'winston-daily-rotate-file';
+  
+  interface loggerOption {
+    global: boolean;
+  }
+  
+  @Module({})
+  export class LoggerModule {
+    static forRoot(options: loggerOption): DynamicModule {
+      return {
+        module: LoggerModule,
+        global: options.global,
+        providers: [CustomLogger],
+        exports: [CustomLogger],
+      };
+    }
+  }
+  
+  
+  // ----------------- 这里就是覆盖Nest内置的日志记录器
+  @Injectable()
+  export class CustomLogger implements LoggerService {
+    private logger: Logger;
+  
+    constructor() {
+      this.logger = createLogger({
+        level: 'info',
+        transports: [
+          new transports.Console({
+            format: format.combine(
+              format.printf((param) => {
+                const { context, level, message, time } = param;
+                const appStr = chalk.green('[Nest]');
+                const contextStr = chalk.yellow(`[${context}]`);
+                const levelStr =
+                  level === 'info'
+                    ? chalk.green(`[${level}]`)
+                    : chalk.red(`[${level}]`);
+                return `${appStr} [${time}] ${levelStr} ${contextStr} ${message}`;
+              }),
+            ),
+          }),
+          new transports.DailyRotateFile({
+            level: 'info',
+            format: format.combine(format.json()),
+            dirname: 'log',
+            filename: '%DATE%.log',
+            datePattern: 'YYYY-MM-DD', // 设置文件名中的%DATE%的格式
+            maxSize: '10M', // 当个日志文件大小
+            maxFiles: '14d', // 文件保存天数
+          }),
+        ],
+        // 所有未捕获的异常都将被记录到 'error.log' 文件中
+        exceptionHandlers: [
+          new transports.File({
+            dirname: 'log',
+            filename: 'global-error.log',
+          }),
+        ],
+        // 所有未处理的 Promise 拒绝都将被记录到 'rejections.log' 文件中
+        rejectionHandlers: [
+          new transports.File({
+            dirname: 'log',
+            filename: 'global-error.log',
+          }),
+        ],
+        // 默认值是 true，表示在记录未捕获的异常后退出进程
+        exitOnError: true,
+      });
+    }
+  
+    log(message: any, ...optionalParams: any[]): any {
+      const time = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+      this.logger.log('info', `${message}`, { context: optionalParams[0], time });
+    }
+    warn(message: any, ...optionalParams: any[]): any {
+      const time = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+      this.logger.log('warn', `${message}`, { context: optionalParams[0], time });
+    }
+    error(message: any, ...optionalParams: any[]): any {
+      const time = dayjs(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+      this.logger.log('error', `${message}`, {
+        context: optionalParams[0],
+        time,
+      });
+    }
+  }
+  
+  ```
+
+  将日志全局模块注册到 app模块
+
+  ```ts
+  // ----------------- app.module.ts -----------------
+  import { Module } from '@nestjs/common';
+  import { AppController } from './app.controller';
+  import { AppService } from './app.service';
+  import { LoggerModule } from './common/modules/logger.module';
+  
+  @Module({
+    imports: [
+      LoggerModule.forRoot({ global: true }),
+    ],
+    controllers: [AppController],
+    providers: [AppService],
+  })
+  export class AppModule {}
+  
+  ```
+
+* Nest项目启动后才会把动态模块导出的日志对象放入IOC容器。Nest自带日志模块，在启动之前就输出了初始化模块的一些日志
+
+  ![image-20240708154618382](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240708154619JDHelY.png)
+
+  我们可以使用winston覆盖Nest自带的日志模块，接管这部分日志。
+
+  如果我们的CustomLogger注入了其他类，在项目启动前输出的这部分日志会直接报错，因为IOC容器还没有初始化完成。使用下面的方式可以解决：
+
+  ```ts
+  import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+  import { AppModule } from './app.module';
+  import { NestFactory } from '@nestjs/core';
+  import { CustomLogger } from './common/modules/logger.module';
+  
+  async function bootstrap() {
+    const app = await NestFactory.create(AppModule, {
+      bufferLogs: true, // 所有的日志都会被放入缓冲区直到一个自定义的日志记录器被接入
+    });
+  
+    app.useLogger(app.get(CustomLogger)); //get:从IOC容器中取出日志记录器对象，useLogger:添加日志中间件
+  
+  
+    await app.listen(3002);
+  }
+  bootstrap();
+  
+  ```
+
+  重启项目，可以看到日志已被接管了
+
+  ![image-20240708160257224](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240708160257Fs2CZv.png)
+
+  
+
+* 通过interceptor给请求添加日志
+
+  ```ts
+  // -------- src/common/interceptors/response.interceptor.ts --------
+  import {
+    CallHandler,
+    ExecutionContext,
+    Inject,
+    Injectable,
+    NestInterceptor,
+  } from '@nestjs/common';
+  import { map, Observable, tap } from 'rxjs';
+  import { CustomLogger } from '../modules/logger.module';
+  import { Request, Response } from 'express';
+  
+  interface Data<T> {
+    data: T;
+  }
+  
+  @Injectable()
+  export class ResponseInterceptor<T> implements NestInterceptor {
+    @Inject(CustomLogger)
+    private readonly logger: CustomLogger;
+  
+    intercept(context: ExecutionContext, next: CallHandler): Observable<Data<T>> {
+      const host = context.switchToHttp();
+      const request: Request = host.getRequest();
+      const response: Response = host.getResponse();
+  
+      const { method, path } = request;
+  
+      this.logger.log(`[${path}][${method}]`, '请求');
+      return next.handle().pipe(
+        tap((res) => {
+          this.logger.log(
+            `[${path}][${method}][${response.statusCode}]${JSON.stringify(res)}`,
+            '响应',
+          );
+        }),
+        map((data) => {
+          return data;
+        }),
+      );
+    }
+  }
+  
+  ```
+  
+  因为使用了interceptor中使用了CustomLogger注入，必须使用特殊token：APP_INTERCEPTOR进行全局注册
+  
+  ```ts
+  // ----- src/app.module.ts -----
+  @Module({
+    controllers: [AppController],
+    providers: [
+      AppService,
+      // 拦截器
+      {
+        provide: 'APP_INTERCEPTOR',
+        useClass: ResponseInterceptor,
+      },
+    ],
+  })
+  export class AppModule {}
+  
+  ```
+  
+  随便发送一个请求，输出日志：
+  
+  ![image-20240708184028414](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240708184028H1rNTV.png)
+  
+  
+
 ### Swagger
 
-### Compoddoc
+生成接口文档的工具
+
+**安装依赖**
+
+```shell
+pnpm install @nestjs/swagger
+```
+
+**开启Swagger**
+
+```ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Swagger 接口文档
+  const config = new DocumentBuilder()
+    .setTitle('Nest-Example项目')
+    .setDescription('Nest-Example接口文档')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('doc', app, document); 
+  // 第一个参数是path， swagger文档地址 http://localhost:3002/${path}。 注意：文档地址的端口和nest项目启动的端口一致
+
+  await app.listen(3002);
+}
+bootstrap();
+
+```
+
+配置字段对应文档网页的位置
+
+![image-20240705154911621](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407051549139gmlng.png)
+
+**通过swagger标注**
+
+Swagger会自动读取项目中的接口，但是读取不到接口的参数等信息。可通过装饰器标注接口的详细信息
+
+```ts
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Inject,
+  Post,
+  Res,
+  ValidationPipe,
+} from '@nestjs/common';
+import { UserService } from './user.service';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { responseSuccess } from '../utils/responseUtil';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
+import { RequireLogin } from '../common/decorator/require-login.decorator';
+import { RequirePermission } from '../common/decorator/require-permission.decorator';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('user') // 接口分组。该@Controller下的接口都在这个分组，也可以在handler上设置该装饰器。没有编辑的分组时default
+@Controller('user')
+export class UserController {
+  
+  // 接口概述
+  @ApiOperation({
+    summary: '登录接口',
+    description: '用于用户登录',
+  })
+
+  // 描述url参数
+  // @ApiQuery({
+  //   name: 'username',
+  //   type: String,
+  //   description: '用户名',
+  //   required: true,
+  //   example: 'hedaodao',
+  // })
+
+  // 描述路径参数。选项同上
+  // @ApiParam()
+  
+  // 描述请求体参数
+   @ApiBody({
+    type: LoginUserDto, //dto数据中也需要标注
+  })
+
+  // 添加返回值用例
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '成功返回示例',
+    type: String,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'id 不合法',
+  })
+  @Post('login')
+  async login(@Body(ValidationPipe) loginUserDto: LoginUserDto) {
+    // xxx 接口逻辑
+  }
+}
+
+```
+
+`class-validator`中字段类型的标注，不能被Swagger读取。
+
+需要使用@ApiProperty、@ApiPropertyOptional（参数可选）标注，Swagger文档上才有类型
+
+```ts
+import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class LoginUserDto {
+  @ApiProperty({ name: 'password',enum: ['男', '女'], maximum: 60, minimum: 40, default: '男', example: '男' }) // minimum最短长度、maximum最长长度
+  @IsString({ message: 'gender类型校验失败' })
+  @IsNotEmpty({ message: 'gender不能为空' })
+  gender: Gender; 
+}
+```
+
+登录接口编辑标记后：
+
+![image-20240705170125604](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240705170127A3wUBX.png)
+
+如果是路径参数、query参数使用@ApiParam、@ApiQuery标记，展示在Parameters下面
+
+![image-20240705170334198](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240705170335SgGyed.png)
+
+### Compodoc
+
+Compodoc原本是给 angular 项目生成项目文档的工具，也支持nest。Compodoc可以把依赖关系可视化
+
+官网：https://compodoc.app/
+
+安装依赖，配置到package.json，执行会打开浏览器显示一个静态网页
+
+```
+pnpm i -D @compodoc/compodoc
+```
+
+```json
+{
+  "scripts":{
+  	"compodoc":"compodoc -p tsconfig.json -s -o" // -p 指定tsconfig文件路径，-s启动静态服务器 ，-o打开浏览器 
+  }
+}
+```
+
+或者直接用npx执行
+
+```json
+{
+  "scripts":{
+  	"compodoc":"npx @compodoc/compodoc -p tsconfig.json -s -o -c" 
+  }
+}
+```
+
+除了直接在命令中指定，也可以在根目录下新建`.compodoc.json`写参数配置。配置参考
+
+```shell
+npx @compodoc/compodoc -p tsconfig.json -s -o -c .compodoc.json # -c指定配置文件路径
+```
+
+启动的网页：（README选项，就是我们项目根目录下的README文件）
+
+![image-20240703000003742](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240703000005xF2lMc.png)
 
 ## TypeORM
 
 TypeORM中文网：https://typeorm.bootcss.com/
 
-### Nest集成
+### 集成
 
 ```shell
 npm install --save @nestjs/typeorm typeorm mysql2 
@@ -2289,7 +2906,7 @@ export class PersonController {
   
   ```
 
-### Nest集成迁移
+### 集成迁移
 
 参考：https://article.juejin.cn/post/7175519060468170810
 
@@ -2452,7 +3069,8 @@ personRepositor.remove(person) // remove不是通过id删除，而是直接传�
 
 ### 关联查询
 
-
+* 迁移存在问题，@ManyToMany创建的中间表应该有两个外键，但是迁移生产的文件没有添加外键
+* @ManyToMany创建的中间表默认生成两个外键关系，但是需要
 
 ### 树形实体
 
@@ -2546,7 +3164,136 @@ export class PersonService {
 
 ## Redis
 
+使用库ioredis，具体使用参考：https://www.npmjs.com/package/ioredis
 
+### 集成
+
+封装为动态模块，在app.module中引入并配置为全局模块
+
+```ts
+// ---------- src/common/modules/redis.module.ts ----------
+import { DynamicModule, Module, Provider } from '@nestjs/common';
+import Redis from 'ioredis';
+import { RedisOptions } from 'ioredis/built/redis/RedisOptions';
+
+interface RedisModuleOption {
+  global: boolean;
+  redisConfig: RedisOptions;
+}
+
+@Module({})
+export class RedisModule {
+  static forRoot(options: RedisModuleOption): DynamicModule {
+    const redis = new Redis(options.redisConfig);
+    const redisProvider: Provider = {
+      provide: 'REDIS',
+      useFactory() {
+        return redis;
+      },
+    };
+
+    return {
+      module: RedisModule,
+      global: options.global,
+      providers: [redisProvider],
+      exports: [redisProvider],
+    };
+  }
+}
+
+```
+
+```ts
+// ------------ src/app.module.ts ------------
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { RedisModule } from './common/modules/redis.module';
+
+@Module({
+  imports: [
+    RedisModule.forRoot({
+      global: true,
+      redisConfig:{
+        host: '127.0.0.1',
+  			port: 6379,
+      }
+    })
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+```
+
+## 定时任务
+
+### 定时任务基础
+
+ 创建定时任务
+
+```ts
+// ------------- src/task/task.controller.ts -------------
+import { Controller, Inject } from '@nestjs/common';
+import { TaskService } from './task.service';
+import { CustomLogger } from '../common/logger/logger.module';
+import { Cron, CronExpression, Interval, Timeout } from '@nestjs/schedule';
+
+@Controller('task')
+export class TaskController {
+  // 注入日志对象
+  @Inject(CustomLogger)
+  private readonly logger: CustomLogger;
+  
+  constructor(private readonly taskService: TaskService) {}
+  
+  // 方式1：cron，第一个参数是cron字符串，nest也提供了枚举类型CronExpression，其枚举值还是cron字符串
+  @Cron(CronExpression.EVERY_2_HOURS, {
+    name: '定时任务1',
+    timeZone: 'Asia/shanghai',
+  })
+  handleCron() {
+    this.logger.log('定时任务1', '定时任务');
+  }
+
+  // 方式2：
+  @Interval('定时任务2', 5000) // 毫秒值
+  handleInterval() {
+    this.logger.log('定时任务2', '定时任务');
+  }
+
+  // 方式3：
+  @Timeout('定时任务3', 2000) // 毫秒值
+  handleTimeout() {
+    this.logger.log('定时任务3', '定时任务');
+  }
+}
+
+```
+
+代码动态增、删定时任务
+
+```
+```
+
+### corn字符串补充
+
+![image-20240709184140373](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240709184140uFASDr.png)
+
+最后一位可省略，所以一般corn是6位
+
+```
+* * * * * * 
+
+*  // 表示任何时间
+
+0 0 6-8 * * *   // 6到8点的整点
+
+0 0 6/2 * * *   // 6点起，每隔2小时整点
+
+? L C #  // 这几个为 日、星期
+```
 
 
 
@@ -2637,10 +3384,23 @@ module.exports = {
 
 ```
 
-## 疑问
+## 补充待整理
+
+* BullMQ https://3rcd.com/wiki/bullmq ，https://3rcd.com/wiki/nestjs-practise/chapter10
+* 单元测试 https://zhuanlan.zhihu.com/p/428558792
+
+## Nest疑问
 
 * 在Nest中对于业务异常是否作为Exception来处理？
 * 现在服务都是多节点部署，如果服务需要持有资源，例如直播服务预约会加载素材到服务机器上，如何保证开播时的机器就是预约的机器？
 * Nest默认脚手架的package.json、tsconfig中配置都是commonjs，但是项目中仍然可以用ESM
+
+## 业务疑问
+
+* 两个接口对同一个资源进行操作
+
+  例如：开播、停播接口，需要对播放资源进行操作
+
+* 两个接口A、B，接口A是耗时长任务，接口B如何终止接口A的任务
 
  

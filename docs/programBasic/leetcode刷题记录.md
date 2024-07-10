@@ -7015,7 +7015,7 @@ function bfs(root){
 
 ```
 
-## 前缀树
+## 前缀树/字典树
 
 节点除了存储字符，还要存储是否为单词结尾
 
@@ -7025,12 +7025,91 @@ function bfs(root){
 
 ![image-20240616000325384](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240616000325Ha4wFZ.png)
 
+前缀树的节点结构并不是下面这种
 
+```
+function(val,isEnd){
+	this.val=val
+	this.children=[]
+	this.isEnd=isEnd
+}
+```
+
+而是，如何记录当前节点是多少？其实这里有一个隐含的逻辑
+
+输入单词 `a`，我们从root节点的children找到a节
+
+其中，a节点并没有记录自己的val是a，而是通过父节点得知
+
+```
+function(val){
+	this.children=[]
+	this.isEnd=isEnd
+}
+```
 
 ### [208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/)
 
 JS实现版本
+
 ```js
+var Trie = function() {
+    this.children={}
+};
+
+/**
+ * @param {string} word
+ * @return {void}
+ */
+Trie.prototype.insert = function(word) {
+    let node=this.children // 当前节点的孩子
+    for (let ch of  word){
+        if (!node[ch]){
+            node[ch]={}
+        }
+        node=node[ch] // 每次都移动到下一个节点
+    }
+    node.isEnd=true
+};
+
+/**
+ * @param {string} word
+ * @return {boolean}
+ */
+Trie.prototype.search = function(word) {
+    let node=this.children
+    for (let ch of word){
+        if (!node[ch]){
+            return false
+        }
+        node=node[ch]
+    }
+    return !!node.isEnd
+};
+
+/**
+ * @param {string} prefix
+ * @return {boolean}
+ */
+Trie.prototype.startsWith = function(prefix) {
+    let node=this.children
+    for (let ch of prefix){
+        if (!node[ch]){
+            return false
+        }
+        node=node[ch]
+    }
+    return true
+};
+
+
+// 测试
+const root=new Trie()
+
+root.insert('abc')
+root.insert('abcd')
+
+root.startsWith('ab')
 ```
 
 
