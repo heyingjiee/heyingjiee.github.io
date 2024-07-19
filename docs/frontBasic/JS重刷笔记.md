@@ -8015,40 +8015,65 @@ node.remove()
 node.replaceWith(...nodes or strings) —— 将 node 替换为给定的节点或字符串
 ```
 
-### 坐标相关
+## 页面长度、距离
 
-明确几个位置
+两个概念：文档、窗口（视口）
 
-* 视口左上角
+![image-20240712104323205](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712104324m2EW21.png)
 
-  即浏览器可是区域左上角
+### Dom元素
 
-  ![image-20230902013723460](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230902013724%20.png)
+注意：属性是否包含 ：content、padding、 border、margin、scollbar
 
-* 文档左上角 
+* **offset- 属性**
 
-  即HTML左上角
+  * **offsetHeight**： Dom元素的高、宽。（包含 content+padding+border+scollbar）
 
-  ![image-20230902013917445](/Users/yc/Library/Application Support/typora-user-images/image-20230902013917445.png)
+  * **offsetTop**：
+
+    ![image-20240712104013594](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712104013ULwgio.png)
+
+* **client- 属性**
+
+  * **clientHeight**：如果没有定义 CSS 或者内联元素其为0，否则表示元素的高（包含 content+padding）
+  * **clientTop**：元素上边框的长度
+
+* **scroll- 属性**
+
+  * **scrollHeight**：元素内容的高度（包含 content+padding）。如果内容<=元素高度就等于clientHeight，大于就是完整内容高度
+
+  * **scrollTop**
+
+    ![image-20240712115017296](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712115017mRGBYw.png)
+
+* **getBoundingClientRect方法**
+
+  元素距离可视区域的距离和宽高
+
+  ![image-20240712112144265](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712112145HA1MeH.png)
 
 
 
-**元素相对视口距离**
+补充：整个页面也可以看成是一个Dom元素。通过document.documentElement获取，也有**Dom元素**的属性
 
-```
-var viewportOffset = el.getBoundingClientRect();
-var top = viewportOffset.top;
-var left = viewportOffset.left;
-```
+### 窗口
 
-**元素相对文档距离**
+- window.innerHeight：窗口的高度
 
-```
-var left = el.offsetLeft;
-var top = el.offsetTop;
-```
+* winodw.scrollY、window.pageYOffset：页面滚动的距离（等价于document.documentElement.scrollTop）
 
-**相对父元素**
+![image-20240712111241941](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712111243wxqcIw.png)
+
+### 点击事件
+
+点击位置距离其他位置的距离
+
+- event.pageY：点击位置距离文档顶部的距离
+- event.clientY：点击位置距离窗口顶部的距离
+- event.offsetY：点击位置距离触发事件元素顶部的距离
+- event.screenY：点击位置距离屏幕顶部的距离
+
+![image-20240712104507781](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/2024071210450878CmF2.png)
 
 
 

@@ -1,5 +1,9 @@
 # Nest
 
+本文是学习神光的Nest通关秘籍掘金小册子的笔记+官网+实践中总结的经验汇总而成
+
+[nest-template-base](https://github.com/heyingjiee/nest-template-base) 为总结的nest模版项目
+
 ## 简介
 
 Nest是一个用于构建高效可扩展的一个基于Node js 服务端 应用程序开发框架
@@ -14,11 +18,25 @@ Nest是一个用于构建高效可扩展的一个基于Node js 服务端 应用�
 
 awesome-nestjs：https://github.com/nestjs/awesome-nestjs?mode=light#open-source
 
-
-
-
-
 CSDN的一位做Node的博主：https://blog.csdn.net/qq1195566313?type=blog
+
+## 工具网站
+
+### IP信息查询
+
+https://whois.pconline.com.cn/?ip=119.161.171.54#tabs-1
+
+根据IP查询所在地、运营商归属之类的信息
+
+### HTTP请求测试
+
+https://httpbin.org
+
+提供了很多类型的接口，可以用来测试请求工具
+
+![image-20240718192013964](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240718192014ghaXQB.png)
+
+
 
 ## 前置知识
 
@@ -228,6 +246,8 @@ const tom:Person = new Person('tom')
 
 ## Nest脚手架
 
+### CLI命令
+
 创建启动项目
 
 ```shell
@@ -263,7 +283,7 @@ nest g resource person --no-spec # --no-spec 是不生成测试文件
 
 ![image-20240602020102115](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240602020102hq3pkB.png)
 
-### Nest结构
+### 默认项目结构
 
 ```
 src
@@ -345,6 +365,46 @@ import { AppService } from './app.service';
 export class AppModule {}
 
 ```
+
+### CLI配置
+
+默认的CLI配置文件 `nest-cli.json`
+
+```json
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src", // 项目资源根路径
+  "compilerOptions": {
+    "deleteOutDir": true, // 每次编译生成dist文件之前，先删除dist文件夹
+  }
+}
+
+```
+
+其余常用配置
+
+```json
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    // "assets":['public/**/*']  // 将src/public下的文件复制到dist根目录（输入文件时相对src目录的，输出是相对dist目录的）
+    
+    // 也可以详细指定输入、输出。还支持exclude（排除）、watchAssets（是否watch模式下文件变动就拷贝，默认false）
+    "assets": [{
+      "include": "public/**/*", // 相对src目录
+      "outDir": "dist/src" // 不写就是dist根目录，写路径是相对于项目根路径的
+    }],
+    "watchAssets": true // assets.watchAssets可以覆盖这里的配置
+  }
+}
+
+```
+
+
 
 ## Nest生命周期
 
@@ -939,15 +999,160 @@ import { Global, Module } from '@nestjs/common';
 export class TestModule {}
 ```
 
-## 模块通讯（待补充）
 
-* 注入
-* 订阅发布
-* ModuleRef
 
-![image-20240709183840406](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407091838407uPA7V.png)
+## 数据传递
 
-## 发起请求
+Nest中有Dto、Entity、Vo三种数据
+
+![image-20240713162351382](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240713162352xvIGR0.png)
+
+
+
+### Dto
+
+网络数据传输对象（Data Transfer Object），用于接收Post参数对象
+
+用法：
+
+* 可以通过`class-validator`提供的装饰器+ValidationPipe实现参数校验
+
+  ApiProperty装饰器为swagger文档提供注释
+
+  ```shell 
+   pnpm install -D class-validator class-transformer # 参数校验需要这两个包
+  ```
+
+  ```ts
+  import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+  
+  export class RegisterUserDto {
+    @ApiProperty({ name: 'username' })
+    @IsNotEmpty({ message: 'username不能为空' })
+    username: string;
+  
+    @ApiProperty({ name: 'password' })
+    @IsNotEmpty({ message: 'password不能为空' })
+    password: string;
+    
+    @ApiProperty({ name: 'age' })
+    @IsNotEmpty({ message: 'age不能为空' })
+    age: username;
+  }
+  ```
+
+* 登陆参数与注册入参有大量相同的字段，没必要重新写一遍登录入参的Dto对象
+
+  `@nestjs/mapped-types`提供了四个函数：PartialType、PickType、OmitType、IntersectionType，他们可以组合出新的对象
+
+  例如：LoginUserDto继承RegisterUserDto的字段
+  
+  （注意：RegisterUserDto使用的参数校验装饰器也会继承下来。但是，RegisterUserDto的每个字段都需要至少一个装饰器）
+  
+  ```ts
+  import { PartialType } from '@nestjs/mapped-types';
+  import { RegisterUserDto } from './register-user.dto';
+  
+  // 字段变为可选的
+  export class LoginUserDto extends PartialType(RegisterUserDto) {}
+  
+  
+  // 挑选几个字段使用
+  export class UpdateAaaDto extends PickType(RegisterUserDto, ['username', 'password']) {}
+  
+  // 删除几个字段
+  export class UpdateAaaDto extends OmitType(RegisterUserDto, ['age']) {}
+  
+  
+  // 合并两个dto的字段
+  export class UpdateAaaDto extends IntersectionType(XxxDto, YyyDto) {}
+  
+  
+  // 上面四个可以组合使用。
+  export class UpdateAaaDto extends IntersectionType(
+      PickType(XxxAaaDto, ['username', 'password']), 
+      PartialType(OmitType(XxxDto, ['age']))
+  ) {}
+  ```
+  
+  
+
+### Entity
+
+数据库实体，与数据库表对应。下面是User表的定义
+
+typeorm提供了大量装饰器来定义数据库结构
+
+```ts
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn
+} from 'typeorm';
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn({ comment: '用户id' })
+  id: number;
+
+  @Column({ length: 50, comment: '用户名'})
+  username: string;
+
+  @Column({ length: 50, comment: '密码'})
+  password: string;
+}
+
+```
+
+### VO
+
+Value Object，用于封装返回的响应数据。但是Nest文档中未提及该结构，这是因为我们可以标记Entity实现隐藏返回值的目的
+
+```shell
+ pnpm install -D class-transformer # 需要这个包
+```
+
+使用拦截器ClassSerializerInterceptor
+
+```ts
+@UseInterceptors(ClassSerializerInterceptor)
+@Get('profile')
+handleUserInfo(@Req() req: Request) {
+    return this.userService.findRolesByUserId(req.userId); // 查询数据库获取用户信息
+}
+```
+
+给Entity对象的排除字段增加 @Exclude()，返回的数据就没有该字段了
+
+```ts
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn
+} from 'typeorm';
+import { Exclude } from 'class-transformer';
+@Entity()
+export class User {
+  
+  @PrimaryGeneratedColumn({ comment: '用户id' })
+  @ApiProperty()
+  id: number;
+
+  @Column({ length: 50, comment: '用户名'})
+  @ApiProperty()
+  username: string;
+
+  // 需要排除的字段
+  @Column({ length: 50, comment: '密码'})
+  @ApiHideProperty()
+  @Exclude()
+  password: string;
+}
+```
+
+使用@ApiProperty()标记Entity，swagger文档提供注释
+
+## HTTP请求
 
 ### Get、POST
 
@@ -1019,11 +1224,41 @@ export class PersonController {
 
 ```
 
-### 上传接口
+### 文件处理
+
+#### 上传接口
+
+* 上传的文件都会被重命名为随机值。所以同一个文件可多次上传
+
+* ParseFilePipe 是专门用来校验文件。例如：文件大小、格式
+
+  ```ts
+  // 参数定义
+  export interface ParseFileOptions {
+      validators?: FileValidator[]; // 文件校验器。内置两个 MaxFileSizeValidator({ maxSize: 1000,message:'文件不能超过1000K' }) 单位byte ； new FileTypeValidator({ fileType: 'image/jpeg' }) 。分别用来校验大小、类型
+      errorHttpStatusCode?: ErrorHttpStatusCode;
+      exceptionFactory?: (error: string) => any;
+      fileIsRequired?: boolean; // 默认true
+  }
+  ```
+
+* 文件后缀丢失？？？
 
 
 
-### 下载接口
+![image-20240718184621225](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407181846226d2SeZ.png)
+
+安装依赖
+
+```
+npm install -D multer @types/multer
+```
+
+
+
+
+
+#### 下载接口
 
 ```ts
 // controller 文件
@@ -1057,6 +1292,164 @@ export class UploadController {
     tarStream.pipe(res);
   }
 }
+
+```
+
+### SSE
+
+Server Sent Event（SSE）是基于HTTP协议的一种技术，可实现实时**单向**推送消息的功能（推送类型为文本，如果是二进制数据可以用 toJSON 转成文本发送 ）
+
+与 WebSocket 不同，WebSocket 如果断开之后是需要手动重连的，而浏览器会自动重连 SSE 链接，使用起来更简单
+
+使用场景：
+
+* chatgpt这种回复用户，由于回复答案是分段生成的就可以用SSE推送
+* 爬虫抓取信息，每抓取完成一部分就推送
+* 实时日志，服务端生成的日志可以实时推送到前端显示
+
+服务端返回的 Content-Type 是 text/event-stream
+
+![image-20240710175043537](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407101750448ra7av.png)
+
+```ts
+import { Controller, Get, Sse } from '@nestjs/common';
+import { AppService } from './app.service';
+import { Observable } from 'rxjs';
+
+@Controller()
+export class AppController {
+  constructor(public readonly appService: AppService) {}
+
+
+  // 使用 @Sse 装饰器
+  @Sse('stream1')
+  stream1() {
+    // 使用Rxjs，每次执行observer.next就会推送一次
+    // 前端接收到data里的数据
+    return new Observable((observer) => {
+      
+      observer.next({ data: { msg: 1 } }); // 推送消息
+
+      setTimeout(() => {
+        observer.next({ data: { msg: '2' } }); // 推送消息
+      }, 2000);
+      
+      setTimeout(() => {
+        observer.complete(); // 服务端主动断开链接。注意：一般不要这么做，如果服务端主动断开，客户端会触发onerror事件，浏览器还自动重连。所以一般，服务端推送特定信息给客户端，由客户端负责关闭（EventSource.close）
+      }, 10000);
+      
+      
+      // 在Observable被取消订阅时触发。以下场景触发：
+      // 1、客户端主动断开链接。即调用EventSource.close方法、关闭页面都会触发
+      // 2、服务端主动断开链接
+      return () => {
+        console.log('客户端主动断开'); 
+      };
+    });
+  }
+  
+  // 推送日志
+  @Sse('stream2')
+	stream2() {
+		const childProcess = exec('tail -f ./log');
+
+		return new Observable((observer) => {
+  		childProcess.stdout.on('data', (msg) => {
+    		observer.next({ data: { msg: msg.toString() }});
+  		})
+      
+      // 在Observable被取消订阅时触发
+      return () => {
+        console.log('客户端主动断开');
+        childProcess.kill(); // 清理资源
+      };
+});
+}
+
+```
+
+apifox使用Get请求就行
+
+![image-20240710181831715](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240710181832in9SCr.png)
+
+前端请求
+
+```ts
+const eventSource = new EventSource('http://localhost:3000/stream1');
+
+// 连接建立时触发
+eventSource.onopen = function () {
+  console.log("连接成功");
+};
+
+// 接收到服务器端发送的数据时触发
+eventSource.onmessage = ({ data }) => { // data是字符串类型
+  console.log(data);
+};
+
+// onerror：服务端关闭连接（报错、主动关闭）。服务端一旦恢复，浏览器会自动重连上，触发open事件
+eventSource.onerror = function () {
+  console.log("连接失败");
+};
+
+
+// 前端主动关闭链接(不会触发onerror事件，SSE是单向通讯，但是客户端关闭服务端是可以收到通知的)
+// eventSource.close();
+```
+
+补充：通义千问的SSE请求，当回复完毕后，服务端会推送一个DONE，由客户端来关闭连接
+
+![image-20240712164008368](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712164008ougUCJ.png)
+
+### 静态资源
+
+安装依赖
+
+```
+ pnpm install @nestjs/serve-static
+```
+
+在 src/public 下放置静态资源文件，配置打包到dist时，将src/public内文件复制到dist/src下（注意：必须放在src下，nest才能打包到dist中）
+
+```json
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      {
+      "include": "public/**/*",
+      "outDir": "dist/src",
+      "watchAssets": true
+      }
+    ]
+
+  }
+}
+```
+
+app.module中配置
+
+```ts
+import { Inject, Module, OnApplicationBootstrap } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import appConfig from './common/configs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+
+@Module({
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: appConfig.staticAssetDir, // 配置资源所在根目录
+      serveRoot: '/static', // http://127.0.0.1:3000/static/socket.html 就能访问到 src/public下的socket.html文件了
+    })
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
 
 ```
 
@@ -1190,6 +1583,30 @@ export class PersonController {
 }
 ```
 
+### Express请求、响应对象
+
+Nest默认使用Express作为底层框架。在开发过程中，经常会遇到操作请求、响应对象，这里补充下
+
+#### Request
+
+```ts
+// 取请求头字段
+const authorization = request.header('authorization')
+const userAgent = request.headers['user-agent'];
+
+
+const { ip, method, path } = request;
+```
+
+#### Response
+
+```ts
+// 状态码
+response.statusCode
+
+response.download()
+```
+
 ## Nest AOP核心
 
  AOP （面向切面编程）。AOP 的好处是可以把一些通用逻辑分离到切面中，保持业务逻辑的纯粹性，这样切面逻辑可以复用，还可以动态的增删。 Nest 实现 AOP 的方式共有五种，包括 Middleware、Guard、Pipe、Interceptor、ExceptionFilter。
@@ -1269,23 +1686,6 @@ async function bootstrap() {
 bootstrap();
 
 ```
-
-第三方中间件
-
-* 跨域
-
-  ```ts
-  pnpm i  cors @types/cors
-  
-  // 在main.ts中使用
-  import * as cors from 'cors';
-  
-  async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
-    app.use(cors());
-    await app.listen(3000);
-  }
-  ```
 
 ### 路由守卫(guard)
 
@@ -1406,7 +1806,7 @@ export class AppModule {}
 
 Nest 的 interceptor 与Guard一样也集成了 RxJS，用来给请求到达Controller之前、之后增加统一的逻辑。例如：统计接口耗时、返回统一响应结构
 
-Rxjs文章：https://zhuanlan.zhihu.com/p/583539989
+Rxjs文章：https://cn.rx.js.org/manual/overview.html#h31
 
 ```shell
  nest g interceptor response --no-spec --no-flat # 生成文件response.interceptor.ts
@@ -1566,9 +1966,10 @@ intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
   // 中间件函数签名
   use(req: Request, res: Response, next: NextFunction)
   
-  
   // 守卫
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean>
+    
+   
   // 拦截器函数签名
   intercept(context: ExecutionContext, next: CallHandler): Observable<Data<T>>
   ```
@@ -1777,21 +2178,83 @@ export class CreatePersonDto {
 
 ```
 
-其他装饰器：https://www.npmjs.com/package/class-validator#validation-decorators
-
-再补充几个常用的吧
+常用的装饰器：
 
 ```ts
-// 限制长度
-@Length(6, 10,{message:'长度在6-10个字符之间'})
+// 不是 ''、undefined、null
+@IsNotEmpty()
 
-// 正则匹配
+// 不是 undefined、null
+@IsDefined()
+  
+// 可选的
+@IsOptional()
+
+
+@IsIn(['男', '女'])
+@IsNotIn(['男'])
+
+// ts内置类型的判断
+@IsString、@IsBoolean、@IsInt、@IsNumber、@IsDate、@IsArray、@IsEnum(entity: object)
+
+// 数组类型更精确地校验
+@ArrayNotEmpty() // 不为空数组
+@ArrayNotContains(['xxx']) // 数组元素包含 xxx 字段的值
+@ArrayMinSize(2) // 数组元素最少2个
+@ArrayMaxSize(5)// 数组元素最多5个
+@ArrayUnique() // 元素唯一
+
+// 数字类型更精确的校验
+@IsPositive() // 正数
+@@IsNegative() // 负数
+@Min(1) // 数字范围
+@Max(10)
+@IsDivisibleBy(2) // 能被2整除
+
+
+// 
+@IsDateString() // ISO 标准的日期字符串。例如： 2024-01-01T01:33:44.906Z
+
+// 字符串类型更精确的校验
+@IsAlpha() // 只包含有字母
+@IsAlphanumeric() // 检查是否只有字母和数字
+@Contains('xx') // 字符串中包含字符串xx
+@Length(6, 10,{message:'长度在6-10个字符之间'}) // 限制长度
+@MinLength(2)
+@MaxLength(6)
+
+// 特定格式的字符串
 @Matches(/^[a-zA-Z0-9#$%_-]+$/, {
     message: '用户名只能是字母、数字或者 #、$、%、_、- 这些字符'
-})
+})  // 正则匹配
+@IsEmail({}, {message: '邮箱格式错误'}) // 校验邮箱格式
+@IsIP() // IP
+@IsPort() // 端口
+@IsJSON() // json格式
+@IsLongitude() // 经度
+@IsLatitude() // 维度
+@IsMobilePhone(locale: string) // 手机号
 ```
 
-使用
+其他装饰器：https://www.npmjs.com/package/class-validator#validation-decorators
+
+如果两个字段之间存在约束：
+
+```ts
+import { ValidateIf, IsNotEmpty } from 'class-validator';
+
+export class Post {
+  otherProperty: string;
+
+  
+  // otherProperty字段为value时，才校验example字段的装饰器
+  @ValidateIf(o => o.otherProperty === 'value')
+  @IsNotEmpty()
+  example: string;
+}
+```
+
+接口中使用ValidationPipe：
 
 ```ts
 @Post('post')
@@ -1830,6 +2293,10 @@ name: string;
 
 
 #### ParseFilePipe
+
+参考 【HTTP请求】-【文件处理】章节
+
+
 
 #### 自定义Pipe
 
@@ -2147,44 +2614,183 @@ export class AppController{
 我们可以定义多种内部错误类型，并定义对应的filter，从而针对每种错误返回特定的json
 ```
 
-## Dto对象（待补充）
+## Websocket
 
-用于接收Post参数、函数之间传递数据的对象
+> 注意：Websocket在Nest是特殊处理的，全局注册的 中间件、路由守卫、拦截器、管道、异常过滤只针对于HTTP请求。Websocket需要使用装饰器单独添加这些逻辑，且额外注意路由守卫、拦截器获取需要使用： ExecutionContext.switchToWs() 获取上下文
 
-```ts
-import { PartialType } from '@nestjs/mapped-types';
-import { RegisterUserDto } from './register-user.dto';
+Websocket可实现实时**双向**推送消息的功能
 
+![image-20240711133034126](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407111330348DF9AQ.png)
 
-// PartialType、PickType、OmitType、IntersectionType 四个函数可以实现LoginUserDto继承RegisterUserDto的字段，同时RegisterUserDto使用的装饰器也会继承下来
-// 注意：RegisterUserDto的每个字段都需要至少一个装饰器
-export class LoginUserDto extends PartialType(RegisterUserDto) {}
+[socket.io文档](https://socket.io/zh-CN/)
+
+Nest默认集成的是socket.io这个库，这个库提供了自动重连、心跳监测等功能，支持多机部署，还拓展了原生的websocket协议
+
+所以这造成了一个问题：客户端也必须使用socket.io与Nest通讯，否则就无法直接通讯
+
+但是，Nest也提供了`@nestjs/platform-ws`可以将原生集成到Nest中，但是要处理一些细节的问题（[文档](https://docs.nestjs.cn/10/websockets?id=ws-%e5%ba%93)）
+
+#### 服务端
+
+安装依赖：
+
+```shell
+pnpm i --save @nestjs/websockets @nestjs/platform-socket.io socket.io
 ```
 
-## Express请求、响应对象
+创建模块：
 
-Nest默认使用Express作为底层框架。在开发过程中，经常会遇到操作请求、响应对象，这里补充下
+```shell
+nest g resource socket --no-spec 
 
-### Request
+# 选择 WebSockets
+? What transport layer do you use? 
+  REST API 
+  GraphQL (code first) 
+  GraphQL (schema first) 
+  Microservice (non-HTTP) 
+❯ WebSockets 
 
-```ts
-// 取请求头字段
-const authorization = request.header('authorization')
-const userAgent = request.headers['user-agent'];
-
-const { ip, method, path } = request;
 ```
 
-### Response
+![image-20240712092521631](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712092522jSANno.png)
+
+
 
 ```ts
-// 状态码
-response.statusCode
+import {
+  ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
+import { SocketService } from './socket.service';
+import { UpdateSocketDto } from './dto/update-socket.dto';
+import { Observable } from 'rxjs';
+import { Server } from 'socket.io';
+
+// 声明处理 websocket 的类。websocket服务的地址、端口与项目一致
+@WebSocketGateway()
+export class SocketGateway {
+  constructor(private readonly socketService: SocketService) {}
+
+  // SubscribeMessage参数是客户端上使用socket.io的emit发送的事件名
+  @SubscribeMessage('socketTest1')
+  findAll(@ConnectedSocket() server: Server) { // @ConnectedSocket()可以注入socket实例
+    
+    // 结合rxjs，可以实现服务端多次向客户端返回数据
+    return new Observable((observer) => {
+      observer.next('socketTest1 返回数据 第1次');
+
+      setTimeout(() => {
+        observer.next('socketTest1 返回数据 第2次');
+      }, 2000);
+
+      // 服务端主动断开连接。触发客户端disconnect事件
+      // 不推荐，因为客户端无法区分：是否为服务端主动、还是网络断了导致的连接中断
+      // 与SSE相同，推荐服务端通知客户端，由客户端主动断开并取消心跳
+      //setTimeout(() => {
+      //  server.disconnectSockets();
+      //}, 5000);
+      
+       // 客户端主动断开，这里就会触发
+       return () => {
+        console.log('客户端断开连接');
+      };
+    });
+  }
+
+  @SubscribeMessage('socketTest2')
+  findOne(@MessageBody() id: number) {
+    // @MessageBody() 获取参数
+    return 'socketTest2 返回数据 id：' + id;
+  }
+
+  @SubscribeMessage('socketTest3')
+  update(@MessageBody() updateSocketDto: UpdateSocketDto) {
+    return 'socketTest3 返回数据:' + JSON.stringify(updateSocketDto);
+  }
+}
+
+```
+
+注意一点，自动生成的WebSocket模块与REST API模块在module文件中有点差异
+
+```ts
+// ----------- src/socket/socket.module.ts  -----------
+import { Module } from '@nestjs/common';
+import { SocketService } from './socket.service';
+import { SocketGateway } from './socket.gateway';
+
+@Module({
+  providers: [SocketGateway, SocketService], // 没有controllers字段了，SocketGateway放到providers中了
+})
+export class SocketModule {}
+
+```
+
+#### 浏览器端
+
+```html
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket</title>
+  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <button id="close-btn">断开socket连接</button>
+</body>
+<script>
+  const socket = io('http://localhost:3000');
+
+  // 建立连接事件
+  socket.on('connect', function() {
+    console.log('建立连接');
+
+    // 与 /socketTest1 建立连接
+    socket.emit('socketTest1', response =>
+      console.log('socketTest1', response),
+    );
+
+    // 与 /socketTest2 建立连接，发送参数
+    socket.emit('socketTest2', 1, response =>
+      console.log('socketTest2', response)
+    );
+
+    // 与 /socketTest3 建立连接，发送对象参数
+    socket.emit('socketTest3',{id: 2, name: 'dong'},response =>
+      console.log('socketTest3', response),
+    );
+
+
+  });
+
+  // 断开连接事件
+  socket.on('disconnect', function() {
+    console.log('断开连接');
+  });
+
+  // 点击按钮，断开连接
+  // 客户端断开连接后，服务端observerable可以收到回调
+  const closeBtn= document.getElementById('close-btn')
+  closeBtn.onclick=()=>{
+    socket.disconnect()
+  }
+</script>
+</html>
+
 ```
 
 
 
-## 基础集成
+## 工程化集成
+
+eslint、prettier、commitlint、husky 。这部分太熟了直接略过
+
+## 基础工具集成
 
 ### 配置文件
 
@@ -2194,7 +2800,7 @@ response.statusCode
 
 本文介绍Nest集成winston的方式，中文文档参考： https://zhuanlan.zhihu.com/p/687492563
 
-集成流程：
+#### 集成流程：
 
 * 封装为动态模块并设置为全局模块，通过入参传入winston日志配置数据，导出日志对象CustomLogger。在任何模块中可注入日志对象，打印日志
 
@@ -2426,7 +3032,80 @@ response.statusCode
   
   ![image-20240708184028414](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240708184028H1rNTV.png)
   
+
+#### Axios请求
+
+在请求连接器中增加通用日志
+
+#### 链路追踪
+
+NestJS CLS官网：https://papooch.github.io/nestjs-cls/
+
+在日志模块中，添加 traceId字段。每个Http请求触发，该请求打印的日志都携带traceId
+
+其原理是在中间件中注入一个上下文对象，通过AsyncLocalStorage（node API）实现在每个请求中注入数据，数据互相独立
+
+注意：
+
+* 定时任务：因为不过中间件，所以没有traceId，故日志为 `- `
+
+  ```ts
+  // 不过中间件，那可以直接在定时任务 handler 中，设置traceId
   
+  @Inject()
+  private readonly cls: ClsService;
+  
+  @Corn(CronExpression.EVERY_5_SECONDS)
+  handleCore(){
+  	cls.set('traceId', uuidv4());
+  }
+  ```
+
+* Websocket不经过中间件 
+
+  Websocket是长连接，应该保持一次请求过程中traceId不变。但是如果出现网络中断重连，就会导致产生多个traceId违背了链路追踪的原则
+
+注册链路追踪到全局
+
+```ts
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { ClsModule } from 'nestjs-cls';
+import { LoggerModule } from './common/logger/logger.module';
+
+@Module({
+  imports: [
+    LoggerModule.forRoot({ global: true }),
+
+    // 每次请求有独立的作用域，即使是同一个接口的多次请求，他们之间的上下文互相独立
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true, // 为全部路由增加中间件
+        // 我们可以出于在请求中，共享上下文的目的添加想要的数据。
+        // 业务中注入 @Inject() private readonly cls: ClsService; 通过this.cls.get('xxx') 取出来
+        // 例如下面注入 两个key：value
+        // setup: (cls,req) => { 
+        //   cls.set('userId', req.headers['x-user-id']);
+        //   cls.set('traceId', uuidv4());
+        // },
+        generateId: true,
+        // idGenerator: () => uuidv4(), // 可以定义生成的id。例如使用uuid这个包的uuidv4()
+      },
+    }),
+  
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+```
+
+集成日志
+
+简单说就是给Logger传入自动生成的id，id通过 cls.getId() 获取。
 
 ### Swagger
 
@@ -2599,6 +3278,8 @@ pnpm i -D @compodoc/compodoc
 ```shell
 npx @compodoc/compodoc -p tsconfig.json -s -o -c .compodoc.json # -c指定配置文件路径
 ```
+
+启动后会在根目录生成 `documentation` 目录，所以记得git忽略这个目录
 
 启动的网页：（README选项，就是我们项目根目录下的README文件）
 
@@ -3231,6 +3912,12 @@ export class AppModule {}
 
 ### 定时任务基础
 
+安装依赖
+
+```shell
+npm install --save @nestjs/schedule
+```
+
  创建定时任务
 
 ```ts
@@ -3272,9 +3959,51 @@ export class TaskController {
 
 ```
 
-代码动态增、删定时任务
+代码动态查、增、删定时任务
 
-```
+```ts
+import { Inject, Module, OnApplicationBootstrap } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import {  SchedulerRegistry } from '@nestjs/schedule';
+
+
+@Module({
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule implements OnApplicationBootstrap {
+  @Inject(SchedulerRegistry)
+  private readonly schedulerRegistry: SchedulerRegistry;
+
+  @Inject(CustomLogger)
+  private readonly logger: CustomLogger;
+
+  onApplicationBootstrap(): any {
+    // 查所有cron类型的定时任务。返回map类型，key为定时任务名
+    const allJob = this.schedulerRegistry.getCronJobs();
+   
+    
+    // addCronJob  增加
+    const addjob = new CronJob(`0/5 * * * * *`, () => {
+  		console.log('新增的corn定时任务');
+		});
+
+		this.schedulerRegistry.addCronJob('job1', addjob);
+		addjob.start();
+    
+    // getCronJob 根据任务名查询
+    const job1 = this.schedulerRegistry.getCronJob('job1');
+    
+    // deleteCronJob 删除
+    job1.stop();
+    this.schedulerRegistry.deleteCronJob('job1');
+    
+    // Timeout、Interval 这两种定时任务也有对应的函数
+    
+  }
+}
+
 ```
 
 ### corn字符串补充
@@ -3284,24 +4013,240 @@ export class TaskController {
 最后一位可省略，所以一般corn是6位
 
 ```
-* * * * * * 
+*: 表示任何时间
 
-*  // 表示任何时间
-
+x-y: 时间范围
 0 0 6-8 * * *   // 6到8点的整点
 
-0 0 6/2 * * *   // 6点起，每隔2小时整点
+x/y : 从x时间起，间隔y时间触发一次
+0 0 6/2 * * *   // 6点起，每隔2小时整点触发一次
+*/10 0 * * * *   // 每隔10s触发一次
 
-? L C #  // 这几个为 日、星期
+, : 多个离散值
+0 0 1,2,3,4 * * *   // 1,2,3,4整点触发一次
 ```
 
+日期、星期共同的专属特殊字符
 
+```
+? : 日期、星期会有冲突
+0 0 0 10 1 ?  //1月10日我们不确定是星期几，就可以用?忽略星期
+
+
+
+L : last的含义。 
+* * * ? * L  // 每周的最后一天，即周六
+* * * L * ?  // 每月的最后一天
+
+C 
+```
+
+工作日（周一到周五），日期位 W ， 
+
+```
+* * * W * ? // 每个月的所有工作日
+
+* * * 2W * ? // 仅每个月的第二个工作日
+
+* * * LW * ? // 仅每个月的第最后一个工作日
+```
+
+第几周的第几天，星期位#
+
+```
+* * * ? * 1#2 // 第二周的第一天,即第二周的周日
+```
+
+## 邮件
+
+发邮件用 SMTP 协议，收邮件用 POP3、IMAP 协议
+
+### 发
+
+```shell
+pnpm i nodemailer @types/nodemailer  # https://nodemailer.com/
+```
+
+```ts
+// ------------- src/email/email.service.ts -------------
+import { Injectable } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
+
+@Injectable()
+export class EmailService {
+  async sendEmail() {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.qq.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'xxx@qq.com',
+        pass: '授权码', // 授权码
+      },
+    });
+
+    await transporter.sendMail({
+      from: 'xxx@qq.com', // 这里必须和user字段一致
+      to: '目标地址', // 目标地址
+      subject: '测试邮件', // 标题
+      text: '自动发送，请勿回复', // 内容 
+      // 字段html，支持指定发送的html
+    });
+  }
+}
+
+```
+
+QQ邮箱如何获取授权码：
+
+![image-20240714235039559](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407142350405v1UBA.png)
+
+![image-20240714235102844](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240714235103QYLJAf.png)
+
+### 收
+
+```
+pnpm i imap
+```
+
+## 请求三方（待补充）
+
+@nest/axios集成了axios请求库
+
+文档：https://docs.nestjs.com/techniques/http-module
+
+```shell
+pnpm i @nestjs/axios axios
+```
+
+我们对请求封装一层，增加请求、响应拦截器，在其中增加统一日志
+
+## 爬虫（待补充）
 
 
 
 ## 部署
 
+### CI/CD流程
+
+使用Github Action编译部署Nest应用
+
+#### 编译构建
+
+新建`.github/workflows/deploy.yml`
+
+通过pr合并到deploy分支触发Github Action。
+
+编译完成后上传dist目录下文件到云服务器/app目录下，并执行读取Dockerfile构建镜像、运行容器的命令
+
+```yaml
+name: Deploy
+
+# 触发工作流执行的场景（合并到publish触发）
+on:
+  pull_request:
+    branches: [deploy]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3 # 检出仓库，检出的是Head分支
+      - uses: pnpm/action-setup@v4 # 设置pnpm
+        with:
+          version: 8
+
+      - name: Install Dependencies
+        run: pnpm i
+
+      - name: Build
+        run: |
+         pnpm build
+         cp -r package.json ./dist
+         cp -r Dockerfile ./dist
+         cp -r ecosystem.config.cjs ./dist
+
+      - name: Deploy Dist
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+        with:
+          # 服务器域名
+          host: ${{ secrets.TENCENT_IP }}
+          # 服务器端口
+          port: 22
+          # 服务器用户名
+          user: ${{ secrets.TENCENT_USERNAME }}
+          # 服务器密码
+          pass: ${{ secrets.TENCENT_PASSWORD }}
+          first_ssh: |
+            mkdir -p /app 
+            rm -rf /app/*
+          # 上传服务器目录
+          scp: |
+           ./dist/* => /app
+          last_ssh: |
+            cd /app
+            docker rmi nest-image || true
+            docker stop nest-container || true
+            docker rm nest-container || true
+            docker build -t nest-image:latest .
+            docker run -d --name nest-container -p 3000:3000 nest-image:latest prod
+        
+```
+
+`Dockerfile文件`
+
+```dockerfile
+FROM node:18-alpine3.19
+RUN mkdir /app
+WORKDIR /app
+COPY . .
+
+RUN npm config set registry https://registry.npmmirror.com && npm install -g pnpm && npm install -g pm2 && pnpm install --production
+
+EXPOSE 3000
+
+# docker run xxx:xx prod  生产环境
+# docker run xxx:xx qa 测试环境
+# 通过npm启动pm2会报错 PM2 error: TypeError: One of the pids provided is invalid
+CMD ["dev"]
+ENTRYPOINT ["pm2-runtime", "ecosystem.config.cjs", "--env"]
+```
+
+Dockerfile指定使用PM2启动项目，读取配置文件`ecosystem.config.cjs`
+
+```js
+module.exports = {
+  apps: [
+    {
+      name: 'nest-server', // name 唯一，不能有冲突
+      script: './src/main.js', // 该配置文件会被复制到 dist 目录下，这里是相对dist的路径
+      env_qa: {
+        NODE_ENV: 'qa',
+      },
+      env_prod: {
+        NODE_ENV: 'prod',
+      },
+    },
+  ],
+};
+
+```
+
+#### 服务器部署
+
+服务器需要安装后docker，先运行mysql、redis，在执行编译部署。
+
+```shell
+# 运行mysql
+docker run -d --name mysql-container -p 3306:3306 -v /mysqlData:/var/lib/mysql  -e MYSQL_ROOT_PASSWORD=hedaodao mysql:latest
+
+# 运行redis
+docker run -d --name redis-container -p 6379:6379 -v /redisData:/data redis:latest
+```
+
 ### docker
+
+不采用CI/CD方式，直接将编译、部署都合并到docker中执行
 
 ```dockerfile
 # build stage
@@ -3320,15 +4265,7 @@ COPY . .
 RUN npm run build
 
 # production stage
-FROM node:18 as production-stage
-
-# 修改时区
-ENV TZ=Asia/Shanghai
-RUN apk update \
-    && apk add tzdata \
-    && echo "${TZ}" > /etc/timezone \
-    && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
-    && rm /var/cache/apk/*
+FROM node:18-alpine3.19 as production-stage
 
 COPY --from=build-stage /app/dist /app
 COPY --from=build-stage /app/package.json /app/package.json
@@ -3353,8 +4290,8 @@ ecosystem.config.js：PM2的配置文件，用于指定应用名、环境变量
 module.exports = {
   apps: [
     {
-      name: 'live-streaming-service', //  name 唯一，不能有冲突
-      script: 'app.js',
+      name: 'nest-server', //  name 唯一，不能有冲突
+      script: './src/main.js',
       env_qa: {
         NODE_ENV: 'qa',
       },
@@ -3369,25 +4306,57 @@ module.exports = {
 
 ### 虚拟机
 
-虚拟机需要安装好node、PM2
-
-在package.json中启动下面脚本
+虚拟机需要安装好Node、PM2。在package.json中直接启动下面脚本
 
 ```json
 {
   "scripts": {
     "dev": "cross-env NODE_ENV=dev nodemon app.js",
-    "vm:qa": "pm2 start --env qa",
-    "vm:prod": "pm2 start --env prod"
+    "vm:qa": "nest build && pm2 start --env qa",
+    "vm:prod": "nest build && pm2 start --env prod"
   }
 }
 
 ```
 
+PM2配置文件ecosystem.config.js
+
+```js
+module.exports = {
+  apps: [
+    {
+      name: 'nest-server', //  name 唯一，不能有冲突
+      script: './dist/src/main.js',
+      env_qa: {
+        NODE_ENV: 'qa',
+      },
+      env_prod: {
+        NODE_ENV: 'prod',
+      },
+    },
+  ],
+};
+
+```
+
+
+
+## 单元测试
+
+
+
+## 压力测试
+
+
+
+
+
 ## 补充待整理
 
 * BullMQ https://3rcd.com/wiki/bullmq ，https://3rcd.com/wiki/nestjs-practise/chapter10
 * 单元测试 https://zhuanlan.zhihu.com/p/428558792
+* Node服务链路追踪 https://blog.csdn.net/qq_42427109/article/details/130906290
+* https://nest.nodejs.cn/recipes/async-local-storage
 
 ## Nest疑问
 

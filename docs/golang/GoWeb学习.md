@@ -1104,7 +1104,7 @@ func transaction() {
 }
 ```
 
-## Redis(暂时略)
+## Redis(略)
 
 这部分介绍go-redis这个第三方库
 

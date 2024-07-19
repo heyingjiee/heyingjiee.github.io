@@ -2419,6 +2419,29 @@ interface ImportMetaEnv {
 
 ### 模块化相关
 
+TS有自己的一套模块化策略，默认在TS中可以直接使用import导入esm、cjs模块
+
+例如：dayjs实际上支持ESM、CJS模块
+
+在ESM环境中
+
+```
+import dayjs from 'dayjs'
+```
+
+在CJS环境中
+
+（package.json配置为了 **module:commonjs** ），TS使用兼容性策略导入了dayjs的CJS模块
+
+```ts
+import * as dayjs from 'dayjs'  //CJS没有默认导出，所以才这样写
+
+// tsconfig  esModuleInterop:true 可以给CJS模块模拟ESM默认导出。就可以像ESM一样书写了
+import dayjs from 'dayjs' 
+```
+
+
+
 #### module
 
 module并不是指定TS项目的模块化规范，而是指定TS编译为JS后，JS代码使用的模块化风格
@@ -2458,7 +2481,9 @@ classic
 
 这两个配置主要还是为了解决使用 ES Module 项目中引入 CommonJS 的问题
 
-esModuleInterop设置为true、allowSyntheticDefaultImports默认被设置为true
+esModuleInterop默认为false
+
+esModuleInterop设置为true、allowSyntheticDefaultImports默认被设置为true。我们可以用import导入CJS模块
 
 ```js
 // cmj

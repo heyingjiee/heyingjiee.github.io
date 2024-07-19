@@ -1009,6 +1009,22 @@ docker logs 容器ID/名  # 查看容器内终端输出
 
 > Veth：可以简单理解成虚拟网卡，新容器后其总是成对出现，一端发送数据，另一端就能接收
 
+案例：
+
+```shell
+# redis容器
+docker run -d --name redis-container -p 6379:6379 -v /redisData:/data redis:latest
+
+# mysql容器
+docker run -d --name mysql-container -p 3306:3306 -v /mysqlData:/var/lib/mysql  -e MYSQL_ROOT_PASSWORD=hedaodao mysql:latest
+
+# docker运行后端服务项目会发现 mysql、redis如果配置 host:127.0.0.1 会报错
+# 这是因为 127.0.0.1 被认为是容器内的地址，肯定找不到mysql、redis
+# ip addr 查看下机器IP，将服务地址换为机器IP才行
+```
+
+![image-20240714133710996](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240714133712JolYJD.png)
+
 
 
 **link方式**
@@ -1342,6 +1358,12 @@ docker volume ls # 查看volume列表
 docker network ls # 查看网络列表
 ```
 
+**容器日志**
+
+```shell
+docker logs 容器id/容器名
+```
+
 **docker命令大全**
 
 ![dockerimg](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Docker%E7%9B%B8%E5%85%B3/dockerimg%20.jpeg)
@@ -1379,7 +1401,7 @@ docker network ls # 查看网络列表
 
 目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境
 
-### Node镜像
+### Node
 
 安装了node环境的Linux系统，但是不同镜像基于的系统不同
 
@@ -1399,7 +1421,7 @@ node:<version>-alpine
 例子
 
 ```dockerfile
-FROM node:16
+FROM node:18-alpine3.19
 
 # 修改时区
 ENV TZ=Asia/Shanghai
@@ -1414,16 +1436,38 @@ RUN mkdir app
 WORKDIR /app
 COPY . .
 
-RUN npm config set registry https://registry.npm.taobao.org && npm install
+RUN npm config set registry http://registry.npmmirror.com && npm install
 ```
 
 
 
-### Go镜像
+### Go
 
 golang镜像比较大，一般作为分阶段构建的第一步用来编译Go源码。编译后结果直接使用alpine镜像运行即可
 
 
+
+### Mysql
+
+拉取最新的Mysql镜像运行，将Redis的数据挂载到mysqldata
+
+必须指定环境MYSQL_ROOT_PASSWORD作为密码
+
+```shell
+docker run -d --name mysql-container -p 3306:3306 -v /mysqlData:/var/lib/mysql  -e MYSQL_ROOT_PASSWORD=hedaodao mysql:latest
+```
+
+### Redis
+
+拉取最新的Redis镜像运行，将Redis的数据挂载到mysqldata
+
+```shell
+docker run -d --name redis-container -p 6379:6379 -v /redisData:/data redis:latest
+
+ # 登陆到容器中 
+ docker exec -it 容器id bash 
+ >redis-cli # 就可以执行命令了 ， 输入exit回车就退出了
+```
 
 ## 踩坑第一弹
 
