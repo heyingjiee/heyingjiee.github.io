@@ -1487,52 +1487,103 @@ new 函数会返回一个对象，这对象的`[[Prototype]]`属性（原型链�
 
 详情见【函数】-【new关键字】章节
 
-### 静态方法
+### 静态方法、实例方法
 
-| 方法           | 描述                                                         |
-| -------------- | ------------------------------------------------------------ |
-| keys()         | 返回所有key组成的数组                                        |
-| values()       | 返回所有value组成的数组                                      |
-| entries()      | 返回所有[key,value]组成的数组                                |
-| assign         | 合并对象，返回合并后新的对象                                 |
-| hasOwnProperty | 判断是否存在某属性，返回布尔值                               |
-| freeze         | **冻结**一个对象。该对象不能被修改，即不能添加新的属性，不能删除已有属性，不能修改属性的值。此外，冻结一个对象后该对象的原型也不能被修改 |
+文档：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+Object 本质上是个函数，等同于类
+
+**常用的静态方法**
+
+| 方法      | 描述                                                         |
+| --------- | ------------------------------------------------------------ |
+| keys()    | 返回所有key组成的数组                                        |
+| values()  | 返回所有value组成的数组                                      |
+| entries() | 返回所有[key,value]组成的数组                                |
+| assign()  | 合并对象，返回合并后新的对象 Object.assign({},{name:"jack"},{age:18}) |
+| hasOwn()  | Object.hasOwn(obj, 'prop') 判断obj中是否存在prop属性，返回布尔值 |
 
 ```js
 let obj={name:'jack',age:12}
 Object.keys(obj) //['name', 'age']
 Object.values(obj) //['jack', 12]
-Object.entries(obj) //[['name':'jack'], ['age',12]]
+Object.entries(obj) //[['name':'jack'], ['age',12]
 ```
 
-assign
+**常用的静态方法**
+
+通过prototype属性可以查看到类的普通成员
+
+![image-20240728133433837](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240728133440aVrYDS.png)
+
+其他语言一般实例化对象，调用对象的方法
 
 ```js
-let res=Object.assign({},{name:"jack"},{age:18}) 
-console.log(res)//{name: 'jack', age: 18}
+const obj=new Object({name:'tom'})
+obj.hasOwnProperty('name') //  true
+
+// JS中字面量对象等同于 new Object(字面量)
+const obj= {name:'tom'}
+obj.hasOwnProperty('name') //  true
 ```
 
-hasOwnProperty 
+JS有个很特殊的用法可以直接用类调用实例的方法，如果实例方法访问了this是不存在的，因为没有实例化对象，但是可以用call调用绑定一个对象
 
 ```js
-let obj={
-    name:'jack',
-    age:19
+const obj={name:'tom'}
+Object.prototype.hasOwnProperty.call(obj,'name') //  true
+```
+
+补充：hasOwnProperty是Object的普通成员，对象可以覆盖了这个方法，使用Object.prototype可以避免
+
+```js
+Object.prototype.hasOwnProperty.call(obj,'name') 
+
+//
+const foo = {
+  hasOwnProperty() {
+    return '覆盖';
+  },
+};
+
+foo.hasOwnProperty("bar"); // 覆盖
+```
+
+后来有了Object.hasOwn，这个方法是静态成员，就不用使用prototype、call了。
+
+```
+Object.hasOwn(obj, "prop");
+```
+
+但是很多旧代码遗留上面的用法，这里分析了这种用法的成因
+
+还有个实例方法toString，这个函数没有相同功能的静态方法，所以只有prototype一种使用方式。目前这是最准确的判断类型的方式
+
+```js
+Object.prototype.toString.call(obj) // 返回类型 [object XXXX]
+
+// 例子
+console.log(Object.prototype.toString.call('123')) // [object String]
+console.log(Object.prototype.toString.call(null)) // [object Null]
+
+// 可以提取出来类型
+function typeOf(obj) {
+  //return Object.prototype.toString.call(obj).replace(/^\[object (.*)\]$/, "$1")
+  return Object.prototype.toString.call(obj).match(/^\[object (.*)\]$/)[1]
+  // 个人更倾向于使用match语法，使用replace也行
 }
-console.log(obj.hasOwnProperty('name')) //true    //注意参数带引号
+
+console.log(typeOf(123));                        // Number
+console.log(typeOf("hello"));                    // String
+console.log(typeOf(true));                       // Boolean
+console.log(typeOf(undefined));                  // Undefined
+console.log(typeOf(null));                       // Null
+console.log(typeOf({}));                         // Object
+console.log(typeOf([]));                         // Array
+console.log(typeOf(new Date()));                 // Date
+console.log(typeOf(/regex/));                    // RegExp
+console.log(typeOf(function(){}));               // Function
 ```
-
-freeze
-
-```js
-const obj = {name:'jack'};
-
-Object.freeze(obj);
-
-obj.name = 33; // TypeError:Cannot assign to read only property 'name' of object
-```
-
-
 
 ## 函数
 
@@ -1811,7 +1862,7 @@ show(1,2,3)// 输出1,2,3
 
 ### new关键字
 
-使用new调用函数，我们称为这个函数为构造函数
+使用new调用函数，我们称为这个函数为构造函数。**JS中的类本质就是函数**
 
 注意：
 
@@ -1869,7 +1920,7 @@ console.log(new Student('tom',19)) //{ name: 'tom', age: 19 }
 * 通过向prototype属性中添加其他函数/属性
 
 ```js
-//----------方式1、2都是一样的，创建实例的实例上会有这些方法。this指向那个最终被创建出来的实例对象-------------
+//---------- 属性挂载到实例对象上
 function Student(name,age){
     this.name = name;
     this.age = age;
@@ -1877,11 +1928,13 @@ function Student(name,age){
         return this.name
     }
 }
-Student.prototype.getAge =function (){ //方式2：一定要注意，这里不能用箭头函数，否则其中的this指向了全局的window
+
+//---------- 属性挂载到实例对象上
+Student.prototype.getAge =function (){ //一定要注意，这里不能用箭头函数，否则其中的this指向了全局的window
     return this.age
 }
 
-//----------方式3都是一样的，this指向Student，类似于类的静态方法 （this无法访问到name、age）-------------
+//---------- 属性挂载到函数上，类似于类的静态方法 （this无法访问到name、age）-------------
 Student.getSingleInstance =function (){ //方式3
     if (this.instance) {
         return this.instance;
@@ -1890,7 +1943,15 @@ Student.getSingleInstance =function (){ //方式3
     return this.instance = new Singleton(name);
 }
 
+// 访问静态方法
+console.log(Student.getSingleInstance)
 
+// 访问实例对象方法
+
+// 正常需要new创建实例对象，才能访问到，但是JS中可以直接通过prototype属性访问到
+console.log(Student.prototype) //  {getAge:f(),constructor: ƒ Student(name,age) }
+// 注意如果通过prototype属性访问实例方法，一定要用call。因为实例不存在，getAge内部如果访问this会不存在，我们可以用call绑定到任意上下文
+console.log(Student.prototype.getAge.call(this)) 
 
 let stu1=new Student('jack',18) 
 console.log('stu1 --> ',stu1.getName(),stu1.getAge()) //stu1 -->  jack 18
@@ -3556,6 +3617,7 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
 
   ```js
   function Page(params) {
+    // 解构出来的onLoad，调用者应该是window，但是下面使用了call改变了调用者
     const { onLoad } = params;
     if (onLoad instanceof Function) {
       //onLoad的this取决于谁调用了Page。后面可以看到Page是直接调用的，this指向window
@@ -3685,6 +3747,45 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
       callback()
   }
   fn(lesson.show) // lesson对象
+  ```
+
+* 监听器回调函数一般都用bind，或者箭头函数
+
+  ```js
+  // 如果不用bind，myListener使用this就会受到addEventListener内部实现的影响
+  // 用bind可以让我们的myListener函数操作指定的上下文
+  
+  class manager{
+    
+    name='tom'
+    
+    addListener(){
+      window.addEventListener('xxxx',this.myListener.bind(this))
+    }
+    
+    removeListener(){
+      window.removeEventListener('xxxx',this.myListener.bind(this))
+    }
+    
+    myListener(){
+    	// 使用 this.name 就能访问到类实例内部了
+  	}
+  }
+  
+  
+  ```
+
+* Object的实例方法使用call、bind绑定对象。这个原因解释在 【对象】-【静态方法、实例方法】
+
+  简单来说就是Object.prototype可以访问到实例对象的成员，但是没有实例对象
+
+  JS中可以通过call给实例方法绑定对象
+
+  ```js
+  Object.prototype.hasOwnProperty.call(obj,'name') 
+  
+  
+  Object.prototype.toString.call(obj)
   ```
 
   
@@ -4123,11 +4224,7 @@ console.log(/\w+/i).source //输出： /\w+/i
 console.log(/\w+/i.toString())   //输出 /\w+/i
 ```
 
-
-
-
-
-## 字符串对象的正则方法
+### 字符串对象的正则方法
 
 | 方法                                                    | 描述                                                         |
 | :------------------------------------------------------ | :----------------------------------------------------------- |
@@ -4136,14 +4233,56 @@ console.log(/\w+/i.toString())   //输出 /\w+/i
 | [replace](https://www.runoob.com/js/jsref-replace.html) | 替换与正则表达式匹配的子串                                   |
 | [split](https://www.runoob.com/js/jsref-split.html)     | 把字符串分割为字符串数组                                     |
 
-
+字符串的正则方法非常强大，可以从文本中直接匹配出来我们需要的内容
 
 **search**
 
 ```js
 ```
 
+**match**
 
+搭配正则的捕获组，可以从文本中提取我们需要的部分
+
+```js
+const matchRes='薪水 20-30K'.match(/^薪水 (.*)-(.*)K$/)
+if(matchRes){
+  console.log('最低薪水',matchRes[1])
+  console.log('最高薪水',matchRes[2])
+}
+
+// (.*) 是正则的捕获组，.*表示任意数量的字符
+// 匹配不到,返回null
+// 匹配到,返回值matchRes是个类数组对象，索引0是输入字符串、索引1是第1个捕获组，索引2是第2个捕获组
+```
+
+如果我们匹配到字母文本后，需要将字母转化为大写，就可以用replace。参照：replace的用法3
+
+**replace**
+
+```js
+// 返回替换后的值
+'xxxx'.replace(pattern, replacement)
+```
+
+用法
+
+```js
+// 用法1
+"hello".replace('h', 'H'); // "_xxx"
+
+// 用法2：pattern是空字符串，则插入字符串开头
+"xxx".replace('', '_'); // "_xxx"
+
+// 用法3：pattern是正则
+'[object Array]'.replace(/^\[object (.*)\]$/, '$1'); // $1表示第一个捕获组。返回'Array'
+
+// 用法3：replacement可以是函数
+'[object Array]'.replace(/^\[object (.*)\]$/, (match, p1)=>{
+    console.log(match, p1) // match是原来的字符串，p1是第一个捕获组。如果有第二个捕获组，就再加1个入参
+    return p1.toLowerCase()
+}); // 返回 'array'
+```
 
 
 
@@ -9290,6 +9429,52 @@ console.log("Listening on port 3000...");
 
 ## JS高级进阶
 
+### 闭包
+
+简单说，函数中返回一个函数。父函数中的变量不会销毁，如下add每次调用count都会加1
+
+```js
+function createAdd(){
+  let count=0
+	return function(){
+    count++
+    return count
+  }
+}
+
+const add=createAdd()
+add()  // 1
+add()  // 2
+```
+
+重要的事情，日常开发用到最多的就是对第三方API、系统的API做封装。这里用一个简单的例子
+
+```js
+function createRequest(globalCofing){  // 全局的公用参数，存到闭包中
+  
+  const {baseUrl} = globalCofing||{}
+  
+  return function(requestConfig){   // 实际上每个请求用的函数，其内部使用了fetch发起请求
+    const {url,methed} = requestConfig||{}
+    
+    return fetch(`{baseUrl}${url}`,{ 
+      methed
+    })
+  }
+}
+
+// 作为闭包存下了baseUrl数据
+const request = createRequest({ 
+	baseUrl:'xxxx'
+})
+request({
+  url:'xxx',
+  method:'GET'
+})
+```
+
+
+
 ### 柯里化
 
 接收一个函数func1，内部返回一个函数，这个函数调用func1
@@ -9449,13 +9634,9 @@ fs.writeFileSync(path.resolve(__dirname, '../data/audio.ass'), data)
 
 文件存在时不希望覆盖原有内容，可以先使用`fs.exists()`或`fs.promises.access()`（推荐使用，因为`fs.exists()`已被废弃）来检查文件是否存在，然后决定是否写入或以追加模式写入。例如，使用追加模式(`a`)写入内容而不覆盖原文件：
 
-```js
-
-```
 
 
-
-判读目录不存在，创建目录
+判断目录不存在，创建目录
 
 ```shell
 const { existsSync, mkdirSync } = require("fs");
@@ -9715,7 +9896,7 @@ JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，�
 **服务端主动**在respone header里面通过字段通知浏览器需要进行缓存的方式
  respone header 的`cache-control`字段，常见的值有max-age, public ,private ,no-cache ,no-store等
 
-如下图respon header中,**cahe-control:max-age=31536000,public,immutable**
+如下图respon header中,**cache-control:max-age=31536000,public,immutable**
 
 ![image-20210411232414821](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210411232414821.png)
 
@@ -12052,28 +12233,4 @@ export default {
 - 红宝书
 - 阮一峰的《ECMAScript 6 入门》：https://es6.ruanyifeng.com/
 - ES6 视频教程：http://t.kuick.cn/RaR3
-
-## 面试
-
-### 字节
-
-前端性能指标、优化方案
-
-https服务器返回的证书内容
-
-二叉搜索树的公共父节点
-
-### 滴滴文档方向
-
-css的postion是基于谁定位的 ：祖先元素中position: relative、position: absolute、position: fixed
-
-前端性能指标、优化方案
-
-SSO实现原理
-
-axios请求是否能种下cookie，通过withCrenxxx那个字段
-
-PWA缓存
-
-实现promise.all方法
 

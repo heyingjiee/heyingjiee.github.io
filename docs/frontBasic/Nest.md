@@ -132,13 +132,11 @@ console.log(tom.name) // tom
 
 ```
 
-
-
 #### 属性装饰器
 
 ```ts
 const propertyDecorator:PropertyDecorator=(target, propertyKey)=>{
-  // target 类的原型
+  // target 类的prototype
   // propertyKey 属性
   // 创建实例时触发
   console.log(target,propertyKey) // {} name
@@ -240,7 +238,11 @@ class Person {
 const tom:Person = new Person('tom')
 ```
 
-### Metadata、Reflector
+### Nest中自定义装饰器
+
+tsconfig中必须开启装饰器属性
+
+
 
 
 
@@ -394,10 +396,16 @@ export class AppModule {}
     // "assets":['public/**/*']  // 将src/public下的文件复制到dist根目录（输入文件时相对src目录的，输出是相对dist目录的）
     
     // 也可以详细指定输入、输出。还支持exclude（排除）、watchAssets（是否watch模式下文件变动就拷贝，默认false）
-    "assets": [{
-      "include": "public/**/*", // 相对src目录
-      "outDir": "dist/src" // 不写就是dist根目录，写路径是相对于项目根路径的
-    }],
+    "assets": [
+      {
+      	"include": "public/**/*", // 相对src目录
+      	"outDir": "dist/src" // 默认dist目录下，写路径则是相对于项目根路径的，将整个public目录复制到src下
+    	},
+     	{
+        "include": "email/templates/**/*", // 将templates目录移动到dist/src/email下
+        "outDir": "dist/src",
+        "watchAssets": true
+      }],
     "watchAssets": true // assets.watchAssets可以覆盖这里的配置
   }
 }
@@ -1152,6 +1160,59 @@ export class User {
 
 使用@ApiProperty()标记Entity，swagger文档提供注释
 
+## 模块通讯
+
+在Nest中Module之间如何相同调用（通讯）
+
+* 注入。A Module中注入B Module的service，就可以在A Module中跨模块调用B Module的功能
+* event emitter 通信
+
+例如：完成订单后下发优惠券，订单模块、优惠券模块通过注入耦合在一起不太合适就可以使用 event emitter
+
+event emitter 通信：
+
+```shell
+ pnpm i  @nestjs/event-emitter
+```
+
+```ts
+// ------------- src/app.module.ts  -------------
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+
+@Module({
+  imports: [
+    EventEmitterModule.forRoot(),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+```
+
+```ts
+// ------------- A Module  -------------
+@Inject(EventEmitter2)
+private eventEmitter: EventEmitter2;
+
+findAll() {
+    this.eventEmitter.emit('B.find',{
+      data: 'xxxx
+    })
+    return `This action returns all aaa`;
+}
+
+// ------------- B Module  -------------
+@OnEvent('B.find')
+handleAaaFind(data) {
+    console.log('aaa find 调用', data)
+}
+```
+
+
+
 ## HTTP请求
 
 ### Get、POST
@@ -1256,44 +1317,86 @@ npm install -D multer @types/multer
 
 
 
-
-
 #### 下载接口
 
+Content-Type列表：https://www.runoob.com/http/http-content-type.html
+
+常用的
+
+```
+doc：application/msword
+xlsx：application/vnd.ms-excel
+pdf：application/pdf
+图片格式：image/gif 、image/jpeg 、image/png
+二进制流数据：application/octet-stream
+
+表单中进行文件上传：multipart/form-data
+表单key-value：application/x-www-form-urlencoded 
+```
+
 ```ts
-// controller 文件
-import { Controller, Get, Res } from '@nestjs/common';
-import { UploadService } from './upload.service';
+import { Controller, Get, Inject, Res, StreamableFile } from '@nestjs/common';
+import { CustomLogger } from '../common/logger/logger.module';
+import appConfig from '../common/configs/config';
 import { Response } from 'express';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { zip } from 'compressing';
 
-@Controller('upload')
-export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+@Controller('file-operate')
+export class DownloadController {
+  @Inject()
+  private readonly logger: CustomLogger;
 
-  // 下载图片
-  @Get('export')
+  // 完整下载
+  @Get('single-download')
   download(@Res() res: Response) {
-    const destPath = path.resolve(__dirname, '../../file/test.png');
-    res.download(destPath);
+    const content = fs.readFileSync(
+      path.resolve(appConfig.sourceDir, 'public/assets/bg.png'),
+    );
+    // res.setHeader('Content-Type', 'image/png');
+    res.set('Content-Disposition', `attachment;filename="bg.png"`);
+
+    res.end(content);
   }
 
-  // 下载图片（流的方式）  pnpm i compressing
-  @Get('stream')
+  // 流式下载
+  @Get('stream-download')
+  download3() {
+    const destPath = path.resolve(appConfig.sourceDir, 'public/assets/bg.png');
+    const stream = fs.createReadStream(destPath);
+    return new StreamableFile(stream, {
+      disposition: `attachment; filename="bg.png"`,
+    });
+    // 响应头默认添加 Transfer-Encoding:chunked 即开启分片传输
+  }
+
+  // 压缩下载 （ pnpm i compressing ）
+  @Get('compress-stream-download')
   async streamDownload(@Res() res: Response) {
-    const destPath = path.resolve(__dirname, '../../file/test.png');
+    // 可以是文件、目录。如果是目录则会打包为一个压缩包
+    const destPath = path.resolve(appConfig.sourceDir, 'public/assets/bg.png');
     const tarStream = new zip.Stream();
     tarStream.addEntry(destPath);
 
     res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment;filename=123`); //可指定文件名
+    res.setHeader('Content-Disposition', `attachment;filename="download.zip"`); //可指定文件名
+    
+    // 响应头默认添加 Transfer-Encoding:chunked 即开启分片传输
 
     tarStream.pipe(res);
   }
 }
 
 ```
+
+#### 下载指定分片
+
+请求头**Range**字段传递分片位置，响应头**Content-Range**字段
+
+https://juejin.cn/post/7255110638154072120?searchId=202407241438585B0DC6052D7B1D3EF934
+
+https://juejin.cn/post/7219140831365857317?searchId=2024072414314704AB2CB149DAB53F0978
 
 ### SSE
 
@@ -1306,6 +1409,7 @@ Server Sent Event（SSE）是基于HTTP协议的一种技术，可实现实时**
 * chatgpt这种回复用户，由于回复答案是分段生成的就可以用SSE推送
 * 爬虫抓取信息，每抓取完成一部分就推送
 * 实时日志，服务端生成的日志可以实时推送到前端显示
+* 前端分页表格，如果表格中存在实时更新的数据。SSE请求可以通过url参数传入页码 
 
 服务端返回的 Content-Type 是 text/event-stream
 
@@ -1368,7 +1472,7 @@ export class AppController {
 
 ```
 
-apifox使用Get请求就行
+SSE目前仅支持使用Get请求
 
 ![image-20240710181831715](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240710181832in9SCr.png)
 
@@ -1400,6 +1504,21 @@ eventSource.onerror = function () {
 补充：通义千问的SSE请求，当回复完毕后，服务端会推送一个DONE，由客户端来关闭连接
 
 ![image-20240712164008368](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712164008ougUCJ.png)
+
+
+
+客户端原生的EventSource存在一些缺点，例如：
+
+* 仅支持Url参数、withCredentials，无法设置请求header、请求body
+* 仅能发送Get请求
+
+可以使用微软的一个包解决这些问题
+
+```
+pnpm i @microsoft/fetch-event-source
+```
+
+
 
 ### 静态资源
 
@@ -1595,7 +1714,7 @@ const authorization = request.header('authorization')
 const userAgent = request.headers['user-agent'];
 
 
-const { ip, method, path } = request;
+const { ip, method, path ,query } = request;
 ```
 
 #### Response
@@ -1636,7 +1755,7 @@ export class IndexMiddleware implements NestMiddleware {
 }
 ```
 
-局部注册。只能精确到Module级别
+局部注册
 
 ```ts
 // 只在user模块中注册使用中间件，就只在UserModule中注册
@@ -1653,13 +1772,18 @@ import { IndexMiddleware } from '../middleware/index.middleware';
 export class UserModule implements NestModule { // 需要实现NestModule
   configure(consumer: MiddlewareConsumer) {
     
-    // 方式1：指定哪个路由使用该中间件。所有user开头的都会命中。支持正则例如：user/*
+    // 方式1：指定哪个路由使用该中间件。所有user开头的都会命中。也支持正则
     consumer.apply(IndexMiddleware).forRoutes('user');
+    consumer.apply(IndexMiddleware).forRoutes('*'); // 全部路由
     
     // 方式2：可以限制哪些方法使用
     consumer
       .apply(IndexMiddleware)
-      .forRoutes({ path: 'user', method: RequestMethod.GET });
+    	.exclude({ path: 'cats', method: RequestMethod.GET },'cats/(.*)') // 排除
+      .forRoutes({ path: 'user', method: RequestMethod.GET }); // 包含
+    
+    
+
     
     // 方式3：可以指定哪个controller使用
     consumer.apply(IndexMiddleware).forRoutes(UserController);
@@ -1955,26 +2079,6 @@ intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     )
 }
 ```
-
-#### 与中间件、守卫异同
-
-* interceptor 里是可以用 rxjs 的操作符来组织响应处理流程的
-
-* 参数
-
-  ```ts
-  // 中间件函数签名
-  use(req: Request, res: Response, next: NextFunction)
-  
-  // 守卫
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean>
-    
-   
-  // 拦截器函数签名
-  intercept(context: ExecutionContext, next: CallHandler): Observable<Data<T>>
-  ```
-  
-  守卫、拦截器入参ExecutionContext 里可以当前请求的controller class 和 handler，进而通过 reflector 拿到handler的 metadata 等信息的，这些是 middleware 做不到的
 
 ### 管道(pipe)
 
@@ -2467,7 +2571,7 @@ Nest内置的 Exception Filter 会捕获错误对象，根据其中的信息生�
   }
   ```
 
-* 中间件、路由守卫、拦截器、管道抛出（待补充）
+* 中间件、路由守卫、拦截器、管道抛出
 
 * JS错误对象，比如 语法报错
 
@@ -2612,6 +2716,42 @@ export class AppController{
 @Catch(BadRequestException)可指定我们创建的filter代码处理哪些错误。不指定就是所有错误
 
 我们可以定义多种内部错误类型，并定义对应的filter，从而针对每种错误返回特定的json
+```
+
+### guard、interceptor、filter汇总
+
+函数签名
+
+```ts
+// 中间件函数签名
+use(req: Request, res: Response, next: NextFunction)
+
+// 守卫
+canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean>
+  
+ 
+// 拦截器函数签名
+intercept(context: ExecutionContext, next: CallHandler): Observable<Data<T>>
+  
+// filter拦截  
+catch(exception: Error, host: ArgumentsHost) 
+```
+
+guard、interceptor入参ExecutionContext 里可以当前请求、响应。filter入参host也可以获取请求、响应
+
+```shell
+const host = context.switchToHttp();
+const request: Request = host.getRequest();
+const response: Response = host.getResponse();
+```
+
+guard、interceptor还可以通过ExecutionContext结合内置的reflector拿到controll、handler的 metadata 等信息的
+
+```ts
+const noResponseLog = this.reflector.getAllAndOverride('no-response-log', [
+      context.getClass(), // 获取class的元数据
+      context.getHandler(), // 获取handler的元数据
+]) as boolean | undefined;
 ```
 
 ## Websocket
@@ -4119,7 +4259,7 @@ pnpm i imap
 pnpm i @nestjs/axios axios
 ```
 
-我们对请求封装一层，增加请求、响应拦截器，在其中增加统一日志
+我们对请求封装一层，使用请求、响应拦截器，在其中增加统一日志
 
 ## 爬虫（待补充）
 
@@ -4351,12 +4491,17 @@ module.exports = {
 
 
 
+## Rxjs
+
+掘金好文：https://juejin.cn/post/7268050036461223999?share_token=70325120-8ec3-482b-a69a-6a87d4c32e18
+
+
+
 ## 补充待整理
 
 * BullMQ https://3rcd.com/wiki/bullmq ，https://3rcd.com/wiki/nestjs-practise/chapter10
 * 单元测试 https://zhuanlan.zhihu.com/p/428558792
-* Node服务链路追踪 https://blog.csdn.net/qq_42427109/article/details/130906290
-* https://nest.nodejs.cn/recipes/async-local-storage
+* https://3rcd.com/blog/ts-decorator
 
 ## Nest疑问
 
