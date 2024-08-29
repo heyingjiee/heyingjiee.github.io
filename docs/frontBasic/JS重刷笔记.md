@@ -2164,6 +2164,84 @@ function ab(){
    js1.ab()//输出 执行1.js中的ab函数
 ```
 
+### 从类的角度看函数
+
+JS中类就是函数的语法糖，但是由于函数的一些性质，导致JS中将函数当做类使用时，存在大量神奇的语法
+
+目前还未测试直接使用Class关键字声明的类是否也具有这些特殊的能力
+
+#### 动态调整类
+
+```ts
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+//  PassportStrategy类可以传入参数，来定制类的功能
+export class JwtStrategy extends PassportStrategy(Strategy) { 
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: 'guang',
+    });
+  }
+
+  async validate(payload: any) {
+    return { userId: payload.userId, username: payload.username };
+  }
+}
+```
+
+#### 类直接调用实例方法
+
+正常情况下，类实例化后的对象才能调用实例方法
+
+Object.prototype返回的是类的全部实例成员，调用其中的toString方法，但是缺少实例对象，但是可以在调用时通过call指定实例对象
+
+```js
+Object.prototype.toString.call(123) // '[object Number]'
+```
+
+#### 动态修改类的成员
+
+```js
+function A(){}
+
+A.prototype.x=1
+const a1 = new A()
+
+
+A.prototype.x=2
+const a2 = new A()
+
+// 修改了A.prototype指向对象的属性。两个实例访问的同一个对象，故都是2
+console.log(a1.x,a2.x) // 2 2
+```
+
+```js
+function A(){}
+
+A.prototype.x=1
+A.prototype.y=1
+const a1 = new A()
+
+
+A.prototype={x:2,y:3}
+const a2 = new A()
+
+
+// 修改了A.prototype指向的对象。两个实例访问的是不同对象，所以存在差异
+console.log(a1.x,a1.y) // 1 1
+
+console.log(a2.x,a2.y) // 2 3
+```
+
+
+
+
+
 ## 数组
 
 ### 声明数组
@@ -3148,9 +3226,25 @@ for(const value of [...map]){
 console.log(newArray)//输出 ["张三", 60] ["王五", 80]
 ```
 
+### WakMap
 
+如果key是对象，将key的引用置为null。map仍然持有引用
+
+```js
+var a = {}; 
+var map = new Map();
+map.set(a, '测试value')
+ 
+a = null; 
+console.log(map.keys()) // MapIterator {{}}
+console.log(map.values()) // MapIterator {"测试value"}
+```
+
+WeakMap解决了这个问题
 
 ## 解构赋值
+
+### 基础用法
 
 结构赋值：等号后侧可以是任何**可迭代对象**解构，赋值给新的变量 
 
@@ -3187,16 +3281,22 @@ let [one, two, three] = new Map([1, 2, 3]);
 
 
 
-### 默认值
+### 设置默认值
 
 为变量设置默认值
 
 ```js
-let [first, second = '默认值'] = ['a'];
-console.log(site); //默认值
+const user={
+    password:'xxx',
+    name:'tom',
+    age:18
+}
+
+let { score=100 }= user
+console.log(score); //默认值
 ```
 
-### 函数中的解构
+### 函数参数解构
 
 可以实现命名参数的效果
 
@@ -3206,6 +3306,21 @@ function func({name="jack",age=18,habit,score,classNum}){
 }
 
 func({name:"tom",score:100})
+```
+
+### 剔除属性
+
+用户信息中剔除秘密属性
+
+```js
+const user={
+    password:'xxx',
+    name:'tom',
+    age:18
+}
+const {password,...other}=user
+
+console.log(other) // {name: 'tom', age: 18}
 ```
 
 
@@ -3513,7 +3628,7 @@ for(let [key,value] of m){
   1、this指向调用者（调用链从右向左找到第一个调用者，如果是对象this指向这个对象，如果是函数this指向window）
 
   ```js
-  //函数d中，this指向对象b（函数d由函数c调用，函数c由对象b调用）
+  //（函数b由函数a调用，函数a由对象obj调用）
   function b(){
     console.log(this)
   }
@@ -3714,7 +3829,7 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
   }
   lesson.show() //对象lesson
   
-  newVar=lesson.show //这里并没有调用函数
+  newVar = lesson.show //这里并没有调用函数
   newVar()//window  #这里比较特殊，这里理解为newVar()被挂在window上了
   ```
 
@@ -3755,21 +3870,32 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
   // 如果不用bind，myListener使用this就会受到addEventListener内部实现的影响
   // 用bind可以让我们的myListener函数操作指定的上下文
   
-  class manager{
-    
-    name='tom'
+  // hash路由
+  class Route{
+    constructor(){
+      
+      // 监听器函数freshRoute内部的this指向由addEventListener内部如何调用的相关，我们是没法控制的，而且funtion形式this要么指向window，要么执行调用它的对象，肯定不会指向Route实例
+      
+     	// 可是class中函数又没箭头函数的形式，所以为了保证监听器函数freshRoute内部的this能一直访问实例，需要用bind绑定。
+      // 为啥赋值给一个属性？ 因为bind每次执行返回的都是新函数，增加、移除监听器必须都是同一个函数。赋值给属性新增、移除就能用一个函数了
+      
+      this.freshRoute = this.freshRoute.bind(this)
+   
+    }
     
     addListener(){
-      window.addEventListener('xxxx',this.myListener.bind(this))
+      window.addEventListener('hashchange', this.freshRoute)
     }
     
     removeListener(){
-      window.removeEventListener('xxxx',this.myListener.bind(this))
+      window.removeEventListener('hashchange', this.freshRoute)
     }
-    
-    myListener(){
-    	// 使用 this.name 就能访问到类实例内部了
-  	}
+   
+    // 更新
+    freshRoute () {
+      this.currentHash = location.hash.slice(1) || '/'
+      this.routes[this.currentHash]()
+    }
   }
   
   
@@ -3788,6 +3914,40 @@ this指向的规则只有上面两点，但是实际场景非常复杂，这部�
   Object.prototype.toString.call(obj)
   ```
 
+* 闭包中的this
+
+  ```js
+  // function形式
+  function createRequest(){
+      return function (){
+          console.log(this) 
+          return ''
+      }
+  }
+  // 箭头函数形式
+  function createRequest(){
+      return ()=>{
+          console.log(this) 
+          return ''
+      }
+  }
+  
+  // 调用方式1：
+  createRequest() // 返回的是内部return的函数
+  
+  // 调用方式2：
+  createRequest()()
+  // 或
+  const util=createRequest()
+  util() 
+  // 都是使用箭头函数指向window，使用function指向createRequest内部的this指向
+  
+  // 调用方式2的例子
+  const obj={name:'tom'}
+  const util=createRequest().call(obj)// 使用箭头函数指向window，使用function指向 obj
+  
+  ```
+  
   
 
 ### call apply bind
@@ -4244,6 +4404,8 @@ console.log(/\w+/i.toString())   //输出 /\w+/i
 
 搭配正则的捕获组，可以从文本中提取我们需要的部分
 
+注意：match的正则一般不要加g，避免出错
+
 ```js
 const matchRes='薪水 20-30K'.match(/^薪水 (.*)-(.*)K$/)
 if(matchRes){
@@ -4252,16 +4414,26 @@ if(matchRes){
 }
 
 // (.*) 是正则的捕获组，.*表示任意数量的字符
-// 匹配不到,返回null
+// 注意：捕获组匹配不到,返回null。下面的replace方法匹配不到返回空字符串
 // 匹配到,返回值matchRes是个类数组对象，索引0是输入字符串、索引1是第1个捕获组，索引2是第2个捕获组
 ```
 
 如果我们匹配到字母文本后，需要将字母转化为大写，就可以用replace。参照：replace的用法3
 
+```js
+// \b 适合提取英文单词，注意尾部如果有空格也会提取出来
+"  abc cde fgh hi ".match(/\b(.*)\b/g) //  ['abc cde fgh hi', '']
+
+// 所以，一般用 \w+ ， \w表示数字、字母、下划线，+表示大于等于1，所以可以过滤掉空
+"  abc cde fgh hi ".match(/\b(\w+)\b/g)
+```
+
 **replace**
 
+文档：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+
 ```js
-// 返回替换后的值
+// 返回替换后的值。原字符串未改变
 'xxxx'.replace(pattern, replacement)
 ```
 
@@ -4278,8 +4450,17 @@ if(matchRes){
 '[object Array]'.replace(/^\[object (.*)\]$/, '$1'); // $1表示第一个捕获组。返回'Array'
 
 // 用法3：replacement可以是函数
+"a1b".replace(/[a-z]/g, (match，offset) => {
+  console.log(match，offset); // a 0 ; b 2
+  return originStr.toUpperCase();
+});
+
+// 当正则中存在匹配组时， match,...pN,offset ，其中pN就是匹配组
 '[object Array]'.replace(/^\[object (.*)\]$/, (match, p1)=>{
-    console.log(match, p1) // match是原来的字符串，p1是第一个捕获组。如果有第二个捕获组，就再加1个入参
+  	// match是正则匹配到的，p1是第一个捕获组。如果有第二个捕获组，就再加1个入参
+  	// 注意：捕获组匹配不到是空字符串
+    console.log(match, p1) 
+    
     return p1.toLowerCase()
 }); // 返回 'array'
 ```
@@ -8168,7 +8349,20 @@ node.replaceWith(...nodes or strings) —— 将 node 替换为给定的节点�
 
   * **offsetHeight**： Dom元素的高、宽。（包含 content+padding+border+scollbar）
 
-  * **offsetTop**：
+    常用于做高度展开动画
+
+    ```vue
+    <template>
+    	<div class="parent" style="overflow: hidden;transition: 0.4s ;">
+        <div class="son"> 这里是文案区域 </div> 
+      </div>
+      </div>
+    </template>
+    
+    获取son的offsetHeight，设置parent的高度来实现展开、折叠
+    ```
+
+  * **offsetTop**：相对于其最近的定位祖先元素(position)的顶部边缘的距离
 
     ![image-20240712104013594](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712104013ULwgio.png)
 
@@ -8181,7 +8375,7 @@ node.replaceWith(...nodes or strings) —— 将 node 替换为给定的节点�
 
   * **scrollHeight**：元素内容的高度（包含 content+padding）。如果内容<=元素高度就等于clientHeight，大于就是完整内容高度
 
-  * **scrollTop**
+  * **scrollTop**：这个属性很特殊，是可读、可写的。所以其可以设置滚动位置
 
     ![image-20240712115017296](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240712115017mRGBYw.png)
 
@@ -8468,7 +8662,7 @@ const context = canvas.getContext('2d')
 
 
 //创建渐变色起点(100,100),终点(300,100);
-let gradient = context.createLinearGradient(100, 100, 200, 100)//注意：只是渐变色的起点终点，具体线条呈现的颜色取决于它处于渐变对象起点到终点的哪个范围
+let gradient = context.createLinearGradient(100, 100, 300, 100)//注意：只是渐变色的起点终点，具体线条呈现的颜色取决于它处于渐变对象起点到终点的哪个范围
 
 // 配置渐变色对象，第一个参数0-1之间，0是起点，1是终点。设置渐变开始的位置
 gradient.addColorStop(0, 'red')
@@ -8564,7 +8758,7 @@ toDataURL方法可以将canvas导出为base64格式的图片
 
   ![image-20230423184704055](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230423184704%20.png)
 
-  解决
+  解决：
 
   ```js
   // 设备像素比=物理像素/css像素（即1个css像素，占据几个实际像素）
@@ -8690,11 +8884,11 @@ link.click();
 
 ### Cookie
 
-Cookie一般是由服务端在响应请求时，通过设置响应体的头的`Set-Cookie`字段，浏览器读取后在该域名下设置的键值对(多个键值对使用分号分隔)，并存储在前端浏览器中
+Cookie一般是由服务端在响应请求时，通过设置响应体的头的`Set-Cookie`字段，浏览器读取后在该域名下设置的键值对(多个键值对使用分号分隔)，并存储在前端浏览器中   
 
-所以，Cookie只能在它设置的域名下才能被访问
+默认情况下，页面域名、发起请求域名与存储Cookie的主域名相同就能访问到该Cookie
 
-默认情况下，子域名也无法访问（但是可以设置domain这个key来改变，后面会讲到）
+注意：子域名不同也无法访问（但是可以设置domain这个key来改变，后面会讲到）
 
 ```
 在 site.com 下设置的Cookie
@@ -8702,7 +8896,7 @@ Cookie一般是由服务端在响应请求时，通过设置响应体的头的`S
 在 forum.site.com 下不可以被访问
 ```
 
-且默认不区分协议（可以通过设置secure这个key改变）
+协议不同可以访问（可以通过设置secure这个key改变）
 
 ```
 http://site.com 下的Cookie
@@ -8710,13 +8904,28 @@ http://site.com 下的Cookie
 https://site.com 也能访问到
 ```
 
+端口不同可以访问
 
 
-服务端还可以通过设置响应体的头，来设置浏览器是在访问指定的域时，是否要自动携带Cookies
 
-```
+发送请求时实现携带Cookie：
+
+前端通过
+
+* fetch：同源默认发送，不同源默认不发送；可手动设置withCredentials:"include"发送 
+
+* xhr：默认withCredentials:false，需手动设置为true
+* axios ：基于xhr的封装，所以同上
+
+服务端也必须设置下面响应头
+
+```shell
 Access-Control-Allow-Credentials:true
 ```
+
+
+
+
 
 前端存储Cookie的限制：
 
@@ -8743,10 +8952,10 @@ Cookie中默认的一些Key：
 
 * path
 
-  值是：url 路径，该路径必须是绝对路径，设置后该路径下的页面才可以访问该 Cookie，默认值为当前路径。
+  值是：url 路径，该路径必须是绝对路径，设置后该路径下的页面才可以访问该 Cookie
 
   ```js
-  //该域名下的所有路径都可以访问
+  //默认值，即该域名下的所有路径都可以访问
   path=/
   
   //仅该域名下的/user路径可以访问
@@ -8767,7 +8976,7 @@ Cookie中默认的一些Key：
 
 * expires、max-age
 
-  设置Cookie的有效期，两个字段设置任意一个即可，Cookie过期后，浏览器自动删除。如果都不设置则在关闭浏览器后，立即自动删除
+  设置Cookie的有效期，两个字段设置任意一个即可，Cookie过期后，浏览器自动删除。**如果都不设置则在关闭浏览器页面tab后，立即自动删除**
 
   expires：过期时间(必须为标准时间)，如果这个时间设置的是过去的时间，则浏览器自动删除该Cookie
 
@@ -8785,8 +8994,6 @@ Cookie中默认的一些Key：
   document.cookie = "user=hedaodao; max-age=3600";
   ```
 
-  
-
 * secure
 
   设置后，在https域名下设置的Cookie，在http的同域名下不可访问到
@@ -8795,27 +9002,27 @@ Cookie中默认的一些Key：
   document.cookie = "user=hedaodao; secure";
   ```
 
-  
-
-* samesite
-
-  * strict（默认值）
-
-    用户当前域为A.com，网页中有一个B.com下的图片（或者有一个form表单，action是B.com）。向B.com请求数据时无法携带Cookie
-
-  * lax
-
-  [详细内容请查看](https://zh.javascript.info/cookie#samesite)
-
 * httpOnly
 
-  设置后，不可使用`document.cookie`来获取当前域名下的Cookie了（即无法通过JS获取Cookie，可防止XSS攻击）
+  防止XSS攻击
 
+  设置后，不可使用`document.cookie`来获取当前域名下的Cookie了
+  
   ```js
   document.cookie = "user=hedaodao; httpOnly";
   ```
-
   
+* samesite
+
+  防止 XSRF（跨网站请求伪造）攻击。用于设置从第三方域名跳转到网址A的策略
+
+  * strict  从邮件链接跳转到网址A，如果是strict，则所有请求都不携带cookie
+  
+  * lax（默认值）可是有时候我们确实会存在从外部营销网址引流到网址A的情况，所以才有了lax。他是在strict的基础上放松了限制
+
+     Get 链接会发送 Cookie，跨域的Post、图片、iframe、form表单都不会发送 Cookie
+  
+  [详细内容请查看](https://www.ruanyifeng.com/blog/2019/09/cookie-samesite.html)
 
 **实践案例**
 
@@ -8957,6 +9164,67 @@ Cookie的`httpOnly`字段可以阻止JS获取Cookie，一定程度上防止XSS�
 ![image-20221221163355473](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20221221163355%20.png)
 
 Cookie的`samesite`字段可以防止XSRF攻击
+
+## Web API
+
+[Web API的完整列表](https://developer.mozilla.org/zh-CN/docs/Web/API) 其中包含了大量的API，这里仅涉及一些有意思的内容
+
+### Intersection
+
+监听指定元素与目标元素之间相交，常用于计算广告曝光相关等业务
+
+文档：https://developer.mozilla.org/zh-CN/docs/Web/API/Intersection_Observer_API
+
+```js
+let observer = new IntersectionObserver((entrys)=>{// #listItem元素可能有多个，这个entrys是个数组
+  
+  	entrys.forEach((entry)=>{
+      //   entry.boundingClientRect
+      //   entry.intersectionRatio
+      //   entry.intersectionRect
+      //   entry.isIntersecting // 是否相交。多个entry只处理相交的，可以用这个判断
+      //   entry.rootBounds
+      //   entry.target
+      //   entry.time
+    })
+    
+},
+{
+  root: document.querySelector("#scrollArea"), // 指定元素区域，默认为视口
+  rootMargin: "0px", // 与css的margin一样，可以设置一个值或者 上、右、下、左。扩展、缩小设置root区域的范围。默认 0px
+  threshold: 1.0, // 相交的百分比,取值[0,1]之间,默认0。1为目标元素完全进入root区域才触发，可设置数组[0,0.25,0.5,0.75,1]则会触发5次
+});
+let target = document.querySelector("#listItem");
+observer.observe(target);
+
+```
+
+案例：图片懒加载
+
+```ts
+const observer = new IntersectionObserver((changes) => {
+  changes.forEach((change) => { 
+    if (change.isIntersecting) { 
+      const img = change.target
+      img.src = img.dataset.src
+      observer.unobserve(img)
+    }
+  })
+})
+ 
+observer.observe(img)
+```
+
+### requestAnimationFrame
+
+requestAnimationFrame可以在浏览器下一次重绘之前，调用用户提供的回调函数。
+
+注意：
+
+* 这个函数是一次性的，如果希望每次重绘都触发，必须在回调函数中继续调用requestAnimationFrame
+* 回调函数的调用频率通常与显示器的刷新率相匹配。在高刷屏幕上，运行的更快
+
+
 
 ## 网络请求相关
 
@@ -9429,7 +9697,7 @@ console.log("Listening on port 3000...");
 
 ## JS高级进阶
 
-### 闭包
+### 闭包封装
 
 简单说，函数中返回一个函数。父函数中的变量不会销毁，如下add每次调用count都会加1
 
@@ -9446,6 +9714,8 @@ const add=createAdd()
 add()  // 1
 add()  // 2
 ```
+
+#### 方式1
 
 重要的事情，日常开发用到最多的就是对第三方API、系统的API做封装。这里用一个简单的例子
 
@@ -9467,15 +9737,33 @@ function createRequest(globalCofing){  // 全局的公用参数，存到闭包�
 const request = createRequest({ 
 	baseUrl:'xxxx'
 })
+
 request({
   url:'xxx',
   method:'GET'
 })
 ```
 
+#### 方式2
+
+不直接返回函数，而是挂载函数。通过递归收集参数
+
+```js
+function sum(...args){
+    // 闭包，但是不直接返回函数，而是在函数上挂calc函数，再返回
+    // fn的参数就是sum(1)返回的函数的参数
+    const fn=(...rest)=>sum(...args,...rest)
+    // 这里的args就是合并后的。调用calc进行计算
+    fn.calc=()=> args.reduce((pre,cur)=>pre+cur,0)
+    return fn
+}
+
+console.log(sum(1)(2)(3,7).calc()) // 13
+```
 
 
-### 柯里化
+
+### 柯里化封装
 
 接收一个函数func1，内部返回一个函数，这个函数调用func1
 
@@ -9772,45 +10060,27 @@ process.on('unhandledRejection', function (err) {
 
 ### Http与Https
 
-**基本概念**
-
 HTTP是超文本传输协议，HTTP的初衷是为了提供一种发布和接收HTML页面的方法。
 
 HTTPS使用的主要目的是提供对网站服务器的身份认证，同时保护交换数据的隐私与完整性。
 
 TLS是传输层加密协议，前身是SSL协议，由网景公司1995年发布，有时候两者不区分。
 
-多路复用：通过一个的HTTP/2连接请求发起多重的请求-响应消息，多个请求共享一个TCP连接，而不是依赖建立多个TCP连接。
+**HTTP**
 
-**HTTP的发展史**
+* HTTP/1.0、HTTP1.1
 
-![image-20210413221452645](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/%E9%9D%A2%E8%AF%95%E7%9B%B8%E5%85%B3/image-20210413221452645.png)
+* HTTP/2 
 
-**http/2 VS http/1.1**
+  基于TCP协议
 
-* HTTP2.0的多路复用（ 1次连接）
-* HTTP2.0服务端推送
-* HTTP2.0压缩消息头
+  在HTTP/1的基础上增加了 多路复用(多请求可以复用一个TCP连接)、服务器推送、头信息压缩、二进制分帧
 
-* HTTP2.0的基本单位为二进制帧
+* HTTP/3
 
-* HTTP2.0中帧具有优先级
+  基于QUIC协议
 
-**HTTP特点**
-
-* 无状态：协议对客户端没有状态存储，对事物处理没有“记忆”能力，比如访问一个网站需要反复进行登录操作
-* 无连接：HTTP/1.1之前，由于无状态特点，每次请求需要通过TCP三次握手四次挥手，和服务器重新建立连接。比如某个客户机在短时间多次请求同一个资源，服务器并不能区别是否已经响应过用户的请求，所以每次需要重新响应请求，需要耗费不必要的时间和流量。
-* 基于请求和响应：基本的特性，由客户端发起请求，服务端响应简单快速、灵活
-* 通信使用明文、请求和响应不会对通信方进行确认、无法保护数据的完整性
-
-**HTTPS特点** 
-
-* 基于HTTP协议，通过SSL或TLS提供加密处理数据、验证对方身份以及数据完整性保护
-
-+ 内容加密：采用混合加密技术，中间者无法直接查看明文内容
-
-* 验证身份：通过证书认证客户端访问的是自己的服务器
-* 保护数据完整性：防止传输的内容被中间人冒充或者篡改
+  HTTP/2使用TCP协议+多路复用，所以当多个请求复用一个TCP时，如果某个请求出现丢包，由于TCP的滑动窗口，会一直等待丢失的包重传，导致多个请求受阻。所以提出来HTTP/3
 
 ### V8引擎内存机制
 
@@ -9876,6 +10146,8 @@ JS 引擎中对变量的存储主要有两种位置，栈内存和堆内存，�
 301   （永久移动）  请求的网页已永久移动到新位置。 服务器返回此响应（对 GET 或 HEAD 请求的响应）时，会自动将请求者转到新位置。
 
 302   （临时移动）  服务器目前从不同位置的网页响应请求，但请求者应继续使用原有位置来进行以后的请求。
+
+304      协商缓存
 
 **4开头 （请求错误）这些状态代码表示请求可能出错，妨碍了服务器的处理。**
 
@@ -9982,9 +10254,7 @@ if-modified-since: Mon, 24 Dec 2018 09:49:49 GMT
 
 3. 某些服务器不能精确的得到文件的最后修改时间。
 
-
-
-## 跨域
+### 跨域
 
 **浏览器的同源策略**：同源策略（Sameoriginpolicy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。同源策略会阻止一个域的javascript脚本和另外一个域的内容进行交互。
 
@@ -10007,7 +10277,7 @@ if-modified-since: Mon, 24 Dec 2018 09:49:49 GMT
 
 * **JSONP**
 
-  **核心思想：**Web 页面上直接使用Ajax受到同源策略的影响。但是，通过`<script>`调用js文件不受浏览器同源策略的影响，所以通过 Script 便签可以进行跨域的请求
+  **核心思想：**Web 页面上直接使用Ajax受到同源策略的影响。但是，通过`<script>`调用js文件不受浏览器同源策略的影响，所以通过 Script 便签可以进行跨域的请求。通过script标签加载JS脚本，在JS脚本中发起请求
 
   **优点：**简单适用，兼容性好（兼容低版本IE）
 
@@ -10017,42 +10287,62 @@ if-modified-since: Mon, 24 Dec 2018 09:49:49 GMT
 
   **例子：**
 
-  ```html
-  <!--前端代码-->
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <title>index.html</title>
-  </head>
-  <body>
-      <script>
-  	function jsonpCallback(data) {
-  	    alert('获得 X 数据:' + data.x);
-  	}
-      </script>
-      <script src="http://127.0.0.1:3000?callback=jsonpCallback"></script>
-  </body>
-  </html>
-  ```
+  前端
 
   ```js
-  //后端node的代码
-  const url = require('url');
-  	
-  require('http').createServer((req, res) => {
-   
-      const data = {
-  	x: 10
-      };
-      const callback = url.parse(req.url, true).query.callback;
-      res.writeHead(200);
-      res.end(`${callback}(${JSON.stringify(data)})`);
-   
-  }).listen(3000, '127.0.0.1');
-   
-  console.log('启动服务，监听 127.0.0.1:3000');
+  // 拼接url的
+  function stringify (data) {
+    const pairs = Object.entries(data)
+    const qs = pairs.map(([k, v]) => {
+      let noValue = false
+      if (v === null || v === undefined || typeof v === 'object') {
+        noValue = true
+      }
+      return `${encodeURIComponent(k)}=${noValue ? '' : encodeURIComponent(v)}`
+    }).join('&')
+    return qs
+  }
+  
+  function jsonp ({ url, onData, params }) {
+    const script = document.createElement('script')
+  
+    // 一、为了避免全局污染，使用一个随机函数名
+    const cbFnName = `JSONP_PADDING_${Math.random().toString().slice(2)}`
+    // 二、默认 callback 函数为 cbFnName
+    script.src = `${url}?${stringify({ callback: cbFnName, ...params })}`
+    // 三、使用 onData 作为 cbFnName 回调函数，接收数据。JSONP回调函数必须挂载到全局
+    window[cbFnName] = onData;
+  
+    document.body.appendChild(script)
+  }
   ```
+
+  服务
+
+  ```js
+  const http = require('http')
+  const url = require('url')
+  const qs = require('querystring')
+  
+  const server = http.createServer((req, res) => {
+    const { pathname, query } = url.parse(req.url)
+    const params = qs.parse(query)
+  
+    const data = { name: 'shanyue', id: params.id }
+  
+    if (params.callback) {
+      str = `${params.callback}(${JSON.stringify(data)})`
+      res.end(str)
+    } else {
+      res.end()
+    }
+  
+  })
+  
+  server.listen(10010, () => console.log('Done'))
+  ```
+
+  
 
 * **CORS**
 
@@ -10146,7 +10436,7 @@ if-modified-since: Mon, 24 Dec 2018 09:49:49 GMT
 
   通过代码你可以看出，当你访问 [http://127.0.0.1:3000](http://link.zhihu.com/?target=http%3A//127.0.0.1%3A3000) 的时候，服务器收到请求，会代你发送请求[https://cnodejs.org/api/v1/topics](http://link.zhihu.com/?target=https%3A//cnodejs.org/api/v1) 最后将获取到的数据发送给浏览器。
 
-## DNS
+### DNS
 
 用户访问网站的过程
 

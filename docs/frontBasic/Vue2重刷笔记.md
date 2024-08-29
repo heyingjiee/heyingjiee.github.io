@@ -2732,7 +2732,7 @@ new Vue({
 
 ```vue
 <child>
-  <template  #btn-content="slotProps">
+  <template #btn-content="slotProps">
   	{{slotProps.user.age}}
   </template>
 </child>
@@ -2740,7 +2740,7 @@ new Vue({
 
 Vue支持解构插槽数据
 
-```
+```vue
 <child v-slot:btn-content="{user:{age}}">
   {{age}}
 </child>

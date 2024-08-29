@@ -640,7 +640,7 @@ function xx(arr,target){
      	 |
   x    y        z
   
-  // arr[mid]!==target的情况也很有价值（35、69题），数组中没有target了，下面（target）表示其应该防止的文职
+  // arr[mid]!==target的情况也很有价值（35、69题），数组中没有target了，下面（target）表示其应该防止的位置
   // 2-1
        mid=r          l
      	   |            |
@@ -663,32 +663,6 @@ function xx(arr,target){
 ```js
 //给定一个 n 个元素有序的（升序）整型数组 nums 和一个目标值 target ，写一个函数搜索 nums 中的 target，如果目标值存在返回下标，否
 //则返回 -1。
-//
-// 示例 1:
-//
-// 输入: nums = [-1,0,3,5,9,12], target = 9
-//输出: 4
-//解释: 9 出现在 nums 中并且下标为 4
-//
-//
-// 示例 2:
-//
-// 输入: nums = [-1,0,3,5,9,12], target = 2
-//输出: -1
-//解释: 2 不存在 nums 中因此返回 -1
-//
-//
-//
-//
-// 提示：
-//
-//
-// 你可以假设 nums 中的所有元素是不重复的。
-// n 将在 [1, 10000]之间。
-// nums 的每个元素都将在 [-9999, 9999]之间。
-//
-//
-// Related Topics 数组 二分查找 👍 1532 👎 0
 ```
 
 二分法：
@@ -717,43 +691,7 @@ var binarySearch = function(nums, target) {
 ```js
 //给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。 
 //
-// 请必须使用时间复杂度为 O(log n) 的算法。 
-//
-// 
-//
-// 示例 1: 
-//
-// 
-//输入: nums = [1,3,5,6], target = 5
-//输出: 2
-// 
-//
-// 示例 2: 
-//
-// 
-//输入: nums = [1,3,5,6], target = 2
-//输出: 1
-// 
-//
-// 示例 3: 
-//
-// 
-//输入: nums = [1,3,5,6], target = 7
-//输出: 4
-// 
-//
-// 
-//
-// 提示: 
-//
-// 
-// 1 <= nums.length <= 10⁴ 
-// -10⁴ <= nums[i] <= 10⁴ 
-// nums 为 无重复元素 的 升序 排列数组 
-// -10⁴ <= target <= 10⁴ 
-// 
-//
-// Related Topics 数组 二分查找 👍 2264 👎 0
+// 请必须使用时间复杂度为 O(log n) 的算法
 ```
 
 二分法
@@ -1582,7 +1520,54 @@ while(left<=right)
 
   
 
+### [26. 删除有序数组中的重复项](https://leetcode.cn/problems/remove-duplicates-from-sorted-array/)
 
+题目要求原地，即空间复杂度为 O(1)
+
+对于数组这种结构，原地大多意味着覆盖、交换
+
+通过交换两个指针元素，left左侧（不包括left）是符合条件的元素，right查找符合条件的元素覆盖left的位置，之后left++
+
+![image-20240818215137862](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240818215138DTwJR4.png)
+
+```ts
+var removeDuplicates = function(nums) {
+    const len=nums.length
+    
+    let left=right=1 // 注意这里空出来一个left左侧留一个元素。这个题目要求数组长度>=1，所以不怕越界
+
+    for (;right<len;right++){
+        if(nums[left-1]!==nums[right]){// right是扫描剩下所有内容的，索引是right。left-1才是符合条件的元素，left留出了1个单位的缓冲区。未来符合条件的right元素都是覆盖到这个缓冲区里的
+            nums[left]=nums[right]
+            left++
+        }
+    }
+
+    return left
+};
+```
+
+### [80. 删除有序数组中的重复项 II](https://leetcode.cn/problems/remove-duplicates-from-sorted-array-ii/)
+
+```js
+var removeDuplicates = function(nums) {
+    // 快慢指针
+    const len=nums.length
+    if (len<2){
+        return len
+    }
+    let left=right=2
+    for (;right<len;right++){
+        // 1 1 1
+        if (nums[left-2]!==nums[right]){
+            nums[left]=nums[right]
+            left++
+        }
+    }
+
+    return left
+};
+```
 
 ### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/)
 
@@ -1851,49 +1836,6 @@ var threeSum = function(nums) {
 
 ### [11. 盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
 
-```js
-//给定一个长度为 n 的整数数组 height 。有 n 条垂线，第 i 条线的两个端点是 (i, 0) 和 (i, height[i]) 。 
-//
-// 找出其中的两条线，使得它们与 x 轴共同构成的容器可以容纳最多的水。 
-//
-// 返回容器可以储存的最大水量。 
-//
-// 说明：你不能倾斜容器。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//
-// 
-//输入：[1,8,6,2,5,4,8,3,7]
-//输出：49 
-//解释：图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。 
-//
-// 示例 2： 
-//
-// 
-//输入：height = [1,1]
-//输出：1
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// n == height.length 
-// 2 <= n <= 10⁵ 
-// 0 <= height[i] <= 10⁴ 
-// 
-//
-// Related Topics 贪心 数组 双指针 👍 4864 👎 0
-
-```
-
-解答
-
 容量取决于最小高度的边，尝试移动最小边是否会获得更大的容量
 
 ```js
@@ -1916,101 +1858,6 @@ var maxArea = function(height) {
 ```
 
 ### [160. 相交链表](https://leetcode.cn/problems/intersection-of-two-linked-lists/)
-
-题目
-
-```js
-//给你两个单链表的头节点 headA 和 headB ，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 null 。 
-//
-// 图示两个链表在节点 c1 开始相交： 
-//
-// 
-//
-// 题目数据 保证 整个链式结构中不存在环。 
-//
-// 注意，函数返回结果后，链表必须 保持其原始结构 。 
-//
-// 自定义评测： 
-//
-// 评测系统 的输入如下（你设计的程序 不适用 此输入）： 
-//
-// 
-// intersectVal - 相交的起始节点的值。如果不存在相交节点，这一值为 0 
-// listA - 第一个链表 
-// listB - 第二个链表 
-// skipA - 在 listA 中（从头节点开始）跳到交叉节点的节点数 
-// skipB - 在 listB 中（从头节点开始）跳到交叉节点的节点数 
-// 
-//
-// 评测系统将根据这些输入创建链式数据结构，并将两个头节点 headA 和 headB 传递给你的程序。如果程序能够正确返回相交节点，那么你的解决方案将被 视
-//作正确答案 。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//
-// 
-//输入：intersectVal = 8, listA = [4,1,8,4,5], listB = [5,6,1,8,4,5], skipA = 2, 
-//skipB = 3
-//输出：Intersected at '8'
-//解释：相交节点的值为 8 （注意，如果两个链表相交则不能为 0）。
-//从各自的表头开始算起，链表 A 为 [4,1,8,4,5]，链表 B 为 [5,6,1,8,4,5]。
-//在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点。
-//— 请注意相交节点的值不为 1，因为在链表 A 和链表 B 之中值为 1 的节点 (A 中第二个节点和 B 中第三个节点) 是不同的节点。换句话说，它们在内
-//存中指向两个不同的位置，而链表 A 和链表 B 中值为 8 的节点 (A 中第三个节点，B 中第四个节点) 在内存中指向相同的位置。
-// 
-//
-// 
-//
-// 示例 2： 
-//
-// 
-//
-// 
-//输入：intersectVal = 2, listA = [1,9,1,2,4], listB = [3,2,4], skipA = 3, skipB = 
-//1
-//输出：Intersected at '2'
-//解释：相交节点的值为 2 （注意，如果两个链表相交则不能为 0）。
-//从各自的表头开始算起，链表 A 为 [1,9,1,2,4]，链表 B 为 [3,2,4]。
-//在 A 中，相交节点前有 3 个节点；在 B 中，相交节点前有 1 个节点。
-// 
-//
-// 示例 3： 
-//
-// 
-//
-// 
-//输入：intersectVal = 0, listA = [2,6,4], listB = [1,5], skipA = 3, skipB = 2
-//输出：null
-//解释：从各自的表头开始算起，链表 A 为 [2,6,4]，链表 B 为 [1,5]。
-//由于这两个链表不相交，所以 intersectVal 必须为 0，而 skipA 和 skipB 可以是任意值。
-//这两个链表不相交，因此返回 null 。
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// listA 中节点数目为 m 
-// listB 中节点数目为 n 
-// 1 <= m, n <= 3 * 10⁴ 
-// 1 <= Node.val <= 10⁵ 
-// 0 <= skipA <= m 
-// 0 <= skipB <= n 
-// 如果 listA 和 listB 没有交点，intersectVal 为 0 
-// 如果 listA 和 listB 有交点，intersectVal == listA[skipA] == listB[skipB] 
-// 
-//
-// 
-//
-// 进阶：你能否设计一个时间复杂度 O(m + n) 、仅用 O(1) 内存的解决方案？ 
-//
-// Related Topics 哈希表 链表 双指针 👍 2377 👎 0
-
-```
 
 哈希计数：把链表A路过的节点存下，在遍历链表B，查找是否存在
 
@@ -2038,13 +1885,11 @@ var getIntersectionNode = function(headA, headB) {
 
 双指针
 
-A指针走到头后，再从B的位置开始走到c1，一共是8个节点
+![快慢指针-相交](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240818161311WrFu7K.png)
 
-![image-20240303230723256](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240303230723CMdpqx.png)
 
-B指针走到头后，再从A的位置开始走到c1，也是8个节点
 
-所以他们相遇点就是交点
+A、B两个链表长度不一样，只有当A节点走完自己的再走B的，B节点走完自己的再走A的，才能保证他们会出现相交。如何走到最后都没有相交就是不相交
 
 ```js
 var getIntersectionNode = function(headA, headB) {
@@ -2139,81 +1984,47 @@ var middleNode = function(head) {
 
 ### [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 
-题目
-
-```js
-//给定一个字符串 s ，请你找出其中不含有重复字符的 最长子串 的长度。 
-//
-// 
-//
-// 示例 1: 
-//
-// 
-//输入: s = "abcabcbb"
-//输出: 3 
-//解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。
-// 
-//
-// 示例 2: 
-//
-// 
-//输入: s = "bbbbb"
-//输出: 1
-//解释: 因为无重复字符的最长子串是 "b"，所以其长度为 1。
-// 
-//
-// 示例 3: 
-//
-// 
-//输入: s = "pwwkew"
-//输出: 3
-//解释: 因为无重复字符的最长子串是 "wke"，所以其长度为 3。
-//     请注意，你的答案必须是 子串 的长度，"pwke" 是一个子序列，不是子串。
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 0 <= s.length <= 5 * 10⁴ 
-// s 由英文字母、数字、符号和空格组成 
-// 
-//
-// Related Topics 哈希表 字符串 滑动窗口 👍 10006 👎 0
-
-```
-
-滑动窗口
+滑动窗口，因为要求不重复，所以采用set来实时记录窗口内数据
 
 注意：这个题描述的不准确，应该是连续子串。连续子串才能用滑动窗口
 
+从这个题我发现滑动窗口的一个细节点：
+
+* right放入窗口前，一直维护窗口，符合条件后再将right放入。这个题属于这种
+* right放入窗口后，再一直维护窗口直到符合条件
+
 ```js
 var lengthOfLongestSubstring = function(s) {
-  let left=0,right=0
-  let resSet=new Set()
+
+  // 记录滑动窗口数据。可以快速判断 right指针添加的元素是否在窗口中存在，如果存在就移动left剔除
+  let winRecordSet=new Set()
   let maxLen=0
+  let left=0,right=0
 
-  for (;right<s.length ; right++)  {
-    if (!resSet.has(s[right])){
-      resSet.add(s[right])
-      maxLen=Math.max(maxLen,resSet.size)
-
-    }else {
-      // 一直删除都没有
-      while (resSet.has(s[right])){
-        resSet.delete(s[left])
+  for(;right<s.length;right++){
+    if(winRecordSet.has(s[right])){
+      // 准备新加的元素在窗口内存在重复，通过左端点++，缩小窗口维护窗口内不重复的条件成立
+      while(winRecordSet.has(s[right])){
+        winRecordSet.delete(s[left])
         left++
       }
-      // 再把right加入集合
-      resSet.add(s[right])
-      maxLen=Math.max(maxLen,resSet.size)
-      
+      // 重复的元素剔除了，在把right放进去
+      winRecordSet.add(s[right])
+
+    }else{
+      // 新加元素，在窗口不存在重复
+      winRecordSet.add(s[right])
     }
+    maxLen=Math.max(maxLen,winRecordSet.size)
+
   }
   return maxLen
 };
 ```
+
+### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+下面递归里有这个题
 
 ### [219. 存在重复元素 II](https://leetcode.cn/problems/contains-duplicate-ii/)
 
@@ -2335,50 +2146,7 @@ var containsNearbyDuplicate = function(nums, k) {
 
 ### [438.找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string)
 
-```js
-//给定两个字符串 s 和 p，找到 s 中所有 p 的 异位词 的子串，返回这些子串的起始索引。不考虑答案输出的顺序。
-//
-// 异位词 指由相同字母重排列形成的字符串（包括相同的字符串）。
-//
-//
-//
-// 示例 1:
-//
-//
-//输入: s = "cbaebabacd", p = "abc"
-//输出: [0,6]
-//解释:
-//起始索引等于 0 的子串是 "cba", 它是 "abc" 的异位词。
-//起始索引等于 6 的子串是 "bac", 它是 "abc" 的异位词。
-//
-//
-// 示例 2:
-//
-//
-//输入: s = "abab", p = "ab"
-//输出: [0,1,2]
-//解释:
-//起始索引等于 0 的子串是 "ab", 它是 "ab" 的异位词。
-//起始索引等于 1 的子串是 "ba", 它是 "ab" 的异位词。
-//起始索引等于 2 的子串是 "ab", 它是 "ab" 的异位词。
-//
-//
-//
-//
-// 提示:
-//
-//
-// 1 <= s.length, p.length <= 3 * 10⁴
-// s 和 p 仅包含小写字母
-//
-//
-// Related Topics 哈希表 字符串 滑动窗口 👍 1392 👎 0
-
-```
-
-滑动 
-
-窗口中可能出现重复字符，不能使用Set存储。我们使用Hash计数存储
+滑动窗口中可能出现重复字符，不能使用Set存储。我们使用Hash计数存储
 
 为了判断 **窗口中的字符**与**p是否为异位词**，我们把p也转换为哈希存储，这样就可以对比了
 
@@ -2547,66 +2315,7 @@ var maxVowels = function(s, k) {
 
 ### [76. 最小覆盖子串](https://leetcode.cn/problems/minimum-window-substring)
 
-```js
-//给你一个字符串 s 、一个字符串 t 。返回 s 中涵盖 t 所有字符的最小子串。如果 s 中不存在涵盖 t 所有字符的子串，则返回空字符串 "" 。 
-//
-// 
-//
-// 注意： 
-//
-// 
-// 对于 t 中重复字符，我们寻找的子字符串中该字符数量必须不少于 t 中该字符数量。 
-// 如果 s 中存在这样的子串，我们保证它是唯一的答案。 
-// 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：s = "ADOBECODEBANC", t = "ABC"
-//输出："BANC"
-//解释：最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
-// 
-//
-// 示例 2： 
-//
-// 
-//输入：s = "a", t = "a"
-//输出："a"
-//解释：整个字符串 s 是最小覆盖子串。
-// 
-//
-// 示例 3: 
-//
-// 
-//输入: s = "a", t = "aa"
-//输出: ""
-//解释: t 中两个字符 'a' 均应包含在 s 的子串中，
-//因此没有符合条件的子字符串，返回空字符串。 
-//
-// 
-//
-// 提示： 
-//
-// 
-// m == s.length 
-// n == t.length 
-// 1 <= m, n <= 10⁵ 
-// s 和 t 由英文字母组成 
-// 
-//
-// 
-//进阶：你能设计一个在 
-//o(m+n) 时间内解决此问题的算法吗？
-//
-// Related Topics 哈希表 字符串 滑动窗口 👍 2840 👎 0
-
-```
-
-滑动窗口
-
-left-right范围包含t，left收紧区间，一旦区间不再能包含t了，right放大区间
+滑动窗口，left-right范围包含t，left收紧区间，一旦区间不再能包含t了，right放大区间
 
 ```js
 var minWindow = function(s, t) {
@@ -2802,7 +2511,7 @@ var maxSlidingWindow = function(nums, k) {
     // for 右指针 ， for循环会先把窗口扩大到k，然后触发while维护窗口
     for (;right<nums.length;right++){
 
-       // while 维护滑动窗口
+       // while 维护滑动窗口。不断通过left++缩小窗口
         while (right-left+1===k){
             // [1,2].slice(1,9) 。slice函数第二个参数溢出，也能正常使用
             res.push(Math.max(...nums.slice(left,right+1)))
@@ -2817,11 +2526,27 @@ var maxSlidingWindow = function(nums, k) {
 };
 ```
 
-单调**队列**
+上面算法时间复杂度是O(kn)，其中k是在窗口中找到最大值的复杂度
+
+**双端队列**
+
+该算法将O(k)优化到O(1)，在单调队列中维护着单调递减数据，每次取值仅需取队首即可
 
 视频讲解：https://www.bilibili.com/video/BV1bM411X72E/?p=27&spm_id_from=pageDriver
 
 ![image-20240512210738183](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202405122107380VvqXp.png)
+
+双端队列 = 单调栈的思路+栈底出栈（维护窗口大小）
+
+![image-20240820213618051](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240820213618krADrn.png)
+
+这个图一步步描述了滑动窗口移动时，对应的单调队列的变化
+
+看下面代码两点注意：
+
+* 按顺序变量的nums数组，i看作是窗口右端点。每轮for循环对应窗口移动1次
+* 我们从1次for循环入手分析，队尾比新人小，就一直删队尾，队头超出窗口区间就删掉
+* 队列中从队尾入队，从队首出队，其中仍然是数组顺序（只不过，队列不连续了，因为有些在队尾出去了）
 
 ```js
 var maxSlidingWindow = function(nums, k) {
@@ -2830,27 +2555,26 @@ var maxSlidingWindow = function(nums, k) {
 
     for (let i=0;i<nums.length;i++){
         // 不符合单调递减，队尾一直出队
-        while (deque.length&&nums[deque[deque.length-1]]<nums[i]){
+        while (deque.length>=1&&nums[deque[deque.length-1]]<nums[i]){
             deque.pop()
         }
         // 符合单调递减，再入队索引
         deque.push(i)
 
-        // 队头是最大值，但是如果对头在窗口之外，要剔除
+        // 队头是最大值，但是如果队头在窗口之外，要剔除
         while (deque[0]<=i-k){
             deque.shift()
         }
+      
+      	// 经过上面两个while的维护，到这里deque内元素个数是k个（即窗口大小）
 
-        // 存入答案 注意：必须够k个了，才才是存答案
-        // ans.push(nums[deque[0]])
-        if (i >= k - 1) ans.push(nums[deque[0]]);
+        // 存入答案 注意：索引i，是第i+1个数，必须>=k个了，才开始存答案
+        if (i+1 >= k ) ans.push(nums[deque[0]]);
     }
 
     return ans
 };
 ```
-
-
 
 ## 递归问题
 
@@ -2978,6 +2702,8 @@ function divide_conquer(problem, param1, param2, ...){
 
 #### [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
 
+分治
+
 ```js
 var myPow = function(x, n) {
     if (n===0){
@@ -2996,6 +2722,20 @@ var myPow = function(x, n) {
     }
 };
 ```
+
+递归
+
+```js
+var myPow = function(x, n) {
+    if(n===0){
+      return 1
+    }
+  
+    return myPow(x,n-1)*x
+};
+```
+
+对比看下 递归、分治还是有区别的
 
 #### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
 
@@ -3021,7 +2761,7 @@ var majorityElement = function(nums) {
 };
 ```
 
-#### [124. 二叉树中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+#### [124. 二中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
 
 解
 
@@ -3062,6 +2802,8 @@ var maxPathSum = function(root) {
 
 这个题难在如何维护窗口
 
+先将nums[right]加入窗口，在调整窗口到符合条件
+
 ```js
 var maxSubArray = function(nums) {
     let left=0,right=0
@@ -3071,7 +2813,7 @@ var maxSubArray = function(nums) {
         sum+=nums[right]
         max=Math.max(max,sum)
 
-        // 维护窗口  即要保证right之前的不能包含负数，nums[right]>sum就是这个含义
+        // 维护窗口   保证sum+=nums[right]其中原sum必须为证书，nums[right]>sum就是这个含义
       	// 一开始错误的想法：一直判断left指向的值，小于0就一直收缩窗口。
         // [1,-2]这种情况，left是正数，但是窗口内仍有负数-2
         while (nums[right]>sum){
@@ -3082,6 +2824,64 @@ var maxSubArray = function(nums) {
 
     }
     return max
+};
+```
+
+先调整到符合条件，再放入right。注意：sum初始值为0（或者移动窗口过程中窗口没有元素了，也会出现sum为0），这时如果max是个负数，那么通过max=Math.max(max,sum) 来确定最大值就是0了，但是实际上应该是那个负数。这种情况需要特别处理
+
+对于上面为什么可以规避这个问题我不太确定，只是查到Kadane算法，貌似：
+
+sum出现负数就重置为0，就能使得max = Math.max(max, sum)永远成立
+
+Kadane算法max初始化为第一个元素，我简单测试了下max初始化为-Infinity应该也是对的
+
+for循环中还会再次取出nums[0]与max作比较，虽然用了nums中的元素但是并不影响for循环的逻辑
+
+````js
+var maxSubArray = function(nums) {
+  let max = nums[0];
+  let sum = 0;
+
+  for (let i = 0; i < nums.length; i++) {
+    if (sum < 0) {
+      sum = 0; // 重置为0，因为负数会降低子数组的和
+    }
+    sum += nums[i];
+    max = Math.max(max, sum);
+  }
+
+  return max;
+};
+
+````
+
+
+
+```js
+var maxSubArray = function(nums) {
+  const len =nums.length
+
+  let left=right=0
+  let max=-Infinity
+  let sum=0
+  for (;right<len;right++){
+    // 放入right前，将窗口维护为和>=0
+    while(sum<0){
+      sum-=nums[left]
+      // 这种方式需要特别处理
+      if (sum!==0){
+        max=Math.max(max,sum)
+      }
+
+      left++
+    }
+
+    // 符合条件了，放入right
+    sum+=nums[right]
+    max=Math.max(max,sum)
+  }
+
+  return max
 };
 ```
 
@@ -3223,39 +3023,16 @@ backtrack(0,[])
 
 题目
 
+2刷感悟：这个题通过选、不选可以将数据收集到path，如果题目不是求子集，而是只保留有k个元素的子集，我们只需在最后一层的判断条件上 增加一个条件，即path=k
+
+```js
+if(curIndex===nums.length|| path ===k )
+```
+
 ```js
 //给你一个整数数组 nums ，数组中的元素 互不相同 。返回该数组所有可能的子集（幂集）。
-//
-// 解集 不能 包含重复的子集。你可以按 任意顺序 返回解集。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：nums = [1,2,3]
-//输出：[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
-//
-//
-// 示例 2：
-//
-//
-//输入：nums = [0]
-//输出：[[],[0]]
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= nums.length <= 10
-// -10 <= nums[i] <= 10
-// nums 中的所有元素 互不相同
-//
-//
-// Related Topics 位运算 数组 回溯 👍 2261 👎 0
 
+// 解集 不能 包含重复的子集。你可以按 任意顺序 返回解集。
 ```
 
 递归思路：在return放置每层的结果。这里的参数是辅助通知当前层是哪层
@@ -3279,7 +3056,7 @@ var subsets = function(nums) {
        return [...temp,...latterList]
 
    }
-
+ 
    return recursion(0)
 };
 
@@ -3357,22 +3134,23 @@ var subsets = function(nums) {
 };
 ```
 
-回溯解法2：从答案的角度，因为答案是子集，每次每次递归的path都是一个解（求[1、2、3]的子集，如果[1]是一个子集，[1、2]也是一个子集）
+回溯解法2：从答案的角度，因为答案是子集，每次递归的path都是一个解（求[1、2、3]的子集，如果[1]是一个子集，[1、2]也是一个子集）
 
 ```js
 var subsets = function(nums) {
     let ans=[]
 
     function backtrace(curIndex,path){
-				// 每一层递归都是一个解，推入ans中
-        ans.push(path.slice())
-
+				
         // 最后一层
         if (curIndex===nums.length){
             return
         }
 
         // 其余层
+        // 每一层递归都是一个解，推入ans中
+        ans.push(path.slice())
+
         for (let i=curIndex;i<nums.length;i++){
             path.push(nums[i])
             backtrace(i+1,path) // 下一层起始点为i+1,每次都只往后找，这是为了避免重复
@@ -3389,100 +3167,25 @@ var subsets = function(nums) {
 
 ##### [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
 
-题目
-
-```js
-//给定一个仅包含数字 2-9 的字符串，返回所有它能表示的字母组合。答案可以按 任意顺序 返回。
-//
-// 给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
-//
-// 示例 1：
-//
-//
-//输入：digits = "23"
-//输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
-//
-//
-// 示例 2：
-//
-//
-//输入：digits = ""
-//输出：[]
-//
-//
-// 示例 3：
-//
-//
-//输入：digits = "2"
-//输出：["a","b","c"]
-//
-//
-//
-//
-// 提示：
-//
-//
-// 0 <= digits.length <= 4
-// digits[i] 是范围 ['2', '9'] 的一个数字。
-//
-//
-// Related Topics 哈希表 字符串 回溯 👍 2777 👎 0
-
-```
-
 层次图：
 
 ![image-20240314002343237](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202403140023439rzIuR.png)
 
-递归思路：在return放置每层的结果，这里的参数是辅助通知当前层是哪层
+回溯法：从答案的角度
 
-```js
-var letterCombinations = function(digits) {
-    const m={
-        2:'abc',
-        3:'def',
-        4:'ghi',
-        5:'jkl',
-        6:'mno',
-        7:'pqrs',
-        8:'tuv',
-        9:'wxyz'
-    }
+```
+输入：digits = "23" 
 
-    function recursion(curIndex){
-        // 最后一层逻辑
-        if (curIndex===digits.length-1){
-            return m[digits[digits.length-1]].split('')
-        }
-
-        // 其余层公用逻辑（假设在0层）
-      	// 1层
-        const latterList=recursion(curIndex+1) 
-        // 0层
-        let temp=[]
-        for (let val1 of m[digits[curIndex]]){
-            for (let val2 of latterList){
-                temp.push(val1+val2) // 0层按键对应的几个字母，依次和1层的结果拼接
-            }
-        }
-        return temp
-
-    }
-  
-		// 本题入口
-    if (digits===''){
-        return []
-    }else {
-        // 递归
-        return recursion(0)
-    }
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
 ```
 
-递归思路：全局变量ans数组存储结果
+每个元素是一个解将其存储在path中，以"ad"这个解为例子，a是按键2的字母，d是按键3的字母
+
+计算path时，只需要将2的所有值for循序，进入下一层递归将3的所有值for循环
 
 ```js
 var letterCombinations = function(digits) {
-    const m={
+    const record={
         2:'abc',
         3:'def',
         4:'ghi',
@@ -3492,85 +3195,33 @@ var letterCombinations = function(digits) {
         8:'tuv',
         9:'wxyz'
     }
+
     let ans=[]
 
-
-    function recursion(curIndex){// 0层
-        // 最后一层逻辑
-        if (curIndex===digits.length-1){
-            ans=m[digits[digits.length-1]].split('')
-            return // 啥也不返回
-        }
-
-        // 其余层公用逻辑（假设在1层）
-        // 2层
-        recursion(curIndex+1)
-        // 1层 （2层执行了ans才有那层的结果）
-        let temp=[]
-        for (let val1 of m[digits[curIndex]]){
-            for (let val2 of ans){
-                temp.push(val1+val2)
-            }
-        }
-        ans=temp
-        return
-
-    }
-
-    if (digits===''){
+    // 用例"",计算的ans=[[]]，结果返回 [""],正确结果是[]。所以这里过滤掉
+    if(digits===''){
         return []
-    }else {
-        // 递归
-        recursion(0)
-        return ans
     }
 
-};
-```
-
-回溯法：通过递归入参收集path，将所有path推入ans中。
-
-前两种是单一递归函数向下级递归，所以需要一级中循环出所有结果（temp变量存储的），比较复杂。而回溯法通过for循环创建多个同级递归函数，分别向下递归，每个同级递归函数处理自己的
-
-```js
-var letterCombinations = function(digits) {
-    const m={
-        2:'abc',
-        3:'def',
-        4:'ghi',
-        5:'jkl',
-        6:'mno',
-        7:'pqrs',
-        8:'tuv',
-        9:'wxyz'
-    }
-    let ans=[]
-
-    function backtrace(curIndex,path){
-        // 最后一层  
-      	// 注意这里很重要：正常当curIndex指向digits最后一位时就是最后一层了，但是整体最后一层和前的层逻辑是一样的，所以这里又多加了一层，用于处理最后推入ans的逻辑
-        if (curIndex===digits.length){
-            ans.push(path.join(''))// 最后一层把path，存入ans
+    function dfs(curIndex,path){
+        // 最后一层
+        if(curIndex===digits.length){
+            ans.push(path.slice()) 
             return
         }
 
         // 其余层
-        // 创建多个同级的递归函数
-        // 例如用户按2，这里就是对于a、b、c分别创建3个同级的递归函数，每个同级递归函数继续执行递归
-        for (let [index,val] of Object.entries(m[digits[curIndex]])){
-            path[curIndex]=val //本层维护path . 注意：这里需要赋值到位置i。每个同级递归函数都用的同一个path，如果push到path中同级递归函数直接会互相影响
-            backtrace(curIndex+1,path) // 下层继续迭代维护path
+        for (let char of record[digits[curIndex]]){
+            path.push(char)
+            dfs(curIndex+1,path)
+            path.pop()
         }
-
     }
 
-    if (digits===''){
-        return []
-    }else {
-        backtrace(0,[])
-        return ans
-    }
+    dfs(0,[])
+   
 
+    return ans.map(item=>item.join(''))
 };
 ```
 
@@ -3669,40 +3320,6 @@ var partition = function(s) {
 //给定两个整数 n 和 k，返回范围 [1, n] 中所有可能的 k 个数的组合。
 //
 // 你可以按 任何顺序 返回答案。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：n = 4, k = 2
-//输出：
-//[
-//  [2,4],
-//  [3,4],
-//  [2,3],
-//  [1,2],
-//  [1,3],
-//  [1,4],
-//]
-//
-// 示例 2：
-//
-//
-//输入：n = 1, k = 1
-//输出：[[1]]
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= n <= 20
-// 1 <= k <= n
-//
-//
-// Related Topics 回溯 👍 1597 👎 0
-
 ```
 
 递归思路：return返回每层结果。这题难点在其余层的公用逻辑。这题存入全局变量的解法与前面都是一致的就省略了
@@ -3810,9 +3427,38 @@ var combine = function(n, k) {
 };
 ```
 
-回溯2：从答案角度，答案的curIndex位置可能的值 ，for循环枚举出来（curIndex-1位置为2是，枚举出来的是2后面的数，否则就有重复了，详见上面的图）
+回溯2：从答案角度，答案是： 多个长度k的数组 
+
+图里的圈就是一个解（path收集的路径），我们不再从输入的角度，去考虑1-n的每一位选与不选，而是从解的角度分析每层递归还有哪些值可以选，用for循环出来
+
+if最后终止的条件页
+
+![image-20240825190713642](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240825190713E28eiI.png)
 
 ```js
+var combine = function(n, k) {
+    let ans=[]
+    function dfs(startPos,path){
+        // 最后一层
+        if(path.length===k){
+            ans.push(path.slice())
+            return
+        }
+
+        for (let i=startPos;i<=n;i++){ // 本层可选的数字 
+            path.push(i)
+            dfs(i+1,path) // 下一层从下一个数开始，避免一个数被加入两次
+            path.pop()
+        }
+    }
+
+    dfs(1,[])
+
+    return ans
+};
+
+// --- 优化
+
 var combine = function(n, k) {
 
     let ans=[]
@@ -3853,49 +3499,6 @@ var combine = function(n, k) {
 //
 //
 // 返回 所有可能的有效组合的列表 。该列表不能包含相同的组合两次，组合可以以任何顺序返回。
-//
-//
-//
-// 示例 1:
-//
-//
-//输入: k = 3, n = 7
-//输出: [[1,2,4]]
-//解释:
-//1 + 2 + 4 = 7
-//没有其他符合的组合了。
-//
-// 示例 2:
-//
-//
-//输入: k = 3, n = 9
-//输出: [[1,2,6], [1,3,5], [2,3,4]]
-//解释:
-//1 + 2 + 6 = 9
-//1 + 3 + 5 = 9
-//2 + 3 + 4 = 9
-//没有其他符合的组合了。
-//
-// 示例 3:
-//
-//
-//输入: k = 4, n = 1
-//输出: []
-//解释: 不存在有效的组合。
-//在[1,9]范围内使用4个不同的数字，我们可以得到的最小和是1+2+3+4 = 10，因为10 > 1，没有有效的组合。
-//
-//
-//
-//
-// 提示:
-//
-//
-// 2 <= k <= 9
-// 1 <= n <= 60
-//
-//
-// Related Topics 数组 回溯 👍 812 👎 0
-
 ```
 
 回溯：输入角度，选不选
@@ -4014,42 +3617,7 @@ var combinationSum3 = function(k, n) {
 
 ##### [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
 
-问题
-
-```js
-//数字 n 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 有效的 括号组合。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：n = 3
-//输出：["((()))","(()())","(())()","()(())","()()()"]
-// 
-//
-// 示例 2： 
-//
-// 
-//输入：n = 1
-//输出：["()"]
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 1 <= n <= 8 
-// 
-//
-// Related Topics 字符串 动态规划 回溯 👍 3532 👎 0
-
-```
-
-回溯解法：
-
-从输入角度，选`( `或者选 `)`
+回溯解法：从输入角度，选`( `或者选 `)`
 
 原本我的解法是在最后一层中通过栈来判断是否满足括号匹配（有左括号就入栈，遇到右括号就出栈，最后栈为，则证明括号匹配）。递归过程中仅仅剪枝了 **右括号数<左括号数，才能加入有括号** 这一个条件，结果Maximum call stack size exceeded（栈溢出了）
 
@@ -4106,9 +3674,13 @@ var generateParenthesis = function(n) {
 
 #### 排列型
 
-##### [6. 全排列](https://leetcode.cn/problems/permutations/)
+##### [46. 全排列](https://leetcode.cn/problems/permutations/)
 
 从输入角度，每个位置只能有nums.length个可能（剪枝掉一些情况，实际会小于这个值）
+
+2刷感悟：我们用递归处理这个数组，本质上就是元素任意组合，但是这个题要求全排列就只是元素位置变化，不能有元素缺失，所以从输入角度看只有选一条路，不能不选。 
+
+还有就是，下面的path.includes是防止重复
 
 ```js
 var permute = function(nums) {
@@ -4135,6 +3707,7 @@ var permute = function(nums) {
     backtrace(0,[])
     return ans
 };
+
 ```
 
 排列型问题，curIndex位置应该是在剩余集合中选元素。例如 [1,x,x]，第一位是1了，后面两位就不能出1了。后面一位，只用枚举nums中就要剔除1剩余的元素
@@ -4208,7 +3781,96 @@ var permute = function(nums) {
 };
 ```
 
-## 动态规划
+## 迭代法与递归法
+
+递归在数理逻辑上总是能转化为迭代的
+
+递归：
+
+* 代码结构：函数调用自身
+* 结束方式：递归只能到最后一层终止，无法在任意中间节点终止递归
+* 效率：大量重复计算，效率低。可以用剪枝、记忆化来提高效率
+
+迭代：
+
+* 代码结构：使用for循环结构反复执行一组指令。for循环外部定义变量，每次迭代将数据存下来，作为下一步的输入，一步步逼近正确答案
+* 结束方式：任意位置设置终止条件，for循环会直接退出
+* 效率：高于一般的递归（未使用优化方法的递归）
+
+### 斐波那契
+
+```js
+// 递归
+function fin(n){
+  // 最后一层 ，fin(n) ->fin(n-1)、fi(n-2)，n会一步一步变成0、1
+  if(n===0||n==1){
+    return n
+  }
+  
+  // 本层。这里直接return就行（写latter是为了更清晰）
+  const latter=fin(n-1)+fi(n-2)
+  return latter
+  
+}
+
+// 迭代
+function fin(n){
+    // 前两项分别为0和1
+    if (n == 0) return 0;
+    if (n == 1) return 1;
+
+    // 初始的前两项值
+    int fib0 = 0;
+    int fib1 = 1;
+    int fibResult = 0;
+
+    // 从第三项开始迭代计算
+    for (int i = 2; i <= num; i++)
+    {
+        // 当前项等于前两项之和
+        fibResult = fib0 + fib1;
+
+        // 更新前两项的值
+        fib0 = fib1;
+        fib1 = fibResult;
+    }
+
+    return fibResult;
+}
+```
+
+### 阶乘
+
+```js
+// 递归
+function factorial(n){
+	if(n===1) return 1
+  return n*factorial(n-1)
+}
+
+// 迭代
+function factorial(n){
+  // 初始结果设为1
+  let result = 1;
+
+  // 迭代计算阶乘，从1到num逐步相乘
+  for (int i = 1; i <= n; i++){
+      result *= i;
+  }
+
+  return result;
+}
+```
+
+### 树的部分（待补充）
+
+dfs回溯算法，如果使用迭代法，需要用到辅助栈。这块以后再补充
+
+
+
+
+
+## 动态规划（迭代法）
 
 [好文](https://github.com/azl397985856/leetcode/blob/master/thinkings/dynamic-programming.md)介绍记忆化搜索到动态规划的内容
 
@@ -4263,46 +3925,6 @@ function xxx(){
 **动态规划**其实就是记忆化搜索的一种形式
 
 ### [198. 打家劫舍](https://leetcode.cn/problems/house-robber/)
-
-题目
-
-```js
-//你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上
-//被小偷闯入，系统会自动报警。
-//
-// 给定一个代表每个房屋存放金额的非负整数数组，计算你 不触动警报装置的情况下 ，一夜之内能够偷窃到的最高金额。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：[1,2,3,1]
-//输出：4
-//解释：偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
-//     偷窃到的最高金额 = 1 + 3 = 4 。
-//
-// 示例 2：
-//
-//
-//输入：[2,7,9,3,1]
-//输出：12
-//解释：偷窃 1 号房屋 (金额 = 2), 偷窃 3 号房屋 (金额 = 9)，接着偷窃 5 号房屋 (金额 = 1)。
-//     偷窃到的最高金额 = 2 + 9 + 1 = 12 。
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= nums.length <= 100
-// 0 <= nums[i] <= 400
-//
-//
-// Related Topics 数组 动态规划 👍 2946 👎 0
-
-```
 
 回溯：这题用回溯从输入角度会超时，因为回溯用的是**递归入参数通讯**，所以没法记忆化每层的结果
 
@@ -4422,56 +4044,6 @@ v[i]: 第i件物品的价值
 
 ##### [494. 目标和](https://leetcode.cn/problems/target-sum/)
 
-题目
-
-```js
-//给你一个非负整数数组 nums 和一个整数 target 。
-//
-// 向数组中的每个整数前添加 '+' 或 '-' ，然后串联起所有整数，可以构造一个 表达式 ：
-//
-//
-// 例如，nums = [2, 1] ，可以在 2 之前添加 '+' ，在 1 之前添加 '-' ，然后串联起来得到表达式 "+2-1" 。
-//
-//
-// 返回可以通过上述方法构造的、运算结果等于 target 的不同 表达式 的数目。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：nums = [1,1,1,1,1], target = 3
-//输出：5
-//解释：一共有 5 种方法让最终目标和为 3 。
-//-1 + 1 + 1 + 1 + 1 = 3
-//+1 - 1 + 1 + 1 + 1 = 3
-//+1 + 1 - 1 + 1 + 1 = 3
-//+1 + 1 + 1 - 1 + 1 = 3
-//+1 + 1 + 1 + 1 - 1 = 3
-//
-//
-// 示例 2：
-//
-//
-//输入：nums = [1], target = 1
-//输出：1
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= nums.length <= 20
-// 0 <= nums[i] <= 1000
-// 0 <= sum(nums[i]) <= 1000
-// -1000 <= target <= 1000
-//
-//
-// Related Topics 数组 动态规划 回溯 👍 1887 👎 0
-
-```
-
 回溯：输入视角，选+或-
 
 ```js
@@ -4545,51 +4117,6 @@ v[i]: 第i件物品的价值
 ![image-20240327002110418](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240327002110QofBWL.png)
 
 ##### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
-
-题目
-
-```js
-//给你一个整数数组 coins ，表示不同面额的硬币；以及一个整数 amount ，表示总金额。
-//
-// 计算并返回可以凑成总金额所需的 最少的硬币个数 。如果没有任何一种硬币组合能组成总金额，返回 -1 。
-//
-// 你可以认为每种硬币的数量是无限的。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：coins = [1, 2, 5], amount = 11
-//输出：3
-//解释：11 = 5 + 5 + 1
-//
-// 示例 2：
-//
-//
-//输入：coins = [2], amount = 3
-//输出：-1
-//
-// 示例 3：
-//
-//
-//输入：coins = [1], amount = 0
-//输出：0
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= coins.length <= 12
-// 1 <= coins[i] <= 2³¹ - 1
-// 0 <= amount <= 10⁴
-//
-//
-// Related Topics 广度优先搜索 数组 动态规划 👍 2789 👎 0
-
-```
 
 记忆化搜索，这里用map存储，当然也可以使用二位数组存储（行、列对应两个参数）
 
@@ -4665,58 +4192,6 @@ var coinChange = function(coins, amount) {
 ### 线性DP
 
 #### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)(LCS)
-
-题目
-
-```js
-//给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。
-//
-// 一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
-//
-//
-// 例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。
-//
-//
-// 两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：text1 = "abcde", text2 = "ace"
-//输出：3
-//解释：最长公共子序列是 "ace" ，它的长度为 3 。
-//
-//
-// 示例 2：
-//
-//
-//输入：text1 = "abc", text2 = "abc"
-//输出：3
-//解释：最长公共子序列是 "abc" ，它的长度为 3 。
-//
-//
-// 示例 3：
-//
-//
-//输入：text1 = "abc", text2 = "def"
-//输出：0
-//解释：两个字符串没有公共子序列，返回 0 。
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= text1.length, text2.length <= 1000
-// text1 和 text2 仅由小写英文字符组成。
-//
-//
-// Related Topics 字符串 动态规划 👍 1537 👎 0
-
-```
 
 递归
 
@@ -4846,58 +4321,6 @@ var longestCommonSubsequence = function(text1, text2) {
 
 #### [72. 编辑距离](https://leetcode.cn/problems/edit-distance/)
 
-题目
-
-```js
-//给你两个单词 word1 和 word2， 请返回将 word1 转换成 word2 所使用的最少操作数 。 
-//
-// 你可以对一个单词进行如下三种操作： 
-//
-// 
-// 插入一个字符 
-// 删除一个字符 
-// 替换一个字符 
-// 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：word1 = "horse", word2 = "ros"
-//输出：3
-//解释：
-//horse -> rorse (将 'h' 替换为 'r')
-//rorse -> rose (删除 'r')
-//rose -> ros (删除 'e')
-// 
-//
-// 示例 2： 
-//
-// 
-//输入：word1 = "intention", word2 = "execution"
-//输出：5
-//解释：
-//intention -> inention (删除 't')
-//inention -> enention (将 'i' 替换为 'e')
-//enention -> exention (将 'n' 替换为 'x')
-//exention -> exection (将 'n' 替换为 'c')
-//exection -> execution (插入 'u')
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 0 <= word1.length, word2.length <= 500 
-// word1 和 word2 由小写英文字母组成 
-// 
-//
-// Related Topics 字符串 动态规划 👍 3349 👎 0
-
-```
-
 
 $$
 dfs(i,j)=
@@ -5021,57 +4444,6 @@ var minDistance = function(word1, word2) {
 
 #### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
 
-题目
-
-```js
-//给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。
-//
-// 子序列 是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子
-//序列。
-//
-// 示例 1：
-//
-//
-//输入：nums = [10,9,2,5,3,7,101,18]
-//输出：4
-//解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
-//
-//
-// 示例 2：
-//
-//
-//输入：nums = [0,1,0,3,2,3]
-//输出：4
-//
-//
-// 示例 3：
-//
-//
-//输入：nums = [7,7,7,7,7,7,7]
-//输出：1
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= nums.length <= 2500
-// -10⁴ <= nums[i] <= 10⁴
-//
-//
-//
-//
-// 进阶：
-//
-//
-// 你能将算法的时间复杂度降低到 O(n log(n)) 吗?
-//
-//
-// Related Topics 数组 二分查找 动态规划 👍 3612 👎 0
-
-```
-
 递归，从枚举结果的角度
 
 ```js
@@ -5164,54 +4536,6 @@ var lengthOfLIS = function(nums) {
 ![image-20240407233550075](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240407233551E6bf3o.png)
 
 #### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
-
-题目
-
-```
-//给你一个整数数组 prices ，其中 prices[i] 表示某支股票第 i 天的价格。
-//
-// 在每一天，你可以决定是否购买和/或出售股票。你在任何时候 最多 只能持有 一股 股票。你也可以先购买，然后在 同一天 出售。
-//
-// 返回 你能获得的 最大 利润 。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：prices = [7,1,5,3,6,4]
-//输出：7
-//解释：在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
-//     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6 - 3 = 3 。
-//     总利润为 4 + 3 = 7 。
-//
-// 示例 2：
-//
-//
-//输入：prices = [1,2,3,4,5]
-//输出：4
-//解释：在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5 - 1 = 4 。
-//     总利润为 4 。
-//
-// 示例 3：
-//
-//
-//输入：prices = [7,6,4,3,1]
-//输出：0
-//解释：在这种情况下, 交易无法获得正利润，所以不参与交易可以获得最大利润，最大利润为 0 。
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= prices.length <= 3 * 10⁴
-// 0 <= prices[i] <= 10⁴
-//
-//
-// Related Topics 贪心 数组 动态规划 👍 2458 👎 0
-
-```
 
 分析
 
@@ -5364,49 +4688,6 @@ var maxProfit = function(prices) {
 
 #### [309. 买卖股票的最佳时机含冷冻期](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
 
-题目
-
-```js
-//给定一个整数数组
-// prices，其中第 prices[i] 表示第 i 天的股票价格 。
-//
-// 设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:
-//
-//
-// 卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。
-//
-//
-// 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
-//
-//
-//
-// 示例 1:
-//
-//
-//输入: prices = [1,2,3,0,2]
-//输出: 3
-//解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]
-//
-// 示例 2:
-//
-//
-//输入: prices = [1]
-//输出: 0
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= prices.length <= 5000
-// 0 <= prices[i] <= 1000
-//
-//
-// Related Topics 数组 动态规划 👍 1716 👎 0
-
-```
-
 递归解法
 
 ```js
@@ -5465,47 +4746,6 @@ var maxProfit = function(prices) {
 
 
 #### [188. 买卖股票的最佳时机 IV（最多k次交易）](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
-
-题目
-
-```
-//给你一个整数数组 prices 和一个整数 k ，其中 prices[i] 是某支给定的股票在第 i 天的价格。 
-//
-// 设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。也就是说，你最多可以买 k 次，卖 k 次。 
-//
-// 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：k = 2, prices = [2,4,1]
-//输出：2
-//解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。 
-//
-// 示例 2： 
-//
-// 
-//输入：k = 2, prices = [3,2,6,5,0,3]
-//输出：7
-//解释：在第 2 天 (股票价格 = 2) 的时候买入，在第 3 天 (股票价格 = 6) 的时候卖出, 这笔交易所能获得利润 = 6-2 = 4 。
-//     随后，在第 5 天 (股票价格 = 0) 的时候买入，在第 6 天 (股票价格 = 3) 的时候卖出, 这笔交易所能获得利润 = 3-0 = 3 
-//。 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 1 <= k <= 100 
-// 1 <= prices.length <= 1000 
-// 0 <= prices[i] <= 1000 
-// 
-//
-// Related Topics 数组 动态规划 👍 1155 👎 0
-
-```
 
 分析
 
@@ -5699,42 +4939,6 @@ function minScoreTriangulation(values) {
 
 #### [516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)
 
-```js
-//给你一个字符串 s ，找出其中最长的回文子序列，并返回该序列的长度。
-//
-// 子序列定义为：不改变剩余字符顺序的情况下，删除某些字符或者不删除任何字符形成的一个序列。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：s = "bbbab"
-//输出：4
-//解释：一个可能的最长回文子序列为 "bbbb" 。
-//
-//
-// 示例 2：
-//
-//
-//输入：s = "cbbd"
-//输出：2
-//解释：一个可能的最长回文子序列为 "bb" 。
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= s.length <= 1000
-// s 仅由小写英文字母组成
-//
-//
-// Related Topics 字符串 动态规划 👍 1200 👎 0
-
-```
-
 求得子序列就是子集，很容易想到选、不选的回溯解法。但是超时！！！
 
 ```js
@@ -5819,57 +5023,6 @@ var longestPalindromeSubseq = function(s) {
 
 ##### [543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
 
-```js
-//给你一棵二叉树的根节点，返回该树的 直径 。 
-//
-// 二叉树的 直径 是指树中任意两个节点之间最长路径的 长度 。这条路径可能经过也可能不经过根节点 root 。 
-//
-// 两节点之间路径的 长度 由它们之间边数表示。 
-//
-// 
-//
-// 示例 1： 
-// 
-// 
-//输入：root = [1,2,3,4,5]
-//输出：3
-//解释：3 ，取路径 [4,2,1,3] 或 [5,2,1,3] 的长度。
-// 
-//
-// 示例 2： 
-//
-// 
-//输入：root = [1,2]
-//输出：1
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 树中节点数目在范围 [1, 10⁴] 内 
-// -100 <= Node.val <= 100 
-// 
-//
-// Related Topics 树 深度优先搜索 二叉树 👍 1534 👎 0
-
-
-//leetcode submit region begin(Prohibit modification and deletion)
-/**
- * Definition for a binary tree node.
- * function TreeNode(val, left, right) {
- *     this.val = (val===undefined ? 0 : val)
- *     this.left = (left===undefined ? null : left)
- *     this.right = (right===undefined ? null : right)
- * }
- */
-/**
- * @param {TreeNode} root
- * @return {number}
- */
-```
-
 分析：最长直径一定是包含拐点的
 
 这个题有个特征，二叉树的递归并不是答案，递归仅仅是计算节点深度的
@@ -5878,27 +5031,32 @@ var longestPalindromeSubseq = function(s) {
 
 ```js
 var diameterOfBinaryTree = function(root) {
-  let ans=0
-  function dfs(node){
-    // 最后一层
-    if (node===null){
-      return 0
+    // 一定过拐点
+
+    let max=0
+
+    function dfs(node){
+        // 最后一层
+        if(node===null){
+            return 0
+        }
+
+        // 其余层
+        const leftDepth=dfs(node.left)
+        const rightDepth=dfs(node.right)
+
+
+        // return 的是每层的最大深度 ，深度-1，才是直径（边数）
+        // leftDepth+rightDepth=left直径+right直径+2 这是对的
+        max=Math.max(max,leftDepth+rightDepth)
+
+        return Math.max(leftDepth,rightDepth)+1
+        
     }
 
-    // 其余层
-    let left = dfs(node.left)
-    let right = dfs(node.right)
+    dfs(root)
 
-    // return 的是每层的最大深度 ，ans才是直径
-    // 深度-1，才是直径（边数）
-    // left+right=left直径+right直径+2 这是对的
-    ans=Math.max(ans,left+right)
-
-    return Math.max(left,right)+1  // 这里是计算左右子树最大深度
-    
-  }
-  dfs(root)
-  return ans
+    return max
 };
 ```
 
@@ -5907,44 +5065,6 @@ var diameterOfBinaryTree = function(root) {
 上一题直径是边数之和，这题路径和是节点val之和
 
 上一题直径是边数肯定是正数，即越大越好；这题路径节点val可能是负数
-
-```js
-//二叉树中的 路径 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 至多出现一次 。该路径 至少包含一个 节点，且不一定
-//经过根节点。 
-//
-// 路径和 是路径中各节点值的总和。 
-//
-// 给你一个二叉树的根节点 root ，返回其 最大路径和 。 
-//
-// 
-//
-// 示例 1： 
-// 
-// 
-//输入：root = [1,2,3]
-//输出：6
-//解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6 
-//
-// 示例 2： 
-// 
-// 
-//输入：root = [-10,9,20,null,null,15,7]
-//输出：42
-//解释：最优路径是 15 -> 20 -> 7 ，路径和为 15 + 20 + 7 = 42
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 树中节点数目范围是 [1, 3 * 10⁴] 
-// -1000 <= Node.val <= 1000 
-// 
-//
-// Related Topics 树 深度优先搜索 动态规划 二叉树 👍 2216 👎 0
-
-```
 
 解
 
@@ -6151,7 +5271,7 @@ Math.min(minDepth(root.left),minDepth(root.right))
 
 ![image-20240610165549167](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240610165549ym0eO5.png)
 
-```
+```js
 var minDepth = function(root) {
     function dfs(node){
         //
@@ -6244,6 +5364,23 @@ var invertTree = function(root) {
     return root
     
 };
+
+// 2刷时的一种错误写法
+var invertTree = function(root) {
+
+  if (root===null){
+    return null
+  }
+
+ 
+  root.right=invertTree(root.left)
+  // 下面这里的root.right已经不是原来的右子树了，而是上一步翻转后的右子树了，所以这样写错误
+  root.left=invertTree(root.right)
+
+
+  return root
+
+};
 ```
 
 ```js
@@ -6329,7 +5466,7 @@ var hasPathSum = function(root, targetSum) {
 
 #### [437. 路径总和 III](https://leetcode.cn/problems/path-sum-iii/)
 
-这道题写了两遍递归。
+这道题写了两遍递归，挺少见的
 
 rootSum(node,sum) 是以node作为根节点，递归找出的符合条件的路径。这也是常写的递归，以前没有注意到，dfs是从固定节点开始的递归
 
@@ -6360,7 +5497,7 @@ var pathSum = function(root, targetSum) {
         }
 
         sum+=node.val
-        if (sum===targetSum){
+        if (sum===targetSum){ // 这里已经和为targetSum为什么不return。因为节点值可能是负值
             count++
         }
 
@@ -6494,24 +5631,40 @@ var rightSideView = function(root) {
 这题和常规的递归有些不同。if判断不是边界，而是找到目标，每层向上返回的最终结果是节点
 
 ```js
-var lowestCommonAncestor = function(root, p, q) {
-    //
-    if (root===null||root===p||root===q){
-        return root
+var lowestCommonAncestor = function (root, p, q) {
+
+    function dfs(node) {
+        // 最后一层。 要是到树的叶子节点了，要么是找到p、q了，就停止
+        if (node === null||node === p || node === q) {
+            return node
+        }
+
+        // 其余层
+        const left = dfs(node.left)
+
+        const right = dfs(node.right)
+
+        // 找到p、q
+        if (left && right) { 
+            return node
+        }
+
+        if (left) {
+            return left
+        }
+
+        if (right) {
+            return right
+        }
+				
+      	return null
+
+    
     }
 
-    // left只有三种情况，要么是null、p、q、公共父节
-    const left=lowestCommonAncestor(root.left,p,q)
-    const right=lowestCommonAncestor(root.right,p,q)
-    if (left&&right){
-        return root // 公共父节点
-    }
-    if (left){
-        return left
-    }
-    if (right){
-        return right
-    }
+    return dfs(root)
+
+
 };
 ```
 
@@ -6539,6 +5692,39 @@ var lowestCommonAncestor = function(root, p, q) {
 
 };
 ```
+
+#### [114. 二叉树展开为链表](https://leetcode.cn/problems/flatten-binary-tree-to-linked-list/)
+
+![image-20240825141532860](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240825141535hIgI72.png)
+
+`in-place` 的意思可能更多说的是直接在原来的节点上改变指向，空间复杂度并没有要求
+
+注意：如果先序遍历生成数组后，在根据数组创建结果是错的，因为没有在原root上更改。即使下面这样最后赋值给root也是错误的，因为root原指向对象没有变化
+
+```js
+// 【错误解法！！！！】
+var flatten = function(root) {
+    const ansRoot=new TreeNode(null)
+
+    function dfs(node){
+
+        if(node===null){
+            return
+        }
+
+        ansRoot.left=null
+        ansRoot.right=new TreeNode(node.val)
+        dfs(node.left)
+        dfs(node.right)
+
+    }
+    dfs(root)
+    root = ansRoot
+    return root
+};
+```
+
+
 
 ### 前、中、后序遍历
 
@@ -6612,7 +5798,15 @@ var isValidBST = function(root) {
 };
 ```
 
-在中序遍历的过程中做比较(这种比较难理解，需要一直记录上一个元素，)
+在中序遍历的过程中做比较(这种比较难理解，需要一直记录上一个元素)
+
+2刷：一直比较node.val与node.left.val 、node.val与node.right.val的关系来判断是不是搜索二叉树，这是典型的错误。二叉树：任意节点的右孩子>左子树任意节点的值
+
+注意：下面这个树任意节点都是 当前节点>左子树、当前节点<右子树，但是整体来看不满足定义，节点7已经大于了节点5
+
+真正比较的是中序遍历结果数组的前一个
+
+![image-20240824161213301](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240824161214NEFrc6.png)
 
 ```js
 var isValidBST = function(root) {
@@ -6640,6 +5834,35 @@ var isValidBST = function(root) {
     return dfs(root)
 };
 ```
+
+#### [230. 二叉搜索树中第 K 小的元素](https://leetcode.cn/problems/kth-smallest-element-in-a-bst/)（中序）
+
+简单思路就是中序遍历，遍历的结果是从小到大的，题目要求取第K小的元素，就是变量结果的K-1号元素
+
+```js
+var kthSmallest = function(root, k) {
+    const inOrderList=[]
+    function dfs(node){
+        // 最后一层
+        if(node===null){
+            return
+        }
+
+        // 其余层
+        dfs(node.left)
+        inOrderList.push(node.val)
+        dfs(node.right)
+    }
+
+    dfs(root)
+
+    
+
+    return inOrderList[k-1]
+};
+```
+
+与98题类似，我们可以在递归过程中，一直进行比较找打第K小的元素。但是递归是无法终止的，即使找到了也会一直递归整棵树。所以，我们可是使用迭代的形式
 
 #### [144. 二叉树的前序遍历](https://leetcode.cn/problems/binary-tree-preorder-traversal/)
 
@@ -6920,6 +6143,54 @@ var deserialize = function(data) {
     return root
 };
 ```
+
+### 构造树
+
+* 根据数组构造二叉树
+
+* 根据数组构造二叉搜索树：任意节点A，其右子树都小于A的值，左子树都大于A的值
+
+  注意：下面这个树任意节点都是 当前节点>左子树、当前节点<右子树，但是整体来看不满足定义，节点7已经大于了节点5
+
+  ![image-20240824161213301](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240824161214NEFrc6.png)
+
+* 根据数组构造平衡树：任意节点的左右子树深度差<=1
+* 根据 （前、中序）或者（中、后序）遍历结果构造树
+
+#### [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
+
+如果直接将一个普通数据构造为平衡树（平衡树也是二叉树搜索树的一种）十分的复杂，代码量估计超过100行
+
+贴一个大佬的代码：https://leetcode.cn/problems/balance-a-binary-search-tree/solutions/150820/shou-si-avlshu-wo-bu-guan-wo-jiu-shi-yao-xuan-zhua
+
+这个题可以利用有序数组的条件
+
+```js
+var sortedArrayToBST = function(nums) {
+
+
+    function dfs(nums,left,right){
+        // 最后一层
+        if (left>right){ // left===right
+            return null
+        }
+
+        // 其余层
+        const mid=Math.floor((left+right)/2)
+        const node=new TreeNode(nums[mid])
+        node.left=dfs(nums,left,mid-1)
+        node.right=dfs(nums,mid+1,right)
+
+        return node
+    }
+
+    return dfs(nums,0,nums.length-1)
+};
+```
+
+
+
+
 
 ### 补充：dfs、bfs
 
@@ -7244,19 +6515,20 @@ var moveZeroes = function(nums) {
 right按数组顺序遍历，找到第一个不为零的（right前都是零）和前面的零交换。交换后，left向后移1位，表示[0,j-1]都是交换过去的非零值
 
 ```js
-let left=0,right=0
-while(right<nums.length){
-    if(nums[right]!==0){
-        let temp=nums[left]
-        nums[left]=nums[right]
-        nums[right]=temp
+var moveZeroes = function(nums) {
+  const len=nums.length
+  let left=right=0
+  for (;right<len;right++){
+    if (nums[right]!==0){
+      let temp=nums[right]
+      nums[right]=nums[left]
+      nums[left]=temp
 
-        left++
+      left++
     }
-    right++
 
-}
-return nums
+  }
+};
 ```
 
 ### [75. 颜色分类](https://leetcode.cn/problems/sort-colors/)
@@ -7591,6 +6863,72 @@ RecentCounter.prototype.ping = function(t) {
 ```
 
 
+
+### [560. 和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/)(前缀和)
+
+前缀和一般需要补一个0
+
+```js
+var subarraySum = function(nums, k) {
+  // 前缀和 [x1,x2,x3,x4,x5] ===> (x1+x2+x3+x4) -  (x1+x2)  如果两个前缀和的差，是k就代表 [x3,x4]一个解
+  // 等价于 前缀和-k=另一个前缀和
+  // 例子 [1,1] k=2; 符合条件，但是 前缀和(1+1)-k(2) = 0,0不是前缀和，所以需要补一个默认的前缀和0（这个边界好难啊！！！）
+  let prefixSum=0
+  let count=0
+  let record={0:1}
+  // 1
+  for(let num of nums){
+    prefixSum+=num
+
+    if (record[prefixSum-k]){
+      count+=record[prefixSum-k]
+    }
+
+    if (!record[prefixSum]){
+      record[prefixSum]=0
+    }
+    record[prefixSum]++
+
+
+  }
+
+  return count
+};
+```
+
+### [189. 轮转数组](https://leetcode.cn/problems/rotate-array/)
+
+就朴素的想法：拼接新数组，但是注意在注释里要求直接改nums数组不必
+
+![image-20240820232211535](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240820232211g62IIv.png)
+
+有两个坑：
+
+* k可能比数组长度还大
+* 给参数num复制指向了新的数组，并不是修改原num数组
+
+```js
+//【错误代码】
+
+// 注意用例：nums =[1,2]  k=3
+var rotate = function(nums, k) {
+    nums = [...nums.slice(-k),...nums.slice(0,-k)]
+};
+```
+
+正确解法：
+
+```js
+var rotate = function(nums, k) {
+  	// 对k取余
+    let offset=k % nums.length
+    let newNums = [...nums.slice(-offset),...nums.slice(0,-offset)]
+    // for循环改原数组
+    for(let index in newNums){
+        nums[index]=newNums[index]
+    }
+};
+```
 
 
 
@@ -8194,8 +7532,6 @@ var reverseWords = function(s) {
 };
 ```
 
-
-
 ### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
 
 动态规划
@@ -8264,8 +7600,6 @@ longestCommonSubsequence('ezupkr','ubmrapg')
 ```
 
 ### [115. 不同的子序列](https://leetcode.cn/problems/distinct-subsequences/)
-
-
 
 ```js
 dp[i][j] 表示 s[0~(i-1)]包含t[0~(j-1)]的个数
@@ -8420,6 +7754,186 @@ var backspaceCompare = function(s, t) {
 [leetcode总结](https://leetcode.cn/circle/discuss/CaOJ45/)
 
 ![1686879866-VArRlW-Binar_Fundamentals_00](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240314093709smkIYq.png)
+
+## 其他类型
+
+### [1. 两数之和](https://leetcode.cn/problems/two-sum/)
+
+非常绕，需要仔细想想
+
+```js
+var twoSum = function(nums, target) {
+    let count={} 
+    // key = target-数组元素A，value = 是数组元素A索引
+    // 元素B在count有，就是元素B与某元素之和是target
+    
+    for (let index in nums){
+        let value=nums[index]
+
+        if (count[value]){
+            return [index,count[value]]
+        }
+        count[target-value]=index
+    }
+};
+```
+
+### [49. 字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
+
+这里补充下split、join的坑
+
+```js
+// 一定得写参数''，被坑了好几次了
+"abc".split()  // ['abc']
+"abc".split(' ')  // ['abc']
+"abc".split('')  // ['a', 'b', 'c']
+
+
+// 一定得写参数''，完了写参数居然是默认逗号拼接，被坑了好几次了
+['a', 'b', 'c'].join() // 'a,b,c'
+['a', 'b', 'c'].join('') // 'abc'
+```
+
+```js
+var groupAnagrams = function(strs) {
+    const record={}
+    for (let word of strs){
+        const sortedWord= word.split('').sort().join('')
+       
+        if (!record[sortedWord]){
+            record[sortedWord]=[]
+        }
+        record[sortedWord].push(word)
+    }
+    return Object.values(record)
+};
+```
+
+### [128. 最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
+
+我这种用排序做的，不满足题目O(n)的要求。但是写的时候还是遇到很多注意点，所以还是记录下来
+
+```js
+var longestConsecutive = function(nums) {
+    const list=Array.from(new Set(nums)).sort((a,b)=>a-b)
+    console.log(list)
+    if (list.length<=1){
+        return list.length
+    }
+
+    let curMaxLen=1
+    let maxLen=1 // 注意这种 [1,4,5,7] 最大连续长度是1
+
+    for(let index=1;index<list.length;index++){
+        if (list[index] - list[index-1] ===1){
+            curMaxLen++
+            maxLen=Math.max(maxLen,curMaxLen)
+        }else {
+            curMaxLen=1
+        }
+    }
+
+    return maxLen
+
+};
+```
+
+标准解法
+
+```js
+var longestConsecutive = function(nums) {
+
+   if (nums.length===0){
+      return 0
+   }
+
+   const numSet=new Set(nums)
+
+   let max=1 // 注意：连续字符最小就是1，只要一个元素就是1个连续
+   for (let num of numSet){
+
+      if (numSet.has(num-1)){
+         // 看下num的前一个是否有，有就代表不是连续序列的第一个
+         // 不加这个就超时了
+         continue
+      }
+
+      let offset=1
+
+      while(numSet.has(num+offset)){
+
+         max=Math.max(max,offset+1)
+
+         offset++
+      }
+   }
+
+
+   return max
+};
+```
+
+### [56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
+
+先按每个区间左短点排序，然后能合并的就与结果集末尾合并，不能合并的推入结果集合
+
+```js
+var merge = function(intervals) {
+    let len=intervals.length
+    const sortedList=intervals.sort((a,b)=>a[0]-b[0])
+
+
+    let ans=[sortedList[0]]
+    for (let index=1;index<len;index++){
+        const [preStart,preEnd]=ans[ans.length-1]
+        const [curStart,curEnd]=intervals[index]
+
+        if (preEnd >= curStart){ // 能合并。如何能符合if的情况下一直合并
+            let end=curEnd>preEnd?curEnd:preEnd // [[1,4],[2,3]] ==> [[1,4]] 拼接的第2个数据包含在第1个内
+            ans[ans.length-1]=[preStart,end]
+
+        }else{ // 不能合并
+            ans.push([curStart,curEnd])
+        }
+    }
+
+    return ans
+};
+```
+
+### [238. 除自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/)
+
+```js
+var productExceptSelf = function(nums) {
+    // answer[i]=numsL[i]*numsR[i]
+    // numsL[i]=nums[0]*...nums[i-1]=numsL[i-1]*nums[i-1]
+    // numsR[i]=nums[i+1]*...nums[nums.length]=numsR[i-1]*nums[i+1]
+
+    const len=nums.length
+    const numsL=new Array(len).fill(1)
+    const numsR=new Array(len).fill(1)
+    const answer=new Array(len).fill(1)
+
+    for (let i=1;i<nums.length;i++){
+        numsL[i]=numsL[i-1]*nums[i-1]
+    }
+
+
+    for (let i=nums.length-2;i>=0;i--){
+        numsR[i]=numsR[i+1]*nums[i+1]
+    }
+    
+
+    for (let i=0;i<nums.length;i++){
+        answer[i]=numsL[i]*numsR[i]
+    }
+
+    return answer
+
+};
+```
+
+
 
 ## 补充
 
@@ -8617,7 +8131,238 @@ class Heap {
   
 ```
 
-## 资料
+### 排序
 
-[OI Wiki](https://oi-wiki.org/)
+不用关系原理，知道原理更记不住了。直接硬记：参数顺序之差为从小到大，参数逆序之差为从大到小
+
+```js
+arr.sort((a,b)=>a-b) // 从小到大
+
+arr.sort((a,b)=>b-a) // 从大到小
+```
+
+
+
+## 思考
+
+### for循环
+
+在很多题目中，for循环都给我一种很难表达出心里想法的感觉。这主要体现在：
+
+* for循环是将固定的逻辑重放多次，而实际编码中并不是每次逻辑都一致
+
+  ```js
+  // 例如1：for循环内部关系是比较 两个元素的关系。第一个元素之前没有其他元素了，所以不能带入比较两个元素的循环逻辑，需要让i=1开始
+  arr=[x,x,x,x,x]
+  for(let i=1;i<10;i++){
+    if(arr[i] 与 arr[i-1])
+  }
+  
+  
+  
+  // 例如2：部分i需要跳过
+  arr=[x,x,x,x,x]
+  for(let i=0;i<10;i++){
+    if(i===0){
+      continue
+    }
+  }
+  
+  
+  // 例如3：for内部结合while，可以将逻辑锁在while中，只有符合了才会再次进入for。参考滑动窗口模版
+  for(let i=1;i<10;i++){
+    // 
+    
+    while(条件1){
+      // 处理。 这里不能操作i，i是for循环来操作。如果内部需要操作i，外部也需要使用while
+    }
+    
+    while(条件2){
+      // 处理
+    }
+    
+    // xxx
+  }
+  
+  
+  
+  ```
+  
+  案例：leetcode239 
+  
+  ```js
+  // 经典滑动窗口模版
+  var maxSlidingWindow = function(nums, k) {
+      let res=[]
+      let left=right=0
+      
+      // for 右指针 ， for循环会先把窗口扩大到k，然后触发while维护窗口
+      for (;right<nums.length;right++){
+  
+         // while 维护滑动窗口。不断通过left++缩小窗口
+          while (right-left+1===k){
+              // [1,2].slice(1,9) 。slice函数第二个参数溢出，也能正常使用
+              res.push(Math.max(...nums.slice(left,right+1)))
+            
+            	// 推动左指针
+              left++
+          }
+          
+      }
+  
+      return res
+  };
+  ```
+  
+  
+  
+* for循环每次都产生结果，会与下次循环产生逻辑关联
+
+  案例：leetcode56题的答案，对比下
+
+  ```
+  [[1,3],[2,6],[8,10],[15,18]] ==> [[1,6],[8,10],[15,18]]
+  ```
+
+  
+
+  ```js
+  var merge = function(intervals) {
+      let len=intervals.length
+      const sortedList=intervals.sort((a,b)=>a[0]-b[0])
+  
+  
+      let ans=[sortedList[0]] // for循环外放置变量ans，在for循环中if...else条件中不断操作ans。
+      
+      // 这个题在写的时候十分痛苦：我想不到如何在for循环中的，多轮循环都是if成立（连续合并）。直到看到答案恍然大悟，多次连续合并都操作最后一个元素
+     
+      for (let index=1;index<len;index++){
+        
+          const [preStart,preEnd]=ans[ans.length-1] 
+          const [curStart,curEnd]=intervals[index]
+  
+          if (preEnd >= curStart){ // 能合并。如何能符合if的情况下一直合并
+              let end=curEnd>preEnd?curEnd:preEnd // [[1,4],[2,3]] ==> [[1,4]] 拼接的第2个数据包含在第1个内
+              ans[ans.length-1]=[preStart,end]
+  
+          }else{ // 不能合并
+              ans.push([curStart,curEnd])
+          }
+      }
+  
+      return ans
+  };
+  ```
+
+  
+
+
+
+### while
+
+理论上for循环是能替代while的，例如go中只有for循环。但是很多情况下，用for替代while看起来不太直观
+
+```js
+// 双指针维护一段区间
+while(left<right){ 
+  // 1、内部需要自己维护 left、right的变化
+  // 每一轮left、right至少有一个要变化，否则while循环每次都成了一样的了
+  
+  // 2、数组num会一直循环到出现不一样的元素为止
+  if(num[left-1]===num[left]){
+    left++
+  }
+  
+}
+
+// 含义同上，但是觉得不太直观
+for(;left<right;)
+```
+
+案例：leetcode11题的答案，对比下
+
+```js
+var maxArea = function(height) {
+  let left=0,right=height.length-1
+
+  let maxCapcity=0
+  while (left<right){
+    maxCapcity=Math.max((right-left)*Math.min(height[left],height[right]),maxCapcity)
+
+    // 看到内部根据条件，维护left、right变化，推动while进入下一次循环
+    if (height[left]<height[right]){
+      left++
+    }else {
+      right--
+    }
+  }
+  return maxCapcity
+
+};
+```
+
+### sum与max
+
+例如，在数组[1,2,3]中，统计某些子串的和，最后返回其中最大的和
+
+```js
+let sum=0
+let max=-Infinity
+
+for(xxx){
+  // sum累加，算出最后的sum
+  sum+=xx 
+}
+
+// sam计算完后，计算最大的max
+max=Math.max(max,sum)
+
+```
+
+上面的逻辑有一个错误点，例如当数组为[-1]， max错误的计算为0，max应该是-1
+
+如何规避这个问题啊？
+
+### 从问题分析
+
+动态规划，dfs递归，可以将所有子组合试一遍。从字符串/数组中挑选K个组成子串/子数组，for循环尝试所有可能需要K层，但是for循环层数不能是动态的啊
+
+* dfs子集型就是典型的收集所有可能的方式。尝试每层有 选、不选两中情况
+* 如果要求子串/子数组需要连续的。每层有选、不选两中情况，重点是不选是需要重置path，因为不选就是从当前断开了，从下一个开始连续
+
+#### 找子字符串
+
+* 找s的子串，要求子串不重复且最长 （leetcode3） 
+
+  滑动窗口：right一直向右扫描，不断将right加入窗口。但是加入窗口前用Set判断是否重复。如果重复就一直收紧left直到与right相同的那个数字被挤出窗口，再把right加入
+
+  ```
+  输入：s = "abcabcbb"  
+  输出：3   // 只求长度，最长abc
+  ```
+
+* 找s的子串，要求子串包含t且最短（leetcode76）
+
+  滑动窗口：right一直向右扫描，不断将right加入窗口。加入窗口后判断是否完全包含t，如果包含了试图收紧left获取最短子串，否则就继续将right加入
+
+  ```
+  输入：s = "ADOBECODEBANC", t = "ABC" 
+  输出："BANC"
+  ```
+
+  
+
+#### 找子数组
+
+* arr中找一个连续的子数组，要求该子数组和最大（leetcode53）
+
+  dfs尝试所有连续的答案，滑动窗口也能解决维护窗口和需要大于0，才能添加右元素
+
+* arr中找一个子数组（不需要连续），要求该子数组和为K(leetcode560)
+
+  与上题一样解法，会出现一种情况无法解决，dfs算出来子数组 [ [-1,0,1],[-1,0,1]]，即
+
+#### 原地处理数组
+
+leetcode283 移动零 
 

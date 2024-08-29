@@ -2080,7 +2080,7 @@ outer display type对外显示方面，盒子类型可以分成 2 类：块级�
 - 根元素html内部默认为BFC
 - 设置浮动的元素内部默认为BFC，元素的float属性默认为 none，需要设置为为left｜right
 - 非溢出的可见元素内部默认为BFC，可见元素的overflow 默认为为 visible，需要设置为hidden｜scroll
-- 定位元素内部默认为BFC，position 默认为static，需要设置为 absolute 或 fixe
+- 定位元素内部默认为BFC，position 默认为static，需要设置为 absolute 或 fixed
 - display 为 **inline-block**、table-cells、**flex**
 
 以上条件只要满足一个，元素内部就是BFC。
@@ -2325,65 +2325,65 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
 </div>
 ```
 
-* **后代选择器（空格）**
+#### 后代选择器（空格）
 
-  只能选择container下的后代元素（孩子+孙子+...）中的所有h1【可以看到test2这个元素能被选中】
+只能选择container下的后代元素（孩子+孙子+...）中的所有h1【可以看到test2这个元素能被选中】
 
-  ```html
-  .container h1{
-      color: red;
-  }
-  ```
+```html
+.container h1{
+    color: red;
+}
+```
 
-  ![image-20220416001630258](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001630258.png)
+![image-20220416001630258](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001630258.png)
 
-* **孩子选择器（>）**
+#### 孩子选择器（>）
 
-  只能选择container下的孩子元素中的所有h1
+只能选择container下的孩子元素中的所有h1
 
-  ```
-  .container>h1{
-      color: red;
-  }
-  ```
+```
+.container>h1{
+    color: red;
+}
+```
 
-  ![image-20220416001658747](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001658747.png)
+![image-20220416001658747](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001658747.png)
 
-* **兄弟选择器（～）**
+#### 兄弟选择器（～）
 
-  前面已经说了`>h1`选中了内容为`test1`的元素，`~h2`则是选中这个元素的兄弟中所有的`h2`
+前面已经说了`>h1`选中了内容为`test1`的元素，`~h2`则是选中这个元素的兄弟中所有的`h2`
 
-  ```
-  .container>h1~h2{
-      color: red;
-  }
-  ```
+```
+.container>h1~h2{
+    color: red;
+}
+```
 
-  ![image-20220416001944779](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001944779.png)
+![image-20220416001944779](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416001944779.png)
 
-* **临近兄弟选择器**
+#### 临近兄弟选择器（+）
 
-  这个例子，HTML更换为
+这个例子，HTML更换为
 
-  ```html
-  <div class="container">
-      <h2>上面的兄弟</h2>
-      <h1>test1</h1>
-      <h2>下面的兄弟</h2>
-      <div></div>
-      <h2>下面的稍远的兄弟</h2>
-  </div>
-  ```
+```html
+<div class="container">
+    <h2>上面的兄弟</h2>
+    <h1>test1</h1>
+    <h2>下面的兄弟</h2>
+    <div></div>
+    <h2>下面的稍远的兄弟</h2>
+</div>
+```
 
-  仅能选中h1下面紧挨着的是h2才能被选中
+仅能选中h1下面紧挨着的是h2才能被选中
 
-  ```css
-  .container>h1+h2{
-      color: red;
-  }
-  ```
+```css
+.container>h1+h2{
+    color: red;
+}
+```
 
-  ![image-20220416002605230](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416002605230.png)
+![image-20220416002605230](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Css%E7%9B%B8%E5%85%B3/image-20220416002605230.png)
 
 ### 属性选择器
 
@@ -2473,7 +2473,7 @@ IFC 的形成条件非常简单，块级元素中仅包含内联级别元素，�
   **首位位置选择**
 
   ```text
-  E:first-child /*E是其所在父元素内部的,且其排在第一个位置，才会被选中*/
+  E:first-child /*E是父元素内部的子元素,该选择器选中排在第一个位置的E*/
   E:last-child 同理
   ```
 
@@ -5292,7 +5292,7 @@ css
 
 https://code.juejin.cn/pen/7329835658690691107
 
-## 回流与重绘
+## 回流（重排）与重绘
 
 [【开发必看】你真的了解回流和重绘吗？](https://zhuanlan.zhihu.com/p/54811712)
 

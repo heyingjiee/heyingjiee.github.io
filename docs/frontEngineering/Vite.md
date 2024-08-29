@@ -937,7 +937,7 @@ Vite会自动将其插入网页
 
 **scss**
 
-注意还需要按照一个sass-loader
+注意还需要安装一个sass-loader
 
 ```
 pnpm install sass sass-loader -D
@@ -1368,7 +1368,7 @@ export default defineConfig({
 
 ![image-20230709193703592](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/JS/20230709193704%20.png)
 
-## Vite库配置
+## Vite打包库配置
 
 ```js
 export default defineConfig({
@@ -1754,7 +1754,13 @@ fetch('/api/users',{
 
 ![image-20230731182419704](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230731182420%20.png)
 
+### vite-plugin-env-parse 插件
 
+将.env文件中设置的 VITE_xxx 环境变量，在项目中添加TS提示：https://github.com/yue1123/vite-plugin-env-parse
+
+其实也可以自己写 vite-env.d.ts文件手动添加TS提示，但是当环境变量很多时就比较麻烦了
+
+![image-20240812160127625](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240812160128iBfZWj.png)
 
 ### console消除插件（待补充）
 

@@ -3798,7 +3798,7 @@ func main() {
 }
 
 
-// 这里调用defer时传入的是一个函数。函数在最后执行时读取的i=2
+// 这里调用defer时传入的是一个函数调用。函数在最后执行时读取的i=2
 func main() {
 	i := 0
 	defer func() {
@@ -7543,6 +7543,63 @@ func main() {
 我遇到的场景：**多线程调用git命令克隆仓库**
 
 参考：https://www.jb51.net/article/231381.htm
+
+**阻塞-返回输出**
+
+```go
+func exec_shell(s string) (string, error){
+    //函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
+    cmd := exec.Command("/bin/bash", "-c", s)
+ 
+    //读取io.Writer类型的cmd.Stdout，再通过bytes.Buffer(缓冲byte类型的缓冲器)将byte类型转化为string类型(out.String():这是bytes类型提供的接口)
+    var out bytes.Buffer
+    cmd.Stdout = &out
+ 
+    //Run执行命令，并阻塞直到完成。  这里stdout被取出，cmd.Wait()无法正确获取stdin,stdout,stderr，则阻塞在那了
+    err := cmd.Run()
+    if err != nil {
+        return "",err
+    }
+    return out.String(), err
+}
+```
+
+**阻塞-处理输出再返回**
+
+```go
+func execCommand(commandName string, params []string) bool {
+    // 1、函数返回一个*Cmd
+    cmd := exec.Command(commandName, params...)
+ 
+    // 2、StdoutPipe方法返回一个在命令Start后与命令标准输出关联的管道（Wait方法获知命令结束后会关闭这个管道，一般不需要显式的关闭该管道）
+    stdout, err := cmd.StdoutPipe()
+ 
+    if err != nil {
+        fmt.Println(err)
+        return false
+    }
+ 
+  	// 3、执行命令
+    cmd.Start()
+    reader := bufio.NewReader(stdout)//创建一个流来读取管道内内容，这里逻辑是通过一行一行的读取的
+ 
+    //实时循环读取输出流中的一行内容
+    for {
+        line, err2 := reader.ReadString('\n')
+        if err2 != nil || io.EOF == err2 {
+            break
+        }
+        fmt.Println(line)
+    }
+ 
+    // 4、阻塞直到该命令执行完成（该命令必须是被Start方法开始执行的）
+  	// Wait阻塞等待fork出的子进程执行的结果，和cmd.Start()配合使用。如果不写Wait阻塞住进程，会导致fork出执行shell命令的子进程变为僵尸进程
+    cmd.Wait()
+    return true
+}
+```
+
+
 
 ## 文件操作
 

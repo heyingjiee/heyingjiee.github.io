@@ -238,9 +238,120 @@ class Person {
 const tom:Person = new Person('tom')
 ```
 
-### Nest中自定义装饰器
+### Nest中自定义装饰器（待补充）
 
 tsconfig中必须开启装饰器属性
+
+选取一个简单的接口的例子分析
+
+```ts
+@Controller('usr')
+export class PersonController {
+  // 构造函数注入。PersonService会被注入到变量中
+  constructor(private readonly personService: PersonService) {}
+  
+  @Get('find')
+  handleQuery(@Query('name') name) {
+    return name
+  }
+}
+```
+
+其中可以看出来，Nest装饰器分为两类：
+
+* 类装饰器、方法装饰器。例如@Controller、 @Get
+* 参数装饰器。例如@Query('name')
+
+**类装饰器、方法装饰器**
+
+这两个其实是一样的，都是利用了setMate设置元数据。使用脚手架生成装饰器
+
+```shell
+nest g decorator require-login --flat --no-spec
+```
+
+可以看到其核心就是返回一个SetMetadata函数，可以给类、方法设置键值对。我们用require-login的值标识是否需要登录
+
+```ts
+import { SetMetadata } from '@nestjs/common';
+
+export const RequireLogin = () => SetMetadata('require-login', true); // 给类或方法增加key、value键值对数据
+```
+
+例子： 
+
+```ts
+@Controller('usr')
+export class PersonController {
+  // 构造函数注入。PersonService会被注入到变量中
+  constructor(private readonly personService: PersonService) {}
+  
+  @RequireLogin()
+  @Get('find')
+  handleQuery(@Query('name') name) {
+    return name
+  }
+}
+```
+
+给请求加上数据后，关键是如何使用。在Nest中请求进入后，守卫、拦截器均可以取出来该请求上的元数据
+
+```ts
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { Observable } from 'rxjs';
+
+import { Reflector } from '@nestjs/core';
+
+
+@Injectable()
+export class LoginGuard implements CanActivate {
+  @Inject(JwtService)
+  jwtService: JwtService;
+
+  @Inject(Reflector)
+  private readonly reflector: Reflector;
+
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    const host = context.switchToHttp();
+
+    const request: Request = host.getRequest();
+
+    // getAllAndOverride 表示出现重复的元数据，后面的覆盖前面的
+    const requireLogin = this.reflector.getAllAndOverride('require-login', [
+      context.getClass(), // 获取controll的元数据
+      context.getHandler(), // 获取handler的元数据
+    ]) as boolean | undefined;
+
+    // 未设置登陆校验，放行
+    if (!requireLogin) {
+      return true;
+    }
+
+    // 登录流程
+    if(登录成功){
+    	return true;
+    }else{
+      return false;
+    }
+  }
+}
+
+```
+
+
+
+**参数装饰器 **
+
+向方法的参数中注入数据
 
 
 
@@ -2336,7 +2447,7 @@ export class CreatePersonDto {
 @IsPort() // 端口
 @IsJSON() // json格式
 @IsLongitude() // 经度
-@IsLatitude() // 维度
+@IsLatitude() // 纬度
 @IsMobilePhone(locale: string) // 手机号
 ```
 
@@ -4494,6 +4605,123 @@ module.exports = {
 ## Rxjs
 
 掘金好文：https://juejin.cn/post/7268050036461223999?share_token=70325120-8ec3-482b-a69a-6a87d4c32e18
+
+
+
+## 业务实践
+
+### 身份认证与鉴权
+
+认证（Authentication）：通过账号秘密、JWT、Session等方式确认用户在系统中的身份。一般情况下登陆接口可以使用账号秘密、短信验证码登验登多种认证方式，其他需要登陆权限的接口使用一种认证方式并配置为全局守卫
+
+鉴权（Authorization、Permission）：认证后获得用户身份，用户执行某任务时验证是否具有权限
+
+#### 身份认证(实现原理)
+
+参考https://github.com/heyingjiee/nest-template-base/tree/base-template的user模块
+
+核心思想：自定义定义Guard，Guard从request 的取出认证信息（账户+密码、JWT、Session），Guard中查询数据库确认用户身份后，将用户信息在request上挂载user信息。接口的handler函数就能通过request获取调用接口用户的身份了
+
+#### 身份认证(passport)
+
+passport原理与自定义实现的思路一致，在passport中以插件的形式支持各种认证方式
+
+passport官网：https://www.passportjs.org/，可以看到支持很多认证方式
+
+![image-20240808161359515](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240808161400rNiBqE.png)
+
+@nest/passport封装了passprot包，Nest官网的[文档](https://nest.nodejs.cn/recipes/passport#%E5%AE%9E%E7%8E%B0%E9%80%9A%E8%A1%8C%E8%AF%81%E6%88%98%E7%95%A5)
+
+##### 登陆接口
+
+登录接口可以通过账号+密码、手机号+验证码、Auth2认证等多种方式来认证身份，一定认证成功就下发JWT。其他需要登陆的接口仅使用JWT来认证省份
+
+使用`passport-local`插件
+
+登录接口使用local策略。
+
+```
+pnpm install --save @nestjs/passport passport
+pnpm i passport-local
+pnpm i -D @types/passport-local
+```
+
+
+
+##### 其他需登陆的接口
+
+登录接口下发JWT给客户端，其他需要权限的接口统一使用JWT来身份认证。
+
+使用`passport-jwt`插件
+
+* PassportStrategy类传入JWT插件的策略，在构造函数中设置该策略的参数。（不同插件参数不同，插件内部实现从request上提取认证参数）
+* validate函数需要开发者实现，一般是通过查数据库确认用户身份。validate参数就从request提取的认证参数。（具体参数结构由插件决定，JWT插件的参数就是JWT的payload）。函数返回值会被挂载到request对象上
+* Passport提供了内置AuthGuard守卫，该守卫传入字符串，指定检验策略，例如`passport-jwt`的守卫就是`@AuthGuard('jwt')`。我们可以扩展AuthGuard守卫使其可以根据请求的元数据判断是否跳过校验（例如：将jwt守卫配置到全局，但有些接口是开放的）
+
+```shell
+pnpm install --save @nestjs/passport passport
+
+pnpm i passport-jwt
+
+pnpm i -D @types/passport-jwt
+```
+
+```ts
+// 1、配置使用的策略  jwt.strategy.ts 
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) { // 1-1、参数是具体策略
+  constructor() {
+    super({ // 1-2、这里是策略的配置
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: 'guang',
+    });
+  }
+
+  // 1-3、拿到的身份凭证数据，jwt返回的是payload，这取决于所使用的策略插件。开发者要实现查库确定用户信息后，return出去。这些信息会挂载到request.user上
+  async validate(payload: any) {
+    return { userId: payload.userId, username: payload.username };
+  }
+}
+
+// 2、在Auth的Module中引入 jwt.strategy.ts 
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { UsersModule } from '../users/users.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
+
+@Module({
+  imports: [UsersModule, PassportModule],
+  providers: [AuthService, JwtStrategy],
+})
+export class AuthModule {}
+
+
+
+// 3、在接口中使用守卫
+@UseGuards(AuthGuard('jwt')) 
+@Get("test")
+list(@Req() req: Request) {
+    console.log(req.user); // 用户信息在这里
+    return ''
+}
+
+// 4、扩展指定的守卫
+
+```
+
+如何获取super中传入的策略插件配置？到passport[官网](https://www.passportjs.org/packages/)中查询使用的插件，找到示例代码，其中传入策略函数的第一个参数对象，就是该策略插件的位置
+
+![image-20240809153441628](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240809153442U97dBV.png)
+
+Nest中使用@nest/passport是对passport的封装，与passport的示例代码有一些差异。我们只需关注配置项即可
+
+![image-20240809153215676](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240809153216jqPEmX.png)
 
 
 

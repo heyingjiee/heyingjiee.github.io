@@ -1439,8 +1439,6 @@ COPY . .
 RUN npm config set registry http://registry.npmmirror.com && npm install
 ```
 
-
-
 ### Go
 
 golang镜像比较大，一般作为分阶段构建的第一步用来编译Go源码。编译后结果直接使用alpine镜像运行即可
