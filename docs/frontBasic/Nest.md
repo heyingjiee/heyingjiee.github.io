@@ -1043,7 +1043,7 @@ export class AppModule {}
 
 ### 特殊全局注入
 
-前面提到全局模块、动态模块设置globel属性为true，两种方式可以将类注入到全局。在任何模块无需引用即可注入全局对象
+前面提到全局模块、动态模块设置globel属性为true，两种方式可以将类注入到全局。在任何模块无需在Module中import引用直接
 
 在【Nest AOP核心】章节会讲到，一般情况providers只能在本模块注入，有些特殊token：APP_GUARD、APP_PIPE、APP_INTERCEPTOR、APP_FILTER可以实现全局注入
 
@@ -1078,7 +1078,7 @@ export class AppModule {}
 
 ### 注意
 
-#### 注入失败
+#### 注入失败场景1
 
 依赖自动注入是将@Injectable修饰的类实例化为对象后，放入IOC容器。如果该类还依赖了其他注入，IOC容器也自动为我们处理好
 
@@ -1097,6 +1097,57 @@ new xxx()
 ```
 
 最常见的场景就是【Nest AOP核心】章节中的例子，即全局注册方式1的形式
+
+#### 注入失败场景2
+
+```
+Auth模块下
+|- auth.service.ts
+|- auth.controller.ts
+|- auth.guard.ts
+
+App模块下
+@Module({
+  imports: [AuthModule]
+	controllers: [AppController],
+	providers: [
+    AppService,
+    // 全局路由守卫
+    {
+      provide: 'APP_GUARD',
+      useClass: JwtVerifyGuard,
+    }
+	]  
+})
+export class AppModule {}
+```
+
+我的守卫内部注入了 
+
+```ts
+@Inject()
+private readonly roleService: RoleService;
+```
+
+这时候会报错注入失败
+
+这是因为模块之间相互隔离，守卫函数是在App模块使用，但是在这个模块的容器中没有RoleService实例。注意`imports: [AuthModule]` 只是触发AuthModule初始化(比如触发生命周期钩子)，如果需要其内部的Injectable类，需要再AuthModule内部导出RoleService
+
+```ts
+@Module({
+  imports: [TypeOrmModule.forFeature([User])],
+  controllers: [AuthController],
+  providers: [
+    AuthService
+  ],
+  exports: [RoleAuthService], // 这里需要导出AppModule引入后，才能使用带注入AuthService的守卫
+})
+export class AuthModule {}
+```
+
+
+
+
 
 #### exports导出
 
@@ -2644,14 +2695,19 @@ Exception Filter 是在 Nest 应用抛异常的时候，捕获它并返回一个
     
   // 创建异常对象
   new HttpException()
-  new HttpException('错误内容',HttpStatus.NOT_FOUND) // 支持传入错误内容、http状态码
+  new HttpException('错误内容',HttpStatus.NOT_FOUND)
   new HttpException('错误内容',HttpStatus.NOT_FOUND,{
     cause:new Error('触发错误的原因')
   }) 
+  
+  // 具体的异常，就不用传Http状态码了
+  throw new UnauthorizedException('错误内容',{
+    cause:new Error('触发错误的原因')
+  });
   ```
-
+  
   HttpException的子类
-
+  
   ![image-20240603003000955](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/2024060300300168Y7ca.png)
 
 
@@ -3550,7 +3606,7 @@ npm install --save @nestjs/typeorm typeorm mysql2
 # @nestjs/typeorm 是对typeorm的封装，对外暴露了 **动态模块TypeOrmModule**
 ```
 
-第一步：全部引入动态模块TypeOrmModule，在其中配置数据库连接信息。项目启动时就会自动连接数据库
+第一步：全部引入动态模块TypeOrmModule，在其中配置数据库连接信息。项目启动时就会自动连接数据库。且forRoot返回的就是全局模块，不必在其他模块使用import导入
 
 ```ts
 // --------- app.module.ts ---------
@@ -3751,34 +3807,31 @@ export class PersonController {
     @InjectEntityManager()
     private readonly manager: EntityManager;
   
-    @InjectRepository(Person)
-    private readonly personRepository: Repository<Person>;
-  
     // 查找
     findAll() {
-      return this.personRepository.findBy({
+      return this.manager.findBy(Person,{
         id: 1,
       });
     }
   
     // 更新
     update(id: number, createPersonDto: CreatePersonDto) {
-      return this.personRepository.update(id, createPersonDto);
+      return this.manager.update(Person,id, createPersonDto);
     }
   
     // id存在就是更新，不存在就是增加
     save(id: number, createPersonDto: CreatePersonDto) {
-      return this.personRepository.save({ id, ...createPersonDto });
+      return this.manager.save(Person,{ id, ...createPersonDto });
     }
   
     // 删除
     remove(id: number) {
-      return this.personRepository.delete(id);
+      return this.manager.delete(Person,id);
     }
   }
   
   ```
-
+  
 * 方式2：forFeature方法，在服务中使用@InjectRepository(Person)指定表为Person
 
   动态模块TypeOrmModule除了提供forRoot来初始化数据库连接，还提供了forFeature设置操作哪张表
@@ -4634,17 +4687,40 @@ passport官网：https://www.passportjs.org/，可以看到支持很多认证方
 
 ##### 登陆接口
 
-登录接口可以通过账号+密码、手机号+验证码、Auth2认证等多种方式来认证身份，一定认证成功就下发JWT。其他需要登陆的接口仅使用JWT来认证省份
+登录接口可以通过账号+密码、手机号+验证码、Auth2认证等多种方式来认证身份，认证成功就下发JWT。其他需要登陆的接口仅使用JWT来认证身份
 
-使用`passport-local`插件
+* **账号密码**
 
-登录接口使用local策略。
+  使用`passport-local`插件
 
-```
-pnpm install --save @nestjs/passport passport
-pnpm i passport-local
-pnpm i -D @types/passport-local
-```
+  ```shell
+  pnpm install --save @nestjs/passport passport
+  pnpm i passport-local
+  pnpm i -D @types/passport-local
+  ```
+
+* **Github**
+
+  ```shell
+  pnpm i passport-github2
+  pnpm i -D @types/passport-github2
+  ```
+
+  ```
+  http://localhost:3000/auth/github-login
+  ```
+
+  https://docs.github.com/zh/apps/oauth-apps
+
+  ![image-20240901223718223](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240901223719M30XSl.png)
+
+  
+
+* **扫码**
+
+* 24dcd69755dbc318ec5d74ed1dabd87a84a9187c
+
+  ![image-20240901221616538](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240901221616jIxA3Z.png)
 
 
 
@@ -4711,7 +4787,43 @@ list(@Req() req: Request) {
     return ''
 }
 
-// 4、扩展指定的守卫
+// 4、扩展指定的守卫。 比如加入@IsPublic就可跳过该守卫
+import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { JwtService } from '@nestjs/jwt';
+import { Reflector } from '@nestjs/core';
+import { AuthGuard } from '@nestjs/passport';
+import { CustomLogger } from '../../common/logger/logger.module';
+
+@Injectable()
+export class JwtVerifyGuard extends AuthGuard('jwt') {
+  @Inject()
+  jwtService: JwtService;
+
+  @Inject()
+  private readonly reflector: Reflector;
+
+  @Inject()
+  private readonly logger: CustomLogger;
+
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    // getAllAndOverride 表示出现重复的元数据，后面的覆盖前面的
+    const isPublic = this.reflector.getAllAndOverride('is-public', [
+      context.getClass(), // 获取class的元数据
+      context.getHandler(), // 获取handler的元数据
+    ]) as boolean | undefined;
+
+    // 无需登录接口，直接放行
+    if (isPublic) {
+      return true;
+    }
+
+    // 需要登陆，则调用AuthGuard('jwt')
+    return super.canActivate(context);
+  }
+}
 
 ```
 
@@ -4722,6 +4834,87 @@ list(@Req() req: Request) {
 Nest中使用@nest/passport是对passport的封装，与passport的示例代码有一些差异。我们只需关注配置项即可
 
 ![image-20240809153215676](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240809153216jqPEmX.png)
+
+#### passport策略
+
+我们使用passport-local、passport-jwt提供的策略，或者官网搜到的其他策略
+
+如果，我们需要实现一个自己的策略怎么办？ 公司内部有SSO系统，我们可以尝试实现 passport-sso
+
+可以参考 passport-local 的实现：https://github.com/jaredhanson/passport-local/blob/master/lib/strategy.js
+
+其中使用了passport-strategy这个包，这个包提供了一个策略抽象类
+
+```shell
+pnpm i passport-strategy
+```
+
+实现定义Strategy函数（处理策略参数），实现函数的authenticate函数（处理策略逻辑，从request上取需要的参数）
+
+```js
+var passport = require('passport-strategy')
+  , util = require('util')
+  , lookup = require('./utils').lookup;
+
+// options是策略的选项，verify是校验钩子
+function Strategy(options, verify) {
+  if (typeof options == 'function') { // 如果没有传选项，第一个参数options就是verify函数
+    verify = options;
+    options = {};
+  }
+  if (!verify) { throw new TypeError('LocalStrategy requires a verify callback'); }
+  
+  // 默认的选项usernameField、passwordField、passReqToCallback
+  this._usernameField = options.usernameField || 'username';
+  this._passwordField = options.passwordField || 'password';
+  
+  // 调用Strategy()函数，绑定this
+  passport.Strategy.call(this);
+  
+  // 策略名。 比如，在Nest中的@UseGuards(AuthGuard('local'))
+  this.name = 'local';
+  this._verify = verify;
+  this._passReqToCallback = options.passReqToCallback;
+}
+
+// Strategy 继承 passport.Strategy
+util.inherits(Strategy, passport.Strategy);
+
+// 
+Strategy.prototype.authenticate = function(req, options) {
+  options = options || {};
+  var username = lookup(req.body, this._usernameField) || lookup(req.query, this._usernameField);
+  var password = lookup(req.body, this._passwordField) || lookup(req.query, this._passwordField);
+  
+  if (!username || !password) {
+    return this.fail({ message: options.badRequestMessage || 'Missing credentials' }, 400);
+  }
+  
+  var self = this;
+  
+  function verified(err, user, info) {
+    if (err) { return self.error(err); }
+    if (!user) { return self.fail(info); }
+    self.success(user, info);
+  }
+  
+  try {
+    // 这里是校验钩子
+    if (self._passReqToCallback) {
+      // 如果指定了 `返回请求对象选项` 的钩子参数
+      this._verify(req, username, password, verified);
+    } else {
+      // 不指定passReqToCallback的构造参数
+      this._verify(username, password, verified);
+    }
+  } catch (ex) {
+    return self.error(ex);
+  }
+};
+
+// 导出
+module.exports = Strategy;
+```
 
 
 

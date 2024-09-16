@@ -4450,16 +4450,16 @@ if(matchRes){
 '[object Array]'.replace(/^\[object (.*)\]$/, '$1'); // $1表示第一个捕获组。返回'Array'
 
 // 用法3：replacement可以是函数
-"a1b".replace(/[a-z]/g, (match，offset) => {
-  console.log(match，offset); // a 0 ; b 2
-  return originStr.toUpperCase();
+"a1b".replace(/[a-z]/g, (match,offset) => {
+  console.log(match,offset); // a 0 ; b 2
+  return match.toUpperCase();
 });
 
 // 当正则中存在匹配组时， match,...pN,offset ，其中pN就是匹配组
 '[object Array]'.replace(/^\[object (.*)\]$/, (match, p1)=>{
-  	// match是正则匹配到的，p1是第一个捕获组。如果有第二个捕获组，就再加1个入参
+  	// match是正则匹配到的文本，p1是第一个捕获组。如果有第二个捕获组，就再加1个入参
   	// 注意：捕获组匹配不到是空字符串
-    console.log(match, p1) 
+    console.log(match, p1) // [object Array] Array
     
     return p1.toLowerCase()
 }); // 返回 'array'
@@ -7610,17 +7610,24 @@ import React from "react";
   export { name age }
   ```
 
-  在一个文件中导入又导出，可以直接这样写：
+  
 
-  一般用法是在index文件中把整个npm包需要导出的重新具名导出
-  
-  ```js
-  // module中如果有具名导出name，通过下面可以再次具名导出
-  export { name } from "./module.js";
-  
-  // 从module2拿到默认导出，在改成具名导出NewCar
-  export { default as NewCar } from './src/main/ets/pages/Index'
-  ```
+**重新导出**
+
+在一个文件中导入又导出，可以直接这样写：
+
+一般用法是在index文件中把整个npm包需要导出的重新具名导出
+
+```js
+// module中如果有具名导出name，通过下面可以再次具名导出
+export { name } from "./xxx";
+
+// 从module2拿到默认导出，在改成具名导出NewCar
+export { default as NewCar } from './xxx'
+
+
+export * from './xxx'  // 重新导出xxx中的多值导出。不包含default默认导出
+```
 
 
 
@@ -8938,7 +8945,7 @@ JS操作当前域名下的Cookie：
 
 ```js
 // 读取当前域名下的Cookie
-document.cookie
+document.
 
 //该操作只会更新Cookie中的user字段为hedaodao，其他Cookie字段不会被影响
 document.cookie = "user=hedaodao";  

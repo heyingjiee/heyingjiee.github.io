@@ -2033,41 +2033,6 @@ var lengthOfLongestSubstring = function(s) {
 ```js
 //给你一个整数数组 nums 和一个整数 k ，判断数组中是否存在两个 不同的索引 i 和 j ，满足 nums[i] == nums[j] 且 abs(i 
 //- j) <= k 。如果存在，返回 true ；否则，返回 false 。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：nums = [1,2,3,1], k = 3
-//输出：true 
-//
-// 示例 2： 
-//
-// 
-//输入：nums = [1,0,1,1], k = 1
-//输出：true 
-//
-// 示例 3： 
-//
-// 
-//输入：nums = [1,2,3,1,2,3], k = 2
-//输出：false 
-//
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 1 <= nums.length <= 10⁵ 
-// -10⁹ <= nums[i] <= 10⁹ 
-// 0 <= k <= 10⁵ 
-// 
-//
-// Related Topics 数组 哈希表 滑动窗口 👍 690 👎 0
-
 ```
 
 滑动窗口
@@ -3227,6 +3192,8 @@ var letterCombinations = function(digits) {
 
 ##### [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
 
+2刷感悟：正常情况下dfs是枚举所有字符的组合，但是这题通过选不选逗号，记录 startIndex、endIndex，可实现筛选连续字符串
+
 回溯1：输入视角，每两个连续字符之间逗号选与不选
 
 ![image-20240317233708846](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240317233709kOqJ6A.png)
@@ -3236,25 +3203,25 @@ var letterCombinations = function(digits) {
 ```js
 var partition = function(s) {
    let ans=[]
-    function backtrace(startIndex,curIndex,path){
+    function backtrace(startIndex,endIndex,path){
         // 最后一层
-        if (curIndex===s.length){
+        if (endIndex===s.length){
             ans.push(path.slice())
             return
         }
 
         // 任意层
         // 不加逗号 
-        if (curIndex<s.length-1){
+        if (endIndex<s.length-1){
           	// 当到最后一个(curIndex===s.length-1)时，字符串结束，相当于是必加逗号。所以用if扣掉这种情况
-            backtrace(startIndex,curIndex+1,path)
+            backtrace(startIndex,endIndex+1,path)
         }
 
         // 加逗号
-        const temp=s.slice(startIndex,curIndex+1) // 例如结果为[ [xxx],[yyy] ]，判断xxx是回文才加入path
+        const temp=s.slice(startIndex,endIndex+1) // 例如结果为[ [xxx],[yyy] ]，判断xxx是回文才加入path
         if (temp===temp.split('').reverse().join('')){ // 是回文
             path.push(temp)
-            backtrace(curIndex+1,curIndex+1,path)
+            backtrace(endIndex+1,endIndex+1,path)
             path.pop()
         }
 
@@ -3619,9 +3586,16 @@ var combinationSum3 = function(k, n) {
 
 回溯解法：从输入角度，选`( `或者选 `)`
 
-原本我的解法是在最后一层中通过栈来判断是否满足括号匹配（有左括号就入栈，遇到右括号就出栈，最后栈为，则证明括号匹配）。递归过程中仅仅剪枝了 **右括号数<左括号数，才能加入有括号** 这一个条件，结果Maximum call stack size exceeded（栈溢出了）
+原本我的解法是在最后一层中通过栈来判断是否满足括号匹配（有左括号就入栈，遇到右括号就出栈，最后栈为，则证明括号匹配），结果Maximum call stack size exceeded（栈溢出了）
 
-看了题解后发现，还要剪枝左括号、右括号都<n，这时候path就一定是满足括号匹配的了，虽然不知道为什么但是自己归纳了一下，确实找不到反例
+所以，递归过程中剪枝
+
+* 放入左括号没有限制
+* 放入右括号：**当前子串的右括号数<左括号数，才能加入右括号**  ，这个条件能保证每层的子串都是有效的
+
+* **剪枝左括号、右括号都<n**
+
+  2*n个括号，所以左、右括号最多也就是n个，超过n个肯定无效
 
 ```js
 var generateParenthesis = function(n) {
@@ -7748,6 +7722,84 @@ var backspaceCompare = function(s, t) {
 
 
 ### 394
+
+## 排序算法
+
+### 冒泡
+
+```js
+function bubbleSort(arr) {
+    let len = arr.length;
+    for (let i = 0; i < len ; i++) {
+        for (let j = 0; j < len - 1 - i; j++) {
+            // 比较相邻元素，如果顺序错误就交换
+            if (arr[j] > arr[j + 1]) {
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+            }
+        }
+    }
+    return arr;
+}
+```
+
+### 快速排序
+
+B站视频：https://www.bilibili.com/video/BV1j841197rQ/?spm_id_from=333.337.search-card.all.click&vd_source=e46d9099be60057b5a16a45fac0d5248
+
+```js
+function quickSort(arr, left, right) {
+
+    if (left>=right){
+        return
+    }
+    let pivotIndex= partition(arr, left, right)
+    quickSort(arr, left, pivotIndex-1)
+    quickSort(arr, pivotIndex+1, right)
+}
+
+function partition(arr,left,right){
+    let l=left
+    let r=right
+
+    // 确定中间位置，基于中间位置不停左右交换
+    let midIndex = Math.floor((l + r) / 2)
+    let pivot = arr[midIndex]
+
+    // 当左侧小于等于右侧则表示还有项没有对比，需要继续
+    while (l <= r) {
+        // 当左侧小于基准时查找位置右移，直到找出比基准值大的位置来
+        while (l <= r && arr[l] < pivot) { // 当操作while条件中的变量时，必须加上while条件，否则会出现不符合最外层while的情况
+            l++
+        }
+        // 当前右侧大于基准时左移，直到找出比基准值小的位置来
+        while (l <= r && arr[r] > pivot) {
+            r--
+        }
+
+        if(l <= r){
+            // 数据交换，小的交换到基准左侧，大的交换到右侧
+            [arr[l], arr[r]] = [arr[r], arr[l]]
+            l++
+            r--
+        }
+
+    }
+
+    // arr[l]=pivot
+
+    return l // 返回基准值
+}
+
+const arr= [3,2,5,1,6]
+quickSort(arr,0,arr.length-1)
+console.log(arr)
+```
+
+
+
+
+
+
 
 ## 位运算
 

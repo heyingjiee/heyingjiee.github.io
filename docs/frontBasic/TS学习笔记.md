@@ -1928,16 +1928,22 @@ interface B {
 } 
 
 function handle(input: A|B){
-    if('shared' in input){
-        console.log(input);// 推导为A|B类型
-        //input.onlyA  ===>会报错提示A|B、B类型上都没有onlyA属性
-      	//input.shared ===>这个属性A和B都有，可以正常使用
+    if('onlyA' in input){
+        console.log(input);// 推导为A类型
+        return
     }
 
-    if('onlyA' in input){
-        console.log(input); // A类型
-        
+    console.log(input); // 这里就收窄为B类型
+}
+
+
+function handle2(input: A|B){
+    if(!('onlyA' in input)){ // 还可以不包含
+        console.log(input);// 推导为B类型
+        return
     }
+
+    console.log(input); // 这里就收窄为A类型
 }
 ```
 
