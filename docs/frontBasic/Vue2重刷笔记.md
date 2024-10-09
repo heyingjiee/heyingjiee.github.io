@@ -2826,7 +2826,7 @@ export default {
 
 组件内部抛出`update:属性名`的事件
 
-```vus
+```vue
 this.$emit('update:title', "新标题")
 ```
 

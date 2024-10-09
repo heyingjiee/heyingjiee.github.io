@@ -1145,10 +1145,6 @@ private readonly roleService: RoleService;
 export class AuthModule {}
 ```
 
-
-
-
-
 #### exports导出
 
 providers的内容才会被注入到IOC容器中。即使你的模块仅仅用作导出，但是仍然需在providers中声明
@@ -1292,7 +1288,9 @@ handleUserInfo(@Req() req: Request) {
 }
 ```
 
-给Entity对象的排除字段增加 @Exclude()，返回的数据就没有该字段了
+@Exclude()修饰：返回的该类型的数据就没有该字段了
+
+@ApiProperty()修饰：swagger的装饰器，例如@ApiQuery、@ApiResponse等这些装饰器的 type 属性如果传入 Class 类型，只有@ApiProperty()修饰的字段才会显示在文档中
 
 ```ts
 import {
@@ -1314,13 +1312,12 @@ export class User {
 
   // 需要排除的字段
   @Column({ length: 50, comment: '密码'})
-  @ApiHideProperty()
   @Exclude()
   password: string;
 }
 ```
 
-使用@ApiProperty()标记Entity，swagger文档提供注释
+
 
 ## 模块通讯
 
@@ -3454,9 +3451,9 @@ bootstrap();
 
 ![image-20240705154911621](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202407051549139gmlng.png)
 
-**通过swagger标注**
+**通过swagger标注接口**
 
-Swagger会自动读取项目中的接口，但是读取不到接口的参数等信息。可通过装饰器标注接口的详细信息
+Swagger会自动读取项目中的接口以及入参等信息（也可通过装饰器自己标注），目前只有返回用例需要手动标注
 
 ```ts
 import {
@@ -3508,7 +3505,7 @@ export class UserController {
     type: LoginUserDto, //dto数据中也需要标注
   })
 
-  // 添加返回值用例
+  // 添加返回值用例，可以有多个
   @ApiResponse({
     status: HttpStatus.OK,
     description: '成功返回示例',
@@ -3526,9 +3523,9 @@ export class UserController {
 
 ```
 
-`class-validator`中字段类型的标注，不能被Swagger读取。
+swagger 的装饰器都有 type 类型，其不仅可以是基础类型，还可以是 Class 类型
 
-需要使用@ApiProperty、@ApiPropertyOptional（参数可选）标注，Swagger文档上才有类型
+如果是 Class 类型必须使用@ApiProperty、@ApiPropertyOptional（参数可选）标注，Swagger文档上才有类型。如果不标注默认文档没有该字段。用法参考【数据传递- VO】章节
 
 ```ts
 import { IsNotEmpty, IsString } from 'class-validator';
@@ -3542,11 +3539,41 @@ export class LoginUserDto {
 }
 ```
 
+如果类型是连个 Class 的结合呢？例如标注权限接口的返回值，其返回值是 Role、Permission 两个表联表查询的结果，可以采用下面标注
+
+```js
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Permission } from './permission.entity';
+import { ApiProperty } from '@nestjs/swagger';
+
+@Entity()
+export class Role {
+
+  @Column({ comment: '角色名' })
+  @ApiProperty()
+  name: string;
+
+  @ManyToMany(() => Permission)
+  @JoinTable({ name: 'role_permission_relation' })
+  @ApiProperty({ type: () => Permission }) // 关键是这里：用箭头函数返回Permission类
+  permissions: Permission[];
+}
+
+```
+
 登录接口编辑标记后：
 
 ![image-20240705170125604](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240705170127A3wUBX.png)
 
-如果是路径参数、query参数使用@ApiParam、@ApiQuery标记，展示在Parameters下面
+如果是路径参数、query参数分别使用@ApiParam、@ApiQuery标记，展示在Parameters下面
 
 ![image-20240705170334198](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240705170335SgGyed.png)
 
@@ -4663,6 +4690,66 @@ module.exports = {
 
 ## 业务实践
 
+### 接口验签
+
+微信支付签名规则：https://pay.weixin.qq.com/wiki/doc/api/micropay.php?chapter=4_3
+
+前端计算签名的基本规则：
+
+* 参数字符串
+
+  url参数、请求体参数（以body为key），参数键以ASCII码从小到大排序（字典序）使用&拼接在一起。参数值使用原始值不需要encode
+
+  ```
+  step1Str = 'appid=xxxx&body=yyyy'
+  ```
+
+  签名中包括参数字符串可以防止参数被攻击者篡改
+
+* 时间戳
+
+  注意：请求header中需携带timestamp公参
+
+  ```
+  step2Str = step1Str + '&timestamp=xxxx'
+  ```
+
+  签名中包括时间戳字符串可以防止请求过期
+
+* 随机数
+
+  注意：请求header中需携带nonce_str公参，随机数生成可以用时间戳做种子，从而避免重复
+
+  ```
+  step3Str = step2Str + '&nonce_str=zzzz'
+  ```
+
+  签名中包随机字符串可以防止同一个请求在过期时间内被重放
+
+* 密钥
+
+  密钥前后端一致，注意一定不要泄漏
+
+  ```
+  step3Str= step2Str + '&key=yyyy'
+  ```
+
+* 计算签名
+
+  ```
+  sign=md5(step3Str)
+  ```
+
+
+
+后端验证签名的基本规则：
+
+* 使用前端的方式计算签名（时间戳、随机字符串从请求header取），验证前端签名是否正确。如果签名正确就代表传入参数全部可信
+* 验证请求是否过期：请求时间戳与当前服务器时间差额是否在X分钟之内
+* 验证请求是否重放：每次都验证请求的随机数在Redis中是否存在，如果存在则代表重放，不存在就存储随机字符串。注意：Redis存储随机数时可以设置有效期为X分钟，超过X分钟就命中了上一个判断，Redis存储的随机数也用不上了，也能防止数据一致膨胀
+
+
+
 ### 身份认证与鉴权
 
 认证（Authentication）：通过账号秘密、JWT、Session等方式确认用户在系统中的身份。一般情况下登陆接口可以使用账号秘密、短信验证码登验登多种认证方式，其他需要登陆权限的接口使用一种认证方式并配置为全局守卫
@@ -4752,9 +4839,9 @@ import { Injectable } from '@nestjs/common';
 export class JwtStrategy extends PassportStrategy(Strategy) { // 1-1、参数是具体策略
   constructor() {
     super({ // 1-2、这里是策略的配置
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: fromAuthHeaderAsBearerToken(), // 请求头 Authorization:Bearer xxxx
       ignoreExpiration: false,
-      secretOrKey: 'guang',
+      secretOrKey: 'hedaodao',
     });
   }
 
@@ -4779,15 +4866,8 @@ export class AuthModule {}
 
 
 
-// 3、在接口中使用守卫
-@UseGuards(AuthGuard('jwt')) 
-@Get("test")
-list(@Req() req: Request) {
-    console.log(req.user); // 用户信息在这里
-    return ''
-}
 
-// 4、扩展指定的守卫。 比如加入@IsPublic就可跳过该守卫
+// 3、扩展指定的守卫。 比如加入@IsPublic就可跳过该守卫
 import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
@@ -4806,6 +4886,7 @@ export class JwtVerifyGuard extends AuthGuard('jwt') {
   @Inject()
   private readonly logger: CustomLogger;
 
+  // 4-1 命中守卫先执行这里
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -4823,9 +4904,50 @@ export class JwtVerifyGuard extends AuthGuard('jwt') {
     // 需要登陆，则调用AuthGuard('jwt')
     return super.canActivate(context);
   }
+
+	// 4-2、super.canActivate执行中，会调用handleRequest。
+  //  因为默认Passport 的策略抛出的错误 message 都是英文，我们可以覆写handleRequest抛出自定义的错误
+  handleRequest(err: any, user: any, info: any) {
+    // 参数：err 错误对象（没有就是 null）, user 用户信息（没有就是 null）, info 验证信息（失败就是自定义的 Error）, context: ExecutionContext
+    
+    this.Logger.log(
+      `err:${err} | user:${user} | info:${JSON.stringify(info)}`,
+      JwtVerifyGuard.name,
+    );
+    
+    // 自定义错误处理逻辑
+    if (err || !user) {
+      // 这里可以根据err或info的内容来定制化错误信息
+      throw new UnauthorizedAuthException();
+    }
+    // 这里需要抛出用户信息
+    return user;
+  }
+}
+
+
+// 4、在接口中使用守卫
+//@UseGuards(AuthGuard('jwt'))  // 直接使用 passport 策略的守卫
+@UseGuards(JwtVerifyGuard)  // 如果扩展了原本守卫的内容，这里就是用扩展后的守卫
+@Get("test")
+list(@Req() req: Request) {
+    console.log(req.user); // 用户信息在这里
+    return ''
 }
 
 ```
+
+handleRequest处打断点看下参数值
+
+例如：请求头不用 Bearer {{token}} 格式
+
+![image-20241003035507174](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20241003035507f1Bj9I.png)
+
+例如：传错误的token
+
+![image-20241003035716108](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202410030357165rCUkn.png)
+
+#### 其他策略
 
 如何获取super中传入的策略插件配置？到passport[官网](https://www.passportjs.org/packages/)中查询使用的插件，找到示例代码，其中传入策略函数的第一个参数对象，就是该策略插件的位置
 
@@ -4835,7 +4957,7 @@ Nest中使用@nest/passport是对passport的封装，与passport的示例代码�
 
 ![image-20240809153215676](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240809153216jqPEmX.png)
 
-#### passport策略
+#### 自定义策略
 
 我们使用passport-local、passport-jwt提供的策略，或者官网搜到的其他策略
 
@@ -4916,13 +5038,89 @@ Strategy.prototype.authenticate = function(req, options) {
 module.exports = Strategy;
 ```
 
+### 登录审计
+
+在 Interceptor 中可以拿到ExecutionContext，通过ExecutionContext 可以获取请求对象获取 IP 登录地
+
+也可以集成异地登录邮件、短信通知等功能
+
+```js
+// login-audit.interceptor.ts
+import {
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { Request } from 'express';
+import * as requestIp from 'request-ip';
+import * as iconvLite from 'iconv-lite';
+import { AxiosInstance } from 'axios';
+import { CustomLogger } from '@/common/logger/logger.module';
+import { IPLocateType } from '@/common/type/response.interface';
+
+@Injectable()
+export class LoginAuditInterceptor implements NestInterceptor {
+  @Inject('Axios')
+  private readonly axios: AxiosInstance;
+
+  @Inject()
+  private readonly Logger: CustomLogger;
+
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
+    const host = context.switchToHttp();
+    const request: Request = host.getRequest();
+
+    // 获取 IP 字段，如果用户使用代理这个字段展示的是代理服务器的 IP， 一般代理服务器会把真实 IP 放在 request.headers['X-Forwarded-For']。可以使用request-ip这个库(https://www.npmjs.com/package/request-ip)
+    // IPv6 是冒分十六进制，IPv4是点分十进制。
+    // 为了实现 IPv6、IPv4 互通，目前常常会将两者结合起来，以提高兼容性。例如： X:X:X:X:X:X:d.d.d.d
+    // 注意：ffff:192.168.1.1, 其实是省略了IPv6的高位 0000:0000:0000:0000:0000
+
+    // 如果希望通过 IP 获取城市，可以通过免费接口https://whois.pconline.com.cn/ipJson.jsp?ip=${IP}&json=true
+
+    const IP = requestIp.getClientIp(request);
+
+    const res = await this.axios(
+      `https://whois.pconline.com.cn/ipJson.jsp?ip=${IP}&json=true`,
+      {
+        responseType: 'arraybuffer',
+        transformResponse: [
+          (data) => {
+            const addrStr = iconvLite.decode(data, 'gbk');
+            return JSON.parse(addrStr);
+          },
+        ],
+      },
+    );
+
+    const ipLocalInfo: IPLocateType = res.data ?? {};
+
+    this.Logger.log(
+      `登录成功拦截器 ${JSON.stringify(ipLocalInfo)}`,
+      LoginAuditInterceptor.name,
+    );
+
+    return next.handle();
+  }
+}
+
+
+```
+
 
 
 ## 补充待整理
 
 * BullMQ https://3rcd.com/wiki/bullmq ，https://3rcd.com/wiki/nestjs-practise/chapter10
 * 单元测试 https://zhuanlan.zhihu.com/p/428558792
-* https://3rcd.com/blog/ts-decorator
+* 压测
+* 装饰器：https://3rcd.com/blog/ts-decorator + Nest 通关秘籍的部分
+* 签名
 
 ## Nest疑问
 

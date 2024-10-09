@@ -6898,7 +6898,7 @@ JSDoc注释一般应该放置在方法或函数声明之前，它必须以`/**`�
 */
 ```
 
-### @type
+### 变量类型 @type
 
 **写在变量前一行，指定变量类型。格式：**
 
@@ -7001,9 +7001,9 @@ var typeAssertedNumber = /** @type {number} */ (numberOrString)
 
 
 
-### @param、@returns
+### 参数类型 @param、@callback、@returns
 
-函数形参注释
+函数形参、返回值注释
 
 ```js
 /**
@@ -7016,68 +7016,73 @@ function a(p1, p2, p3, p4){
 }
 ```
 
-如果形参是对象，可以用下面的结构描述。
+回调函数注释
 
 ```js
 /**
-   * 查询地锁状态
-   * @param {Object} data
-   * @param {string} data.connectorId 枪id
-   * @param {number} data.supplierId 供应商id
-   * @see [接口文档](http://xxxx)
-   */
-getInviteCode(data = {}) {
-    
+ * 返回用户信息的回调
+ * @callback UserInfoCallback
+ * @param {string} name 姓名
+ */
+
+
+/**
+ * 获取用户
+ * @param {UserInfoCallback} cb 回调函数
+ */
+async function fetchUser (cb) {
+  const username = await fetch('get/users')
+  return cb(username)
 }
 ```
 
-缺点是只会提示形参类型。注释部分不会显示出来
+使用@typedef 定义对象，有些时候会失效，所以我推荐下面的方式：
 
-![image-20230817152211814](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20230817152212%20.png)
+```js
+/**
+ * 查询地锁状态
+ * @param {Object} data
+ * @param {string} data.connectorId 枪id
+ * @param {number} data.supplierId 供应商id
+ * @see [接口文档](http://xxxx)
+ */
+function getInviteCode(data){};
+```
+
+![image-20240922234750117](/Users/heyingjie/Library/Application Support/typora-user-images/image-20240922234750117.png)
 
 ### @typedef、@property
 
-声明新的类型
-
-下面使用@type直接声明对象的结构
-
-```js
-/** @type {{name:string,age:number}} */
-let a;
-```
-
-也可以定义新的类型，在声明变量属于新的类型
-
-```js
-/** @typedef {{name:string,age:number}} student */
-
-/**@type {student}*/
-let a;
-```
-
-也可以分开定义每一个对象的属性（使用@property字段）
+如果类型不是基础类型，而是对象类型（使用@property字段）
 
 ```js
 /**
- * 定义新类型student
- * @typedef {object} student
- * @property {string} name
- * @property {number} age
+ * 定义新类型Student
+ * @typedef {object} Student
+ * @property {string} Student.name
+ * @property {number} Student.age
  */
 
-/**@type {student}  */
+/**@type {Student}  */
 let a;
-```
 
-可以在第一行上使用`object`或`Object`
+/**
+ * @param {Student} 查询的学生
+ * @returns {number} 年龄
+ */
+function getUserAge(stu) {
+  return stu.age
+}
+```
 
 ### @enum
 
-枚举类型（其实就是对象）
+枚举类型，一般配合@readonly使用，因为枚举值正常来说是不能被更改的
 
 ```js
 /**
- * @enum {number}
+ * @readonly
+ * @enum {0｜1}
  */ 
 const gender ={
     male:0,
@@ -7089,8 +7094,6 @@ const gender ={
  */
 let a;
 ```
-
-
 
 ### @template
 
@@ -12518,11 +12521,21 @@ export default {
 
 ## NPM资源
 
-[现代流行的 npm包大全（上）](https://www.toutiao.com/article/7207053502298735104/?log_from=0f5da930bcb02_1679501507497)
+### 时间
 
-[现代流行的 npm包大全（下）](https://www.toutiao.com/article/7207424244949549620/?log_from=0e3bc3913b8e4_1679501583380)
+* [dayjs](https://www.npmjs.com/package/dayjs)
 
+### 请求
 
+* [request-ip](https://www.npmjs.com/package/request-ip) 尝试获取请求头中的真实 IP
+
+### 字符集
+
+* [iconv-lite](https://www.npmjs.com/package/iconv-lite) 字符集转换，例如 GBK 编码转化为 UTF-8
+
+### 项目管理
+
+* [Lerna](https://www.npmjs.com/package/lerna) 多 Package 项目管理
 
 ## 参考资源
 

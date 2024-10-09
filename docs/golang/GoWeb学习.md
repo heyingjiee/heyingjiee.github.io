@@ -4640,7 +4640,7 @@ func getLogWriter() zapcore.WriteSyncer {
 
 运行结果：将日志输出到文件中
 
-```log
+```txt
 {"level":"info","ts":1657128015.7524219,"msg":"访问成功","statusCode":"200 OK","url":"www.baidu.com"}
 ```
 

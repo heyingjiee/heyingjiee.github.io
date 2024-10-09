@@ -1119,7 +1119,7 @@ GO-Micro生成的项目默认是没有使用服务发现的
 
 但是可以使用下面的插件快速接入
 
-```sehll
+```shell
 go get "github.com/go-micro/plugins/v4/registry/consul"
 ```
 
