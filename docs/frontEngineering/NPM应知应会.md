@@ -489,202 +489,359 @@ module.exports = "p2包";
 }
 ```
 
-### 特别注意
-
-如果我们开发一个npm包，一定要注意：项目在不同环境引入这个npm包时，读取包的入口字段不一样
-
-* 浏览器环境
-
-  * ESM引入读取 module
-
-  * CJS引入读取 main 字段
-
-* Node环境
-  * ESM引入，因为Node环境不支持module字段，所以一定要定义exports字段
-  * CJS 引入读取 main 字段
-
-我遇到一个情况，在Node环境中引入了一个第三方的包
-
-* 使用ESM引入（需要配置package.json的"type":"module"）提示
-
-  可以看到虽然使用了ESM引入，但是Node环境直接将其视为了一个CJS的包，这种大多是因为没有配置exports字段
-
-  ![image-20240126160344878](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240126160348hbnFHq.png)
-
-* 使用CJS引入，必须加一个default属性
-
-  https://www.cnblogs.com/PeunZhang/p/12736940.html
-
-  这个有可能是打包工具导致的，比如：这个npm包使用的是ESM开发的，但是打包为支持ESM、CJS的。ESM的export default xxx语法，在CJS中没有，所以打包工具处理为exports.defalut=xxx
-
-  ```js
-  const PluginAES = require('@armor/plugin-aes').default
-  ```
-
-  
-
-  
-
-```json
-"main": "./dist/index.js", // 
-  
-"module": "./dist/esm/index.js", // 
-  
-  "type": "module", //Node环境中支持该字。可选字段：module、commonjs 。描述该包的格式类型，决定是否将 .js 文件加载为 CJS 或 ESM 的格式
-  
-  "exports": { //Node环境中支持该字段。 条件导出。作用和 main/module 作用差不多，只不过支持条件导出优先级大于 main 等高级用法
-    ".": {
-      "require": "./dist/index.js", // 当使用 CJS 导入模块时，会从此入口查找。
-      "import": "./dist/esm/index.js" // 当使用 ESM 导入模块时，会从此入口查找。
-    }
-  }
-```
-
-
-
-
-
 ## 模块化规范
 
-推荐文章[前端模块化详解(完整版)](https://segmentfault.com/a/1190000017466120)
+很长一段时间我都被网上的信息误导了
 
-JS 最初设计的目的，仅仅是为了完成一些简单的功能，但是随着前端工程化成为一种趋势，前端项目慢慢开始承载更多更复杂的功能，将单一 JS 文件划分模块的需求也愈发强烈
+* 错误的认为在 node 项目中应该使用 require ，在浏览器环境中应该使用 import
 
-但是，由于ES6出现之前，JS一直没有统一的模块化规范，所以出现了很多非官方的模块化规范，例如：AMD规范、CMD规范 、CommonJS规范
+* 错误的认为在项目在前端运行读取 module 字段作为入口；项目在后端运行读取 main 字段作为入口。可是慢慢发现前端、后端项目的界限很模糊，例如 Vue 项目本质是个后端项目，其编译产物才是前端项目，这是使得我一直很混乱
 
-也正是由于这个历史原因导致前端的模块化规则非常混乱：
+### 浏览器与 Node
 
-* 模块化规范有： CommonJS规范、ESM规范（AMD规范、CMD规范这两种已经被淘汰这里不做考虑）
+不同平台差异
 
-* 环境有：浏览器和Node两种环境。在两种环境中，【打包工具（Vue是webpack）、Node工具】通过读取package的配置字段，来进行区分项目的模块化规范，但是它们使用的package配置字段又是不同的非官方字段
-* 即使你的项目确定只使用一种规范，项目中引入依赖包也可能使用的是其他规范
+* 浏览器有 fetch、ajax、dom 相关 API
 
-而我们发布/使用的npm包，可能支持一种或两种规范，一种或两种环境，这就产生了好几种组合，而且不同环境下package配置文件字段也不同，这就进一步加剧复杂度
+  * 浏览器端无需配置默认支持 ESM（参考下面 Node --- ESM 的特点）
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    	<head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    	</head>
+    	
+    	<!--html文件是入口，在其中会加载main.js-->
+    	<script src="./main.js" type="module">
+      	import xxx from 'xxx'
+      </script>
+    
+    	<body></body>
+    </html>
+    ```
+
+  * 挂载 window 上
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    	<head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    	</head>
+      <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    	
+    	<script>
+     	 const { createApp, ref } = Vue // 这里是引入 window.Vue
+    
+      	createApp({
+        	setup() {
+          	const message = ref('Hello vue!')
+          	return {
+          	  message
+          	}
+        	}
+      	}).mount('#app')
+    	</script>
+    	<body>
+      	<div id="app">{{ message }}</div>
+      </body>
+    </html>
+    ```
+
+    
+
+* Node 有 events、fs等 API，且Node环境加载依赖的方式不同，参考下一节【Node 加载依赖】。除此之外 Node 还会根据 package.json 的 type 字段判断本模块使用哪种规范
+  * ESM
+
+    ```shell
+    # 引入导出关键字
+    import 、export 
+    
+    # ESM 模块引入必须加后缀，不可省略
+    import('xx/xx.js')
+    
+    # ESM规范中特有的 API
+    import.meta.url
+    ```
+
+  * CJS
+
+    ```shell
+    # 引入导出关键字
+    require、module.exports
+    
+    # 可省略后缀
+    import('xx/xx')
+    ```
+
+    
+
+开发者控制代码运行在哪个平台，如果项目使用了平台没有 API、加载模块的方式 就会报错
 
 
 
-### 浏览器环境
+### Node加载依赖
 
-浏览器环境推荐使用ESM模块化。区分使用ESM、CJS主要是通过package.json字段
+**模块化和启动项目的工具相关**
 
-**支持ESM模块规范**
+npm init 创建项目，在项目下新建 index.js ，并引入一个第三方的包
 
-开发网页时，多使用各种打包工具，webpack等打包工具优先读取package.json中的module字段（优先级module字段>main字段，所以使用module字段）
+```
+// package.json
 
-```json
 {
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "module": "./dist/esm/index.js",
+	"type":"module"
+	"scripts":{
+		test:"node index.js"
+	}
 }
 ```
 
-**支持CJS模块规范**
+项目配置使用ESM引入，但是运行脚本 test 读取的仍然是 main 字段
 
-使用main字段
-
-```json
-{
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "main": "./dist/index.js" // CJS 格式的导出
- }
-```
-
-### Node环境
-
-启用支持ESM：在`package.json`中加个`"type": "module"` 字段。或者在main字段指定文件后缀命名为`.mjs` ，自动启动ESM
-
-启用支持CJS：默认为CJS（即默认为`"type": "commonjs"` 字段），在`package.json`中设置**main字段**或**exports字段**指定模块入口
-
-
-
-**使用ESM模块规范**
+这是因为项目是以 node 启动的，而 node 无论项目使用的模块化方式，都是默认读取 npm 包的 main 字段作为入口。如果存在 exports 字段优先级更高，而且可以明确配置使用不同引入方式的入口
 
 ```json
+// 三方 npm 包
 {
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "type": "module",
-  "main": "./dist/index.js",
-}
+  "exports": {
+    	".":{  
+				"import": "./index-module.js",
+   		 	"require": "./index-require.cjs"
+      }
+	}
+},
 ```
 
-或
+假设项目配置 import、require 都指向一个 ESM 模块呢？其实使用模块化规范只能定义本模块的方式，引入的是哪种模块不一定，但是在 Node 项目中如果直接引入异构的模块肯定会报错
 
-```json
-{
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "main": "./dist/index.mjs"
-}
-```
 
-**使用CJS模块规范**
 
-默认启用CJS
+还有一个有意思的现象，有的 npm 包没有仅仅配置了 main 字段。但是可以用下面方式引入
 
 ```js
-{
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "main": "./dist/index.js"
-}
+const PluginAES = require('@armor/plugin-aes').default
 ```
 
-**使用ESM+CJS**
+这个有可能是打包工具导致的，模块本身是ESM，同时生成了 CJS 模块，用exports.defalut=xxx 模拟 ESM 的默认导出
 
-使用exports字段
+### 构建工具
 
-```json
-{
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "exports": {
-    "import": "./dist/esm/index.mjs",
-    "require": "./dist/index.js"
+原本模块化很简单，但随着构建工具的使用，逐渐开始变得复杂了
+
+#### TSC
+
+例如：TS项目编写 TS 文件，但是使用 TSC 编译为 JS 文件，最后使用Node 运行
+
+**TS 视角**
+
+* TS 使用 import、require 都可以（tsc 可以通过module 字段配置编译后的模块化方式，建议用 require，ESM 的使用也有限制， 后面会提到）
+
+* TS 使用import或require引入模块是 ESM、CJS 均可（moduleResolution 一般都设置为 Node）
+
+  **参考上一节 Node 环境 的引入方式**，TS 项目引入三方包，会读取包的 package.json
+
+  如果 TS 文件使用 import 就读取 exports.import ，如果不存在就读取 main 作为入口。一般 main 都是 CJS 模块的入口，启动下面选项 TSC 会做模块兼容处理
+
+  ```json
+  {
+  	"esModuleInterop":true,
+  	"allowSyntheticDefaultImports": true,
   }
-}
-```
+  ```
+
+  不推荐 TS 文件使用 require，因为一旦出现了 require 到 ESM 模块， tsc 无法提供兼容处理，最后编译到 JS 文件后，Node 运行也可能会报错
+
+* TS是不关心项目在哪个平台的，只需要开发者提供平台API 的类型信息，就能在TS 文件中使用。例如：项目在 Node 平台运行就需要安装`@types/node`。
+
+**Node 视角**
+
+* TS 编译后的代码使用 Node 运行，应注意 package.json 的 type 是否与 tsc 编译后的模块化方式一致
 
 
 
-### 浏览器+Node环境
+这挺有意思的一点是：
 
-**使用ESM模块规范 **
+如果我们在项目安装 Node 类型声明，在 TS文件中使用 `__filename`，产物输出为 esnext ，package.json 配置为 ESM 模块。TS 编写不会提示出错，但是运行提示ESM 规范中不存在`__filename`报错。这都是因为前端工具工具的引入，开发者书写的代码和最终运行的构建产物这两者并不完全一致导致的
+
+tsconfig 模板 ( 一般项目结构 根目录/src 下方式源码，根目录放配置文件)
 
 ```json
 {
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js", //浏览器环境，打包工具优先读取这个，知道入口文件
-  "exports": {
-    "import": "./dist/index.js"//Node端通过这个知道入口文件
+  "compilerOptions": {
+    // 目标 、模块化
+    "module": "CommonJS",
+    "target": "ESNext", 
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop":true,
+    // 支持引入JSON 模块
+    "resolveJsonModule": true,
+    // 输出
+    "outDir": "./dist",
+    "rootDir": "./src", // 一般吧源码放在 src 下，配置后rootDir目录下的源码结构就会对应到outDir下
+    // 声明文件
+    "declaration": true,
+    // 严格模式
+    "strict": true,
+    // sourcemap
+    "sourceMap": true,
+    
+    
+    // --- 酌情添加 ---
+    // 路径别名
+    "paths": {
+      "@/*":["./src/*"]
+    }
+    // 保留注释
+    "removeComments": false, // 默认ture移除注释
+    
+    // 打开装饰器
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
   },
-  "type": "module"//Node端通过这个知道启用ESM
+  "include": ["src/**/*"], // 默认包括全部文件
+  "exclude":["dist","node_modules"]
 }
+
 ```
 
-**使用CJS模块规范**
+⚠️注意：TSC 打包存在几点问题：
 
-Node端默认CJS，浏览器端通过main指定
+* 运行在浏览器环境（不适宜）
 
-```JS
-{
-  "name": "包名称",
-  "version": "1.0.0",
-  "description": "描述信息",
-  "main": "./dist/index.js" 
-}
+  TSC 打包的 JS 文件无法做到 tree shrink，包体积比较大，不适合用在浏览器端。
+
+  TSC 不支持语法降级（Babel 可以做语法降级）
+
+  而且，TSC 不支持打包为 iife 模块（可执行函数）、打包的 ESM 模块也存在问题，即 ts 配置如果 module 是 ESM 相关的，编译后的 JS 产物会出现无法运行，原因如下
+
+  ```js
+  import('xx/xx') // 浏览器、Node 环境 引入 ESM 必须带后缀
+  ```
+
+* 运行在 Node 环境（有条件限制）
+
+  Node环境不必在乎包体积的问题，但是 Node 环境的 ESM 模块也是要求引入包路径带后缀，所以一般 TSC 编译为 CJS 模块（nest 项目就是）
+
+  ```json
+  {
+    "compilerOptions": {
+      // 目标 、模块化
+      "module": "CommonJS",
+      "target": "ESNext",
+    },
+  }
+  
+  ```
+
+  ⚠️ 有种特殊情况，如果 TS 设置module 为 CJS  ，如果项目引入了 ESM 模块就会报错
+
+  ```js
+  require('xxx') // node 中 require 只能导入 cjs 模块
+  ```
+
+  所以，使用 tsc 打包 CJS 是可行的，但是有限制，即不能使用导入三方ESM 模块。所以很受限制
+
+* TSC 打包三方包
+
+  例如，TS项目中安装了 axios ，但是构建产物是不包含 axios 的，这需要注意。不过通过 npm 安装包会自动为我们处理好依赖关系
+
+* Path 别名配置、resolveJsonModule 支持引入 JSON
+
+  TSC 打包为 JS时，不会替我们将别名转换回真正的路径。resolveJsonModule 同样的只能在 TS 中引入 JSON，实际编译为 JS 没有做任何特别处理，而 Node 环境使用 ESM 导入是不支持引入 JSON 的（require 支持导入 JSON）
+
+综上：TSC 存在各种问题，使用场景非常受限制，建议集成 rollup，通过 rollup 插件来替我们处理这些
+
+#### Rollup
+
+官网：https://cn.rollupjs.org/
+
+TS 文件经过 Rollup 处理打包为 JS 文件
+
+相比于 TSC，Rollup 本身支持将 **JS** 打包为各种模块 + 树摇优化 + ESM 规范 + 打包引入的三方依赖
+
+官方还提供了可视化页面展示代码打包的结果：[这里](https://cn.rollupjs.org/repl/?version=4.24.0&shareable=JTdCJTIyZXhhbXBsZSUyMiUzQSUyMjAwJTIyJTJDJTIybW9kdWxlcyUyMiUzQSU1QiU3QiUyMmNvZGUlMjIlM0ElMjIlMkYlMkYlMjAlRTUlODUlQjclRTUlOTAlOEQlRTUlQUYlQkMlRTUlODclQkElNUNuJTJGJTJGJTIwJUU2JTlDJTg5JUU1JUJFJTg4JUU1JUE0JTlBJUU3JUE3JThEJUU2JTk2JUI5JUU2JUIzJTk1JUU1JThGJUFGJUU0JUJCJUE1JUU0JUJCJThFJTIwRVMyMDE1JTIwJUU2JUE4JUExJUU1JTlEJTk3JUU0JUI4JUFEJTVDbiUyRiUyRiUyMCVFNSVBRiVCQyVFNSU4NyVCQSVFNyVCQiU5MSVFNSVBRSU5QSU1Q25leHBvcnQlMjB2YXIlMjBmb28lMjAlM0QlMjAxJTNCJTVDbiU1Q25leHBvcnQlMjBmdW5jdGlvbiUyMGJhcigpJTIwJTdCJTVDbiU1Q3QlMkYlMkYlMjAlRTUlOUMlQTglRTclOTQlOUYlRTYlODglOTAlMjBDb21tb25KUyUyMCVFNiU5NyVCNiU1Q24lNUN0JTJGJTJGJTIwJUU1JUIwJTlEJUU4JUFGJTk1JUU1JUIwJTg2JUU2JUFEJUE0JUU2JTlCJUI0JUU2JTk0JUI5JUU0JUI4JUJBJTIwJTYwZm9vJTJCJTJCJTYwJTVDbiU1Q3RyZXR1cm4lMjBmb28lM0IlNUNuJTdEJTVDbiU1Q25mdW5jdGlvbiUyMGJheigpJTIwJTdCJTVDbiU1Q3RyZXR1cm4lMjBiYXIoKSUzQiU1Q24lN0QlNUNuJTVDbmV4cG9ydCUyMColMjBmcm9tJTIwJy4lMkZxdXgnJTNCJTVDbmV4cG9ydCUyMCU3QiUyMGJheiUyMCU3RCUzQiUyMiUyQyUyMmlzRW50cnklMjIlM0F0cnVlJTJDJTIybmFtZSUyMiUzQSUyMm1haW4uanMlMjIlN0QlMkMlN0IlMjJjb2RlJTIyJTNBJTIyZXhwb3J0JTIwY29uc3QlMjBxdXglMjAlM0QlMjAnUVVYJyUzQiUyMiUyQyUyMmlzRW50cnklMjIlM0FmYWxzZSUyQyUyMm5hbWUlMjIlM0ElMjJxdXguanMlMjIlN0QlNUQlMkMlMjJvcHRpb25zJTIyJTNBJTdCJTdEJTdE)
+
+rollup插件的形式：支持 TS 类型检验和语法解析、Babel 语法降级，如果项目使用 ESM 规范，还支持将 引入的CJS 模块转化为 ESM 等等能力
+
+```shell
+# ts语法支持，依赖 typescript
+rollup-plugin-typescript2
+
+# 模块化处理
+@rollup/plugin-node-resolve # 用于解析 Node.js 模块，支持从node_modules找三方包
+@rollup/plugin-commonjs # 插件将引入的 CJS 转化为 ESM 模块
+
+# Node 环境 ESM 不支持引入 JSON 模块。TSC 可以配置resolveJsonModule支持引入JSON
+@rollup/plugin-json # 支持导入json，没有 json 插件的支持我们在导入 json 文件时会报错
+
+@rollup/plugin-babel # 构建在浏览器运行的包，如果考虑兼容性做语法降级
+
+@rollup/plugin-terser # 压缩JS
 ```
+
+使用rollup.config.js配置rollup
+
+```json
+"scripts": {
+    "dev": "rollup -c --watch", // 注意 -c 表示使用配配置文件
+    "build": "rollup -c"
+},
+```
+
+rollup.config.js 基础模板（未配置 babel，可参考：https://cn.rollupjs.org/tools/#babel）
+
+```js
+import typescript from "rollup-plugin-typescript2";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import resolve from '@rollup/plugin-node-resolve';
+import alias from "@rollup/plugin-alias";
+import terser from '@rollup/plugin-terser';
+
+export default {
+    input: './src/index.ts',
+    output: [
+        { 
+          file: 'dist/index.esm.js', 
+          format: 'es' ,
+          plugins: [terser()]
+        },
+    ],
+    plugins: [
+        typescript(), 
+        json(), 
+        resolve(),
+        commonjs(),
+        alias()
+    ]
+}
+
+```
+
+⚠️注意：Rollup打包存在几点问题：
+
+* 仅支持 rollup.config.js，如果 package 设置 type:module，还必须改后缀为`.mjs`
+
+* Rollup 通过`@rollup/plugin-commonjs`兼容 CJS，但是如果出现动态模块会报错
+
+  ```js
+  module.exports=(xxx)=>{
+    
+  }
+  ```
+
+* 将所有内容打包成一个 JS 文件，使用`@rollup/plugin-node-resolve` 插件可以让 rollup 引入三方包，但是默认会把三方依赖也打包进来，尽管可以通过external 排除三方包，但是每个都配置很麻烦
+
+综上：Rollup 还是建议用在打包 浏览器 ESM 模块，目前对于 CJS 兼容性还有一定限制
+
+#### Tsup
+
+
 
 ## npm create xxx
 
@@ -895,17 +1052,31 @@ packages:
   - '!**/test/**'
 ```
 
-
+`.npmrc`
 
 ```shell
-# -f指定子包，在子包中安装依赖h-ui-plus-components。如果workspace有这个包直接安装本地包，没有去npm下载安装
-pnpm add  h-ui-plus-components --filter h-ui-plus-docs (package的name字段)
+# pnpm 9.x 之后，下面属性默认 false，表示所有包从 npm 源下载。如果需要安装本地依赖应该设为 true
+# 或者安装依赖本地时 增加 --workspace 选项
+link-workspace-packages = true  
+```
 
-#在path下执行命令，可以在不切换目录的情况下，执行子包的命令。commond是在script字段下定义的命令
-pnpm -C <path> <command> 
-pnpm --filter h-ui-plus-components <command> # 也可以直接用子包名
- 
-pnpm up #升级依赖
+其他命令
+
+```shell
+# 公共选项
+
+# -w (注意-w 是 --workspace-root 的简写) 表示在工作区执行 ，即pnpm-lock.yaml 所在的目录，不指定执行范围的默认值
+# --filter <package-name> 表示选中包下执行 ； 
+# -r 所有子包。例如 ： pnpm run script命令 -r  #所有子包执行该命令
+
+
+# 安装依赖
+pnpm add axios --filter <package-name> # 给指定子包安装依赖。或者进入子包目录就可以不用 filter 命令了
+pnpm add axios --workspace # 进入子包目录。--workspace表示不从 npm 下载，而是从工作区查找依赖。安装本地的版本，使用的是特殊的标记 "xxx": "workspace:1.0.0"
+
+
+# 删除依赖
+pnpm remove @hdd-cli-template/utils # 进入core子包目录
 ```
 
 
@@ -947,7 +1118,7 @@ pnpm store path
 pnpm store prune
 ```
 
-## 发布npm包
+## 发布包
 
 ### 包内容
 
@@ -1040,3 +1211,23 @@ npm官网登陆自己的账户，就能看到这个包了
 
 ![image-20220320201043339](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue%E7%9B%B8%E5%85%B3/image-20220320201043339%20.png)
 
+## 编辑器
+
+### 查看包函数定义
+
+在vscode、webstream工具中都可以通过command+点击函数的形式跳转npm目录
+
+但是有的时候会跳转 xxx.d.ts 定义文件，有的时候则会跳转到 TS源码
+
+* TS项目编译为 JS
+
+  * 配置 package.json 的 `files:[“dist”]` 字段，则只会发布dist编译后目录，这种则只会跳转类型定义文件
+
+    ![image-20241021000654905](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20241021000654ee8AOX.png)
+
+  * 如果发布完整项目，无论tsconfig是否开启 sourcemap ，都可以跳转 TS 源码
+
+* JS项目
+
+  * 点击跳转JS源码
+  * 通过@types/xxx的形式安装定义文件，这种会跳转类型定义文件

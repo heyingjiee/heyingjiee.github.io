@@ -9905,12 +9905,18 @@ node index.js
   fs.readFileSync(path.resolve(process.cwd(),'./data'))
   ```
 
-* 现在推荐使用ESM模块化规范，ESM中没有`__dirname`
+* 现在推荐使用ESM模块化规范， 浏览器环境没有`__dirname`，但是浏览器、node 中都支持 import.meta.url其作用是获取当前模块的路径（ file:///xxx/xxx/xxx.js）
 
-  ```js
-  import url from "node:url";
+  如果真的需要在 node 环境中模拟`__dirname`，可以使用下面方式
   
-  url.fileURLToPath(new URL("./src", import.meta.url)) //import.meta.url是当前文件的url路径
+  ```js
+  import { fileURLToPath } from 'url';
+  
+  const __filename = fileURLToPath(import.meta.url); // 把 file 协议的路径转化为绝对路径
+  const __dirname = dirname(__filename);
+  
+  // 如果需要获取特定路径。比如在根目录模块中使用下面代码，可定位到 src 目录下
+  const targetPath = url.fileURLToPath(new URL("./src", import.meta.url))
   ```
   
   

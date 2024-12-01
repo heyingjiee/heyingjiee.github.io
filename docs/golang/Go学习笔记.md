@@ -3094,7 +3094,7 @@ func main() {
         log(2, s)
 
   			// 方式3：值为[]，长度为0。比较适合初始化一个已知元素的 slice
-        s = []string{}
+  s = []string{} // 这种其实就是字面量，s= []string{1,2,3} 
         log(3, s)
 
   			// 方式4：值为[],长度为2
@@ -3116,11 +3116,8 @@ len=0 nil=false
 
 从上面例子可知，判断切片为空应该使用
 
-```
-len(xxx)==0
-
-而不是 
-xxx==nil
+```txt
+通过 len(切片)==0 来判断，是否切片为空 （ 值为 nil、[] 两种情况）
 ```
 
 四种方式使用场景不同：
@@ -3136,10 +3133,10 @@ fmt.Printf("%v\n", res) //[你]
 
 方式2：不常用
 
-方式3：已明确知道切片初始值
+方式3：字符值字面量，可以直接赋值给变量
 
 ```go
-s = []string{"a","b"}
+s := []string{"a","b"}
 ```
 
 注意：切片子元素是结构体的情况
@@ -3259,17 +3256,9 @@ fmt.Println(slice1) //[100 2 3 4]
 
 我们可以使用copy函数，实实在在的拷贝一份新的数据
 
-**切片注意点**
-
-```
-通过 len(切片)==0 来判断，是否切片为空
-
-不能使用 切片==nil来判断
-```
-
 **切片的遍历**
 
-依然是for和for range两种
+依然是for和for range两种 。⚠️slice 是 nil 也不会报错而是直接结束 for 循环
 
 ```go
 for index, value := range slice {
@@ -3280,6 +3269,8 @@ for index, value := range slice {
 **append：切片的追加**
 
 下面的例子可以看出来，append是对底层数组进行了扩容
+
+⚠️slice1 是 nil 也能扩容
 
 ```go
 slice1 := []int{1, 2, 3}
@@ -3435,7 +3426,7 @@ var ptr *int
 
 也叫映射，是无序的key-value的形式
 
-是一种引用类型（和切片一样），需要初始化，才能使用
+是一种引用类型（和切片一样），但是 map 必须要初始化后才能使用
 
 **声明map类型变量**
 
@@ -3503,7 +3494,7 @@ fmt.Println(m) //map[1:1 2:2 3:3]
 删除m中键值为"姓名"的键值对
 
 ```go
-delete(m, "姓名")
+delete(m, "姓名") // ⚠️m 为 nil 执行 delete 也不会报错，只是静默失败
 ```
 
 **判断是否存在key**
@@ -5125,13 +5116,45 @@ func main() {
 
 ## 类型声明总结
 
+### 字面量
+
+在 JS 与 GO
+
+```js
+// 数组
+var a=[1,2,3]  // JS 用[]
+
+a:=[]int{1,2,3} // Go 用 `类型{}`
+
+// map
+var m=new Map() // JS map不支持字面量，只能通过 new 创建
+
+m:=map[string][string]{1,2,3} // Go 用 `类型{}`
+
+// 对象/结构体
+var o={ //对象用{}
+  name:'tom',
+  age:20
+}
+
+o:Student{  // Go 用 `类型{}`  注意需要先定义好 Student 的结构
+  name:'tom',
+  age:20
+}
+
+// 嵌套
+// JS的嵌套很简单直接组合就行，这里只写 Go 的
+list:[]Student{
+  {name:'tom',age:20}, //  Student实例的自变量可以省略，声明切片时已明确元素类型了
+  {name:'jack',age:20}
+}
+```
+
 ### 关于nil
 
-nil 是Go语言中一个预定义好的标识符。其本身不是值，也不属于任何类型（注意：比如在JS中存在null类型，其只有一个值就是null）
+nil 可以立即为 Go 中一个特殊的值。只需记住:
 
-* nil不是值
-
-  变量比较，其实是比较其值，nil是标识符无法比较，会直接报错（就好像你在比较 int==int，这肯定是错误的）
+* 不能比较
 
   ```go
   package main
@@ -5139,13 +5162,12 @@ nil 是Go语言中一个预定义好的标识符。其本身不是值，也不�
   import "fmt"
   
   func main() {
-  	fmt.Print(nil == nil)
+    fmt.Print(1 == 1) // true
+  	fmt.Print(nil == nil) // 报错 ：invalid operation: nil == nil (operator == not defined on untyped nil)
   }
-  
-  // 报错 ：invalid operation: nil == nil (operator == not defined on untyped nil)
   ```
 
-  打印nil报错
+* 不能打印
 
   ```go
   package main
@@ -5160,93 +5182,29 @@ nil 是Go语言中一个预定义好的标识符。其本身不是值，也不�
 
   
 
+### 值与类型
 
+Go 中变量的值、类型是分开的
 
-主要记忆下：
+```
+s:=[]int
 
-* 切片、map类型的变量是nil，需要在使用时，通过make创建
-* struct类型的变量就是一个空结构体实例
+m:=map[string][int]
+```
+
+s、m 的值都是 nil，但是他们的类型是不同的
+
+所以遍历变量时，如果 xx 是切片、map、channel 都可以，但是如果 xx 是接口那就直接报错了
+
+因为编译器不知道如何遍历一个未知类型
 
 ```go
-package main
-
-import "fmt"
-
-type Stu struct {
-	name string
-	age  int
-}
-
-func main() {
-	//结构体实例、空结构体实例、结构体类型的变量(空结构体实例)、new创建指针变量（相当于空结构体实例的指针）
-	p1 := Stu{
-		name: "jack",
-		age:  14,
-	}
-	p2 := Stu{}
-	var p3 Stu
-	p4 := new(Stu)
-	fmt.Printf("p1是%#v\n", p1) //p1是main.Stu{name:"jack", age:14}
-	fmt.Printf("p2是%#v\n", p2) //p2是main.Stu{name:"", age:0}
-	fmt.Printf("p3是%#v\n", p3) //p3是main.Stu{name:"", age:0}
-	fmt.Printf("p4是%#v\n", p4) //p4是&main.Stu{name:"", age:0}
-
-	//切片实例、空切片实例、切片类型的变量（等于nil）、new创建指针变量（空切片实例的指针）
-	s1 := []int{1, 2, 3}
-	s2 := []int{}
-	var s3 []int
-	s4 := make([]int, 5, 10)
-	s5 := new([]int)
-	fmt.Printf("s1是%v\n", s1)               //s1是[1 2 3]
-	fmt.Printf("s2是%v\n", s2)               //s2是[]
-	fmt.Printf("s3是%v，%v\n", s3, s3 == nil) //s3是[]，true
-	fmt.Printf("s4是%v\n", s4)               //s4是[0 0 0 0 0]
-	fmt.Printf("s5是%v\n", s5)               //s5是&[]
-
-	//map实例、map实例、map类型的变量（等于nil）、new创建指针变量（空map实例指针）
-	m1 := map[string]string{
-		"name": "tom",
-	}
-	m2 := map[string]string{}
-	var m3 map[string]string
-	m4 := make([]int, 5)
-	m5 := new(map[string]string)
-	fmt.Printf("m1是%v\n", m1)               //m1是map[name:tom]
-	fmt.Printf("m2是%v\n", m2)               //m2是map[]
-	fmt.Printf("m3是%v，%v\n", m3, m3 == nil) //m3是map[]，true
-	fmt.Printf("m4是%v\n", m4)               //m4是[0 0 0 0 0]
-	fmt.Printf("m5是%v\n", m5)               //m5是&map[]
+for _,val:=range xx{
 
 }
 ```
 
-另外，函数的入参、反参中的指针类型变量是nil，必须通过上面的方式之一指定
 
-```go
-package main
-
-import "fmt"
-
-type User struct {
-	Name string
-	Age  int
-}
-
-func getRes2() (u *User) {
-	//u = new(User) //需要初始化才能有User的结构
-	getRes1(u)
-	return
-}
-func getRes1(u *User) {
-	fmt.Printf("%#v\n", u)
-}
-
-
-func main() {
-	getRes2() //(*main.User)(nil)
-
-}
-```
 
 ## panic
 
