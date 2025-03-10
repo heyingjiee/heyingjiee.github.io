@@ -20,3 +20,6 @@ dist
 *.sln
 *.sw?
 .hbuilderx
+
+.vitepress/cache/**/*
+.vitepress/dist/**/*

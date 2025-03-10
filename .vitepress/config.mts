@@ -43,16 +43,22 @@ export default defineConfig({
       {
         text: "移动端",
         items: [
-          {text: "鸿蒙Next", link: "/docs/mobileBasic/鸿蒙.md"},
+          {text: "鸿蒙Next（暂停更新）", link: "/docs/mobileBasic/鸿蒙.md"},
           {text: "Flutter（暂停更新）", link: "/docs/mobileBasic/Flutter.md"},
         ],
       },
       {
-        text: "Go语言",
+        text: "Rust",
         items: [
-          {text: "Go 基础", link: "/docs/golang/Go学习笔记.md"},
-          {text: "Go Web（持续更新）", link: "/docs/golang/GoWeb学习.md"},
-          {text: "Go 微服务（持续更新）", link: "/docs/golang/Go微服务.md"},
+          {text: "Rust笔记（持续更新）", link: "/docs/frontBasic/Rust.md"},
+        ]
+      },
+      {
+        text: "Go",
+        items: [
+          {text: "Go 基础（持续更新）", link: "/docs/golang/Go学习笔记.md"},
+          {text: "Go Web", link: "/docs/golang/GoWeb学习.md"},
+          {text: "Go 微服务", link: "/docs/golang/Go微服务.md"},
         ],
       },
       {
@@ -64,19 +70,7 @@ export default defineConfig({
           {text: "常用服务端口", link: "/docs/programBasic/常用服务端口.md"},
         ],
       },
-      {
-        text: "其他语言",
-        items: [
-          {
-            text: "Python爬虫",
-            link: "/docs/otherLanguage/python爬虫进阶学习笔记.md",
-          },
-          {
-            text: "C/C++基础",
-            link: "/docs/otherLanguage/c++使用学习笔记.md",
-          },
-        ],
-      },
+
       {
         text: "其他技术",
         items: [
@@ -103,6 +97,19 @@ export default defineConfig({
           {
             text: "Mac使用经验",
             link: "/docs/programTool/Mac使用经验.md",
+          },
+        ],
+      },
+      {
+        text: "归档",
+        items: [
+          {
+            text: "Python爬虫",
+            link: "/docs/otherLanguage/python爬虫进阶学习笔记.md",
+          },
+          {
+            text: "C/C++基础",
+            link: "/docs/otherLanguage/c++使用学习笔记.md",
           },
         ],
       },

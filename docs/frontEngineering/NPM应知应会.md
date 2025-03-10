@@ -634,7 +634,7 @@ const PluginAES = require('@armor/plugin-aes').default
 
 #### TSC
 
-例如：TS项目编写 TS 文件，但是使用 TSC 编译为 JS 文件，最后使用Node 运行
+TSC 读取项目 `toconfig.json`将 TS 编译为 JS 
 
 **TS 视角**
 
@@ -713,7 +713,7 @@ tsconfig 模板 ( 一般项目结构 根目录/src 下方式源码，根目录�
 
 * 运行在浏览器环境（不适宜）
 
-  TSC 打包的 JS 文件无法做到 tree shrink，包体积比较大，不适合用在浏览器端。
+  TSC 打包的 JS 文件无法做到 tree shaking，包体积比较大，不适合用在浏览器端。
 
   TSC 不支持语法降级（Babel 可以做语法降级）
 

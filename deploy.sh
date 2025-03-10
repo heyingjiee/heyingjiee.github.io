@@ -10,6 +10,9 @@ pnpm docs:build
 cd .vitepress/dist
 
 git init --initial-branch=master
+git config --global user.email "1270433876@qq.com"
+git config --global user.name "hedaodao"
+
 git add -A
 git commit -m  "部署时间：`date '+%Y%m%d %H:%M:%S'`"
 

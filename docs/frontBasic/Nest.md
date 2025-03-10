@@ -364,7 +364,7 @@ export class LoginGuard implements CanActivate {
 创建启动项目
 
 ```shell
-npm i -g @nestjs/cli
+npm i -g @nestjs/cli # 写作时最新版本为 10.4.9 
 
 nest new 项目名
 
@@ -3394,7 +3394,7 @@ import { LoggerModule } from './common/logger/logger.module';
         //   cls.set('userId', req.headers['x-user-id']);
         //   cls.set('traceId', uuidv4());
         // },
-        generateId: true,
+        generateId: true, // 自动生成 id
         // idGenerator: () => uuidv4(), // 可以定义生成的id。例如使用uuid这个包的uuidv4()
       },
     }),
@@ -3894,7 +3894,7 @@ export class PersonController {
   @Injectable()
   export class PersonService {
    
-    @InjectRepository(Person)
+    @InjectRepository()
     private readonly personRepository: Repository<Person>;
   
     // 查找
@@ -4039,21 +4039,26 @@ migration:run可以执行表结构改变的SQL，但是很多公司不允许直�
 以上面Nest例子中personRepository为例子，即查询person表
 
 ```ts
-// person 是实体对象 {id:number,name:string}
+// Module 中引入
+@Module({
+  imports: [TypeOrmModule.forFeature([Person])],
+})
+// 注入
+@InjectRepository(User)
+private readonly personRepository: Repository<Person>;
 
-
+//------- 🔍查询 -------
 // 显示查询数据在不在，存在则更新，不存在就插入
-personRepositor.save(person) 
-
+personRepository.save(person) 
 
 // 查询多条
-personRepositor.find() // 不传参数是全部数据，入参是对象可以做很细致的查询，详细查看d.ts定义文件(官方文档：https://typeorm.bootcss.com/find-options)
-personRepositor.findBy({id:1}) // 根据条件查询
+personRepository.find() // 不传参数是全部数据，入参是对象可以做很细致的查询，详细查看d.ts定义文件(官方文档：https://typeorm.bootcss.com/find-options)
+personRepository.findBy({id:1}) // 根据条件查询
 const [users, count] = await personRepositor.findAndCount() // 额外返回数据条数
-personRepositor.findAndCountBy({id:1})// 根据条件查询
+personRepository.findAndCountBy({id:1})// 根据条件查询
 
 // 查询后仅返回一条
-personRepositor.findOne({ 
+personRepository.findOne({ 
    			select: {
             firstName: true,
             age: true
@@ -4065,17 +4070,18 @@ personRepositor.findOne({
             age: 'ASC'
         }
 })
-personRepositor.findOneBy({id:1}) // 根据条件查询
+personRepository.findOneBy({id:1}) // 根据条件查询
 
 // 默认查询不到也不会报错，findOneOrFail查不到会抛出错误
-personRepositor.findOneOrFail({
+personRepository.findOneOrFail({
   where:{id:1}
 })
 
-// 删除
-personRepositor.delete(person,1) // 删除id为1的
-personRepositor.delete(person,[1,2]) // 批量删除id为1、2的
-personRepositor.remove(person) // remove不是通过id删除，而是直接传入person对象
+//-------  ❌查询 -------
+
+personRepository.delete(person,1) // 删除id为1的
+personRepository.delete(person,[1,2]) // 批量删除id为1、2的
+personRepository.remove(person) // remove不是通过id删除，而是直接传入person对象
 
 ```
 
@@ -4746,7 +4752,7 @@ module.exports = {
 
 * 使用前端的方式计算签名（时间戳、随机字符串从请求header取），验证前端签名是否正确。如果签名正确就代表传入参数全部可信
 * 验证请求是否过期：请求时间戳与当前服务器时间差额是否在X分钟之内
-* 验证请求是否重放：每次都验证请求的随机数在Redis中是否存在，如果存在则代表重放，不存在就存储随机字符串。注意：Redis存储随机数时可以设置有效期为X分钟，超过X分钟就命中了上一个判断，Redis存储的随机数也用不上了，也能防止数据一致膨胀
+* 验证请求是否重放：每次都验证请求的随机数在Redis中是否存在，如果存在则代表重放，不存在就存储随机字符串。注意：Redis存储随机数时可以设置有效期为X分钟，超过X分钟就命中了上一个判断，Redis存储的随机数也用不上了，也能防止数据持续膨胀
 
 
 

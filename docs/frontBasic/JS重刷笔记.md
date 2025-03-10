@@ -7870,7 +7870,56 @@ async：一旦下载完，渲染引擎就会中断渲染，执行这个脚本以
 
 * **ESM**模块只能导出JS模块（在使用打包工具时，是因为打包工具会替我们做一层转换，所以才能通过import引入图片、JSON等等）
 
-  
+
+## 打包与构建
+
+这块可以参考 Vite 的笔记，这里做一个额外的补充
+
+### Tree Shaking 
+
+JS 是以模块为单位的，虽然只引入了 Button 组件，但是实际上引入了整个 xxx 模块
+
+```js
+import { Button } from 'xxx';  // 这实际上全量导入
+```
+
+如果项目中引入了支持Tree Shaking 的打包工具，例如：rollup 。就可以实现仅仅打包引入的函数
+
+参考 rollup 官方提供的 [Repl](https://rollupjs.org/repl/?version=4.28.1&shareable=JTdCJTIyZXhhbXBsZSUyMiUzQSUyMjAxJTIyJTJDJTIybW9kdWxlcyUyMiUzQSU1QiU3QiUyMmNvZGUlMjIlM0ElMjIlMkYlMkYlMjBUUkVFLVNIQUtJTkclNUNuaW1wb3J0JTIwJTdCJTIwY3ViZSUyMCU3RCUyMGZyb20lMjAnLiUyRm1hdGhzLmpzJyUzQiU1Q24lNUNuY29uc29sZS5sb2coY3ViZSg1KSklM0IlMjAlMkYlMkYlMjAxMjUlMjIlMkMlMjJpc0VudHJ5JTIyJTNBdHJ1ZSUyQyUyMm5hbWUlMjIlM0ElMjJtYWluLmpzJTIyJTdEJTJDJTdCJTIyY29kZSUyMiUzQSUyMiUyRiUyRiUyMG1hdGhzLmpzJTVDbiU1Q24lMkYlMkYlMjBUaGlzJTIwZnVuY3Rpb24lMjBpc24ndCUyMHVzZWQlMjBhbnl3aGVyZSUyQyUyMHNvJTVDbiUyRiUyRiUyMFJvbGx1cCUyMGV4Y2x1ZGVzJTIwaXQlMjBmcm9tJTIwdGhlJTIwYnVuZGxlLi4uJTVDbmV4cG9ydCUyMGNvbnN0JTIwc3F1YXJlJTIwJTNEJTIweCUyMCUzRCUzRSUyMHglMjAqJTIweCUzQiU1Q24lNUNuJTJGJTJGJTIwVGhpcyUyMGZ1bmN0aW9uJTIwZ2V0cyUyMGluY2x1ZGVkJTVDbiUyRiUyRiUyMHJld3JpdGUlMjB0aGlzJTIwYXMlMjAlNjBzcXVhcmUoeCklMjAqJTIweCU2MCU1Q24lMkYlMkYlMjBhbmQlMjBzZWUlMjB3aGF0JTIwaGFwcGVucyElNUNuZXhwb3J0JTIwY29uc3QlMjBjdWJlJTIwJTNEJTIweCUyMCUzRCUzRSUyMHglMjAqJTIweCUyMColMjB4JTNCJTVDbiU1Q24lMkYlMkYlMjBUaGlzJTIwJTVDJTIyc2lkZSUyMGVmZmVjdCU1QyUyMiUyMGNyZWF0ZXMlMjBhJTIwZ2xvYmFsJTVDbiUyRiUyRiUyMHZhcmlhYmxlJTIwYW5kJTIwd2lsbCUyMG5vdCUyMGJlJTIwcmVtb3ZlZC4lNUNud2luZG93LmVmZmVjdDElMjAlM0QlMjAnY3JlYXRlZCclM0IlNUNuJTVDbmNvbnN0JTIwaW5jbHVkZUVmZmVjdCUyMCUzRCUyMGZhbHNlJTNCJTVDbmlmJTIwKGluY2x1ZGVFZmZlY3QpJTIwJTdCJTVDbiU1Q3QlMkYlMkYlMjBPbiUyMHRoZSUyMG90aGVyJTIwaGFuZCUyQyUyMHRoaXMlMjBpcyUyMG5ldmVyJTVDbiU1Q3QlMkYlMkYlMjBleGVjdXRlZCUyMGFuZCUyMHRodXMlMjByZW1vdmVkLiU1Q24lNUN0d2luZG93LmVmZmVjdDElMjAlM0QlMjAnbm90JTIwY3JlYXRlZCclM0IlNUNuJTdEJTIyJTJDJTIyaXNFbnRyeSUyMiUzQWZhbHNlJTJDJTIybmFtZSUyMiUzQSUyMm1hdGhzLmpzJTIyJTdEJTVEJTJDJTIyb3B0aW9ucyUyMiUzQSU3QiUyMm91dHB1dCUyMiUzQSU3QiUyMmZvcm1hdCUyMiUzQSUyMmVzJTIyJTdEJTJDJTIydHJlZXNoYWtlJTIyJTNBdHJ1ZSU3RCU3RA==) 查看打包结果
+
+![image-20241217235102859](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20241217235103iH7K3j.png)
+
+
+
+果我们自己封装了组件库/工具提供给三方使用，也需要与 Tree Shaking 兼容，才能保证三方用户在打包时能充分利用 Tree Shaking 去除我们组件库/工具中无用代码
+
+1. **ESM 支持**
+
+   所有模块需要以 ESM 格式发布的，打包工具可以进行静态分析识别哪些代码是真正被使用到的，哪些是可以安全移除的
+
+2. **无副作用声明**
+
+   在 `package.json` 中，声明 `"sideEffects": false` 或者列出具有副作用的具体文件。这帮助打包工具更准确地执行 Tree Shaking，避免意外移除必要的代码
+
+3. **优化的导入路径**
+
+   虽然 Tree Shaking 能进行静态分析去除全量引入中无用的代码，但是仍然推荐使用者直接使用按需加载
+
+   ```js
+   // 全量导入（不推荐）
+   import { Button } from 'element-plus';
+   
+   // 按需加载（推荐）
+   import Button from 'element-plus/lib/button';
+   // 或者使用 Babel 插件后
+   import { Button } from 'element-plus';
+   ```
+
+   支持按需加载需要 组件库/工具开发者 进行适配，利用 Bable 实现（这部分可以参考我写的 vite 组件库，后续补充到这里来）
+
+   
+
+
 
 ## 设计模式
 
