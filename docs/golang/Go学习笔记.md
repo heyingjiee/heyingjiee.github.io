@@ -2634,6 +2634,14 @@ Go语言中可以使用`for range`遍历数组、切片、字符串、map 、通
 * map返回`键`、`值`。
 * 通道只返回通道内的`值`
 
+支持数字
+
+```go
+for i := range 10 {
+		fmt.Printf("%d\n", i)  // 输出 0 ～ 9
+}
+```
+
 遍历字符串、切片
 
 ```go
@@ -5770,10 +5778,6 @@ Go的GPM并发模型是典型的多对多模型，Go语言内置的调度器，�
 
 详见[这里](https://github.com/rubyhan1314/Golang-100-Days/blob/master/Day16-20(Go%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E8%BF%9B%E9%98%B6)/day17_Go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91Goroutine.md#22-go%E5%B9%B6%E5%8F%91%E8%B0%83%E5%BA%A6-g-p-m%E6%A8%A1%E5%9E%8B)
 
-
-
-
-
 ### runtime包
 
 runtime包提供和go运行时环境的互操作功能
@@ -6159,9 +6163,11 @@ func main() {
 
 注意，通常我们在每次调用协程前使用wg.Add增加计数器，而不是在协程内部使用wg.Add，这可能导致协程未执行时，主进程的wg.Wait就执行了，然后结束了主程序
 
+### 传统并发控制方式：锁
 
+通过对临界资源加锁的方式，防止多个 Goroutine 同时访问临界资源
 
-### 临界资源
+#### 临界资源
 
 例子
 
@@ -6261,15 +6267,13 @@ func main() {
 
 但是，Go语言更加推荐是用channel的方式
 
-### 加锁机制
+#### 加锁机制
 
-主要用于处理多个子goroutine的通讯问题
-
-
+主要用于处理多个子 goroutine 的通讯问题
 
 **互斥锁、读写锁 概述**
 
-多个对同一个数据仅读取是不存在问题的，不必加锁
+多个 goroutine 对同一个数据仅读取是不存在问题的，不必加锁
 
 真正出现问题的是：写-写（互斥锁）、读-写（读写锁）
 
@@ -6298,6 +6302,8 @@ func main() {
   ```
 
 * 当某一goroutine对某一临界资源加锁后，如果有其他的goroutine来执行上锁操作，会被阻塞，直到当前的goroutine释放锁后其他的goroutine才会继续加锁
+
+互斥锁更粗粒度直接阻塞 goroutine操作，而读写锁更细粒度会根据 goroutine 的具体操作阻塞 goroutine
 
 **互斥锁**
 
@@ -6483,13 +6489,105 @@ func main() {
 
 ```
 
+#### 死锁、解饿问题
 
+##### 死锁
 
-### 通道channel
+ 多个 Goroutine 争抢资源，在某些情况下，最后导致多个 goroutine 一直相互等待下去
+
+死锁的具体案例：
+
+- Goroutine 1 先运行，锁定了 Resource A
+- Goroutine 2 同时运行，锁定了 Resource B
+- Goroutine 1 尝试锁定 Resource B，但 Resource B 已经被 Goroutine 2 锁定，因此 Goroutine 1 进入阻塞状态，等待 Resource B 释放
+- Goroutine 2 尝试锁定 Resource A，但 Resource A 已经被 Goroutine 1 锁定，因此 Goroutine 2 进入阻塞状态，等待 Resource A 释放
+
+死锁代码案例：
+
+```go
+// main.go
+package main
+
+import "sync"
+
+var (
+	mutex1 sync.Mutex
+
+	mutex2 sync.Mutex
+)
+
+func resource1() {
+	mutex1.Lock()
+	print("resource 1")
+	resource2()
+	mutex1.Unlock()
+
+}
+
+func resource2() {
+	mutex2.Lock()
+	print("resource 1")
+	resource1()
+	mutex2.Unlock()
+}
+
+func main() {
+	resource1()
+	resource2()
+}
+
+```
+
+运行结果如下，Go 检查到发生了死锁
+
+![image-20250316012353579](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20250316012353JDTA8r.png)
+
+##### 饥饿
+
+某个协程长时间持有锁，导致其他协程在这段时间内无法获取锁而阻塞。或者多个高优先级的任务长时间持有锁，导致低优先级任务长时间无法执行
+
+解决方案：
+
+1、设置超时时间、手动取消Context，避免协程长时间阻塞
+
+```go
+select {
+case <-ch:
+    // 通道操作成功
+case <-time.After(1 * time.Second):
+    // 超时处理
+}
+```
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+defer cancel()
+
+select {
+case <-ctx.Done():
+    fmt.Println("协程超时")
+case <-ch:
+    fmt.Println("通道操作成功")
+}
+```
+
+2、使用带缓冲区的 channel 
+
+```go
+ch := make(chan int, 10) // 带缓冲的通道
+```
+
+3、Go 的 `sync.Mutex` 是非公平锁，可能会导致某些协程长时间无法获取锁。如果需要公平性，可以使用 `sync.RWMutex` 或其他公平锁机制。
+
+### 基于CSP的并发控制方式：channel
 
 Go社区中有一句十分经典的语录
 
 >不要通过共享内存来通信，而应该通过通信来共享内存
+
+锁、channel 的区别：
+
+![image-20250316022035289](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202503160220356ZHXd9.png)
 
 如何理解？
 
@@ -6503,9 +6601,8 @@ Go社区中有一句十分经典的语录
 
   我们可以将数据分装成一个对象，将对象放入channel，由Go语言从语言层面保证同时只能有一个goroutine能访问channel，取出后在处理其指向的内存对象
 
-  补充：Go语言采用的并发模型是`CSP（Communicating Sequential Processes）`
 
-
+ [CSP](https://github.com/rubyhan1314/Golang-100-Days/blob/master/Day16-20(Go%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E8%BF%9B%E9%98%B6)/day18_channel%E9%80%9A%E9%81%93.md#%E5%8D%81%E4%B8%80go%E8%AF%AD%E8%A8%80%E7%9A%84csp%E6%A8%A1%E5%9E%8B)（communicating sequential processes）并发模型
 
 
 
@@ -6911,7 +7008,7 @@ default://可以没有default
   
   
 
-### 生产者消费者（channel补充）
+#### 生产者消费者
 
 **1：1**
 
@@ -7058,11 +7155,7 @@ func consumer(taskCh <-chan Task) {
 }
 ```
 
-
-
-
-
-### time库通道相关函数
+#### time库通道相关函数
 
 <span id='time库中与通道相关的函数'></span>
 
@@ -7207,7 +7300,7 @@ func main() {
 
 ```
 
-### context包
+#### context包
 
 context这个单词的含义是"上下文"
 
@@ -7381,11 +7474,7 @@ func main() {
 
 
 
-### 进程通讯
 
-Go语言中的并发程序主要是通过基于CSP（communicating sequential processes，一种线程模型），也就是**管道通讯**的方式，使用Go语言中的goroutine和channel来实现，当然也支持使用传统的多线程共享内存的并发方式
-
-[详情](https://github.com/rubyhan1314/Golang-100-Days/blob/master/Day16-20(Go%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E8%BF%9B%E9%98%B6)/day18_channel%E9%80%9A%E9%81%93.md#%E5%8D%81%E4%B8%80go%E8%AF%AD%E8%A8%80%E7%9A%84csp%E6%A8%A1%E5%9E%8B)
 
 ### 并发安全
 
@@ -7482,11 +7571,7 @@ func main() {
 }
 ```
 
-**sync/atomic库**
 
-类似于sync库中的Map，sync/atomic库中的（int32、uint32、int64、uint64）对于基础类型中（int32、uint32、int64、uint64）实现了并发安全的操作。并且提供了一系列函数对这些类型进行操作
-
-当然，我们也可以不使用这些并发安全的类型，而是使用前面的加锁的方式处理
 
 ### 僵尸进程
 
