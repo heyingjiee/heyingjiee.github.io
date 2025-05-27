@@ -828,8 +828,6 @@ fn main() {
 
 ### 引用
 
-#### 基础概念
-
 **1、引用、借用的概念**
 
 &s1表示对变量s1的**不可变引用**，s2只是**借用**所有权，同时s1仍然持有值的所有权
@@ -959,140 +957,77 @@ fn main() {
   }
   ```
 
-#### 不可变引用（&T）
+### 借用检查
 
-上面提到的例子是符合规则的
+总结 ：
 
-##### 规则
+- 任意时刻只能存在：**一个可变借用**（`&mut T`），或**多个不可变借用**（`&T`）
+- 借用不能悬空（不存在悬垂引用）
 
-* 同一变量的可读引用 r 的作用域内可以存在其他可读引用 r1、r2...
+#### 引用作用域检查
 
-* 同一变量的可读引用 r 的作用域内，不能有对该变量的**写操作** 或 其他可写引用
+这些限制的好处是 Rust 可以在编译时就避免数据竞争，同一作用域只能有 1 个可写引用可以修改值
 
-  ```rust
-  fn main() {
-      let mut s = String::from("hello");
-      let r = &s;
-      s.push_str(", world");  // ❌ 编译错误。 可读引用 r 的作用域内，出现了对原变量的写操作
-      print!("{}",r);
-  }
-  
-  
-  fn main() {
-      let mut s = String::from("hello");
-    	{
-        let r = &s;
-    	}
-      s.push_str(", world");  // ❌ 编译错误。 可读引用 r 的作用域内，出现了对原变量的写操作
-      print!("{}",r);
-  }
-  ```
+**技巧**：建议看代码，出现 `&mut T`就先看它的作用域，然后看作用域是否有**同一个变量的不可变、可变引用**，有就是错误的
+
+**规则**：
+
+* 变量 s 的不可变引用 r1 的作用域内可以存在 s 的其他可读引用 r2、r3...
+
+* 变量 s 的不可变引用 r1 的作用域内，不能有对该变量的**写操作**
 
   ```rust
   fn main() {
       let mut s = String::from("hello");
-      let r = &s;
-      let r2 = &mut s;;  // ❌ 编译错误。 可读引用 r 的作用域内，出现了其他可写引用
-      print!("{}",r);
+      let r1 = &s;
+      s.push_str(", world");  // ❌ 编译错误。 不可变引用 r 的作用域内，出现了对原变量的写操作
+      print!("{}",r1);
+  }
+  
+  fn main() {
+      let mut s = String::from("hello");
+      let r1 = &s;
+      let r2 = &mut s;;  // ❌ 编译错误。 不可变引用 r 的作用域内，出现了其他可变引用
+      print!("{}",r1);
   }
   ```
 
-#### 可变引用（&mut T）
 
-`&mut s` 表示这个引用是可写的
-
-```rust
-fn foo(s:&mut String){
-  // ⚠️ push_str是 结构体 String 的方法，（语法：引用调用方法会自动解引用后再调用方法）
-  s.push_str(", world"); // 输出 xxx, world
-}
-
-fn main(){
-  let mut s1=String::from("xxx");
-  foo(&mut s1); 
-  println!("{}",s1); 
-}
-```
-
-##### 规则
-
-同一变量的某个**可写引用 r** ，在其作用域内不能有其他 **可读、可写引用**
-
-错误用法：
-
-* 同一变量的不同可写引用作用域冲突
+* 变量 s 的**可变引用 r1**，在其作用域内不能有其他**可变引用**
 
   ```rust
   fn main(){
-    let mut s1=String::from("xxx");
-    let r1=&mut s1;
-    let r2=&mut s1;
+    let mut s=String::from("xxx");
+    let r1=&mut s;
+    let r2=&mut s;
   
-    println!("{}", r1); // ❌ 编译错误。可写引用 r1 作用域内有其他可写引用 r2 
+    println!("{}", r1); // ❌ 编译错误。可变引用 r1 作用域内有其他可变引用 r2 
   }
-  ```
-
-  ```rust
+  
   fn main(){
-    let mut s1=String::from("xxx");
-    let r1=&mut s1;
-    let r2=&mut s1;
+    let mut s=String::from("xxx");
+    let r1=&mut s;
+    let r2=&mut s;
   
     println!("{}", r2); // ✅ 编译通过。输出 xxx
   }
   ```
 
-* 同一变量的可读引用作用域、可写引用作用域冲突
+* 变量 s 的可变、不可变引用作用域不能交叉
 
-  * 可读作用作用域之间不能出现可写引用
-
-    ```rust
-    fn main() {
-        let mut s = String::from("hello");
-    
-        let r1 = &s;
-        let r2 = &mut s; // 可读作用域之间，出现了可写引用 r2
-        println!("{}", r1); // ❌ 编译报错
-    }
-    ```
-
-  * 可读作用作用域之间不能出现可写引用
-
-    ```rust
-    fn main() {
-        let mut s = String::from("hello");
-    
-        let r2 = &mut s;
-        let r1 = &s; // 可写作用域之间，出现了可读引用 r1 
-        println!("{}", r2); // ❌ 编译报错 
-    }
-    ```
-
-##### 写
-
-解引用后才能读取值，才能重写值
-
-```rust
-fn main() {
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
   
-  	// ⚠️  必须保证多级引用都是可变引用，最后解出来才能重写值
-    let mut a="a".to_string();
-    let mut b =&mut a; // 变量a声明为mut ，取引用也要 &mut 
-    let c =&mut b;  // ⚠️ c 存的是可变引用 b，如果c 不再取 &c，c 的 mut 修饰符加不加都行
-  
-    // 引用只是内存地址，*可解引用获取值，注意对应层数
-    println!("{}",**c); // 输出 a
-    
-    **c="c".to_string(); // 修改
-    println!("{}",**c); // 输出 c
-}
-```
+      let r2 = &mut s;
+      let r1 = &s; // 可写作用域之间，出现了可读引用 r1 
+      println!("{}", r2); // ❌ 编译报错 
+  }
+  ```
 
-这些限制的好处是 Rust 可以在编译时就避免数据竞争，同一作用域只能有 1 个可读引用可以修改值
+**括号创造作用域**
 
-#### 推荐
-
-通过括号创造作用域，如果仅仅通过引用出现的最后一行作为其作用域结尾，当逻辑很复杂时根本看不出来每个引用的作用域。可以使用括号明确的划分作用域
+如果仅仅通过引用出现的最后一行作为其作用域结尾，当逻辑很复杂时根本看不出来每个引用的作用域。可以使用括号明确的划分作用域
 
 ```rust
 fn main() {
@@ -1104,6 +1039,28 @@ fn main() {
     let r1 = &s; // 可写作用域之间，出现了可读引用 r1 
 }
 ```
+
+#### 悬垂引用检查
+
+如果变量 r 引用了变量 x（ `let r = &x` ），Rust 要求**x 的生命周期 > r 的生命周期** 
+
+如果 r 的生命周期小，则很可能在 x 存在期间，r 就失效了导致出现悬垂引用
+
+```rust
+ {
+    let r;                // ---------+-- 'a
+                          //          |
+    {                     //          |
+        let x = 5;        // -+-- 'b  |
+        r = &x;           //  |       |
+    }                     // -+       |
+                          //          |
+    println!("r: {}", r); //          |
+}                         // ---------+
+
+```
+
+而有些情况，Rust 编译器无法做出判断，就需要开发者手动标记**生命周期**
 
 ### 解引用
 
@@ -1133,7 +1090,7 @@ match arr {
 
 ##### 函数参数传递
 
-若类型  U  实现了  Deref<Target=T> ，则  &U  可以自动转换为  &T 
+若类型  U  实现了  Deref<Target=T>  （这里是关联类型语法，T 是解出来的类型），则  &U  可以自动转换为  &T 
 
 Rust中实现了 Deref Trait 的类型：
 
@@ -1176,16 +1133,18 @@ ref_ref_s.method(); // 自动解引用：&&MyStruct → &MyStruct → MyStruct
 
 ##### 操作符重载
 
-如  `+`、`*`   ，编译器会自动解引用操作数，以匹配操作符的实现。
+如  `+`、`*`   ，与前面实现 Deref Trait 不同
+
+操作符重载是通过 `std::ops::Add` Trait 解引用，只会解引用 1 次
 
 ```rust
 let a = 5;
 let b = &a;
 let c = &&a;
 
-assert_eq!(a + *b, 10);   // 显式解引用
-assert_eq!(a + b, 10);     // 自动解引用：&i32 → i32
-assert_eq!(a + c, 10);     // 自动解引用：&&i32 → &i32 → i32
+assert_eq!(a + *b, 10);   //  ✅ 显式解引用
+assert_eq!(a + b, 10);     // ✅ 自动解引用：&i32 → i32
+assert_eq!(a + c, 10);     // ❌ 只能解引用 1 次：&&i32 → &i32
 ```
 
 ##### 自动解引用的优先级规则
@@ -1246,7 +1205,9 @@ if let Some(value) = &option {
 
 ## 生命周期
 
-如果变量 r 引用了变量 x（ `let r = &x` ），Rust 编译器要求 x 的生命周期 > r 的生命周期（这个比较称为**借用检查**）
+### 悬垂引用检查
+
+如果变量 r 引用了变量 x（ `let r = &x` ），Rust 编译器要求 x 的生命周期 > r 的生命周期（这个属于**借用检查**）
 
 如果 r 的生命周期小，则很可能在 x 存在期间，r 就失效了导致出现悬垂引用
 
@@ -2306,9 +2267,12 @@ fn forever() -> ! {
 // 3、退出进程
 use std::process
 process::exit(1)
+
+// 4、panic! 返回值就是`!`
+panic!("崩溃了")
 ```
 
-### 闭包
+### 闭包类型
 
 #### 简介
 
@@ -2401,7 +2365,7 @@ let n = example_closure(5); // ✅
 
 #### type
 
-type 可以给类型起别名
+type 可以给类型起别名 ，仅仅只是个别名，还可以使用原类型的方法
 
 ```rust
 type xx = Vec<String>; // ⚠️ 这是个语句，加分号
@@ -2410,6 +2374,8 @@ type xx = Vec<String>; // ⚠️ 这是个语句，加分号
 #### Newtype模式
 
 通过只有一个元素的元组结构体，对基础类型进行封装
+
+相当于一个新的类型，原类型的方法都被屏蔽了
 
 **例如：用户 ID 和订单 ID，其数据类型都是 u64 **
 
@@ -2472,23 +2438,31 @@ enum Status {
 }
 
 fn main() {
-    let status = Status::Active;
-    let num = status as i32; // 结果是 1
+  	println!("{}",Status::Active as i32); // 结果是 1
 }
 ```
 
-#### 字符串 <--> 数值类型
+#### try_into
+
+返回值是 Result，相比 as 可以进行错误处理
+
+```rust
+let x: i32 = 5;
+
+//  i32 转成 u8，需要在这里显式指定目标类型：
+let y: u8 = x.try_into().unwrap(); // 转成 u8
+```
+
+#### 字符串 --> 数值类型
 
 字符串  --> 数值类型
 
 ```rust
 fn main() {
     let str_num = "123";
-    
-    match str_num.parse::<i8>() { // ::<i8> 是 turbofish 指定函数传入的泛型 , 用于指定 num 的类型
-        Ok(num) => println!("转换成功: {}", num),
-        Err(e) => println!("转换失败: {}", e),
-    }
+  	println!("{}", str_num.parse::<i8>().unwrap()); // 123
+  	// ::<i8> 是 turbofish 指定函数传入的泛型 , 用于指定 num 的类型
+  	// 返回值是 Result ，unwrap 可以解出来数据
 }
 
 // str_num = "111aa"  这种会转换失败
@@ -2496,68 +2470,6 @@ fn main() {
 ```
 
 ⚠️ 这是 Rust 中很常用的形式，函数返回 Result 枚举，直接将其放到 match 中处理成功、失败两种可能
-
-### 智能指针
-
-Rust 中可以使用的类型，都需要是在编译器能确定的固定大小的。而有些类型是不固定的，这时候就需要用指针了
-
-前面提到的  `Vec` 和 `String` 都是智能指针，指针存储在栈上，指向堆上的数据
-
-智能指针类型 `Box<T> `
-
-#### Box::new
-
-例子参考【特征 Trait  -  特征对象】章节
-
-#### Box::leak
-
-入参是 `Box<T>` 指针，解引用拿到堆上数据并转换为 `&'static T` ， 即 Rust 不会再管理这块内存，永远不会 drop
-
-```rust
-// 正常情况下，所有权在函数里，必须返回 s 才能保证内存不被 drop
-// 通过 Box::leak 手动制造了内存泄露
-fn gen_static_str() -> &'static str {
-    let mut s = String::new();
-    s.push_str("hello, world");   
-
-    Box::leak(s.into_boxed_str())// 将字符串转成 Box<str>
-  	// Box::leak 解引用拿到堆上数据返回
-}
-```
-
-这个用处很大，将一个动态内容变成静态的。注意：不要大量制造这种内存泄露
-
-使用场景： 动态读取的配置、动态注册
-
-* 读取配置
-
-  ```rust
-  // config 是读取的
-  static GLOBAL: &str = Box::leak(config.to_string().into_boxed_str());
-  ```
-
-* 插件注册表
-
-  ```rust
-  fn register(name: &'static str) {
-      REGISTRY.lock().unwrap().push(name);
-  }
-  
-  fn main() {
-    	// plugin_name 是动态输入的
-      let plugin_name = Box::leak(plugin_name.to_string().into_boxed_str());
-      register(plugin_name);
-  }
-  ```
-
- #### 解引用
-
-智能指针实现了`Deref` 和 `Drop` 特征
-
-- `Deref` 可以让智能指针像引用那样工作，这样你就可以写出同时支持智能指针和引用的代码，例如 `*T`
-- `Drop` 允许你指定智能指针超出作用域后自动执行的代码，例如做一些数据清除等收尾工作
-
-
 
 ## 泛型
 
@@ -3370,6 +3282,130 @@ fn main() {
 }
 ```
 
+## Sized
+
+Rust 中的所有类型都可以分成两大类
+
+* sized 定长类型，即编译期类型大小已知
+* unsized 不定长类型（也称为 DST，dynamically sized types)），运行时才能动态获取
+
+Rust 强制要求编译时必须确定类型大小
+
+* 字符切片`&str`，但是没有提到的`str`
+* 数组切片`&[T]`，但是没有提到的`[T]`
+* dyn Trait 也是 DST
+
+我们只能间接使用 DST 类型：引用、智能指针两种方式。本质是使用指针指向动态类型，指针是存储在栈上的定长类型
+
+泛型默认约束是 Sized 的，可以使用 `?Sized` 来使用不定长类型
+
+既然 Rust 只能用 Sized 类型，为啥还整个 `?Sized`，无非是传入泛型的时候可以简单点，实际函数中还是使用引用 `&T`
+
+```rust
+fn generic<T: ?Sized>(t: &T) {
+    // 
+}
+```
+
+## 智能指针
+
+Rust 中可以使用的类型，都需要是在编译器能确定的固定大小的。而有些类型是不固定的，这时候就需要用指针了
+
+前面提到的  `Vec` 和 `String` 都是智能指针，指针存储在栈上，指向堆上的数据
+
+智能指针类型 `Box<T> `
+
+### Deref 与 Drop
+
+智能指针实现了`Deref` 和 `Drop` 特征
+
+**Deref  Trait **
+
+可以让智能指针使用例如 `*T`，解出内部的数据 （解引用的总结：【所有权与引用 - 解引用】）
+
+
+
+**Drop  Trait**
+
+开发者指定智能指针超出作用域后自动执行的代码，做一些数据清除等收尾工作（Rust 几乎为所有类型都实现了 Drop Trait）。但是，例如文件描述符、网络 socket 等，当这些值超出作用域需要手动进行关闭以释放相关的资源
+
+```rust
+struct MyStruct{};
+impl Drop for MyStruct {
+    fn drop(&mut self) { 
+        println!("drop 前执行的清理逻辑");
+    }
+}
+
+// ---------- 主动释放 ------------
+let x = MyStruct{};
+// ❌ drop 方法参数是个可变引用，如果通过引用释放了内存，那持有所有权变量就错了
+x.drop();
+
+// ✅ drop 函数参数会转移所有权，就能直接 drop 释放了
+drop(x)
+
+// ---------- Copy Trait ------------
+// 实现了 Copy Trait 的类型，不能实现 Drop Trait。
+// 而且，本来Rust中默认实现 Copy 的类型，都是分配在栈上的，只需要栈指针回退即可，无需 drop 释放内存
+
+```
+
+
+
+
+
+### Box
+
+#### Box::new
+
+例子参考【特征 Trait  -  特征对象】章节
+
+#### Box::leak
+
+入参是 `Box<T>` 指针，解引用拿到堆上数据并转换为 `&'static T` ， 即 Rust 不会再管理这块内存，永远不会 drop
+
+```rust
+// 正常情况下，所有权在函数里，必须返回 s 才能保证内存不被 drop
+// 通过 Box::leak 手动制造了内存泄露
+fn gen_static_str() -> &'static str {
+    let mut s = String::new();
+    s.push_str("hello, world");   
+
+    Box::leak(s.into_boxed_str())// 将字符串转成 Box<str>
+  	// Box::leak 解引用拿到堆上数据返回
+}
+```
+
+这个用处很大，将一个动态内容变成静态的。注意：不要大量制造这种内存泄露
+
+使用场景： 动态读取的配置、动态注册
+
+* 读取配置
+
+  ```rust
+  // config 是读取的
+  static GLOBAL: &str = Box::leak(config.to_string().into_boxed_str());
+  ```
+
+* 插件注册表
+
+  ```rust
+  fn register(name: &'static str) {
+      REGISTRY.lock().unwrap().push(name);
+  }
+  
+  fn main() {
+    	// plugin_name 是动态输入的
+      let plugin_name = Box::leak(plugin_name.to_string().into_boxed_str());
+      register(plugin_name);
+  }
+  ```
+
+### Rc、Arc
+
+
+
 ## 解构场景
 
 Rust 可以通过解
@@ -3557,9 +3593,9 @@ pub trait Iterator{
 Rust 中提供了 into_iter、 iter、 iter_mut 三个方法将其他类型转换为迭代器
 
 ```rust
-into_iter 会夺走所有权
-iter 是借用
-iter_mut 是可变借用
+into_iter  // 夺走每个元素的所有权
+iter  // 对每个元素，生成借用
+iter_mut  // 对每个元素，生成可变借用
 ```
 
 通用实现
@@ -3598,7 +3634,32 @@ impl<I: Iterator> IntoIterator for I {
 | `.cloned()`     | 克隆元素（如 `&T -> T`）               |
 | `.copied()`     | 复制元素（如 `&i32 -> i32`）           |
 
-### 消费迭代器
+适配器可以链式调用处理数据，结尾必须使用消费适配器才能真正执行
+
+```rust
+fn main() {
+    let v= vec![1,2,3,4,5];
+    let ret = v
+  						.into_iter()
+  						.map(|item| item*2) // [2,4,6,8,10]   item是 i32
+  						.filter(|item| *item < 9) // [2,4,6,8]  x是&i32
+  						.take(3) // [2,4,6]  取前 n 个
+  						.skip(1)// [4,6] 跳过前 n 个
+  						.collect::<Vec<i32>>() // 将迭代器转成 Vec<i32>
+  						// rev 逆序要求是 DoubleEndedIterator Trait，
+  						// 经过filter、flat_map 后会失去该特性
+  						.into_iter()
+              .rev()
+              .collect::<Vec<i32>>(); // [6, 4]
+
+    println!("{:?}", ret); //  这里 v 就已经失效了，转移到 ret 了
+
+}
+```
+
+注意所有权转移的问题。 使用 into_iter| iter | iter_mut
+
+### 消费适配器
 
 | 终结器方法          | 含义简述                      |
 | ------------------- | ----------------------------- |
@@ -4370,4 +4431,61 @@ fn main(){
     }
 }
 ```
+
+### 语法检查
+
+Rust 都需要进行啥语法检查? 
+
+熟悉后看报错，就能快速定位到底是哪个检查出错了
+
+* 类型检查｜不可变变量修改检查｜未使用变量检查｜match 匹配语法是否穷尽检查
+
+* 线程安全检查
+
+* **所有权检查**
+
+  使用失效的变量会报错
+
+  ```rust
+  let s1 = String::from("hello");
+  let s2 = s1; // 所有权转移
+  println!("{}", s1); // ❌ 错：s1 已无效
+  ```
+
+* **借用检查**
+
+  - 任意时刻只能存在：
+    - **一个可变借用**（`&mut T`），或
+    - **多个不可变借用**（`&T`）
+  - 借用不能悬空（不存在悬垂引用）
+
+* **生命周期**
+
+  生命周期一般会自动推导，复杂情况下需要手动标注
+  
+* **Sized检查**
+
+  dyn Trait、[T] 都是 DST（动态类型），需要用引用、智能指针间接使用
+
+  ```rust
+  
+  ```
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
 

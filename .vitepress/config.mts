@@ -38,6 +38,7 @@ export default defineConfig({
           {text: "CSS笔记", link: "/docs/frontBasic/CSS技术精炼.md"},
           {text: "Vue笔记", link: "/docs/frontBasic/Vue2重刷笔记.md"},
           {text: "Nest笔记（持续更新）", link: "/docs/frontBasic/Nest.md"},
+          {text: "Nest笔记（持续更新）", link: "/docs/frontBasic/Nest.md"},
         ],
       },
       {
