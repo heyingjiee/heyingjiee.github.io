@@ -3,26 +3,14 @@
 ## 参考
 
 * 陈天 - Rust 编程第一课  （参考：https://github.com/tyr-rust-bootcamp）
-
-* 唐刚 - Rust 语言从入门到实践
-
 * Rust 官方资源
 
   * [官网](https://www.rust-lang.org/zh-CN/)
   * [《通过例子学 Rust》](https://doc.rust-lang.org/rust-by-example/zh/index.html)
-
-* 翻译资源
-
-  ![image-20250208235523394](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20250208235523piGt7Z.png)
-
-  * [Rust 圣经中文版](https://kaisery.github.io/trpl-zh-cn/)
-  * [Rust 每个版本重大语法变动](https://rustwiki.org/zh-CN/edition-guide/)
-  * [Rust 标准库中文版](https://rustwiki.org/zh-CN/std/)
+* Rust 中文网 https://rustwiki.org/
 
 * Github 上的 《rust 语言圣经》（和官网的不一样，明显这个版本要好很多）：https://course.rs/basic/intro.html
-
 * Rusty Book（收集大量的 rust 包、代码片段、明星项目）：https://rusty.course.rs/ 
-
 * Rust 秘典（死灵书）: https://nomicon.purewhite.io/intro.html
 
  ## 前置
@@ -122,7 +110,7 @@ print!("{:?}",user) // User { username: "jack", active: true }
 
 Rust 中 Crate 可分为2种
 
-* 库（--lib） ：编译为 `.rlib` 静态库，一般提供一些函数工具，可供其他rust项目引入
+* 库（--lib） ：编译为 `.rlib` 静态库，一般包含公用的函数，可供其他rust项目引入
 * 二进制（--bin）：编译为可执行文件。起必须包括 main 函数作为入口
 
 一个 rust 项目
@@ -130,11 +118,39 @@ Rust 中 Crate 可分为2种
 * 最少要包含1 个Crate （库、二进制 Crate 都行）
 * 最多可包含 1 个库Crate + 多个二进制Crate，可通过 Cargo.toml 配置
 
-意思就是： 一般是有 1 个工具函数 Crate，多个 main 入口的包调用这个工具函数 Crate 实现不同工具
+意思就是： 一般是有 1 个工具函数 Crate，多个有 main 入口的二进制包调用这个工具函数 Crate 实现不同功能
 
 #### Crate作用域
 
 Crate 根文件所在的目录就是这个Crate 的作用域
+
+##### 默认约定
+
+如果 Cargo.toml 中没有配置，则遵循 Cargo 的默认约定：
+
+* 如果包目录中包含 *src/main.rs* ，则它是 二进制 crate 的根
+* 如果包目录中包含 *src/lib.rs*，则它是库 crate 的根。包名为项目name字段（下面的例子就是 `rust_example`）
+
+例如：`cargo new xxx ` (默认省略了 --bin 参数，是创建的二进制Crate) 创建的默认项目
+
+```rust
+// 目录结构
+├── Cargo.toml
+└── src
+    └── main.rs    // 二进制 Crate 的根 
+		└── lib.rs    // 库 Crate 的根 
+
+
+// Cargo.toml
+[package]
+name = "rust_example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+```
+
+【后面会提到】 Crate 根所在的目录就是这个Crate 的作用域。以默认约定为例子，你会发现 lib.rs、main.rs 这两个 crate 的作用域有重合
 
 ##### 配置 Crate
 
@@ -163,38 +179,6 @@ name = "cli_tool"
 path = "src/bin/cli.rs"
 ```
 
-##### 默认约定
-
-如果 Cargo.toml 中没有配置，则遵循 Cargo 的默认约定：
-
-* 如果包目录中包含 *src/main.rs* ，则它是 二进制 crate 的根
-* 如果包目录中包含 *src/lib.rs*，则它是库 crate 的根。包名为项目name字段（下面的例子就是 `rust_example`）
-
-例如：`cargo new xxx ` (默认省略了 --bin 参数，是创建的二进制Crate) 创建的默认项目
-
-```rust
-// 目录结构
-├── Cargo.toml
-└── src
-    └── main.rs    // 二进制 Crate 的根 
-		└── lib.rs    // 库 Crate 的根 
-
-
-// Cargo.toml
-[package]
-name = "rust_example"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-```
-
-##### 注意
-
-Crate 根所在的目录就是这个Crate 的作用域。以默认约定为例子，你会发现 lib.rs、main.rs 这两个 crate 的作用域有重合
-
-【后面会提到】
-
 ##### 标准目录结构
 
 ```rust
@@ -215,9 +199,15 @@ Crate 根所在的目录就是这个Crate 的作用域。以默认约定为例�
 
 ```
 
-#### Crate内成员可见性
+### module
 
-模块（mod）、函数、结构体（结构体字段、方法、关联方法）、枚举等默认私有，不可跨模块访问。通过 pub 可指定公开
+一个 Crate 内可包含多个模块（module）
+
+#### 模块成员可见性
+
+同一个 rs 文件中，模块（mod）、函数、结构体（结构体字段、方法、关联方法）、枚举默认公开
+
+跨文件访问都是默认私有，需要设置 pub 
 
 注意：枚举设置为 pub，其所有变体都为公开
 
@@ -241,128 +231,111 @@ pub struct MyStruct {
 }
 ```
 
-#### Crate 作用域内的模块
+#### 模块声明
 
-Rust 声明模块一般有下面两种形式：
+注意：
 
-##### 内联模块声明
+* 模块是可以无限嵌套的，存在父级、子级、孙子级....（观察3个例子的注释）
+* 模块内成员是公开的， pub 修饰才是公开
 
-内联模块是在当前文件内的，所以 mod 默认是公开的，mod 内部成员必须要 pub 修饰才是公开的
+**1、内联模块**
 
 ```rust
-// 【 src/main.rs 】
-
-// 内联模块定义
-mod math {
+mod math {  // 模块 math
   	
-  	// 函数 add ，后面会讲到函数
-    pub fn add(a:i32,b:i32) -> i32{
-        a+b
+    pub fn add1() {}
+
+    mod math2 {  // 子模块 math2
+        pub fn add1() {
+            super::add1(); // 【引入】引入父模块 super
+        }
     }
 }
-
-fn main() {
-    let res = math::add(1, 2);  
-    println!("{}",res) // 3 
-}
 ```
 
-##### 外部模块声明
+**2、目录 math + mod.rs 、单 rs 文件**
 
-如果 math 不是内联模块，编译器会尝试查找**同级目录**下的**math.rs** 或**math/ mod.rs** 
+math目录是个模块
 
-即 `src/math.rs` 或`src/math.mod.rs`
+a.rs、b.rs 单文件也是模块
+
+```text
+src/
+├── main.rs
+├── lib.rs
+├── math/   		  // 模块 math
+     ├── mod.rs   // 模块入口 ，其中引入子模块
+     ├── a.rs 		// 子模块 a
+     └── b.rs   	// 子模块 b
+```
+
+**3、根 Crate** 
+
+```text
+src/
+├── main.rs
+├── lib.rs				
+├── math.rs   		// 属于根的子模块 math
+```
+
+src 是 Crate 根，模块 math.rs 按道理来说
+
+* 既属于 main.rs 的子模块
+* 又属于 lib.rs 的子模块
+
+但是 Rust 要求一个模块只能属于一个 Crate，一般看作 math 是 lib 的子模块。而 main.rs 则是跨 Crate 引入了
 
 ```rust
-// 【 src/main.rs 】
-mod math;
+// ----- 【math.rs】 ------
+pub zfn(){}
 
-fn main() {
-    let res = math::add(1, 2);
-    println!("{}",res) // 3 
+// ----- 【lib.rs】 ------
+pub mod math; //【引入】子模块 math
+
+fn x() {
+    z::zfn();
+}
+
+// ----- 【main.rs】 ------
+fn main(){
+  rust_example::z::zfn() // 跨 Crate 引入，后面会提到
 }
 ```
 
-* 单文件模块
-
-  ```rust
-  src/
-  ├── main.rs
-  ├── math.rs
-  ```
-
-  ```rust
-  // 【 src/math.rs 】
-  pub fn add(a:i32,b:i32) -> i32{
-      a+b
-  }
-  ```
-
-* 目录模块
-
-  ```rust
-  src/
-  ├── main.rs
-  ├── math/
-  │   ├── mod.rs       // 模块入口 ，其中引入子模块
-  │   ├── arithmetic.rs // 子模块
-  │   └── geometry.rs   // 子模块
-  ```
-
-  ```rust
-  // math/mod.rs
-  
-  // 1、模块内公开的成员
-  pub fn add(a:i32,b:i32) -> i32{
-      a+b
-  }
-  
-  // 2、pub 公开mod。注意：只公开了引入的子模块内的pub成员
-  pub mod arithmetic; 
-  pub mod geometry;   
-  ```
-
-  上面是直接使用 mod.rs 的函数 add，如果使用子模块中的函数 xxx 呢？
-  ```rust
-  mod math;
-  fn main() {
-      let res = math::arithmetic::xxx(1,2); // 需要写出来子模块路径
-  }
-  ```
-
-##### 使用模块
-
-以内联模块为例子
+如果没有 lib.rs ，那就没办法了。只能把 math 当做 main 的子模块了
 
 ```rust
-// 【 src/main.rs 】
-
-
-pub fn add1(a:i32,b:i32) -> i32{
-    a+b
-}
-   
-// 内联模块定义
-mod math {
-  	
-    pub fn add(a:i32,b:i32) -> i32{
-      	// 3、相对引入， super 是当前模块的父级模块
-        super::add1(a,b) 
-    }
-}
-
-fn main() {
-  	// 1、相对引入
-    let res = math::add(1, 2); 
-  	// 2、绝对引入，crate 关键字表示当前 crate 根
-  	let res =crate::math::add(1, 2);
-  
-}
+// ----- 【main.rs】 ------
+pub mod math;
 ```
 
+#### 同 Crate 内模块引入
 
+同一个 Crate 内部的 module，module x 如何引用 module y 的函数、变量等成员呢？
 
-### 跨 Crate 引用
+前面例子， 注释【引入】
+
+**访问子模块**
+
+```rust
+mod 子模块;
+
+子模块::孙子模块::孙子模块内 pub 成员
+```
+
+**相对路径访问其他模块**
+
+```rust
+super::b::bFn() // super 代表父级 mod
+```
+
+**绝对路径访问其他模块**
+
+```rust
+crate::math::b::bFn() // crate是根模块
+```
+
+### 跨 Crate 模块引用
 
 多 Crate 的结构，即  1 个库Crate + 多个二进制Crate
 
@@ -370,44 +343,41 @@ fn main() {
 
 注意：  库 Crate 是不能引入二进制 Crate ，如果真的需要，必须要将这个能力抽离到库 Crate 后，再由二进制 Crate 引入
 
-#### 库 Crate 暴露成员 
+#### 模块成员可见性
 
-库 Crate 的根文件中，被 pub 修饰的成员会被暴露出来，可以被跨 Crate 引用
+同一个 Crate 内只需要 pub 修饰，模块就能通过引入访问其他模块的成员
+
+提到的例子 【module - 模块声明 - 根 Crate】
+
+math 必须在 **库Crate根**中引入并公开才算是暴露导 Crate 外部，才能在 **二进制 Crate**中引入
 
 ```rust
-// 注意啊， 这个 add 不是 mod。仍然可以被暴露出来
-pub fn add(a:i32,b:i32) -> i32{
-    a+b
+src/
+├── main.rs
+├── lib.rs				
+├── math.rs   		// 属于根的子模块 math
+```
+
+需要通过 Crate 名引入
+
+```rust
+fn main(){
+  rust_example::z::zfn(); 
+  // 我这个例子中 rust_example 是项目名，而项目名就是默认的 Crate 名
 }
 
+```
 
-pub mod lib{
-  
-  	pub fn add1(a:i32,b:i32) -> i32{
-    	a+b
-		}
-  
-    pub fn add2(a:i32,b:i32) -> i32{
-        a+b
-    }
-  
-  	pub mod xxx;   // 开放子模块
+但是每次调用 zfn 都需要写一长串，所有出现了 use 关键字（类似 JS 的 import）
 
+```rust
+use rust_example::z::zfn; 
+fn main(){
+  zfn()
 }
 ```
 
-#### 二进制 Crate 引入
-
-use 用来引入库Crate 中暴露的成员
-
-Rust 会现在 Cargo.toml 中查找是否为安装的三方依赖
-
-```toml
-[dependencies]
-xxx = "1.0"            # 使用 xxx crate，版本为 1.0
-```
-
-如果不是，则在本地查找
+其他引入格式
 
 ```rust
 // 引入
@@ -435,43 +405,26 @@ fn main() {
     add1(1, 2);
   	lib.add1(1, 2);
 }
-
-
 ```
 
-### 特殊的跨Crate 引用
+#### 二进制 Crate 引入
 
-前面提到一种特殊情况，两个 Crate 的作用域相同。我们以 Rust 的默认约定为例子
+use 用来引入库Crate 中暴露的成员
+
+Rust 会现在 Cargo.toml 中查找是否为安装的三方依赖
+
+```toml
+[dependencies]
+xxx = "1.0"            # 使用 xxx crate，版本为 1.0
+```
+
+如果不是，则在本地查找
 
 ```rust
-// 目录结构
-├── Cargo.toml
-└── src
-    └── main.rs    // 二进制 Crate 的根 
-		└── lib.rs    // 库 Crate 的根 
-		└── util.rs   
+
 ```
 
-util同时属于两个 Crate 
 
-方案 1：直接引入二进制 Crate
-
-```rust
-// main.rs 
-mod util;
-```
-
-方案 2：先引入库 Crate，然后在引入二进制 Crate
-
-```rust
-// lib.rs 
-pub mod util;
-
-// main.rs 
-mod util;
-```
-
-圣经中提到的最佳实践：将核心功能都放在库 Crate 中，在二进制 Crate 中仅执行。这样发布库Crate 后，其他用户可以集成核心功能
 
 ### 标准库 std
 
@@ -3649,10 +3602,10 @@ fn main() {
   						// rev 逆序要求是 DoubleEndedIterator Trait，
   						// 经过filter、flat_map 后会失去该特性
   						.into_iter()
-              .rev()
+              .rev() 
               .collect::<Vec<i32>>(); // [6, 4]
 
-    println!("{:?}", ret); //  这里 v 就已经失效了，转移到 ret 了
+    println!("{:?}", ret); //  因为用了 inter_iter ,这里 v 就已经失效了，转移到 ret 了
 
 }
 ```
