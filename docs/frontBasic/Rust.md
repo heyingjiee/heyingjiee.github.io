@@ -3,14 +3,22 @@
 ## 参考
 
 * 陈天 - Rust 编程第一课  （参考：https://github.com/tyr-rust-bootcamp）
+
 * Rust 官方资源
 
   * [官网](https://www.rust-lang.org/zh-CN/)
   * [《通过例子学 Rust》](https://doc.rust-lang.org/rust-by-example/zh/index.html)
+  
 * Rust 中文网 https://rustwiki.org/
 
+* Rust 异步：https://rust-lang.github.io/async-book/ 
+
+  b站视频讲解：【Rust Async 异步编程（完结）-哔哩哔哩】 https://b23.tv/jcmaN5d
+
 * Github 上的 《rust 语言圣经》（和官网的不一样，明显这个版本要好很多）：https://course.rs/basic/intro.html
+
 * Rusty Book（收集大量的 rust 包、代码片段、明星项目）：https://rusty.course.rs/ 
+
 * Rust 秘典（死灵书）: https://nomicon.purewhite.io/intro.html
 
  ## 前置
@@ -199,15 +207,15 @@ path = "src/bin/cli.rs"
 
 ```
 
-### module
+### Module
 
-一个 Crate 内可包含多个模块（module）
+一个 Crate 内可包含多个模块（Module）
 
 #### 模块成员可见性
 
-同一个 rs 文件中，模块（mod）、函数、结构体（结构体字段、方法、关联方法）、枚举默认公开
+模块（module）访问子级模块成员（函数、结构体、结构体字段、方法、关联方法、枚举等）默认私有，需要 pub 关键字公开
 
-跨文件访问都是默认私有，需要设置 pub 
+子模块访问父级模块则默认公开，无需 pub 修饰
 
 注意：枚举设置为 pub，其所有变体都为公开
 
@@ -241,23 +249,32 @@ pub struct MyStruct {
 **1、内联模块**
 
 ```rust
-mod math {  // 模块 math
-  	
-    pub fn add1() {}
+mod math {// 模块 math
 
-    mod math2 {  // 子模块 math2
-        pub fn add1() {
-            super::add1(); // 【引入】引入父模块 super
+    fn add() {
+      math1::add1(); // ❌ 【引入】父级引入子级模块，子模块必须 pub
+  	}
+
+    mod math1 { // 子模块 math2
+        fn add1() {
+            super::add(); // ✅【引入】引入父模块（super代表父级），默认公开无需 pub
+        }
+    }
+
+    mod math2 { // 子模块 math2
+        fn add2() {
+            super::math1::add1(); // ❌【引入】引入兄弟模块，兄弟模块必须 pub 
         }
     }
 }
+
 ```
 
 **2、目录 math + mod.rs 、单 rs 文件**
 
-math目录是个模块
+* math目录是个模块
 
-a.rs、b.rs 单文件也是模块
+* a.rs、b.rs 单文件也是模块
 
 ```text
 src/
@@ -278,10 +295,12 @@ src/
 ├── math.rs   		// 属于根的子模块 math
 ```
 
-src 是 Crate 根，模块 math.rs 按道理来说
+默认情况下，src/main.rs 、 src/lib.rs 分别是 二进制Crate root、库 Crate root
 
-* 既属于 main.rs 的子模块
-* 又属于 lib.rs 的子模块
+根作用域下的文件是 Crate root 的子模块
+
+* 把 math.rs 视为**二进制 Crate **成员，则属于于 main.rs 的子模块
+* 把 math.rs 视为**库 Crate **成员，则又属于 lib.rs 的子模块
 
 但是 Rust 要求一个模块只能属于一个 Crate，一般看作 math 是 lib 的子模块。而 main.rs 则是跨 Crate 引入了
 
@@ -323,7 +342,7 @@ mod 子模块;
 子模块::孙子模块::孙子模块内 pub 成员
 ```
 
-**相对路径访问其他模块**
+*相对路径访问其他模块**
 
 ```rust
 super::b::bFn() // super 代表父级 mod
@@ -343,7 +362,7 @@ crate::math::b::bFn() // crate是根模块
 
 注意：  库 Crate 是不能引入二进制 Crate ，如果真的需要，必须要将这个能力抽离到库 Crate 后，再由二进制 Crate 引入
 
-#### 模块成员可见性
+#### Crate 引入 
 
 同一个 Crate 内只需要 pub 修饰，模块就能通过引入访问其他模块的成员
 
@@ -407,24 +426,103 @@ fn main() {
 }
 ```
 
-#### 二进制 Crate 引入
+#### 三方 Crate 引入
 
-use 用来引入库Crate 中暴露的成员
-
-Rust 会现在 Cargo.toml 中查找是否为安装的三方依赖
+三方的 Crate 需要配置项目的 Cargo.toml 
 
 ```toml
+# 指定项目安装的依赖
 [dependencies]
-xxx = "1.0"            # 使用 xxx crate，版本为 1.0
+xxx = "1.0"            # 指定 xxx 版本 1.0.0 ，启用默认特性
+
+yyy ={ version = "1.0", features = ["serde", "extra"] } # 启用特性
+
+www ={ version = "1.0", default-features = false } # 禁用默认特性
+
+zzz = { version = "1.0", optional = true }  # 依赖是可选的，其他项目引入本包时，需 json 特性才会安装这个依赖 （观察下面 json = ["zzz"] 配置）
+
+# 指定项目特性，[] 内可能是依赖crate名、特性名
+[features]
+default = ["std"]  # 默认启用的 features ， 例如 xxx 依赖只指定版本启用的features
+
+std = []           # 一个 feature，不依赖其他 crate
+
+json = ["serde"]  # 启用 `json` feature 时，启动 serde 特性
+
+serde = ["dep:serde"]  # 依赖与 feature 重名，需要 dep 标记
 ```
 
-如果不是，则在本地查找
+在 Rust 中，**`features`（特性/功能）** 是一种条件编译机制，允许你在 crate 中启用或禁用某些功能。它们常用于：  
+
+- **可选依赖**：某些功能依赖特定的库，但不想强制所有用户都安装。  
+- **实验性功能**：允许用户选择是否启用不稳定的功能。  
+- **性能优化**：禁用不需要的功能以减少编译时间或二进制大小。  
+
+##### 条件编译
+
+在 Rust 代码中，安装三方依赖可以指定 feature，在安装时才会根据指定条件编译
+
+对于 Crate 作者来说，可以使用用户根据启用的 feature 指定条件编译： 
 
 ```rust
+// #[cfg(xxx)] 指定编译条件，下面是启动feature = serde 时才编译
+#[cfg(feature = "serde")] 
+use serde::{Serialize, Deserialize};
 
+// feature = serde 时变成 #[derive(Serialize, Deserialize))] 
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]  // 条件 derive
+struct MyData {
+    value: i32,
+}
+```
+
+运行时指定
+
+```rust
+#[cfg(feature = "tokio")]
+async fn run_tokio() {
+    tokio::spawn(async { println!("Running on Tokio!"); });
+}
+
+#[cfg(feature = "async-std")]
+async fn run_async_std() {
+    async_std::task::spawn(async { println!("Running on async-std!"); });
+}
 ```
 
 
+
+### **`lib.rs`**
+```rust
+#[cfg(feature = "std")]
+pub fn std_function() {
+    println!("Standard feature enabled!");
+}
+
+#[cfg(feature = "json")]
+pub fn to_json<T: serde::Serialize>(value: &T) -> String {
+    serde_json::to_string(value).unwrap()
+}
+
+#[cfg(feature = "async")]
+pub async fn async_task() {
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+    println!("Async task done!");
+}
+```
+
+---
+
+## **总结**
+| 场景              | 做法                                     |
+| ----------------- | ---------------------------------------- |
+| **定义 features** | 在 `Cargo.toml` 的 `[features]` 块中声明 |
+| **可选依赖**      | `dependencies` 里加 `optional = true`    |
+| **条件编译**      | `#[cfg(feature = "xxx")]`                |
+| **用户启用**      | `features = ["xxx"]`                     |
+| **禁用默认**      | `default-features = false`               |
+
+如果你的 crate 需要灵活的功能开关，合理使用 `features` 可以让用户按需选择，避免不必要的编译开销！ 🚀
 
 ### 标准库 std
 
@@ -2540,6 +2638,7 @@ trait MyTrait<T> {
 }
 // 实现特征
 struct MyStruct{}
+
 impl MyTrait<String> for MyStruct {
     fn get_name(&self) -> String {
         "get_name".to_string()
@@ -2552,11 +2651,15 @@ fn do_something(s:impl MyTrait<String>) ->String{ // ⚠️不是 MyTrait<xxx=St
 }
 ```
 
+
+
 ### 别名泛型
 
 ```rust
 type<T> = Vec<T>
 ```
+
+
 
 ## 特征 Trait
 
@@ -2573,7 +2676,10 @@ type<T> = Vec<T>
 
 ```rust
 trait Animate{
-  	// 签名
+  	// 关联方法签名
+  	fn new()->Self; 
+  
+  	// 方法签名
     fn eat(&self)->bool;
 
   	// 已实现方法，能调用签名
@@ -2599,13 +2705,8 @@ trait Animate{
 
   ```rust
   trait Animate{
-    	// 签名
+    	// 方法签名
       fn eat(&self)->bool;
-  
-    	// 已实现方法，能调用签名
-      fn live(&self)->bool{ 
-          self.eat()
-      }
   }
   struct Dog{
       name:String,
@@ -2619,11 +2720,11 @@ trait Animate{
   }
   fn main() {
     	// 实现了特征后，也会拥有 live 方法
-      let d=Dog{name:"hello".to_string(),health:true};
-      let ret = d.live();
+      let d = Dog{name:"hello".to_string(),health:true};
+      let ret = d.eat();
   }
   ```
-
+  
 * 通过 derive 派生特征
 
   Rust可以通过 derive 派生，自动为结构体、枚举类型实现某些 Trait。目前支持：
@@ -2834,7 +2935,7 @@ fn main() {
 
 ```rust
 trait MyTrait {
-    type Output; // Trait定义的类型，称为“关联类型”
+    type Output; // Trait定义的类型，称为“关联类型” 
 
     fn get_name(&self) -> Self::Output;
 }
@@ -2844,8 +2945,8 @@ struct Stu{
     name:String
 }
 impl MyTrait for Stu {
-    type Output= String; // 指定关联类型
-    fn get_name(&self) -> &Self::Output{ // Self::类型名 访问到类型
+    type Output= String; // 指定关联类型，甚至可以用泛型传入关联类型
+    fn get_name(&self) -> &Self::Output{ // Self::类型名 访问到类型。或者返回类型直接写 String 
          &self.name
     }
 }
@@ -2872,6 +2973,16 @@ impl MyTrait<String> for MyStruct {
 // 情景 2： 作为特征约束
 fn do_something(s:impl MyTrait<String>) ->String{ // ⚠️不是 MyTrait<xxx=String>
     s.get_name()
+}
+```
+
+Rust 中关联类型的例子：迭代器
+
+```rust
+pub trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>; // next 返回迭代器中的元素，具体元素类型是 实现Iterator的类型定义的
 }
 ```
 
@@ -3262,21 +3373,41 @@ fn generic<T: ?Sized>(t: &T) {
 
 ## 智能指针
 
-Rust 中可以使用的类型，都需要是在编译器能确定的固定大小的。而有些类型是不固定的，这时候就需要用指针了
-
-前面提到的  `Vec` 和 `String` 都是智能指针，指针存储在栈上，指向堆上的数据
-
-智能指针类型 `Box<T> `
-
-### Deref 与 Drop
-
-智能指针实现了`Deref` 和 `Drop` 特征
+智能指针像普通指针一样拥有**解引用能力（实现了 `Deref`/`DerefMut`）**，除此之外后面提到的 Box、Rc、Arc 等等各有独特的能力
 
 **Deref  Trait **
 
 可以让智能指针使用例如 `*T`，解出内部的数据 （解引用的总结：【所有权与引用 - 解引用】）
 
+智能指针解引用返回的是 **内部数据的引用** ，再加 `*`才获取到数据
 
+```rust
+// Deref Trait
+pub trait Deref {
+    type Target: ?Sized; // 关联类型
+  
+    fn deref(&self) -> &Self::Target; 
+}
+
+// 以智能指针 Box 为例子，他的实现
+impl<T: ?Sized, A: Allocator> Deref for Box<T, A> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        &**self
+    }
+}
+```
+
+例子
+
+```rust
+let mut count = Box::new(0);
+
+*count += 1;
+
+print!("{count1}");
+```
 
 **Drop  Trait**
 
@@ -3304,11 +3435,13 @@ drop(x)
 
 ```
 
-
-
-
-
 ### Box
+
+Rust 中的类型都需要是在编译器能确定的固定大小的。而有些类型是不固定的，这时候就需要用 Box了
+
+前面提到的  `Vec` 和 `String` 都是智能指针，指针存储在栈上，指向堆上的数据
+
+智能指针类型 `Box<T> `
 
 #### Box::new
 
@@ -3357,7 +3490,100 @@ fn gen_static_str() -> &'static str {
 
 ### Rc、Arc
 
+作用：打破所有权限制，允许数据能被多个变量持有，使用引用计数器记录被引用此时，当应用计数器归零则释放资源
 
+Rc、Arc 功能一致，唯一的区别是 Arc 具有原子性是用在多线程中的
+
+值发生所有权转移到某一个线程中，就其他线程不能用了，Arc 允许多个线程共用同一个值，例子参考【并发】章节
+
+```rust
+let num = Rc::new(0); // num 是一个引用
+let num2 = Rc::clone(&num); // 再创建一个 num2 引用。虽然名为 clone 实际上不会发生数据的复制
+```
+
+圣经的例子
+
+```rust
+use std::rc::Rc;
+
+struct Owner {
+    name: String,
+    // ...其它字段
+}
+
+struct Gadget {
+    id: i32,
+    owner: Rc<Owner>,
+    // ...其它字段
+}
+
+fn main() {
+    // 创建一个基于引用计数的 `Owner`.
+    let gadget_owner: Rc<Owner> = Rc::new(Owner {
+        name: "Gadget Man".to_string(),
+    });
+
+    // 创建两个不同的工具，它们属于同一个主人
+    let gadget1 = Gadget {
+        id: 1,
+        owner: Rc::clone(&gadget_owner),
+    };
+    let gadget2 = Gadget {
+        id: 2,
+        owner: Rc::clone(&gadget_owner),
+    };
+
+    // 释放掉第一个 `Rc<Owner>`
+    drop(gadget_owner);
+
+    // 尽管在上面我们释放了 gadget_owner，但是依然可以在这里使用 owner 的信息
+    // 原因是在 drop 之前，存在三个指向 Gadget Man 的智能指针引用，上面仅仅
+    // drop 掉其中一个智能指针引用，而不是 drop 掉 owner 数据，外面还有两个
+    // 引用指向底层的 owner 数据，引用计数尚未清零
+    // 因此 owner 数据依然可以被使用
+    println!("Gadget {} owned by {}", gadget1.id, gadget1.owner.name);
+    println!("Gadget {} owned by {}", gadget2.id, gadget2.owner.name);
+
+    // 在函数最后，`gadget1` 和 `gadget2` 也被释放，最终引用计数归零，随后底层
+    // 数据也被清理释放
+}
+```
+
+### Mutex
+
+作用：数据加锁，参考【并发】章节
+
+```
+let guard = Mutex::new(数据); // 返回MutexGuard类型
+```
+
+### Cell、RefCell
+
+作用：打破借用检查，在拥有不可变引用的同时可以修改目标数据 
+
+借用检查只是 Rust 为了内存安全而设置的保守策略，即使违背了也不一定是错的。Cell、RefCell 相当于告诉编译器不需要报错，由开发者来保证正确性
+
+参考原文：https://course.rs/advance/smart-pointer/cell-refcell.html
+
+### 总结
+
+Rc + RefCell 组合：Rc 负责同一数据的多个引用，RefCell 负责每个引用的修改
+
+```rust
+use std::cell::RefCell;
+use std::rc::Rc;
+fn main() {
+    let s = Rc::new(RefCell::new("我很善变，还拥有多个主人".to_string()));
+
+    let s1 = s.clone();
+    let s2 = s.clone();
+    s2.borrow_mut().push_str(", oh yeah!");
+
+    println!("{:?}\n{:?}\n{:?}", s, s1, s2);
+}
+```
+
+Arc + Mutex 组合：Arc 负责多线程引用同一数据，Mutex 将数据加锁，保证并发正确性
 
 ## 解构场景
 
@@ -4347,6 +4573,260 @@ println!("{}",e.unwrap_err()) // wrong
   | `#[cfg(target_os = "linux")]` | 仅在 Linux 平台下编译              |
   | `#[cfg(feature = "foo")]`     | 仅在启用了名为 `foo` 的 feature 时编译 |
   ```
+
+## 并发
+
+并发：交替运行
+
+并行：真正的同时运行
+
+Rust 的进程、线程都是直接使用的系统能力，实际执行任务时是由系统调度的。（回忆下，操作系统课本的内容，1:1 、1:n 、m:n 模型）
+
+### 线程同步
+
+Rust 中`thread::spawn`创建的**线程**，都是 **main 进程**的子线程，所以 main 结束会直接终止全部子线程
+
+但是线程内部，创建的线程是没有父子关系的，即使外部线程执行完毕，内部也不会终止
+
+```rust
+use std::thread;
+
+fn main() {
+    let mut handlers = vec![];
+    for i in 0..5 {
+        let handler = thread::spawn(move || println!("{i}"));
+        handlers.push(handler);
+    }
+
+    for handler in handlers {
+        handler.join().unwrap(); // 将线程的 handler.join 到外部线程，外部线程就会阻塞住等待内部线程执行完毕 。 类似 JS 的 Promise.allSettled
+    }
+}
+```
+
+### 多线程并发
+
+* channel ：通过通信来共享内存
+* 锁 ：共享内存
+
+#### channel
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+// channel
+fn main() {
+    let (w, r) = mpsc::channel::<String>();
+
+    for i in 0..5 {
+        let w = w.clone(); // 需要 clone 分别传入每个线程
+        thread::spawn(move || {
+            w.send(format!("hello {}", i)).unwrap();
+            drop(w)
+        });
+    }
+
+    drop(w); // 线程结束后会自动 drop，但是最初创建的发送者需要手动 drop，否则接收端会一直阻塞等待发送者发送数据。
+
+    for msg in r {
+        // 接收端会阻塞等待数据。直到所有发送者都被 drop，才继续执行
+        println!("{}", msg);
+    }
+
+    print!("end");
+}
+
+```
+
+#### 锁
+
+数据 count 从 0 开始，每个线程拿到锁后才能对数据 +1，所以用了 Mutex::new
+
+每个线程就会夺走所有权，而所有权只有 1 分，所以用了 Arc::new
+
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn main() {
+  	// 将数据 0 ，包裹在 Mutex 锁里
+  	// Arc是引用计数器，允许值所有权能转移到多个进程中。线程结束自动计数器-1，当计数器为 0 时释放资源
+    let count = Arc::new(Mutex::new(0)); 
+    let mut handlers = vec![];
+    for i in 0..5 {
+        let count = Arc::clone(&count); // 这个 clone 底层Arc只是引用+1，并不是真的克隆数据
+        let handler = thread::spawn(move || {
+            let mut count = count.lock().unwrap();
+            *count += 1 // MutexGuard上解引用+1
+        });
+        handlers.push(handler)
+    }
+
+  	// 在父线程中执行 [子线程.join]，用阻塞父进程等待子进程结束。感觉像JS的Promise.allSettle
+    for handler in handlers {
+        handler.join().unwrap();
+    }
+
+    println!("{}", *count.lock().unwrap()); // 5
+}
+```
+
+### 实践
+
+**多进程执行任务，返回处理结果**
+
+类型 Promise.allSettled ，多进程处理任务最后统计处理结果
+
+这个没有涉及读写公共数据，所以都用不上加锁
+
+```rust
+use std::fmt::format;
+use std::thread;
+
+fn main() {
+    let mut handlers = vec![];
+    for i in 0..5 {
+        let handler = thread::spawn(move || {
+            if i % 2 == 0 {
+                return Err(format!("线程 {} panic", i));
+            }
+            Ok(format!("线程 {} 执行完毕", i))
+        });
+        handlers.push(handler);
+    }
+
+    for handler in handlers {
+        match handler.join() {
+            Ok(ret) => {
+                println!("{:?}", ret);
+            }
+            Err(err) => println!("{:?}", err),
+        }
+    }
+
+    println!("结束");
+}
+
+```
+
+## 异步（待补充）
+
+### 顺序调用异步函数
+
+```rust
+use futures::executor::block_on;
+
+fn main() {
+    // async函数返回 Future
+    async fn f1() {
+        f2().await; // 必须用 await，否则 f2不会
+        println!("hello f1");
+    }
+
+    async fn f2() {
+        println!("hello f2");
+    }
+    // 需要执行器来执行 Future，否则函数什么也不会做（JS 异步函数调用就会执行）
+    // block_on 是一种简单粗暴的执行器 ，入参 Future，会阻塞线程等待 Future 完成
+    block_on(f1());
+}
+
+```
+
+### 并发异步函数
+
+#### 类Promise.allSettled
+
+`futures::join!` 、`futures::future::join_all`
+
+```rust
+use futures::executor::block_on;
+use std::rc::Rc;
+
+fn main() {
+    // async函数返回 Future
+    async fn f1() -> String {
+        println!("执行 f1");
+        "f1".to_string()
+    }
+
+    async fn f2() -> String {
+        println!("执行 f2");
+        "f2".to_string()
+    }
+
+    async fn parallel() {
+        let res = futures::join!(f1(), f2());
+      	println!("{:?}", res); // ("f1", "f2")	
+        // 1、 f1、f2 在当前线程并发
+        // 2、 返回值是元组，对于异步函数返回值
+
+        // 原理：
+        // Future 轮询返回 Poll::Pending 状态，继续轮询直到  Poll:Ready(T)停止。其中 T 就是结果
+        // f1、f2 交替轮询，因为没有阻塞所有第一次轮询就是 Ready 了，所以输出顺序也是固定的
+    }
+    block_on(parallel());
+  
+		// --------------------------------------------
+  
+    // 简写： Rust 中没有 JS 的自执行函数，但是可以用下面的写法。
+    block_on(async {
+        let res = futures::join!(f1(), f2()); // 块的返回值是 Future 就行p
+        println!("{:?}", res); // ("f1", "f2") 返回元组
+    });
+}
+
+```
+
+入参是 Future 动态数组
+
+```rust
+use futures::future::join_all;
+use std::future::Future;
+use std::pin::Pin;
+
+block_on(async {
+    let futures_vec: Vec<Pin<Box<dyn Future<Output = String>>>> =
+        vec![Box::pin(f1()), Box::pin(f2())];
+    // async 返回的 impl Future，Vec 要求元素类型一致。所以用 Box 包一层
+  
+    let res = join_all(futures_vec).await;
+    println!("{:?}", res); // ["f1", "f2"] 返回 Vec<String>
+});
+```
+
+#### 类Promise.all
+
+#### 类 Promise.race
+
+`select!`
+
+```rust
+use futures::{
+    future::FutureExt, // for `.fuse()`
+    pin_mut,
+    select,
+};
+
+async fn task_one() { /* ... */ }
+async fn task_two() { /* ... */ }
+
+async fn race_tasks() {
+    let t1 = task_one().fuse();
+    let t2 = task_two().fuse();
+
+    pin_mut!(t1, t2);
+
+    select! {
+        () = t1 => println!("任务1率先完成"),
+        () = t2 => println!("任务2率先完成"),
+    }
+}
+
+```
+
+
 
 ## Rust中头疼的问题
 
