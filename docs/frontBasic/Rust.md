@@ -877,6 +877,8 @@ fn main() {
 }
 ```
 
+HashMap 比较特殊，不支持部分 key 所有权转移。但是可以通过 remove 方法直接删除返回 Option 来达到转移的目的，同时 HashMap 仍然有效
+
 ### 引用
 
 **1、引用、借用的概念**
@@ -1618,9 +1620,9 @@ fn main() {
 }
 ```
 
-##### `&String`-->`&str`
+##### `&String`-->`&str` 隐式转换
 
-这个转换是**隐式转换**
+某些情况下，会发生这种**隐式转换**
 
 ```rust
 fn main(){
@@ -2405,10 +2407,47 @@ let s = example_closure(String::from("hello"));
 let n = example_closure(5); // ✅
 ```
 
+
+
 #### 闭包类型
 
-```
-```
+注意：闭包是一种有所有权的类型啊
+
+与函数的入参相同，闭包捕获变量也有三种方式：
+
+* FnOnce 类型
+
+  该闭包类型会所有权会发生转移，所以只能调用 1 次
+
+  ```rust
+  fn main() {
+      // 定义 FnOnce 闭包
+      fn fn_once<F>(func: F)
+      where
+          F: FnOnce(usize) -> String, // FnOnce 闭包定义
+      {
+          println!("{}", func(3));
+          // println!("{}", func(4)); // ❌ func 只能调用 1 次
+      }
+  
+      // 
+      fn_once(|num| format!("传入数据 {}", num))
+  }
+  
+  ```
+
+* FnMut
+
+  该闭包类型以可变引用的方式捕获环境中的值
+
+  ```rust
+  let mut s = String::from("hello");
+  let closure = || s.push_str("x"); // 闭包默认就是 FnMut 类型，
+  ```
+
+* Fn
+
+  该闭包类型以不可变借用的方式捕获环境中的值
 
 
 
@@ -2986,7 +3025,9 @@ pub trait Iterator {
 }
 ```
 
-### 通用实现
+### 特殊Trait
+
+#### 通用实现
 
 标准库内部的 **通用实现（blanket impl）**，为类型 T 实现特征 B，T 需要显示先特征 A
 
@@ -3031,6 +3072,33 @@ fn main() {
 
 
 ```
+
+#### 自动派生（auto trait）
+
+auto trait 表示该 trait 会自动为所有内置类型实现
+
+该特性目前还没有对开发者开放 ，只有Rust 内置的 Sync、Send Trait 实现了
+
+```rust
+// 类型这种语法
+auto trait IsCool {}
+
+impl !IsCool for String {} // 表示只有 String 不实现 IsCool
+```
+
+### 常见内置Trait（待补充）
+
+https://course.rs/appendix/derive.html
+
+#### Debug
+
+#### Default
+
+#### Copy、Clone
+
+#### Eq、PartialEq、Ord、PartialOrd
+
+#### Hash
 
 ## 集合类型
 
@@ -3216,6 +3284,9 @@ fn main() {
 		let mut h = HashMap::new();
   	// 第一次写入元素时，才会推导类型。我们也可以自己标记
   	let mut h:HashMap<&str,&str> = HashMap::new();
+  	
+  	// 3、初始化内容
+  	let h = HashMap::from([("a", 1), ("b", 2)]);
 }
 ```
 
@@ -3287,6 +3358,14 @@ if let Some(score) = scores.get_mut("数学") {
 println!("{:?}", scores); // {"数学": 15 }
 ```
 
+删除
+
+```rust
+if let Some(v) = h.remove("a") {
+  println!("{}",v)
+}
+```
+
 遍历
 
 与 Vec 一样，HashMap 也不是迭代器，但是其实现了 IntoIterator Trait，所以 for 语法能自动调用 into_iter 将其转化为迭代器
@@ -3345,6 +3424,18 @@ fn main() {
     print!("{:?}",m);
 }
 ```
+
+### BTreeMap
+
+与 HashMap 相比
+
+- **有序**：键按照排序顺序存储，允许你以升序或降序遍历它们
+- **无需哈希函数**：不像 `HashMap` 需要键实现了 `Hash` 和 `Eq`，`BTreeMap` 只需要键实现了 `Ord`（或者使用自定义的 `PartialOrd` 实现）
+- **内存连续**：`BTreeMap` 的节点在内存中是连续分配的，这可能改善缓存局部性
+
+### HashSet(待补充)
+
+
 
 ## Sized
 
@@ -3563,7 +3654,60 @@ let guard = Mutex::new(数据); // 返回MutexGuard类型
 
 借用检查只是 Rust 为了内存安全而设置的保守策略，即使违背了也不一定是错的。Cell、RefCell 相当于告诉编译器不需要报错，由开发者来保证正确性
 
-参考原文：https://course.rs/advance/smart-pointer/cell-refcell.html
+Cell、RefCell 内部包裹了数据，即使这个对象是不可变引用，我们也能修改
+
+* Cell 用于已经实现了 Copy 的对象，剩下的用 RefCell
+
+  ```rust
+  use std::cell::Cell;
+  fn main() {
+    let c = Cell::new("asdf");
+    let one = c.get();
+    c.set("qwer");
+    let two = c.get();
+    println!("{},{}", one, two);
+  }
+  ```
+
+* RefCell
+
+  ```rust
+  use std::cell::RefCell;
+  // 三方定义的 Trait
+  pub trait Messenger {
+      fn send(&self, msg: String);
+  }
+  
+  // 我们实现这个 Trait
+  pub struct MsgQueue {
+      msg_cache: RefCell<Vec<String>>,
+  }
+  
+  impl Messenger for MsgQueue {
+      fn send(&self, msg: String) {
+          self.msg_cache.borrow_mut().push(msg) // 因为三方定义 send 是用来了 &self ，所以不能修改 msg_cache
+        	// ⭕️ RefCell 类型有方法 borrow_mut 可以打破借用检查
+      }
+  }
+  
+  fn main() {
+      let mq = MsgQueue {
+          msg_cache: RefCell::new(Vec::new()),
+      };
+      mq.send("hello, world".to_string());
+  }
+  ```
+
+  RefCell 还有其他方法
+
+  | 操作                          | 方法                                       | 是否 panic 风险                   |
+  | ----------------------------- | ------------------------------------------ | --------------------------------- |
+  | 获取共享借用（读）            | `.borrow()`                                | ❌ 如果有 `.borrow_mut()` 正在进行 |
+  | 获取可变借用（写）            | `.borrow_mut()`                            | ❌ 如果有其他借用正在使用          |
+  | 尝试获取共享借用              | `.try_borrow()`                            | ✅ 不 panic，返回 `Result`         |
+  | 尝试获取可变借用              | `.try_borrow_mut()`                        | ✅ 返回 `Result`                   |
+  | 直接获取内部值的 mutable 引用 | `.get_mut()`（`&mut RefCell`才有这个方法） | ❌ 无 panic                        |
+  | 消耗 RefCell 获取原始值       | `.into_inner()`                            | ❌ 无 panic                        |
 
 ### 总结
 
@@ -3573,10 +3717,11 @@ Rc + RefCell 组合：Rc 负责同一数据的多个引用，RefCell 负责每�
 use std::cell::RefCell;
 use std::rc::Rc;
 fn main() {
-    let s = Rc::new(RefCell::new("我很善变，还拥有多个主人".to_string()));
+    let s = Rc::new(RefCell::new("多个主人".to_string()));
 
     let s1 = s.clone();
     let s2 = s.clone();
+  
     s2.borrow_mut().push_str(", oh yeah!");
 
     println!("{:?}\n{:?}\n{:?}", s, s1, s2);
@@ -3797,21 +3942,21 @@ impl<I: Iterator> IntoIterator for I {
 
 调用后返回新的迭代器，所以可以链式调用。和 JS 差不过
 
-| 适配器方法      | 含义简述                               |
-| --------------- | -------------------------------------- |
-| `.map(f)`       | 每个元素映射为另一个值                 |
-| `.filter(f)`    | 筛选满足条件的元素                     |
-| `.take(n)`      | 取前 n 个元素                          |
-| `.skip(n)`      | 跳过前 n 个元素                        |
-| `.enumerate()`  | 生成 `(index, value)` 元素对           |
-| `.zip(other)`   | 将两个迭代器“配对”                     |
-| `.chain(other)` | 拼接两个迭代器                         |
-| `.rev()`        | 反转顺序（需要 `DoubleEndedIterator`） |
-| `.inspect(f)`   | 类似 `tap`，用于调试，中途查看         |
-| `.flatten()`    | 将嵌套迭代器展平                       |
-| `.flat_map(f)`  | 映射并展平                             |
-| `.cloned()`     | 克隆元素（如 `&T -> T`）               |
-| `.copied()`     | 复制元素（如 `&i32 -> i32`）           |
+| 适配器方法      | 含义简述                                         |
+| --------------- | ------------------------------------------------ |
+| `.map(f)`       | 每个元素映射为另一个值                           |
+| `.filter(f)`    | 筛选满足条件的元素                               |
+| `.take(n)`      | 取前 n 个元素                                    |
+| `.skip(n)`      | 跳过前 n 个元素                                  |
+| `.enumerate()`  | 生成 `(index, value)` 元素对                     |
+| `.zip(other)`   | 将两个迭代器“配对”                               |
+| `.chain(other)` | 拼接两个迭代器                                   |
+| `.rev()`        | 反转顺序（需要 `DoubleEndedIterator`）           |
+| `.inspect(f)`   | 类似 `tap`，用于调试，中途查看                   |
+| `.flatten()`    | 将嵌套迭代器展平                                 |
+| `.flat_map(f)`  | 映射并展平                                       |
+| `.cloned()`     | 克隆元素（如 `&T -> T`），元素必须实现`Clone`    |
+| `.copied()`     | 复制元素（如 `&i32 -> i32`），元素必须实现`Copy` |
 
 适配器可以链式调用处理数据，结尾必须使用消费适配器才能真正执行
 
@@ -4328,7 +4473,7 @@ fn main() {
 
 ### 错误处理
 
-Rust种使用内置的枚举 Option 来作为变量初始值/入参， Result 来表示函数返回值
+Rust 中函数返参如果可能出现错误使用Result ，否则 Option 
 
 Result作为函数返回值，包含返回值或错误，函数调用链中通过返回Result 来传递错误
 
@@ -4345,7 +4490,9 @@ enum Result<T, E> {
 
 下面提到的所有函数都是用来出来 Result 的，只不过各有特点
 
-#### unwarp、expect
+#### 解开返回类型
+
+##### unwarp、expect
 
 这两个方法是 Option、 Result 才有
 
@@ -4372,7 +4519,7 @@ fn main() {
 
 ```
 
-#### match
+##### match
 
 match、if let 匹配语法解出来返回值相对繁琐
 
@@ -4413,7 +4560,7 @@ fn main() {
 }
 ```
 
-#### ？语法
+##### ？语法
 
 `?`是 match 处理的语法糖
 
@@ -4461,21 +4608,9 @@ fn main() {
 }
 ```
 
-#### is_ok
+#### 解开返回类型，添加Err 默认处理
 
-如果只关系 Result 是 Ok 还是 Err，不关系 Ok 携带的数据可以用
-
-```rust
-let res1 :Result<&str,&str> = Ok("正常");
-println!("{}", res1.is_ok()); // true
-
-let res2 :Result<&str,&str> = Err("错误");
-println!("{}", res2.is_ok()); // false
-```
-
-#### unwrap_*
-
-这些方法是用来解开 Option、 Result 的，遇到错误不会 panic
+`unwrap_*` 这些方法是用来解开 Option、 Result 的，遇到错误不会 panic
 
 ##### unwrap_or、unwrap_or_else、unwrap_or_default
 
@@ -4537,6 +4672,55 @@ let e: Result<&str, &str> = Err("wrong");
 println!("{}",e.unwrap_err()) // wrong
 ```
 
+#### 不解开操作携带数据
+
+对函数返回的错误进行包装，以增加更多信息
+
+```rust
+let d: Result<i32, String> = Err("某种错误".to_string());
+assert_eq!(d.map_err(|inner| { format!("附加信息:{}", inner) }), Err("附加信息:某种错误".to_string()));
+```
+
+确定为 Some、Ok ，通过 map 操作内部数据返回原类型
+
+```rust
+let a = Some(1);
+assert_eq!(a.map(|inner| { inner + 1 }), Some(2));
+let c:Result<i32, String> = Ok(1);
+assert_eq!(c.map(|inner| { inner + 1 }), Ok(2));
+```
+
+如果不确定，请使用map_or、map_or_else 同样操作Some、Ok，但是如果出现 None、Err 则使用默认值
+
+```rust
+//  m ，如果是None、Err 用来处理默认值
+let b = None;
+assert_eq!(b.map_or(10, |inner: i32| { inner + 1 }), 10);
+assert_eq!(b.map_or_else(|| { 12 }, |inner: i32| { inner + 1 }), 12); // 通过闭包提供默认值
+```
+
+#### 直接判断
+
+##### is_ok
+
+如果只关系 Result 是 Ok 还是 Err，不关系 Ok 携带的数据可以用
+
+```rust
+let res1 :Result<&str,&str> = Ok("正常");
+println!("{}", res1.is_ok()); // true
+
+let res2 :Result<&str,&str> = Err("错误");
+println!("{}", res2.is_ok()); // false
+```
+
+### 自定义错误(待补充)
+
+Rust 中通过 `Result::Err(E)` 作为出现错误时的返回值，如果携带字符串 `Err("错误 xxx")`，不方便根据属于哪种类型的错误
+
+
+
+
+
 ## 属性语法
 
  `#[...]` 被称为**属性（attributes）**，用来向编译器提供元信息，控制编译行为或代码生成逻辑
@@ -4580,7 +4764,7 @@ println!("{}",e.unwrap_err()) // wrong
 
 并行：真正的同时运行
 
-Rust 的进程、线程都是直接使用的系统能力，实际执行任务时是由系统调度的。（回忆下，操作系统课本的内容，1:1 、1:n 、m:n 模型）
+Rust 的进程、线程都是直接使用的系统进程、线程，运行时时是由系统调度的
 
 ### 线程同步
 
@@ -4609,7 +4793,20 @@ fn main() {
 * channel ：通过通信来共享内存
 * 锁 ：共享内存
 
+channel 更简单，而锁能实现更精细的控制具有更高的性能
+
 #### channel
+
+Rust 中有2 种通道
+
+* 异步通道（channel）：生产者可以一直写入 channel
+* 同步通道（sync_channel）：通道可以设置通道缓冲区，通道满了就会阻塞生产者，这个更像 Go 的 channel
+
+所有权类型的数据从生产者传递给消费者，也会发生所有权转移
+
+Rust 不必手动关闭通道，当所有生产者或所有消费者离开作用域，满足其一会自动 drop 通道 (在编译期实现的，完全没有运行期性能损耗)
+
+##### 异步通道
 
 ```rust
 use std::sync::mpsc;
@@ -4627,10 +4824,18 @@ fn main() {
         });
     }
 
-    drop(w); // 线程结束后会自动 drop，但是最初创建的发送者需要手动 drop，否则接收端会一直阻塞等待发送者发送数据。
+    drop(w); // ⚠️ 线程结束后会自动 drop生产者，但是最初创建的生产者需要手动 drop，否则接收端会一直阻塞等待发送者发送数据。
 
+  	// 读取通道数据：-------
+  	
+  	// 方式 1: 返回Result。 阻塞进程，直到读取1次数据后结束。如果读取到数据前通道 channel 关闭，则返回 Err(RecvError)
+  	let msg = rx.recv()
+  	
+  	// 方式 2: 返回Result。不阻塞进程尝试读取一次数据后结束。可能是Ok(数据)、Err(TryRecvError::Empty)通道为空、Err(TryRecvError::Disconnected)通道关闭
+  	let msg = r.try_recv().unwrap()
+  
+  	// 方式 3：for 循环。会阻塞等待数据，直到所有生产者都被 drop，才继续执行
     for msg in r {
-        // 接收端会阻塞等待数据。直到所有发送者都被 drop，才继续执行
         println!("{}", msg);
     }
 
@@ -4639,7 +4844,32 @@ fn main() {
 
 ```
 
+##### 同步通道
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+fn main() {
+    let (w, r) = mpsc::sync_channel(1); // 通道缓冲区
+
+    let handle = thread::spawn(move || {
+        w.send(1).unwrap();
+        w.send(2).unwrap(); // 阻塞等待 1 被读取了，才能写入 2
+    });
+
+
+    for msg in r {
+        println!("receive {}", msg)
+    }
+    handle.join().unwrap();
+}
+
+```
+
 #### 锁
+
+##### Mutex
 
 数据 count 从 0 开始，每个线程拿到锁后才能对数据 +1，所以用了 Mutex::new
 
@@ -4657,7 +4887,7 @@ fn main() {
     for i in 0..5 {
         let count = Arc::clone(&count); // 这个 clone 底层Arc只是引用+1，并不是真的克隆数据
         let handler = thread::spawn(move || {
-            let mut count = count.lock().unwrap();
+            let mut count = count.lock().unwrap(); // lock获取锁 MutexGuard
             *count += 1 // MutexGuard上解引用+1
         });
         handlers.push(handler)
@@ -4671,6 +4901,76 @@ fn main() {
     println!("{}", *count.lock().unwrap()); // 5
 }
 ```
+
+除了 lock 阻塞获取锁，还有 try_lock非阻塞获取锁，如果失败返回 Err
+
+```rust
+use std::sync::{Mutex, Arc};
+use std::thread;
+use std::time::Duration;
+
+fn main() {
+    let mutex = Arc::new(Mutex::new(0));
+    let mutex_clone = mutex.clone();
+
+    // 在另一个线程中占用锁一段时间
+    thread::spawn(move || {
+        let mut data = mutex_clone.lock().unwrap();
+        *data += 1;
+        println!("Data incremented to {}", *data);
+        // 离开作用域自动释放锁，用睡眠模拟长时间占用锁
+        thread::sleep(Duration::from_secs(4));
+    });
+
+  	// 阻塞主线程，以保证子线程先拿到锁并一直持有
+    thread::sleep(Duration::from_secs(3));
+    // 尝试获取锁
+    loop {
+        match mutex.try_lock() {
+            Ok(mut guard) => {
+                // 成功获取锁后执行操作
+                *guard += 1;
+                println!("Data incremented to {} in main thread", *guard);
+                break; // 跳出循环
+            }
+            Err(_) => {
+                // 获取锁失败时的处理逻辑
+                println!("Failed to get the lock, retrying...");
+                // 等待一段时间后重试
+                thread::sleep(Duration::from_millis(500));
+            }
+        }
+    }
+}
+
+```
+
+##### RwLock
+
+Metux 无论读写都会阻塞其他线程，而 RwLock 可以多进程并发读取。但是根据 Rust 圣经描述 RwLock使用的是系统实现，性能不佳
+
+#### Atomic原子类型
+
+原子指的是一系列不可被 CPU 上下文交换的机器指令，这些指令组合在一起就形成了原子操作。原子操作不会被其他 CPU 操作打断
+
+由于原子操作是通过指令提供的支持，因此它的性能相比锁和消息传递会好很多
+
+
+
+### Send & Sync
+
+Sync：类型同时被多个线程引用
+
+Send：类型不能同时被多个线程引用，而是在线程间传递
+
+规则：
+
+* 类型&T 实现了 Send，就一定实现了 Sync
+* Sync、Send 是自动派生 Trait，复合类型的成员都实现了则该复合类型就是自动实现了 Sync、Send
+
+
+
+MuteGuard 、Rc 、Cell 、裸指针 x
 
 ### 实践
 
@@ -4712,6 +5012,13 @@ fn main() {
 
 ## 异步（待补充）
 
+需要引入官方维护的依赖
+
+```toml
+[dependencies]
+futures = "0.3"
+```
+
 ### 顺序调用异步函数
 
 ```rust
@@ -4742,7 +5049,6 @@ fn main() {
 
 ```rust
 use futures::executor::block_on;
-use std::rc::Rc;
 
 fn main() {
     // async函数返回 Future
@@ -4760,7 +5066,7 @@ fn main() {
         let res = futures::join!(f1(), f2());
       	println!("{:?}", res); // ("f1", "f2")	
         // 1、 f1、f2 在当前线程并发
-        // 2、 返回值是元组，对于异步函数返回值
+        // 2、 返回值是元组，对应异步函数返回值
 
         // 原理：
         // Future 轮询返回 Poll::Pending 状态，继续轮询直到  Poll:Ready(T)停止。其中 T 就是结果
