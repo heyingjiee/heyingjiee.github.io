@@ -490,30 +490,8 @@ async fn run_async_std() {
 }
 ```
 
+总结
 
-
-### **`lib.rs`**
-```rust
-#[cfg(feature = "std")]
-pub fn std_function() {
-    println!("Standard feature enabled!");
-}
-
-#[cfg(feature = "json")]
-pub fn to_json<T: serde::Serialize>(value: &T) -> String {
-    serde_json::to_string(value).unwrap()
-}
-
-#[cfg(feature = "async")]
-pub async fn async_task() {
-    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    println!("Async task done!");
-}
-```
-
----
-
-## **总结**
 | 场景              | 做法                                     |
 | ----------------- | ---------------------------------------- |
 | **定义 features** | 在 `Cargo.toml` 的 `[features]` 块中声明 |
@@ -1119,7 +1097,13 @@ fn main() {
 
 涉及很多章节，建议遇到了随时查阅
 
-#### 自动解引用（auto-deref）
+#### 自动解引用
+
+**自动解引用（Automatic Deref coercion）**，自动解多层引用直到匹配的目标。例如：
+
+```rust
+x.handle() // x 会一直解开到有 handle 方法的类型
+```
 
 ##### print!、println!
 
@@ -1231,6 +1215,8 @@ assert_eq!(a + c, 10);     // ❌ 只能解引用 1 次：&&i32 → &i32
   
 
 #### 手动解引用
+
+通过 `*` 会触发1次解引用，`*T -> *(T.deref())`。注意与自动解引用的区别是：只会解1 次
 
 直接访问内部数据：
 
@@ -3025,9 +3011,9 @@ pub trait Iterator {
 }
 ```
 
-### 特殊Trait
+### 特殊用法
 
-#### 通用实现
+#### 通用实现（blanket）
 
 标准库内部的 **通用实现（blanket impl）**，为类型 T 实现特征 B，T 需要显示先特征 A
 
@@ -3090,6 +3076,32 @@ impl !IsCool for String {} // 表示只有 String 不实现 IsCool
 
 https://course.rs/appendix/derive.html
 
+#### Deref
+
+实现了`Deref<Target=U>`的类型`T`，可以解引用 `&T -> &U`
+
+* 在自动解引用场景
+* 手动解引用场景 `*T `（`*`触发了解引用`*T = *(T.deref())`）
+
+````rust
+// Deref 定义
+pub trait Deref {
+    type Target: ?Sized;  // 关联类型
+    fn deref(&self) -> &Self::Target;
+}
+
+// 通用实现 blanket 
+// 为所有引用类型实现Deref，解引用 &T -> &T ，看起来没啥用。其实引用类型能自动调用deref
+impl<T: ?Sized> const Deref for &T { 
+    type Target = T;
+    fn deref(&self) -> &T { // 返回的是引用
+        *self  
+    }
+}
+````
+
+
+
 #### Debug
 
 #### Default
@@ -3123,7 +3135,7 @@ let mut v = Vec::new();  // v.push(1) 推入元素时自动扩容
 // 3、结构体 Vec 的 from 方法 （支持初始化元素，默认容量=初始化数组长度）
 let mut v = Vec::from([1, 2, 3, 4, 5]);
 
-// 4、数组转成 Vec
+// 4、数组 / 切片转成 Vec
 let mut v = [11, 22].to_vec();
 
 // 5、使用 vec! 宏 （支持初始化元素，默认容量=初始化数组长度m）
@@ -3267,6 +3279,20 @@ fn main() {
 }
 ```
 
+**切片类型**
+
+```rust
+let x: Vec<String> = vec![
+    "Rust".to_string(),
+    "is".to_string(),
+    "awesome!".to_string()
+];
+
+// 2 种写法：
+&x        // 自动解引用成切片：&Vec<String> -> &[String]
+&x[..]    // 显式转成切片
+```
+
 ### HashMap
 
 HashMap 没有在 prelude 引入，所以需要开发者手动引入
@@ -3327,7 +3353,12 @@ let entry = h.entry("key"); // 返回枚举 Entry，表示 key 是否存在
 //     Vact(VacantEntry<'a, K, V>), // key 不存在
 // }
 
-// 不存在 key 则插入 key=5
+// 存在 key 则 and_modify 操作 value，不存在则出入 5
+map.entry("name")
+        .and_modify(|v| *v += 5) // v 是 【&mut value 类型】
+        .or_insert(5);
+let value = h.entry("name").or_insert(5); 
+// 不存在 key , 才会插入 key=5
 let value = h.entry("name").or_insert(5); 
 // 不存在 key ，通过闭包计算插入值
 let value = h.entry("name").or_insert_with(|| 1+1);
@@ -3364,6 +3395,38 @@ println!("{:?}", scores); // {"数学": 15 }
 if let Some(v) = h.remove("a") {
   println!("{}",v)
 }
+```
+
+取出 key、value、key+value
+
+**注意： 没有 keys_mut 是因为hash根据 key 来存储的，不能随意改变 key**
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let h = HashMap::from([
+        ("a", 1),
+        ("b", 2)
+    ]);
+		
+  	// keys 返回的是不变引用； into_keys 会转移所有权，导致 h 不可用
+    for key in h.keys() {
+        println!("{key}")
+    } // a b
+  	
+		// values返回的是不变引用；values_mut返回的是可变引用；into_values会转移所有权，导致 h 不可用
+    for value in h.values() {
+        println!("{value}")
+    } // 1 2
+  
+  
+		// iter返回的是不变引用元组(&Key,&Value) ；iter_mut返回的是可变引用元组 ; into_iter 转移所有权
+    for (key, value) in h.iter() {
+        println!("{key}:{value}") 
+    } //  b:2 a:1
+}
+
 ```
 
 遍历
@@ -3948,7 +4011,7 @@ impl<I: Iterator> IntoIterator for I {
 | `.filter(f)`    | 筛选满足条件的元素                               |
 | `.take(n)`      | 取前 n 个元素                                    |
 | `.skip(n)`      | 跳过前 n 个元素                                  |
-| `.enumerate()`  | 生成 `(index, value)` 元素对                     |
+| `.enumerate()`  | 生成 `(index, value)` 元素对组成的迭代器         |
 | `.zip(other)`   | 将两个迭代器“配对”                               |
 | `.chain(other)` | 拼接两个迭代器                                   |
 | `.rev()`        | 反转顺序（需要 `DoubleEndedIterator`）           |
@@ -3994,6 +4057,7 @@ fn main() {
 | `.find()`           | 查找第一个满足条件的元素      |
 | `.any()` / `.all()` | 是否存在 / 所有都满足         |
 | `.for_each()`       | 遍历每个元素，执行副作用逻辑  |
+| `for x in 迭代器{}` |                               |
 | `.fold()`           | 累积归约（带初始值）          |
 | `.reduce()`         | 类似 fold 但无初始值          |
 | `.max()` / `.min()` | 最大 / 最小值                 |
@@ -5206,12 +5270,8 @@ Rust 都需要进行啥语法检查?
 
   dyn Trait、[T] 都是 DST（动态类型），需要用引用、智能指针间接使用
 
-  ```rust
   
-  ```
-
   
-
   
 
   
