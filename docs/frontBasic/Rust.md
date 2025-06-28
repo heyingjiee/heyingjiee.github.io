@@ -5196,6 +5196,18 @@ async fn race_tasks() {
 
 ```
 
+## Macro 宏
+
+宏分为两大类：
+
+* **声明式宏( declarative macros)** `macro_rules!` 
+* 三种**过程宏( procedural macros )**
+  * 派生宏：为目标结构体或枚举派生指定的代码，例如`#[derive(Debug)]`
+  * 类属性宏：为目标添加自定义的属性
+  * 类函数宏
+
+### 声明宏
+
 
 
 ## Rust中头疼的问题
