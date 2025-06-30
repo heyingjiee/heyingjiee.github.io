@@ -1562,6 +1562,18 @@ for c in "世界".bytes() {
 // 186
 ```
 
+##### &[u8] 字节切片
+
+切片的每个元素是 u8，正好是 8 bit（位） = 1byte（字节），所以叫字节切片
+
+在重复一遍，Rust 字符串中字符使用 UTF-8，如果按字节取可能会取不到整个字符
+
+```rust
+let x = b"hello world"; // b前缀 + 字符串 ，在Rust被推断为字节切片类型。但是请注意这是 Rust 层面的，本质底层和 &str 都是一样的
+```
+
+
+
 ##### 字符串 String 的操作
 
 String 是分配在堆上的，是可以操作的
@@ -1651,7 +1663,11 @@ fn main() {
   	// String 转 &str
   	let s1=String::from("你好").as_str();
   	// &str 转 String
-    let s2="你好".to_string();  
+    let s2="你好".to_string(); 
+ 		let s3="你好".to_owned();  
+  	
+  	// to_string、to_owned 在 &str -> string用法中是一样的
+  	let s: String = "abc".to_owned();// 除此之外to_owned还能 &slice -> Vec
 }
 ```
 
@@ -3102,13 +3118,83 @@ impl<T: ?Sized> const Deref for &T {
 
 
 
-#### Debug
+#### Debug、Display
+
+Display Trait
+
+```rust
+// 1、Trait 定义 
+pub trait Display {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error>;
+}
+
+// 2、触发
+println!("{}", x ); // {} 占位符会调用 x.fmt
+
+// 3、实现 Trait 
+use std::fmt;
+use std::fmt::Display;
+
+fn main() {
+    struct Stu {}
+    impl Display for Stu {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "Display output")
+        }
+    }
+    println!("{}", Stu {}); //  Display output
+}
+
+// 4、默认实现了该 Trait 的类型
+// 简单类型都实现了，例如数字、布尔值、字符串。对于复杂对象，就要用到 Debug Trait 输出了
+```
+
+Debug Trait 
+
+```rust
+// 1、Trait 定义
+pub trait Debug {
+	fn fmt(&self, f: &mut Formatter<'_>) -> Result;
+}
+// 2、触发
+println!("{:?}", x ); // {:?} 占位符会调用 x.fmt
+println!("{:#?}", x ); // 带缩进换行的美化输出 {:#?} 占位符会调用 x.fmt
+
+// 3、实现 Trait 
+// 3-1 派生宏
+use std::fmt::Debug;
+#[derive(Debug)]
+struct Stu{}
+// 3-2 手动实现
+use std::fmt::Debug;
+struct Point {
+    x: i32,
+    y: i32,
+}
+impl Debug for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Point({}, {})", self.x, self.y)
+    }
+}
+
+// 4、默认实现了该 Trait 的类型
+//    常用复杂结构 HashMap、Vec 
+Vec<u8> 和 &[u8] 没有实现 Display，所以不能直接用 {} 打印。
+```
+
+
 
 #### Default
 
 #### Copy、Clone
 
 #### Eq、PartialEq、Ord、PartialOrd
+
+这几个 Trait 决定了 ， Rust 中那些类型可以比较
+
+```rust
+impl PartialEq<&[u8]> for Vec<u8>  // 通过 eq 比较 Vec<T>.eq(&[u8]) 。 如果&[u8].to_vec()转成 Vec 是深拷贝内存，造成性能损失
+```
 
 #### Hash
 
@@ -3279,19 +3365,30 @@ fn main() {
 }
 ```
 
-**切片类型**
+**切片 、 Vec类型**
 
 ```rust
+// 1、Vec<T> --> &[T]
 let x: Vec<String> = vec![
     "Rust".to_string(),
     "is".to_string(),
     "awesome!".to_string()
 ];
 
-// 2 种写法：
+// 两种写法：
 &x        // 自动解引用成切片：&Vec<String> -> &[String]
 &x[..]    // 显式转成切片
+
+// 2、Vec<T> <-- &[T]
+let y: &[u8] = b"Hello, world!";  // 使用字节字符串语法。内存存储与"Hello, world!"一样，只是Rust中推断的类型不一样
+y.to_vec(); // ⚠️ 这种会发生内存深拷贝，十分损耗性能。建议一般不要转化
+
+
+// eq 比较 ,注意需要 T 实现了 Eq Trait
+Vec<T>.eq(&[T])
 ```
+
+
 
 ### HashMap
 
@@ -3429,6 +3526,10 @@ fn main() {
 
 ```
 
+```rust
+ let mut s: HashSet<u64> = h.keys().cloned().collect(); // keys 是不可变引用，用 cloned 后收集为 HashSet
+```
+
 遍历
 
 与 Vec 一样，HashMap 也不是迭代器，但是其实现了 IntoIterator Trait，所以 for 语法能自动调用 into_iter 将其转化为迭代器
@@ -3496,7 +3597,11 @@ fn main() {
 - **无需哈希函数**：不像 `HashMap` 需要键实现了 `Hash` 和 `Eq`，`BTreeMap` 只需要键实现了 `Ord`（或者使用自定义的 `PartialOrd` 实现）
 - **内存连续**：`BTreeMap` 的节点在内存中是连续分配的，这可能改善缓存局部性
 
+其他基本一致
+
 ### HashSet(待补充)
+
+就是 Set 集合，元素不重复
 
 
 
@@ -5196,7 +5301,7 @@ async fn race_tasks() {
 
 ```
 
-## Macro 宏
+## Macro 宏（简略介绍）
 
 宏分为两大类：
 
@@ -5206,7 +5311,10 @@ async fn race_tasks() {
   * 类属性宏：为目标添加自定义的属性
   * 类函数宏
 
-### 声明宏
+宏类似函数，例如 `vec![1,2,3]` 就会生成 Vec 动态数组。但是不同的是：
+
+* 宏更像是一种标记，在编译期间展开为真正的 Rust 代码（函数是运行时执行）
+* 宏支持任意参数，而函数是固定的参数
 
 
 
