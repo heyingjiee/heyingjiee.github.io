@@ -1792,6 +1792,11 @@ let user2 = User{
  	..user1 // ⚠️ 展开结构体实例被称为 base struct , 必须在最后，这与 JS 不同
 };
 
+//
+let user2 = User{ 
+  username:String::from("jack"), 
+ 	..Default::default()  // 特殊语法：会取User结构体字符的默认值填充。需要#[derive(Default)]派生下 Default Trait
+};
 ---------------------------------------------
 
 // 【修改实例】注意声明为 mut
@@ -3088,35 +3093,13 @@ auto trait IsCool {}
 impl !IsCool for String {} // 表示只有 String 不实现 IsCool
 ```
 
-### 常见内置Trait（待补充）
+### 常见内置 Trait 总结
 
 https://course.rs/appendix/derive.html
 
-#### Deref
+注意 ：这里大部分Trait，支持通过派生语法为**结构体、枚举**实现。
 
-实现了`Deref<Target=U>`的类型`T`，可以解引用 `&T -> &U`
-
-* 在自动解引用场景
-* 手动解引用场景 `*T `（`*`触发了解引用`*T = *(T.deref())`）
-
-````rust
-// Deref 定义
-pub trait Deref {
-    type Target: ?Sized;  // 关联类型
-    fn deref(&self) -> &Self::Target;
-}
-
-// 通用实现 blanket 
-// 为所有引用类型实现Deref，解引用 &T -> &T ，看起来没啥用。其实引用类型能自动调用deref
-impl<T: ?Sized> const Deref for &T { 
-    type Target = T;
-    fn deref(&self) -> &T { // 返回的是引用
-        *self  
-    }
-}
-````
-
-
+这是因为大部分基础类型都有了实现，我们代码中一般都是用**结构体、枚举**来实现逻辑，派生语法可以让我们定义的类型方便的实现 Trait，然后就可以使用 Rust 的基础功能，例如：支持比较、支持打印
 
 #### Debug、Display
 
@@ -3146,7 +3129,7 @@ fn main() {
 }
 
 // 4、默认实现了该 Trait 的类型
-// 简单类型都实现了，例如数字、布尔值、字符串。对于复杂对象，就要用到 Debug Trait 输出了
+//    简单类型都实现了，例如数字、布尔值、字符串。对于复杂对象，就要用到 Debug Trait 输出了
 ```
 
 Debug Trait 
@@ -3161,7 +3144,7 @@ println!("{:?}", x ); // {:?} 占位符会调用 x.fmt
 println!("{:#?}", x ); // 带缩进换行的美化输出 {:#?} 占位符会调用 x.fmt
 
 // 3、实现 Trait 
-// 3-1 派生宏
+// 3-1 结构体、枚举派生宏
 use std::fmt::Debug;
 #[derive(Debug)]
 struct Stu{}
@@ -3178,25 +3161,300 @@ impl Debug for Point {
 }
 
 // 4、默认实现了该 Trait 的类型
-//    常用复杂结构 HashMap、Vec 
-Vec<u8> 和 &[u8] 没有实现 Display，所以不能直接用 {} 打印。
+//    简单类型中 数字(对于无符号类型中只有 usize 实现了 Debug)、char、bool、str、String实现了
+//    对于常用复杂结构(T1, T2, ..., TN) 元组、[T; N]数组、 Vec<T> 、HashMap<K,V>、&[T]、 其中泛型实现Debug，就整体就实现了
+//    内置枚举 Option<T>、Result<T,E> ，其中 T、E:Debug 整体就实现了 Debug
+//    智能指针 Box<T>、Rc<T>、Arc<T>、RefCell<T> ，其中 T:Debug 整体就实现了 Debug
+//    特别注意不支持的类型： 
+//     1、结构体、其他枚举（支持派生宏、手动实现）
+//     1、u8、u16、u32、u64 是没有实现 Debug，所以关联的 Vec<u8> 、 &[u8]也没有
+
+impl<T: fmt::Debug, A: Allocator> fmt::Debug for Vec<T, A> {
+  //...
+}
+
+impl<K, V, S> Debug for HashMap<K, V, S>
+where
+    K: Debug,
+    V: Debug,
+{
+    //...
+}
+
+impl<T: Debug> Debug for [T] {
+   //...
+}
+
+// 这个是个 fmt_refs 宏，$tr可以传入 Debug
+impl<T: ?Sized + $tr> $tr for &T {
+    //...
+}
+impl<T: ?Sized + $tr> $tr for &mut T {
+  	//...
+}
 ```
-
-
 
 #### Default
 
-#### Copy、Clone
-
-#### Eq、PartialEq、Ord、PartialOrd
-
-这几个 Trait 决定了 ， Rust 中那些类型可以比较
+默认值
 
 ```rust
-impl PartialEq<&[u8]> for Vec<u8>  // 通过 eq 比较 Vec<T>.eq(&[u8]) 。 如果&[u8].to_vec()转成 Vec 是深拷贝内存，造成性能损失
+// 1、Trait 定义
+pub trait Debug {
+	fn default() -> Self; // 这个 Self 指的是实现 Debug Trait 的类型
+}
+
+// 2、触发
+let x :Result<u32,&str> = Err("异常");
+println!("{}", x.unwrap_or_default()); // 默认值  Some(数字).default() ,即 0
+
+// 3、实现 Trait 
+// 3-1 派生宏
+// 返回默认值 ，Rust 为内置的类型都实现了 Default Trait
+#[derive(Default)] 
+struct Stu{
+    name: String, // 默认""
+    age: u8, // 默认 0
+  	score:HashMap<String, i32>,// 默认 {}
+  	hobby:Vec<String> // 默认 []
+  	x:X // 如果字段是结构体类型，有需要 derive 派生 Default
+}
+#[derive(Default)] 
+struct X{}
+
+// 3-2 手动实现。可以自己设置默认值
+#[derive(Debug)]
+struct Stu {
+    name: String,
+    age: u8,
+}
+impl Default for Stu {
+    fn default() -> Stu {
+        Stu {
+            name: "匿名".to_string(), // 派生语法 name 默认值是空字符串，手动实现更灵活
+            age: 0,
+        }
+    }
+}
+
+let s = Stu {
+    age: 20,
+    ..Default::default() // 结构体语法，其他字段使用默认值
+};
+println!("{:?}", s);
+
+// 4、默认实现了该 Trait 的类型
+//    简单类型: 数字（默认 整数是0、浮点数是0.0）、char（默认'\x00',一个不可见字符）、bool(默认false)、&str、String（默认""）
+//   	复杂结构: (T1, T2, ..., TN) 元组、 Vec<T> 、HashMap<K,V> 其中泛型实现Default，就整体就实现了
+//    内置枚举: Option<T>（默认 None）、Result<T,E> （默认是Some(T) = T的默认值）
+//    智能指针: Box<T>、Rc<T>、Arc<T>，其中 T:Default 整体就实现了
+
 ```
 
+#### PartialEq、Eq
+
+决定了Rust 中哪些类型可以比较的
+
+* PartialEq： `==`、`!=` 时会调用 PartialEq 的方法返回结果(Rust 中一些复杂对象也能用 `==`  直接判断）
+
+* Eq：继承于PartialEq，是**可严格比较**的标记，实际没有语法去自动掉用 Eq 的方法
+
+有些函数入参、泛型会要求实现 Eq 或 PartialEq。例如：HashMap 要求 Key 必须实现 Eq、HashSet 的元素也要求实现 Eq
+
+**PartialEq**
+
+```rust
+// 1、Trait 定义
+pub trait PartialEq<Rhs: ?Sized = Self> {
+  	// == 调用
+    fn eq(&self, other: &Rhs) -> bool;
+		// != 调用，Trait 中已实现了
+    fn ne(&self, other: &Rhs) -> bool {
+        !self.eq(other)
+    }
+}
+
+// 2、触发
+// == 、!=
+
+// 3、实现 Trait 
+// 3-1 派生宏
+#[derive(PartialEq)] 
+struct Stu {
+  id: u8,
+  name: String,
+  age: u8,
+}
+// 3-2 手动实现
+fn main() {
+    struct Stu {
+        id: u8,
+        name: String,
+        age: u8,
+    }
+    impl PartialEq for Stu {
+        fn eq(&self, other: &Stu) -> bool {
+            self.id == other.id  // 只对比 id
+        }
+    }
+
+    let s1 = Stu {
+        id: 1,
+        name: "tom".to_string(),
+        age: 25,
+    };
+    let s2 = Stu {
+        id: 1,
+        name: "jack".to_string(),
+        age: 30,
+    };
+
+    print!("{}", s1 == s2); // true
+}
+
+
+```
+
+**Eq**
+
+```rust
+// 1、Trait 定义 
+pub trait Eq: PartialEq<Self> { // 继承PartialEq
+    fn assert_receiver_is_total_eq(&self) {}  // ⚠️这个Trait标记了可以严格比较，不能被手动实现
+}
+// 2、触发
+// 无
+
+// 3、实现 Trait 
+// 3-1 派生宏
+#[derive(Eq,PartialEq)]  // 实现了Eq，必须也要实现 PartialEq
+struct Stu {
+  id: u8,
+  name: String,
+  age: u8,
+}
+
+// 4、默认实现了该 Trait 的类型
+// 		简单类型中 整数数字（浮点数只实现了 PartialEq ）、char、bool、String、&T（T：Eq，&T也实现了 Eq）
+// 		复杂类型 (T1, T2, ..., TN) 元组、 Vec<T> 、结构体 其中成员实现了 Eq，整体就实现了
+```
+
+#### Ord、PartialOrd
+
+决定了Rust 中哪些类型可以排序的
+
+```rust
+// 1、Trait 定义 
+pub trait PartialOrd<Rhs: ?Sized = Self>: PartialEq<Rhs> {
+  	// 只有这一个未实现的方法
+    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering>;
+
+    fn lt(&self, other: &Rhs) -> bool {
+        matches!(self.partial_cmp(other), Some(Less))
+    }
+    fn le(&self, other: &Rhs) -> bool {
+        matches!(self.partial_cmp(other), Some(Less | Equal))
+    }
+    fn gt(&self, other: &Rhs) -> bool {
+        matches!(self.partial_cmp(other), Some(Greater))
+    }
+    fn ge(&self, other: &Rhs) -> bool {
+        matches!(self.partial_cmp(other), Some(Greater | Equal))
+    }
+}
+```
+
+#### Copy、Clone
+
+Rust 中最重要的概念所有权转移，也是基于 Copy 的
+
+* 实现 Copy 的类型，赋值时会复制了一份数据给新变量，没实现的就会所有权转移
+
+* 实现 Clone 的类型，支持深拷贝数据
+
+```rust
+// 1、Trait 定义 
+pub trait Clone: Sized {
+  	// 只有这个是未实现的方法
+    fn clone(&self) -> Self;
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
+// 2、触发
+// 手动调用.clone()
+// 某些方法，例如迭代器 clone 是对每个元素调用.cloned()
+
+// 3、实现 Trait 
+// 3-1 派生宏
+#[derive(Clone)] 
+// 3-2 手动实现（略）
+
+// 4、默认实现了该 Trait 的类型
+//    简单类型: 数字、char、bool、&T
+//   	复杂结构: (T1, T2, ..., TN) 元组、 Vec<T> 、HashMap<K,V> 保证泛型实现Clone
+//    内置枚举: Option<T>、Result<T,E> ,保证 T 实现Clone
+//    智能指针: Box<T>、Rc<T>、Arc<T>，保证 T 实现Clone
+
+```
+
+```rust
+// 1、Trait 定义 （Copy 由编译器内部来实现，所以是空的）
+pub trait Copy: Clone {
+    // Empty.
+}
+
+// 2、触发
+// 赋值，或是某些方法，例如迭代器 copy 是对每个元素调用.copied()
+
+// 3、实现 Trait 
+// 3-1 派生宏
+// 结构体默认是没有 Copy 的会发生 move，但是派生后，赋值不会发生所有转移了
+// 注意：要求结构体字段都实现 Copy ，才能派生 Copy
+#[derive(Copy,Clone)]  
+struct Stu<'a>{
+  name:&'a str,
+  age:u8
+}
+
+
+// 4、默认实现了该 Trait 的类型
+//    参考：前面所有权转移规则里的类型
+```
+
+#### Deref
+
+实现了`Deref<Target=U>`的类型`T`，可以解引用 `&T -> &U`
+
+* 在自动解引用场景
+* 手动解引用场景 `*T `（`*`触发了解引用`*T = *(T.deref())`）
+
+````rust
+// Deref 定义
+pub trait Deref {
+    type Target: ?Sized;  // 关联类型
+    fn deref(&self) -> &Self::Target;
+}
+
+// 通用实现 blanket 
+// 为所有引用类型实现Deref，解引用 &T -> &T ，看起来没啥用。其实引用类型能自动调用deref
+impl<T: ?Sized> const Deref for &T { 
+    type Target = T;
+    fn deref(&self) -> &T { // 返回的是引用
+        *self  
+    }
+}
+````
+
 #### Hash
+
+
+
+#### Send & Sync
+
+
+
+
 
 ## 集合类型
 
