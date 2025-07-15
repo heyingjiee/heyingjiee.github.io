@@ -1689,6 +1689,20 @@ fn main(){
 }
 ```
 
+##### `&str` --> `数值类型`
+
+```rust
+fn main() {
+    let str_num = "123";
+  	println!("{}", str_num.parse::<i8>().unwrap()); // 123
+  	// ::<i8> 是 turbofish 指定函数传入的泛型 , 用于指定 num 的类型
+  	// 返回值是 Result ，unwrap 可以解出来数据
+}
+
+// str_num = "111aa"  这种会转换失败
+// str_num = "111.11" 这种由于指定的泛型是 i8，所以也会失败
+```
+
 #### 元组
 
 固定长度，元素可以是不同类型
@@ -2550,22 +2564,6 @@ let x: i32 = 5;
 let y: u8 = x.try_into().unwrap(); // 转成 u8
 ```
 
-#### 字符串 --> 数值类型
-
-字符串  --> 数值类型
-
-```rust
-fn main() {
-    let str_num = "123";
-  	println!("{}", str_num.parse::<i8>().unwrap()); // 123
-  	// ::<i8> 是 turbofish 指定函数传入的泛型 , 用于指定 num 的类型
-  	// 返回值是 Result ，unwrap 可以解出来数据
-}
-
-// str_num = "111aa"  这种会转换失败
-// str_num = "111.11" 这种由于指定的泛型是 i8，所以也会失败
-```
-
 ⚠️ 这是 Rust 中很常用的形式，函数返回 Result 枚举，直接将其放到 match 中处理成功、失败两种可能
 
 ## 泛型
@@ -3095,11 +3093,15 @@ impl !IsCool for String {} // 表示只有 String 不实现 IsCool
 
 ### 常见内置 Trait 总结
 
-https://course.rs/appendix/derive.html
+关于实现 Trait 的一些经验？
 
-注意 ：这里大部分Trait，支持通过派生语法为**结构体、枚举**实现。
-
-这是因为大部分基础类型都有了实现，我们代码中一般都是用**结构体、枚举**来实现逻辑，派生语法可以让我们定义的类型方便的实现 Trait，然后就可以使用 Rust 的基础功能，例如：支持比较、支持打印
+* 每个 Trait 都有对应的语义，比如 PartialEq Trait 是为了支持 `==` 运算符
+* 内置类型实现了没有实现某 Trait ，就证明这个类型不能支持Trait 代表的语义。
+  * 不要为内置类型实现 Trait
+  * 不要覆盖内置类型原有Trait实现
+* 对于开发者来说，我们大部分是使用自定义的 **结构体、枚举** ，这些类型默认是没有任何Trait实现的。例如：有结构体类型 X ，什么时候该为 X 实现 PartialEq Trait ? 
+  * 开发过程中调用外部函数 F ，函数 F 要求入参需要实现 PartialEq 类型 
+  * X 需要支持比较能力
 
 #### Debug、Display
 
@@ -3311,8 +3313,6 @@ fn main() {
 
     print!("{}", s1 == s2); // true
 }
-
-
 ```
 
 **Eq**
@@ -4156,174 +4156,6 @@ fn main() {
 
 Arc + Mutex 组合：Arc 负责多线程引用同一数据，Mutex 将数据加锁，保证并发正确性
 
-## 解构场景
-
-Rust 可以通过解
-
-构语法，提取复杂数据（元组、数组、数组切片、结构体）内部携带的数据。模式匹配语法还额外支持解构带负载的枚举
-
-下面是列举了常用的使用解构的场景，具体如何解构不同类型的数据，参考 `let 声明` 里列举的方式就行
-
-### let 声明
-
-```rust
-// 元组
-let (x, y) = (10, 20);  
-println!("x: {}, y: {}", x, y);
-// 数组
-let [x, y] = [10, 20];
-println!("x: {}, y: {}", x, y);
-// 数组切片
-let [x, y] = &[10, 20]; // 因为是引用，x、y 是 &i32 类型
-println!("x: {}, y: {}", x, y);
-// 结构体
-struct Point {
-    x: i32,
-    y: i32,
-}
-let Point { x, y } = Point{ x:1 , y:2}
-//	结构体 - 支持特殊的语法
-let Point { x:new_var, y } = Point{ x:1 , y:2}; // 将 x 重命名为new_var，⚠️ 不存在变量 x 了，打印 x 会报错
-
-```
-
-⚠️ 不需要提取的部分，可以用 `_` 替代
-
-```rust
-let (_, y) = (10, 20);
-```
-
-⚠️ 支持解构数组、数组切片，但是不支持解构 Vec
-
-````rust
-// 解构数组、元组不能只取部分。回忆下前面提到的 数组、数组切片、元组不能转移部分所有权，这样会使整个数据不可用
-let [first,second] =[1,2,3]; // ❌
-````
-
-### 函数入参
-
-```rust
-// 元组例子
-fn deal((x,y,z):(u32,u32,u32)){
-    println!("{},{},{}",x,y,z); // jack,20
-}
-fn main() {
-    deal((1,2,3)) // 1,2,3
-}
-
-// 结构体例子
-struct Point {
-    x: i32,
-    y: i32,
-}
-fn print_point(Point { x, y }: Point) {
-    println!("Point: ({}, {})", x, y);
-}
-```
-
-### for循环
-
-```rust
-let pairs = vec![(1, 2), (3, 4), (5, 6)];
-
-for (x, y) in pairs {
-    println!("x: {}, y: {}", x, y);
-}
-```
-
-### 模式匹配
-
-match、if let、while let  等
-
-模式匹配处理可以解构前面提到的（元组、数组、数组切片、结构体）这些复杂数据 ，还支持解构**带负载的枚举**
-
-例子参考【模式匹配章节】
-
-### 解构导致的所有权转移
-
-⚠️ 解构会发生所有权转移，如果你还需要原数据可以用，请注意
-
-以解构结构体为例子，通过 ref  、mut ref 解决 
-
-```rust
-struct User{
-    name:String,
-    age:u8,
-}
-fn main() {
-    let user=User{
-        name:"jack".to_string(),
-        age:20
-    };
-    
-    let User{name,age} = user;
-    println!("{}、{}",name,age); // jack 、 20
-    
-    println!("{}",user.age); //  20
-    
-    println!("{}",user.name); //  ❌ 编译失败。 name 是 String 会发生 所有权部分移动（partially moved），所以 user 中的 name 不再可用
-}
-```
-
-ref
-
-```rust
-struct User{
-    name:String,
-    age:u8,
-}
-fn main() {
-    let user=User{
-        name:"jack".to_string(),
-        age:20
-    };
-    
-    // ref 告诉编译器不需要所有权转移， 自动获取的是借用，所以 name 实际类型是 &String
-    let User{ ref name, age} = user;
-  	// let User{ ref mut name, age} = user;  mut name花
-  
-    println!("{}、{}",name,age); // jack 、 20
-    
-    println!("{}",user.age); //  20
-    
-    println!("{}",user.name); //  jack
-}
-```
-
- ref mut 通过引用修改
-
-```rust
-struct User{
-    name:String,
-    age:u8,
-}
-fn main() {
-    let mut user=User{
-        name:"jack".to_string(),
-        age:20
-    };
-    
-    // ref 告诉编译器不需要所有权转移， 自动获取的是借用，所以 name 实际类型是 &String
-    let User{ ref mut name,age} = user;
-    
-    let mut new_name="tom".to_string();
-    *name="tom".to_string();
-    
-    println!("{}",user.age); //  20
-    
-    println!("{}",user.name); //  tom
-}
-```
-
-其他类型也是支持的
-
-```rust
-let (ref z, y) =x; // 元组
-let [ref z, y] =x; // 数组、切片
-```
-
-
-
 ## 迭代器（待补充）
 
 迭代器 Iterator Trait
@@ -4869,6 +4701,172 @@ match msg {
 Message::Hello { id: 10..=12 } => {
    println!("Found an id in another range")
 },
+```
+
+## 解构
+
+Rust 可以通过解
+
+构语法，提取复杂数据（元组、数组、数组切片、结构体）内部携带的数据。模式匹配语法还额外支持解构带负载的枚举
+
+下面是列举了常用的使用解构的场景，具体如何解构不同类型的数据，参考 `let 声明` 里列举的方式就行
+
+### let 声明
+
+```rust
+// 元组
+let (x, y) = (10, 20);  
+println!("x: {}, y: {}", x, y);
+// 数组
+let [x, y] = [10, 20];
+println!("x: {}, y: {}", x, y);
+// 数组切片
+let [x, y] = &[10, 20]; // 因为是引用，x、y 是 &i32 类型
+println!("x: {}, y: {}", x, y);
+// 结构体
+struct Point {
+    x: i32,
+    y: i32,
+}
+let Point { x, y } = Point{ x:1 , y:2}
+//	结构体 - 支持特殊的语法
+let Point { x:new_var, y } = Point{ x:1 , y:2}; // 将 x 重命名为new_var，⚠️ 不存在变量 x 了，打印 x 会报错
+
+```
+
+⚠️ 不需要提取的部分，可以用 `_` 替代
+
+```rust
+let (_, y) = (10, 20);
+```
+
+⚠️ 支持解构数组、数组切片，但是不支持解构 Vec
+
+````rust
+// 解构数组、元组不能只取部分。回忆下前面提到的 数组、数组切片、元组不能转移部分所有权，这样会使整个数据不可用
+let [first,second] =[1,2,3]; // ❌
+````
+
+### 函数入参
+
+```rust
+// 元组例子
+fn deal((x,y,z):(u32,u32,u32)){
+    println!("{},{},{}",x,y,z); // jack,20
+}
+fn main() {
+    deal((1,2,3)) // 1,2,3
+}
+
+// 结构体例子
+struct Point {
+    x: i32,
+    y: i32,
+}
+fn print_point(Point { x, y }: Point) {
+    println!("Point: ({}, {})", x, y);
+}
+```
+
+### for循环
+
+```rust
+let pairs = vec![(1, 2), (3, 4), (5, 6)];
+
+for (x, y) in pairs {
+    println!("x: {}, y: {}", x, y);
+}
+```
+
+### 模式匹配
+
+match、if let、while let  等
+
+模式匹配处理可以解构前面提到的（元组、数组、数组切片、结构体）这些复杂数据 ，还支持解构**带负载的枚举**
+
+例子参考【模式匹配章节】
+
+### 解构导致的所有权转移
+
+⚠️ 解构会发生所有权转移，如果你还需要原数据可以用，请注意
+
+以解构结构体为例子，通过 ref  、mut ref 解决 
+
+```rust
+struct User{
+    name:String,
+    age:u8,
+}
+fn main() {
+    let user=User{
+        name:"jack".to_string(),
+        age:20
+    };
+    
+    let User{name,age} = user;
+    println!("{}、{}",name,age); // jack 、 20
+    
+    println!("{}",user.age); //  20
+    
+    println!("{}",user.name); //  ❌ 编译失败。 name 是 String 会发生 所有权部分移动（partially moved），所以 user 中的 name 不再可用
+}
+```
+
+ref
+
+```rust
+struct User{
+    name:String,
+    age:u8,
+}
+fn main() {
+    let user=User{
+        name:"jack".to_string(),
+        age:20
+    };
+    
+    // ref 告诉编译器不需要所有权转移， 自动获取的是借用，所以 name 实际类型是 &String
+    let User{ ref name, age} = user;
+  	// let User{ ref mut name, age} = user;  mut name花
+  
+    println!("{}、{}",name,age); // jack 、 20
+    
+    println!("{}",user.age); //  20
+    
+    println!("{}",user.name); //  jack
+}
+```
+
+ ref mut 通过引用修改
+
+```rust
+struct User{
+    name:String,
+    age:u8,
+}
+fn main() {
+    let mut user=User{
+        name:"jack".to_string(),
+        age:20
+    };
+    
+    // ref 告诉编译器不需要所有权转移， 自动获取的是借用，所以 name 实际类型是 &String
+    let User{ ref mut name,age} = user;
+    
+    let mut new_name="tom".to_string();
+    *name="tom".to_string();
+    
+    println!("{}",user.age); //  20
+    
+    println!("{}",user.name); //  tom
+}
+```
+
+其他类型也是支持的
+
+```rust
+let (ref z, y) =x; // 元组
+let [ref z, y] =x; // 数组、切片
 ```
 
 ## 错误处理
