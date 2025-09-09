@@ -2456,27 +2456,11 @@ import jsonFile from 'xx.json'
 
 ## 实践
 
-抽象类
-
- https://pan.baidu.com/pfile/video?path=%2F%E7%BC%96%E7%A8%8B%E8%B5%84%E6%BA%90%2F330%20%E4%B8%8B%E4%B8%80%E4%BB%A3%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91%E8%AF%AD%E8%A8%80%20TypeScript%E4%BB%8E%E9%9B%B6%E9%87%8D%E6%9E%84axios%2F03%20%E7%AC%AC3%E7%AB%A0%20Typescript%20%E7%B1%BB%E5%9E%8B%E7%B3%BB%E7%BB%9F%E3%80%90%E5%BF%85%E5%A4%87%E5%9F%BA%E7%A1%80%EF%BC%8C%E7%89%A2%E5%9B%BA%E6%8E%8C%E6%8F%A1%E3%80%91%2F16%203-16%20%E7%B1%BB%20-%20%E6%8A%BD%E8%B1%A1%E7%B1%BB%2B%20%E9%AB%98%E7%BA%A7%E6%8A%80%E5%B7%A7.mp4&theme=light&from=home
-
-### this标记类型
-
-函数中传入this标记
-
-![image-20231224021419947](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231224021420VQGGv8.png)
-
-
-
-回调函数中的this，需要标记否则没有提示
-
-![image-20231224022418754](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20231224022419nxuKDk.png)
-
 ### 类型不精准
 
 例如，变量a定义为object类型
 
-* 如果已明确其中存在字段name，如何使用？使用断言
+* 如果已明确其中存在字段 name，如何使用？使用断言
 
   ```ts
   let a: object = { name: "Alice", age: 30 };
@@ -2494,7 +2478,7 @@ import jsonFile from 'xx.json'
   let a: object = { name: "Alice", age: 30 };
   
   if ('name' in a) {
-        console.log(this.a.name);
+      console.log(this.a.name); // 这里自动推断出有 name 字段
   }
   ```
 
@@ -2511,12 +2495,137 @@ import jsonFile from 'xx.json'
   ```ts
   function f1(input:string|number){
       if(typeof input==='string'){
-          console.log('string类型',input)//推导为string类型
+          console.log('string类型',input) // 推导为string类型
       }
   }
   ```
 
-### 类型信息扩充
+### 函数泛型
+
+泛型函数的泛型是 T，且当参数定义为 T。调用函数时，传入的实参类型就能自动传给 T
+
+```ts
+function getResult<T>(type: T) {
+	// ...
+}
+
+getResult("xxx") // 这里 T 会被推断为字符串
+getResult(1) // 这里 T 会被推断为数字
+
+// 这很重要，相当于调用时动态获取类型。可以进一步对 T 就行运算
+```
+
+type 类型里不能访问字段类型（函数里可以通过 T[‘字段名’] ），必须静态指定泛型
+
+```ts
+// CLI 能力
+type CLIModeAbility = {
+ 	cliMethod: () => void;
+};
+
+// Base 基础能力
+type BaseAbility = {
+ 	baseMethod: () => void;
+};
+
+
+export type PluginInstance<N = any, M = any, Mode extends "cli" | "js" = "cli"> = {
+   name: N; // 插件名
+   mode: Mode; // cli | js 
+   platform: "node" | "browser" | "neutral"; // 运行平台
+   setup: (
+    core: Mode extends "cli" ? CLIModeAbility : BaseAbility, // 根据 mode 推导 core 类型
+   ) => M;
+};
+
+
+// 例子
+const plugin1: PluginInstance<"plugin1", any, "cli"> = {
+   name: "plugin1",
+   mode: "cli",
+   platform: "node",
+   setup(core) {
+    core.cliMethod(); // `core` 的类型推导为 CLIModeAbility
+   },
+};
+```
+
+### 提取对象某字段类型
+
+```ts
+// 定义接口返回类型
+export interface AIType {
+  a?: string 
+  children?: Array<{
+   	id:number
+}>
+  
+  
+// 创建新数据，其实只是使用部分字段。不必重新定义新的 interface
+  
+AIType['children'] // 获取 children 字段类型
+AIType['children'][number] // [number]获取数组元素的类型
+```
+
+### const 
+
+```ts
+let name = 'tom'  // a 被推断为 string
+
+let name = 'tom' as const // 断言为 const，a 会被推断为具体值
+```
+
+### satisfies 与 as
+
+```ts
+type Config = {
+  host: string;
+}
+
+// 1、as 强制断言， config1.debug 字段会提示不存在
+const config1 = {
+  host: "localhost",
+  debug: true  
+} as Config 
+
+// 2、satisfies 只限制 config满足类型即可。而且 as 会抹掉原数据类型，satisfies会保留原数据类型信息。config1.debug 是存在的
+const config2 = {
+  host: "localhost",
+  debug: true  
+}
+const x = config satisfies Config; 
+```
+
+### 常用的工具类
+
+**Pick**  提取对象类型的字段
+
+```ts
+interface Stu1{
+  name:string,
+  age:number,
+  score:string
+}
+
+type Stu2 = {
+  name:'tom',
+  age:18,
+  score:100
+}
+
+type x = Pick<Stu1,'name'|'age'> //  { name: string; age: number;}
+type y = Pick<Stu2,'name'|'age'> //  { name: 'tom'; age: 10;}
+```
+
+**Omit**
+
+```ts
+Omit
+
+ReturnType
+
+NonNullable
+```
 
 
 
