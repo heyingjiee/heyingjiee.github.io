@@ -21,9 +21,9 @@
 
 * Rust 秘典（死灵书）: https://nomicon.purewhite.io/intro.html
 
- ## 前置
+* 陈天的 [Rust 项目模板](https://github.com/tyr-rust-bootcamp/template/tree/master) ，其中配置了一系列的工具，以及使用Github Action来定义提交代码的流程
 
-### 安装
+## 安装
 
 * rustup 是 rust 工具链管理器，其中包含 rustc （rust 编译器）
 * cargo 是 rust 包管理工具
@@ -38,15 +38,9 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | zsh
 
 ![image-20250104204950855](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20250104204950pEr5kf.png)
 
-### 工程化
-
-陈天的[Rust模板](https://github.com/tyr-rust-bootcamp/template/tree/master) ，其中配置了一系列的工具，以及使用Github Action来定义提交代码的流程
-
-### print!打印
+## 输出 print!
 
 `println!`是换行打印
-
-#### 基础用法
 
 ```rust
 // 【占位符输出】
@@ -61,15 +55,13 @@ println!("{name} "); // tom
 println!("{1} 、 {0}", "Alice", "Bob"); // Bob 、 Alice
 ```
 
-#### 其他占位符
-
 下面直接常用的占位符，更多请参考：https://rustwiki.org/zh-CN/std/fmt/index.html
 
-##### 基本占位符
+### 基本占位符
 
 `{}` 默认格式化输出，适用于实现了 `Display` trait 的类型
 
-##### 调试输出
+### 调试输出
 
 `{:?}` 用于调试输出，适用于实现了 `Debug` trait 的类型。这对于查看复杂类型（如结构体、枚举等）的内容非常有用
 
@@ -86,7 +78,7 @@ let mut user = User{
 print!("{:?}",user) // User { username: "jack", active: true }
 ```
 
-##### 数字输出
+### 数字输出
 
 - `{:b}`：二进制格式
 
@@ -102,7 +94,7 @@ print!("{:?}",user) // User { username: "jack", active: true }
 
 - `{:e}`、`{:E}`：科学计数法表示（小写或大写）
 
-##### 指针输出
+### 指针输出
 
 `{:p}`：指针地址的格式化输出
 
@@ -137,7 +129,7 @@ Crate 根文件所在的目录就是这个Crate 的作用域
 如果 Cargo.toml 中没有配置，则遵循 Cargo 的默认约定：
 
 * 如果包目录中包含 *src/main.rs* ，则它是 二进制 crate 的根
-* 如果包目录中包含 *src/lib.rs*，则它是库 crate 的根。包名为项目name字段（下面的例子就是 `rust_example`）
+* 如果包目录中包含 *src/lib.rs*，则它是库 crate 的根。包名为项目name字段（下面的例子`rust_example`）
 
 例如：`cargo new xxx ` (默认省略了 --bin 参数，是创建的二进制Crate) 创建的默认项目
 
@@ -243,8 +235,8 @@ pub struct MyStruct {
 
 注意：
 
-* 模块是可以无限嵌套的，存在父级、子级、孙子级....（观察3个例子的注释）
-* 模块内成员是公开的， pub 修饰才是公开
+* 模块是可以无限嵌套的，存在父级、子级、孙子级....（观察3个例子的注释）。以包根（默认 src/lib.rs）为根节点呈树状关系
+* 如果使用 1 个Crate 的功能，需要从包根一层一层引入 mod 中的成员（路径上都是 pub 才能访问到）
 
 **1、内联模块**
 
@@ -306,18 +298,18 @@ src/
 
 ```rust
 // ----- 【math.rs】 ------
-pub zfn(){}
+pub fn zfn(){}
 
 // ----- 【lib.rs】 ------
 pub mod math; //【引入】子模块 math
 
 fn x() {
-    z::zfn();
+    math::zfn();
 }
 
 // ----- 【main.rs】 ------
 fn main(){
-  rust_example::z::zfn() // 跨 Crate 引入，后面会提到
+  rust_example::math::zfn() // 跨 Crate 引入，后面会提到
 }
 ```
 
@@ -342,7 +334,7 @@ mod 子模块;
 子模块::孙子模块::孙子模块内 pub 成员
 ```
 
-*相对路径访问其他模块**
+**相对路径访问其他模块**
 
 ```rust
 super::b::bFn() // super 代表父级 mod
@@ -381,7 +373,7 @@ src/
 
 ```rust
 fn main(){
-  rust_example::z::zfn(); 
+  rust_example::math::zfn(); 
   // 我这个例子中 rust_example 是项目名，而项目名就是默认的 Crate 名
 }
 
@@ -542,7 +534,7 @@ use std::prelude::v1;
 
 `println!`, `format!`, `vec!`, `dbg!`（这些通过宏定义引入）
 
-## 依赖管理
+## 包管理
 
 ```shell
 cargo --list # 查看所有命令
@@ -592,6 +584,46 @@ cargo build --release # 根目录/release下
 
 ```shell
 cargo run 
+```
+
+## 注释
+
+Rust 中注释规则比较复杂
+
+### 代码注释
+
+这部分和其他语言一致
+
+```rust
+// 行注释
+
+/* 
+	块注释
+*/
+```
+
+### 文档注释
+
+ `crates.io` 上发布的包，会读取特定的注释来显示为 Crate 的文档
+
+#### 包、模块注释
+
+
+
+#### 成员注释
+
+* 库 Crate 都是通过包根暴露出来成员，所以文档注释只能加在包根文件（默认 src/lib.rs）。且只能给暴露出的成员（pub 修饰）加文档注释
+* 支持 markdow 语法
+
+```rust
+/// 行注释
+
+/**
+	传入值加2
+*/
+pub fn add(x: i32) -> i32 {
+    x + 2
+}
 ```
 
 
@@ -857,7 +889,7 @@ fn main() {
 
 HashMap 比较特殊，不支持部分 key 所有权转移。但是可以通过 remove 方法直接删除返回 Option 来达到转移的目的，同时 HashMap 仍然有效
 
-### 引用
+### 两种引用
 
 **1、引用、借用的概念**
 
@@ -879,7 +911,7 @@ fn main() {
 
 **2、引用本质**
 
-与其他语言相似，&x 、 &mut x 的值就是变量 x 的内存地址，可以通过&mut x 操作 x 持有的数据
+与其他语言相似，&x 、 &mut x 的值就是变量 x 的内存地址，可变引用 &mut x 可以操作 x 持有的数据
 
 ```rust
 // 请注意 x 两种情况 可变变量、不可变变量； y 两种情况 可变引用、不可变引用。共 4 种情况
@@ -888,16 +920,15 @@ fn main() {
 let x = 10;
 let y = &x;
 
-
 // ❌ 语法错误，从不可变变量获取可变引用
 let x = 10;
 let y = &mut x;
 
-// ✅ 语法正确，但是 y 无法操作 x 持有的数据
+// ⚠️ 语法虽然正确，但是 y 无法操作 x 持有的数据
 let mut x = 10;
 let y = &x;
 
-// ✅✅ 语法正确。 x可变 + x的可变引用 ，才能操作
+// ✅ 语法正确。 x可变 + x的可变引用 ，才能操作
 let mut x = 10;
 let y = &mut x;
 *y += 1; // x=11
@@ -909,7 +940,6 @@ let y = &mut x;
 struct Stu{
     name:String,
 }
-
 fn main() {
   	// 结构体
     let x = &Stu{name:"x".to_string()}; // 不可变引用
@@ -920,12 +950,6 @@ fn main() {
     let b = &a[0]; // 元素本身不是引用，必须再取引用
 }
 ```
-
-**3、引用的作用域/生命周期**
-
-变量的作用域/生命周期与其他语言一致，块级作用域、函数作用域
-
-而**引用的作用域/生命周期**从声明的地方开始一直持续到最后一次使用为止
 
 **4、使用引用的基础例子** 
 
@@ -943,15 +967,14 @@ fn main() {
    
       handle_data(&mut s);   // 注意：虽然s是可变的，取引用 &mut 才行 ； 不可变变量不能取 &mut
   
-    	
       println!("{}",s)  // hello world
   }
   ```
-
+  
   ```rust
   fn handle_data(s: &mut String ) ->&str{	 
       &s[..1] // 取切片，截取第一个字节，即"h"
-  } // 函数外部的 s 持有所有权本，这里函数结束并不会释放内存资源
+  } // 函数外部的 s 持有所有权，这里函数结束并不会释放内存资源
   
   fn main(){
       let mut s =String::from("hello");
@@ -961,30 +984,92 @@ fn main() {
       println!("{}",res)  // h
   }
   ```
+  
+* 传入**可变引用**，复制部分内容存下来
+
+  ```rust
+  #[derive(Debug)]
+  struct School{
+      name:String,
+      students:Vec<Student>
+  }
+  
+  #[derive(Debug,Clone)]
+  struct Student{
+      name:String,
+      age:i8,
+  }
+  
+  impl School {
+    	// 传入&Student，必须克隆一份才能留在 School 中，会有性能损失
+    	fn add1(&mut self,student:&Student){
+          self.students.push(student.clone)
+      }
+      // Student会发生 move，不会有性能损失
+      fn add2(&mut self,student:Student){ 
+          self.students.push(student)
+      }
+  }
+  fn main() {
+      let mut school =  School{
+          name:String::from("希望中学"),
+          students:vec![],
+      };
+    
+    	let s = Student{
+          name:String::from("小明"),
+          age:20
+      };
+  
+   		// 🚩 情况 1： 如果后续还需要 s，只是临时处理下。这以后就必须用拷贝引用的值了，有性能损失
+  		school.add1(&s); 
+    
+    	// 🚩 情况 2： s 的所有权转移了，以后不能再使用了，性能也更好
+      school.add2(s); 	
+  
+      print!("{:?}",school);
+  }
+  ```
+
+* xxx
+
+  ```rust
+  std::mem::take 或 std::mem::replace
+  ```
 
 * 传入**不可变引用**，函数返回修改后的数据
 
   ```rust
   // 悬垂引用
-  
   fn main() {
       let reference_to_nothing = dangle();
   }
   
   // ❌ 编译不通过
   fn dangle() -> &String {
-    
       let s = String::from("hello");
-    
       &s   // 将引用绑定给变量 reference_to_nothing，函数结束 s 离开作用域，进而导致引用失效
-    
   }
-  
   
   // ✅ 编译通过
   fn dangle() -> String {
       let s = String::from("hello");
       s   // 将 s 对值的所有权转移给变量reference_to_nothing。 s离开作用域前是失效状态，所以s不会触发 drop 释放数据
+  }
+  ```
+
+### 作用域
+
+* 变量的作用域/生命周期与其他语言一致，块级作用域、函数作用域
+
+* **引用的作用域**从声明的地方开始持续到最后一次使用为止
+
+  ```rust
+  fn main() {
+      let mut s = String::from("hello");
+      let r1 = &s;
+      print!("{}", r1);           // 👈 先用完 r1
+      s.push_str(", world");      // 👈 再修改，此时 r1 已“失效”（作用域内但未使用，借用已释放）
   }
   ```
 
@@ -999,60 +1084,46 @@ fn main() {
 
 这些限制的好处是 Rust 可以在编译时就避免数据竞争，同一作用域只能有 1 个可写引用可以修改值
 
-**技巧**：建议看代码，出现 `&mut T`就先看它的作用域，然后看作用域是否有**同一个变量的不可变、可变引用**，有就是错误的
+判断技巧：
+
+* 先观察代码块中出现可变引用（`&mut T` 、还有更隐蔽的 push_str 方法是使用了s 的可变引用）
+
+* 这时候有 2 种可能：
+  * 看可变引用的作用域内部否有**其他引用**，有就是错误的
+  * 看可变引用是否处于其他不可变引用的作用中
 
 **规则**：
 
-* 变量 s 的不可变引用 r1 的作用域内可以存在 s 的其他可读引用 r2、r3...
-
-* 变量 s 的不可变引用 r1 的作用域内，不能有对该变量的**写操作**
+* **不可变引用**的作用域内，不能有对该变量的**可变**
 
   ```rust
+  // 情况 1：
   fn main() {
       let mut s = String::from("hello");
-      let r1 = &s;
-      s.push_str(", world");  // ❌ 编译错误。 不可变引用 r 的作用域内，出现了对原变量的写操作
-      print!("{}",r1);
+      let r1 = &s;			// -----+
+      let r2 = &mut s; 	//			|  r1 不可变引用作用域内，出现了可变引用。❌ 编译错误
+      print!("{}",r1);  // -----+
+    	
   }
   
+  // 情况 2：
   fn main() {
       let mut s = String::from("hello");
       let r1 = &s;
-      let r2 = &mut s;;  // ❌ 编译错误。 不可变引用 r 的作用域内，出现了其他可变引用
+      s.push_str(", world");  // push_str方法使用的是 s 的可变引用，这种更隐晦 ❌ 编译错误
       print!("{}",r1);
   }
   ```
 
 
-* 变量 s 的**可变引用 r1**，在其作用域内不能有其他**可变引用**
+* **可变引用**的作用域内，不能有对这个变量的其他**引用**
 
   ```rust
   fn main(){
     let mut s=String::from("xxx");
-    let r1=&mut s;
-    let r2=&mut s;
-  
-    println!("{}", r1); // ❌ 编译错误。可变引用 r1 作用域内有其他可变引用 r2 
-  }
-  
-  fn main(){
-    let mut s=String::from("xxx");
-    let r1=&mut s;
-    let r2=&mut s;
-  
-    println!("{}", r2); // ✅ 编译通过。输出 xxx
-  }
-  ```
-
-* 变量 s 的可变、不可变引用作用域不能交叉
-
-  ```rust
-  fn main() {
-      let mut s = String::from("hello");
-  
-      let r2 = &mut s;
-      let r1 = &s; // 可写作用域之间，出现了可读引用 r1 
-      println!("{}", r2); // ❌ 编译报错 
+    let r1=&mut s;						// -----+
+    let r2=&mut s;						//			|  r1 可变引用作用域内，出现不可变、可变引用。❌ 编译错误
+    println!("{}", r1); 			// -----+
   }
   ```
 
@@ -1148,7 +1219,7 @@ fn main() {
 
 ```
 
-##### 结构体方法调用
+##### 方法调用
 
 ⚠️ **方法**是自动解引用， **关联方法**需要手动
 
@@ -1362,6 +1433,8 @@ fn search<'a>(target:&str, content:&'a str)->Vec<&'a str>{
 ```
 
 所以，如何指定生命周期，还是需要看实际含义。这里就不能直接指定两个入参都是 `a`
+
+
 
 ## 类型
 
@@ -2703,7 +2776,19 @@ fn do_something(s:impl MyTrait<String>) ->String{ // ⚠️不是 MyTrait<xxx=St
 type<T> = Vec<T>
 ```
 
+## 补充`<>`语法
 
+Rust 中，将**在实例化时才确定的参数**放到` <>` 中，例如前面学习的泛型、生命周期标记
+
+共有三类 👇：
+
+| 类型                                        | 示例             | 说明                                |
+| ------------------------------------------- | ---------------- | ----------------------------------- |
+| **类型参数（type parameter）**              | `T`、 `U`        | 例如 `Vec<T>`                       |
+| **生命周期参数（lifetime parameter）**      | `'a`、`'static`  | 生命周期标记                        |
+| **常量泛型参数（const generic parameter）** | `const N: usize` | 代表编译期常量，如数组长度 `[T; N]` |
+
+使用逗号分隔
 
 ## 特征 Trait
 
@@ -3368,9 +3453,11 @@ pub trait PartialOrd<Rhs: ?Sized = Self>: PartialEq<Rhs> {
 
 Rust 中最重要的概念所有权转移，也是基于 Copy 的
 
-* 实现 Copy 的类型，赋值时会复制了一份数据给新变量，没实现的就会所有权转移
+* 实现 Clone 的类型，可调用 clone 方法拷贝数据
 
-* 实现 Clone 的类型，支持深拷贝数据
+* 实现 Copy 的类型，发生赋值时会复制了一份数据给新变量，没实现的就会所有权转移
+
+注意：Copy 的能力是编辑器提供的，并不依赖 Clone 提供的能力。但是 Rust 为了保证语义上的统一，即**能自动Copy的类型，肯定也能手动Clone**，所以要求实现 Copy 时，必须先实现 Clone
 
 ```rust
 // 1、Trait 定义 
@@ -3446,6 +3533,10 @@ impl<T: ?Sized> const Deref for &T {
 }
 ````
 
+#### Drop
+
+
+
 #### Hash
 
 
@@ -3487,7 +3578,7 @@ let mut v = vec![1, 2, 3, 4];
 ```
 
 ```rust
-v.reserve(100);  // 显式扩容 
+v.reserve(100);  // 参数 n 表示扩容空间，总容量 = 原本的len +  n
 ```
 
 读取元素
@@ -3504,13 +3595,14 @@ let x = v.get(0); // 返回一个 Option 类型，即 Some(值) 或 None
 
 Vec不是迭代器类型，但是其实现了 IntoIterator Trait， for 语法会调用 into_iter 转换为迭代器类型
 
-* into_iter() 转化为迭代器，但是所有权转移
-* iter() 转化为迭代器
+* `into_iter()`：将 Vec 转化为迭代器，发生**所有权转移**
+* `iter()`：将 Vec 转化为不可变引用迭代器
+* `iter_mut()` ：将 Vec 转化为可变引用迭代器
 
 ```rust
 // 会发生所有转移
 let v = vec![1, 2, 3];
-for i in v { 
+for i in v { // 这个底层 let iter = v.into_iter(); vec 的说有钱转移到了迭代器上
     println!("{i}");
 }
 print!("{}",v) ❌ 
@@ -3543,15 +3635,16 @@ let mut v = vec![1, 2];
 
 println!("{}", v.is_empty()); // false 判空
 v.insert(2,3);; // [1, 2, 3] 插入
-v.append(&mut vec![4,5]); // [1, 2, 3, 4, 5] 追加数组
+v.append(&mut vec![4,5]); // [1, 2, 3, 4, 5] 追加数组 。⚠️ 这里入参是&mut，这是因为append 保留了原数组所有权，将原数组掏空，转移到了v中
 v.truncate(3); // [1, 2, 3]  截断 3 位
 v.push(4); // [1, 2, 3, 4]
-v.pop();// [1, 2, 3]
+v.pop();// [1, 2, 3] 返回 Option
 println!("{:?}",&v[1..]); // [2, 3] 动态数组切片 （切片是动态大小类型，在编译时大小未知，无法直接作为值使用所以会报错。只能用引用形式）
+v.remove(1); // [2] 移除指定位置元素，返回被移除的元素
 v.clear(); // [] 清空
 ```
 
-处理数据的方法
+处理数据的方法，通常将 vec 转化为不变引用迭代器（iter）处理数据，返回处理结果
 
 ```rust
 struct Stu {
@@ -3561,11 +3654,11 @@ struct Stu {
 
 fn main() {
 		// 类似 JS 的 filter
-		let v1=vec![1,2,3];
+		let v1 = vec![1,2,3];
 		v1.retain(|x| *x >= 2); 
   	println!("{:?}",v1); // [2, 3]  
   
-		// 类似 JS 的 map 。 Vec 需要转换为迭代器类型
+		// 转换为迭代器
     let v3 = vec![
         Stu{ name:"tom".to_string(), age:20 },
         Stu{ name:"jack".to_string(), age:10 },
@@ -3646,8 +3739,6 @@ y.to_vec(); // ⚠️ 这种会发生内存深拷贝，十分损耗性能。建�
 Vec<T>.eq(&[T])
 ```
 
-
-
 ### HashMap
 
 HashMap 没有在 prelude 引入，所以需要开发者手动引入
@@ -3656,7 +3747,6 @@ HashMap 没有在 prelude 引入，所以需要开发者手动引入
 
 ```rust
 use std::collections::HashMap;
-
 fn main() {
    	// 1、确定容量
 		let mut h = HashMap::with_capacity(10);
@@ -3888,9 +3978,42 @@ fn generic<T: ?Sized>(t: &T) {
 }
 ```
 
+## 裸指针
+
+Rust 中的引用、智能指针，属于**安全指针**，受 Rust 所有权和借用规则保护。而裸指针是不安全的，用于底层操作，需谨慎使用
+
+| 特性         | `&mut T`（可变引用）         | `*mut T`（裸指针）                         |
+| ------------ | ---------------------------- | ------------------------------------------ |
+| **类型类别** | 引用（reference）            | 裸指针（raw pointer）                      |
+| **安全性**   | 安全（编译期保证别名规则）   | 不安全（需 `unsafe` 使用）                 |
+| **空值**     | 永远非空（non-null）         | 可以为 null                                |
+| **生命周期** | 有生命周期（如 `&'a mut T`） | 无生命周期，不被借用检查器跟踪             |
+| **创建方式** | `&mut expr`                  | `&mut expr as *mut T` 或 `ptr::null_mut()` |
+| **解引用**   | 直接 `*y = 2;`（安全）       | 必须在 `unsafe` 块中：`unsafe { *y = 2; }` |
+
+```rust
+let mut x = 1;
+
+// 可变引用：&mut i32
+let y: &mut i32 = &mut x;
+*y = 42; // ✅ 安全，无需 unsafe
+
+// 裸指针：*mut i32
+let z: *mut i32 = &mut x as *mut i32;
+unsafe {
+    *z = 100; // ❗必须用 unsafe
+}
+```
+
+Rust 圣经中裸指针有下面例子：
+
+```rust
+let p = 5 as *mut u8; // 一般情况下，我们是从引用中读取地址，转化为裸指针。这里是将 5 当做内存地址，即0x00000005
+```
+
 ## 智能指针
 
-智能指针像普通指针一样拥有**解引用能力（实现了 `Deref`/`DerefMut`）**，除此之外后面提到的 Box、Rc、Arc 等等各有独特的能力
+**智能指针是实现了 `Deref` 和 `Drop` trait 的类型，它们像指针一样可以解引用，但能自动管理资源（如内存、文件句柄、锁等）**
 
 **Deref  Trait **
 
@@ -4016,6 +4139,8 @@ Rc、Arc 功能一致，唯一的区别是 Arc 具有原子性是用在多线程
 ```rust
 let num = Rc::new(0); // num 是一个引用
 let num2 = Rc::clone(&num); // 再创建一个 num2 引用。虽然名为 clone 实际上不会发生数据的复制
+
+// let num2 = num.clone()  // Rc、Arc 都实现了 Clone Trait，调用.clone 也是等价的
 ```
 
 圣经的例子
@@ -4066,12 +4191,14 @@ fn main() {
 }
 ```
 
-### Mutex
+### Mutex、MutexGuard
 
 作用：数据加锁，参考【并发】章节
 
-```
-let guard = Mutex::new(数据); // 返回MutexGuard类型
+```rust
+let guard = Mutex::new(数据); // 
+let mut xx = guard.lock().unwrap(); // 返回 MutexGuard 智能指针，实现了 Deref 自动解引用拿到内部数据的引用
+*x // 拿到数据
 ```
 
 ### Cell、RefCell
@@ -4135,6 +4262,10 @@ Cell、RefCell 内部包裹了数据，即使这个对象是不可变引用，�
   | 直接获取内部值的 mutable 引用 | `.get_mut()`（`&mut RefCell`才有这个方法） | ❌ 无 panic                        |
   | 消耗 RefCell 获取原始值       | `.into_inner()`                            | ❌ 无 panic                        |
 
+### Cow
+
+
+
 ### 总结
 
 Rc + RefCell 组合：Rc 负责同一数据的多个引用，RefCell 负责每个引用的修改
@@ -4168,16 +4299,29 @@ pub trait Iterator{
 
 迭代器最重要的是 next 方法，通过 next 方法可以不断**消耗**迭代器的内容
 
-### 转换为迭代器
-
-前面集合类型提到的 Vec、HashMap 都实现了IntoIterator Trait，所以 for 语法会自动调用 into_iter 转为迭代器
-
-Rust 中提供了 into_iter、 iter、 iter_mut 三个方法将其他类型转换为迭代器
+### 常见迭代器
 
 ```rust
-into_iter  // 夺走每个元素的所有权
-iter  // 对每个元素，生成借用
-iter_mut  // 对每个元素，生成可变借用
+// 动态数组
+let v = vec![1, 2, 3, 4, 5]
+v.into_iter() // 夺走每个元素的所有权
+v.iter() // 对每个元素，生成借用
+v.mut_iter() // 对每个元素，生成可变借用
+
+// v 实现了IntoIterator trait，for 会自动调用 into_iter()
+for i in v {
+  
+} 
+// 这会导致 v 不再可用，如果后续还需要用推荐使用 
+for i in &v{
+  
+}
+
+
+// rang literal 
+for i in (1..4){
+  
+}
 ```
 
 通用实现
@@ -4198,48 +4342,102 @@ impl<I: Iterator> IntoIterator for I {
 
 ### 迭代器适配器
 
-调用后返回新的迭代器，所以可以链式调用。和 JS 差不过
+注意：
 
-| 适配器方法      | 含义简述                                         |
-| --------------- | ------------------------------------------------ |
-| `.map(f)`       | 每个元素映射为另一个值                           |
-| `.filter(f)`    | 筛选满足条件的元素                               |
-| `.take(n)`      | 取前 n 个元素                                    |
-| `.skip(n)`      | 跳过前 n 个元素                                  |
-| `.enumerate()`  | 生成 `(index, value)` 元素对组成的迭代器         |
-| `.zip(other)`   | 将两个迭代器“配对”                               |
-| `.chain(other)` | 拼接两个迭代器                                   |
-| `.rev()`        | 反转顺序（需要 `DoubleEndedIterator`）           |
-| `.inspect(f)`   | 类似 `tap`，用于调试，中途查看                   |
-| `.flatten()`    | 将嵌套迭代器展平                                 |
-| `.flat_map(f)`  | 映射并展平                                       |
-| `.cloned()`     | 克隆元素（如 `&T -> T`），元素必须实现`Clone`    |
-| `.copied()`     | 复制元素（如 `&i32 -> i32`），元素必须实现`Copy` |
+* 适配器方法，会消费原迭代器（原迭代器发生 move），返回新的迭代器
+* 适配器方法是惰性的，需要调用**消费适配器**才会开始执行
+
+| 适配器方法      | 含义简述                                                     |
+| --------------- | ------------------------------------------------------------ |
+| `.map(f)`       | 每个元素映射为另一个值                                       |
+| `.filter(f)`    | 筛选满足条件的元素                                           |
+| `filter_map`    | 过滤 + 映射 （JS 里缺少这个方法，需用 reduce 才行，rust 直接提供了） |
+| `.take(n)`      | 取前 n 个元素                                                |
+| `.skip(n)`      | 跳过前 n 个元素                                              |
+| `.rev()`        | 反转顺序（需要 `DoubleEndedIterator`）                       |
+| `.enumerate()`  | 生成 `(index, value)` 元素对组成的迭代器                     |
+| `.zip(other)`   | 将两个迭代器“配对”                                           |
+| `.chain(other)` | 拼接两个迭代器                                               |
+|                 |                                                              |
+| `.inspect(f)`   | 类似 `tap`，用于调试，中途查看                               |
+| `.flatten()`    | 将嵌套迭代器展平                                             |
+| `.flat_map(f)`  | 映射并展平                                                   |
+| `.cloned()`     | 克隆元素（如 `&T -> T`），元素必须实现`Clone`                |
+| `.copied()`     | 复制元素（如 `&i32 -> i32`），元素必须实现`Copy`             |
 
 适配器可以链式调用处理数据，结尾必须使用消费适配器才能真正执行
 
 ```rust
 fn main() {
-    let v= vec![1,2,3,4,5];
+    let v = vec![1,2,3,4,5];
     let ret = v
-  						.into_iter()
-  						.map(|item| item*2) // [2,4,6,8,10]   item是 i32
-  						.filter(|item| *item < 9) // [2,4,6,8]  x是&i32
-  						.take(3) // [2,4,6]  取前 n 个
-  						.skip(1)// [4,6] 跳过前 n 个
-  						.collect::<Vec<i32>>() // 将迭代器转成 Vec<i32>
-  						// rev 逆序要求是 DoubleEndedIterator Trait，
-  						// 经过filter、flat_map 后会失去该特性
-  						.into_iter()
-              .rev() 
-              .collect::<Vec<i32>>(); // [6, 4]
+        .into_iter()
+        .map(|item| item*2) // [2,4,6,8,10]   item 是元素类型i32 （ 假设用 v.iter() 就是&i32 ）
+        .filter(|item| *item < 9) // [2,4,6,8]  item是元素的不可变引用 &i32
+        .take(3) // [2,4,6]  取前 n 个
+        .skip(1)// [4,6] 跳过前 n 个
+        .collect::<Vec<i32>>() // 将迭代器转成 Vec<i32>
+        // rev 逆序要求是 DoubleEndedIterator Trait，
+        // 经过filter、flat_map 后会失去该特性
+        .into_iter()
+        .rev() 
+        .collect::<Vec<i32>>(); // [6, 4]
 
     println!("{:?}", ret); //  因为用了 inter_iter ,这里 v 就已经失效了，转移到 ret 了
+}
 
+fn main() {
+    let v = vec![1,2,3,4,5];
+    let numbers: Vec<i32> = v
+        .into_iter()
+        .filter_map(|s| {  // 返回值必须是 Option
+          	if s % 2 == 1 { 
+              Some(s*2) 
+          	} else { 
+              None 
+          	}
+  			 })
+        .collect();
+
+    println!("{:?}", numbers); // [2, 6, 10]
 }
 ```
 
-注意所有权转移的问题。 使用 into_iter| iter | iter_mut
+**zip** 组合两个迭代器元素，返回迭代器（元素是元组）
+
+```rust
+fn main() {
+    let names = vec!["Alice", "Bob", "Charlie"];
+    let ages = vec![30, 25, 35, 40]; // 注意：ages 比 names 长
+    // zip 会以较短的 names 为准，忽略 ages 的最后一个元素 (40)
+    for (name, age) in names.iter().zip(ages.iter()) {
+        println!("{} is {} years old.", name, age);
+    }
+    // 输出:
+    // Alice is 30 years old.
+    // Bob is 25 years old.
+    // Charlie is 35 years old.
+}
+```
+
+**enumerate** 常用来获取索引
+
+```rust
+for (index, item) in v.iter().enumerate() {
+    println!("{}. {}", index, item);
+}
+```
+
+
+
+注意所有权转移的问题。迭代器都是 self 的方法，但是动态数组 vec 使用 into_iter| iter | iter_mut 转化迭代器都能用 （ 调用方法时，会自动解引用为 self）
+
+```rust
+pub trait Iterator {
+  fn map<B, F>(self, f: F) -> Map<Self, F>
+}
+
+```
 
 ### 消费适配器
 
@@ -5193,25 +5391,52 @@ Rust 的进程、线程都是直接使用的系统进程、线程，运行时时
 
 ### 线程同步
 
-Rust 中`thread::spawn`创建的**线程**，都是 **main 进程**的子线程，所以 main 结束会直接终止全部子线程
+有几点注意：
 
-但是线程内部，创建的线程是没有父子关系的，即使外部线程执行完毕，内部也不会终止
+* 代码执行到 `thread::spawn()` 时，就开始创建子线程运行了
 
-```rust
-use std::thread;
+* 子线程 B，并不属于创建的它的线程 A，而是都属于 **main 进程**的子线程。
 
-fn main() {
-    let mut handlers = vec![];
-    for i in 0..5 {
-        let handler = thread::spawn(move || println!("{i}"));
-        handlers.push(handler);
-    }
+  main 结束会直接终止全部子线程；线程A结束不会终止线程B
 
-    for handler in handlers {
-        handler.join().unwrap(); // 将线程的 handler.join 到外部线程，外部线程就会阻塞住等待内部线程执行完毕 。 类似 JS 的 Promise.allSettled
-    }
-}
-```
+  ```rust
+  fn main(){ // main 进程
+    let handler = thread::spawn(move || { // 线程 A
+    	thread::spawn(move ||{ // 线程 B
+        // xxx
+    	})
+  	});
+  }
+  ```
+
+* `join`  上面提到线程都属于 main，但是 join 提供了一种方式让线程阻塞当前进程的执行，等待子线程执行完毕
+
+  ```rust
+  use std::thread;
+  
+  fn main() {
+      let mut handlers = vec![];
+      for i in 0..5 {
+          let handler = thread::spawn(move || println!("{i}")); // 已经开始执行了
+          handlers.push(handler);
+      }
+  
+      for handler in handlers {
+         // 将线程的 handler.join 到外部线程，外部线程就会阻塞住等待内部线程执行完毕 。 类似 JS 的 Promise.allSettled
+  
+        // 进程当前可能得状态：
+        //     1、执行完毕了，join立即返回 
+        //     2、正在执行新，join阻塞等待结果
+        //     3、panic 了，join 会返回 Err
+        match hdl.join() {
+            Ok(val) => println!("正常: {:?}", val),
+            Err(e) => println!("子线程 panic: {:?}", e), // ✅ 能捕获！
+        }
+      }
+  }
+  ```
+
+  
 
 ### 多线程并发
 
@@ -5227,7 +5452,7 @@ Rust 中有2 种通道
 * 异步通道（channel）：生产者可以一直写入 channel
 * 同步通道（sync_channel）：通道可以设置通道缓冲区，通道满了就会阻塞生产者，这个更像 Go 的 channel
 
-所有权类型的数据从生产者传递给消费者，也会发生所有权转移
+所有权类型的数据从生产者传递给消费者，发生所有权转移
 
 Rust 不必手动关闭通道，当所有生产者或所有消费者离开作用域，满足其一会自动 drop 通道 (在编译期实现的，完全没有运行期性能损耗)
 
@@ -5254,7 +5479,7 @@ fn main() {
   	// 读取通道数据：-------
   	
   	// 方式 1: 返回Result。 阻塞进程，直到读取1次数据后结束。如果读取到数据前通道 channel 关闭，则返回 Err(RecvError)
-  	let msg = rx.recv()
+  	let msg = r.recv()
   	
   	// 方式 2: 返回Result。不阻塞进程尝试读取一次数据后结束。可能是Ok(数据)、Err(TryRecvError::Empty)通道为空、Err(TryRecvError::Disconnected)通道关闭
   	let msg = r.try_recv().unwrap()
@@ -5384,9 +5609,11 @@ Metux 无论读写都会阻塞其他线程，而 RwLock 可以多进程并发读
 
 ### Send & Sync
 
-Sync：类型同时被多个线程引用
+Send：类型不能同时被多个线程引用，而是可以在线程间安全的传递其所有权
 
-Send：类型不能同时被多个线程引用，而是在线程间传递
+Sync：类型在线程间安全的共享(通过引用，例如：Arc )
+
+这两个 Trait 是标记特征，实际上没有任何实现，只是提示使用者某些类型是否线程安全
 
 规则：
 
