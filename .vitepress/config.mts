@@ -37,6 +37,7 @@ export default defineConfig({
           { text: "TS笔记(持续更新)", link: "/docs/frontBasic/TS学习笔记.md" },
           { text: "CSS笔记", link: "/docs/frontBasic/CSS技术精炼.md" },
           { text: "Vue2笔记(过时)", link: "/docs/frontBasic/Vue2重刷笔记.md" },
+          { text: "Vue3案例", link: "/docs/frontBasic/Vue3案例.md" },
           { text: "Nest笔记(持续更新)", link: "/docs/frontBasic/Nest.md" },
           { text: "Canvas", link: "/docs/frontBasic/Canvas.md" },
           { text: "Rxjs", link: "/docs/frontBasic/Rxjs.md" },

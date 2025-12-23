@@ -658,13 +658,6 @@ function xx(arr,target){
 
 ### [704. 二分查找](https://leetcode.cn/problems/binary-search)
 
-题目
-
-```js
-//给定一个 n 个元素有序的（升序）整型数组 nums 和一个目标值 target ，写一个函数搜索 nums 中的 target，如果目标值存在返回下标，否
-//则返回 -1。
-```
-
 二分法：
 
 ```js
@@ -685,14 +678,6 @@ var binarySearch = function(nums, target) {
 ```
 
 ### [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position)
-
-题目
-
-```js
-//给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。 
-//
-// 请必须使用时间复杂度为 O(log n) 的算法
-```
 
 二分法
 
@@ -720,45 +705,6 @@ var searchInsert = function(nums, target) {
 
 ### [69. x 的平方根 ](https://leetcode.cn/problems/sqrtx/)
 
-题目
-
-```js
-//给你一个非负整数 x ，计算并返回 x 的 算术平方根 。
-//
-// 由于返回类型是整数，结果只保留 整数部分 ，小数部分将被 舍去 。
-//
-// 注意：不允许使用任何内置指数函数和算符，例如 pow(x, 0.5) 或者 x ** 0.5 。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：x = 4
-//输出：2
-//
-//
-// 示例 2：
-//
-//
-//输入：x = 8
-//输出：2
-//解释：8 的算术平方根是 2.82842..., 由于返回类型是整数，小数部分将被舍去。
-//
-//
-//
-//
-// 提示：
-//
-//
-// 0 <= x <= 2³¹ - 1
-//
-//
-// Related Topics 数学 二分查找 👍 1511 👎 0
-
-
-```
-
 二分法
 
 ```js
@@ -784,61 +730,7 @@ var mySqrt = function(x) {
 };
 ```
 
-
-
 ### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence)
-
-题目
-
-```js
-//给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。 
-//
-// 子序列 是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子
-//序列。 
-//
-// 示例 1： 
-//
-// 
-//输入：nums = [10,9,2,5,3,7,101,18]
-//输出：4
-//解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
-// 
-//
-// 示例 2： 
-//
-// 
-//输入：nums = [0,1,0,3,2,3]
-//输出：4
-// 
-//
-// 示例 3： 
-//
-// 
-//输入：nums = [7,7,7,7,7,7,7]
-//输出：1
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 1 <= nums.length <= 2500 
-// -10⁴ <= nums[i] <= 10⁴ 
-// 
-//
-// 
-//
-// 进阶： 
-//
-// 
-// 你能将算法的时间复杂度降低到 O(n log(n)) 吗? 
-// 
-//
-// Related Topics 数组 二分查找 动态规划 👍 3567 👎 0
-
-
-```
 
 动态规划
 
@@ -906,134 +798,44 @@ var lengthOfLIS = function(nums) {
 
 ### [4. 寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays)
 
-题目
-
-```js
-//给定两个大小分别为 m 和 n 的正序（从小到大）数组 nums1 和 nums2。请你找出并返回这两个正序数组的 中位数 。
-//
-// 算法的时间复杂度应该为 O(log (m+n)) 。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：nums1 = [1,3], nums2 = [2]
-//输出：2.00000
-//解释：合并数组 = [1,2,3] ，中位数 2
-//
-//
-// 示例 2：
-//
-//
-//输入：nums1 = [1,2], nums2 = [3,4]
-//输出：2.50000
-//解释：合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5
-//
-//
-//
-//
-//
-//
-// 提示：
-//
-//
-// nums1.length == m
-// nums2.length == n
-// 0 <= m <= 1000
-// 0 <= n <= 1000
-// 1 <= m + n <= 2000
-// -10⁶ <= nums1[i], nums2[i] <= 10⁶
-//
-//
-// Related Topics 数组 二分查找 分治 👍 7017 👎 0
-
-```
-
 二分
 
 ```js
 var findMedianSortedArrays = function(nums1, nums2) {
-    const len1=nums1.length
-    const len2=nums2.length
-
-    let ptr1=0,ptr2=0
-    let composeList=[]
-    // 合并
-    while (ptr1<=len1-1&&ptr2<=len2-1){
-        if(nums1[ptr1]<=nums2[ptr2]){
-            composeList.push(nums1[ptr1])
+    let ptr1 = 0, ptr2 = 0
+    let mergeList = []
+    // 易错点1:
+    // while (ptr1 < nums1.length || ptr2 < nums2.length)
+    // 输入 [1]、[2, 3]
+    // 会导致第 1 个数组结束时 ptr1++ 后超出数组范围。导致后续 if 中 nums1[ptr1] 报错
+    while (ptr1 < nums1.length || ptr2 < nums2.length) {
+        if (ptr1 >= nums1.length) {
+            mergeList.push(nums2[ptr2])
+            ptr2++
+        }else if (ptr2 >= nums2.length) {
+            mergeList.push(nums1[ptr1])
             ptr1++
-        }else {
-            composeList.push(nums2[ptr2])
+        }else if (nums1[ptr1] < nums2[ptr2]) {
+            mergeList.push(nums1[ptr1])
+            ptr1++
+        } else {
+            mergeList.push(nums2[ptr2])
             ptr2++
         }
     }
 
-    if (ptr1<=len1-1){
-        composeList.push(...nums1.slice(ptr1))
-    }else {
-        composeList.push(...nums2.slice(ptr2))
+    // 易错点2: 中间位置索引并不是 mergeList.length/2 ，例如[1,2,3] 中间位置索引是1
+    const midIndex = Math.floor((mergeList.length-1)/2)
+    if (mergeList.length % 2 === 0) { // 偶数
+        return (mergeList[midIndex] + mergeList[midIndex + 1])/2
+    } else { // 奇数
+       return mergeList[midIndex]
     }
-
-    // 算中位数
-    const mid=Math.floor((composeList.length-1)/2)//mid计算工时，注意left索引，right索引加和后除以2向下取整,算出来的mid是中间数字的`索引`
-    if (composeList.length%2===0){
-        return  (composeList[mid]+composeList[mid+1])/2
-    }else {
-        return  composeList[mid]
-    }
-
 };
 
 ```
 
-
-
 ### [162. 寻找峰值](https://leetcode.cn/problems/find-peak-element/)
-
-题目
-
-```js
-//峰值元素是指其值严格大于左右相邻值的元素。 
-//
-// 给你一个整数数组 nums，找到峰值元素并返回其索引。数组可能包含多个峰值，在这种情况下，返回 任何一个峰值 所在位置即可。 
-//
-// 你可以假设 nums[-1] = nums[n] = -∞ 。 
-//
-// 你必须实现时间复杂度为 O(log n) 的算法来解决此问题。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：nums = [1,2,3,1]
-//输出：2
-//解释：3 是峰值元素，你的函数应该返回其索引 2。 
-//
-// 示例 2： 
-//
-// 
-//输入：nums = [1,2,1,3,5,6,4]
-//输出：1 或 5 
-//解释：你的函数可以返回索引 1，其峰值元素为 2；
-//     或者返回索引 5， 其峰值元素为 6。
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 1 <= nums.length <= 1000 
-// -2³¹ <= nums[i] <= 2³¹ - 1 
-// 对于所有有效的 i 都有 nums[i] != nums[i + 1] 
-// 
-//
-// Related Topics 数组 二分查找 👍 1259 👎 0
-
-```
 
 暴力模拟
 
@@ -1106,50 +908,6 @@ var findPeakElement = function(nums) {
 
 ### [74. 搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/)
 
-题目
-
-```js
-//给你一个满足下述两条属性的 m x n 整数矩阵：
-//
-//
-// 每行中的整数从左到右按非严格递增顺序排列。
-// 每行的第一个整数大于前一行的最后一个整数。
-//
-//
-// 给你一个整数 target ，如果 target 在矩阵中，返回 true ；否则，返回 false 。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
-//输出：true
-//
-//
-// 示例 2：
-//
-//
-//输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13
-//输出：false
-//
-//
-//
-//
-// 提示：
-//
-//
-// m == matrix.length
-// n == matrix[i].length
-// 1 <= m, n <= 100
-// -10⁴ <= matrix[i][j], target <= 10⁴
-//
-//
-// Related Topics 数组 二分查找 矩阵 👍 901 👎 0
-
-
-```
-
 二分法
 
 ```js
@@ -1187,50 +945,6 @@ var searchMatrix = function(matrix, target) {
 ```
 
 ### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
-
-题目
-
-```js
-//给你一个按照非递减顺序排列的整数数组 nums，和一个目标值 target。请你找出给定目标值在数组中的开始位置和结束位置。
-//
-// 如果数组中不存在目标值 target，返回 [-1, -1]。
-//
-// 你必须设计并实现时间复杂度为 O(log n) 的算法解决此问题。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：nums = [5,7,7,8,8,10], target = 8
-//输出：[3,4]
-//
-// 示例 2：
-//
-//
-//输入：nums = [5,7,7,8,8,10], target = 6
-//输出：[-1,-1]
-//
-// 示例 3：
-//
-//
-//输入：nums = [], target = 0
-//输出：[-1,-1]
-//
-//
-//
-// 提示：
-//
-//
-// 0 <= nums.length <= 10⁵
-// -10⁹ <= nums[i] <= 10⁹
-// nums 是一个非递减数组
-// -10⁹ <= target <= 10⁹
-//
-//
-// Related Topics 数组 二分查找 👍 2630 👎 0
-
-```
 
 二分
 
@@ -1275,50 +989,6 @@ var searchRange = function(nums, target) {
 
 ### [153. 寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
 
-题目
-
-```js
-//给你一个按照非递减顺序排列的整数数组 nums，和一个目标值 target。请你找出给定目标值在数组中的开始位置和结束位置。
-//
-// 如果数组中不存在目标值 target，返回 [-1, -1]。
-//
-// 你必须设计并实现时间复杂度为 O(log n) 的算法解决此问题。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：nums = [5,7,7,8,8,10], target = 8
-//输出：[3,4]
-//
-// 示例 2：
-//
-//
-//输入：nums = [5,7,7,8,8,10], target = 6
-//输出：[-1,-1]
-//
-// 示例 3：
-//
-//
-//输入：nums = [], target = 0
-//输出：[-1,-1]
-//
-//
-//
-// 提示：
-//
-//
-// 0 <= nums.length <= 10⁵
-// -10⁹ <= nums[i] <= 10⁹
-// nums 是一个非递减数组
-// -10⁹ <= target <= 10⁹
-//
-//
-// Related Topics 数组 二分查找 👍 2630 👎 0
-
-```
-
 排序
 
 ```js
@@ -1358,69 +1028,6 @@ var findMin = function(nums) {
 ```
 
 ### [374. 猜数字大小](https://leetcode.cn/problems/guess-number-higher-or-lower/)
-
-题目
-
-```js
-//猜数字游戏的规则如下： 
-//
-// 
-// 每轮游戏，我都会从 1 到 n 随机选择一个数字。 请你猜选出的是哪个数字。 
-// 如果你猜错了，我会告诉你，你猜测的数字比我选出的数字是大了还是小了。 
-// 
-//
-// 你可以通过调用一个预先定义好的接口 int guess(int num) 来获取猜测结果，返回值一共有 3 种可能的情况（-1，1 或 0）： 
-//
-// 
-// -1：我选出的数字比你猜的数字小 pick < num 
-// 1：我选出的数字比你猜的数字大 pick > num 
-// 0：我选出的数字和你猜的数字一样。恭喜！你猜对了！pick == num 
-// 
-//
-// 返回我选出的数字。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//输入：n = 10, pick = 6
-//输出：6
-// 
-//
-// 示例 2： 
-//
-// 
-//输入：n = 1, pick = 1
-//输出：1
-// 
-//
-// 示例 3： 
-//
-// 
-//输入：n = 2, pick = 1
-//输出：1
-// 
-//
-// 示例 4： 
-//
-// 
-//输入：n = 2, pick = 2
-//输出：2
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 1 <= n <= 2³¹ - 1 
-// 1 <= pick <= n 
-// 
-//
-// Related Topics 二分查找 交互 👍 336 👎 0
-
-```
 
 二分
 ```js
@@ -1571,66 +1178,6 @@ var removeDuplicates = function(nums) {
 
 ### [141. 环形链表](https://leetcode.cn/problems/linked-list-cycle/)
 
-题目
-
-```js
-//给你一个链表的头节点 head ，判断链表中是否有环。 
-//
-// 如果链表中有某个节点，可以通过连续跟踪 next 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 pos 来表示链表尾连接到
-//链表中的位置（索引从 0 开始）。注意：pos 不作为参数进行传递 。仅仅是为了标识链表的实际情况。 
-//
-// 如果链表中存在环 ，则返回 true 。 否则，返回 false 。 
-//
-// 
-//
-// 示例 1： 
-//
-// 
-//
-// 
-//输入：head = [3,2,0,-4], pos = 1
-//输出：true
-//解释：链表中有一个环，其尾部连接到第二个节点。
-// 
-//
-// 示例 2： 
-//
-// 
-//
-// 
-//输入：head = [1,2], pos = 0
-//输出：true
-//解释：链表中有一个环，其尾部连接到第一个节点。
-// 
-//
-// 示例 3： 
-//
-// 
-//
-// 
-//输入：head = [1], pos = -1
-//输出：false
-//解释：链表中没有环。
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 链表中节点的数目范围是 [0, 10⁴] 
-// -10⁵ <= Node.val <= 10⁵ 
-// pos 为 -1 或者链表中的一个 有效索引 。 
-// 
-//
-// 
-//
-// 进阶：你能用 O(1)（即，常量）内存解决此问题吗？ 
-//
-// Related Topics 哈希表 链表 双指针 👍 2113 👎 0
-
-```
-
 天秀解法：[题解地址](https://leetcode.cn/problems/linked-list-cycle/solutions/716263/shi-chuan-yi-jiu-de-javsscripttian-xiu-j-u8kv) ，leetcode上看到了很有意思的三种解法，这三种解法都是因为js的特性
 
 ```js
@@ -1685,70 +1232,6 @@ var hasCycle = function(head) {
 ```
 
 ### [142. 环形链表 II](https://leetcode.cn/problems/linked-list-cycle-ii/)
-
-题目
-
-```js
-//给定一个链表的头节点 head ，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
-//
-// 如果链表中有某个节点，可以通过连续跟踪 next 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 pos 来表示链表尾连接到
-//链表中的位置（索引从 0 开始）。如果 pos 是 -1，则在该链表中没有环。注意：pos 不作为参数进行传递，仅仅是为了标识链表的实际情况。
-//
-// 不允许修改 链表。
-//
-//
-//
-//
-//
-//
-// 示例 1：
-//
-//
-//
-//
-//输入：head = [3,2,0,-4], pos = 1
-//输出：返回索引为 1 的链表节点
-//解释：链表中有一个环，其尾部连接到第二个节点。
-//
-//
-// 示例 2：
-//
-//
-//
-//
-//输入：head = [1,2], pos = 0
-//输出：返回索引为 0 的链表节点
-//解释：链表中有一个环，其尾部连接到第一个节点。
-//
-//
-// 示例 3：
-//
-//
-//
-//
-//输入：head = [1], pos = -1
-//输出：返回 null
-//解释：链表中没有环。
-//
-//
-//
-//
-// 提示：
-//
-//
-// 链表中节点的数目范围在范围 [0, 10⁴] 内
-// -10⁵ <= Node.val <= 10⁵
-// pos 的值为 -1 或者链表中的一个有效索引
-//
-//
-//
-//
-// 进阶：你是否可以使用 O(1) 空间解决此题？
-//
-// Related Topics 哈希表 链表 双指针 👍 2479 👎 0
-
-
-```
 
 哈希记录节点
 
@@ -1918,44 +1401,6 @@ var getIntersectionNode = function(headA, headB) {
 
 ### [876. 链表的中间结点](https://leetcode.cn/problems/middle-of-the-linked-list/)
 
-题目
-
-```js
-//给你单链表的头结点 head ，请你找出并返回链表的中间结点。 
-//
-// 如果有两个中间结点，则返回第二个中间结点。 
-//
-// 
-//
-// 示例 1： 
-// 
-// 
-//输入：head = [1,2,3,4,5]
-//输出：[3,4,5]
-//解释：链表只有一个中间结点，值为 3 。
-// 
-//
-// 示例 2： 
-// 
-// 
-//输入：head = [1,2,3,4,5,6]
-//输出：[4,5,6]
-//解释：该链表有两个中间结点，值分别为 3 和 4 ，返回第二个结点。
-// 
-//
-// 
-//
-// 提示： 
-//
-// 
-// 链表的结点数范围是 [1, 100] 
-// 1 <= Node.val <= 100 
-// 
-//
-// Related Topics 链表 双指针 👍 975 👎 0
-
-```
-
 双指针（注意如果节点个数是偶数个，这题要求返回的是中间两个节点中，靠后的一个）
 
 ```js
@@ -2002,19 +1447,13 @@ var lengthOfLongestSubstring = function(s) {
   let left=0,right=0
 
   for(;right<s.length;right++){
-    if(winRecordSet.has(s[right])){
-      // 准备新加的元素在窗口内存在重复，通过左端点++，缩小窗口维护窗口内不重复的条件成立
-      while(winRecordSet.has(s[right])){
-        winRecordSet.delete(s[left])
-        left++
-      }
-      // 重复的元素剔除了，在把right放进去
-      winRecordSet.add(s[right])
-
-    }else{
-      // 新加元素，在窗口不存在重复
-      winRecordSet.add(s[right])
+    // 准备新加的元素在窗口内存在重复，通过左端点++，缩小窗口维护窗口内不重复的条件成立
+    while(winRecordSet.has(s[right])){
+      winRecordSet.delete(s[left])
+      left++
     }
+    // 重复的元素剔除了，在把right放进去
+    winRecordSet.add(s[right])
     maxLen=Math.max(maxLen,winRecordSet.size)
 
   }
@@ -7097,13 +6536,17 @@ MyQueue.prototype.empty = function() {
 
 ### [5. 最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/)
 
+注意点 1：字符串不支持 reverse 需要转成数组，性能不佳会内存超限制。使用双指针判断是否为回文
+
+```js
+function validPalindrome(str){
+  return str === str.split('').reverse().join('')
+}
+```
+
 暴力枚举法：
 
 ```js
-/**
- * @param {string} s
- * @return {string}
- */
 var longestPalindrome = function(s) {
 
     // 校验是否为回文子串
@@ -7146,43 +6589,32 @@ var longestPalindrome = function(s) {
 
 ```js
 var longestPalindrome = function(s) {
-    // xyx（回文串为奇数） 、 xx（回文串为偶数） 两种情况
-
-    // 最大回文子串长度
-    let maxCount=1// 一个字母，也是一个回文子串。所以maxCount初始为1
-    // 最大回文子串开始索引
-    let begin=0
-
-    let n=s.length
-
-
-    // 从中心扩展开
-    function h(left,right){
-        // (left>=0||right<=n-1) 防止溢出数组
-        while((left>=0||right<=n-1) && s[left]===s[right]){
-            if(right-left+1>maxCount){
-                maxCount=right-left+1
-                begin=left
+    let start = 0, maxLen = 0
+   	
+    const checkPalindrome = (left, right) => {
+        while (left >= 0 && right <= s.length - 1) {
+            if (s[left] !== s[right]) {
+                return
+            }
+            const spanLen = right - left + 1
+            if (spanLen > maxLen) {
+                maxLen = spanLen
+                start = left
             }
 
             left--
             right++
-
         }
+
+    }
+    for (let i = 0; i < s.length; i++) {
+        checkPalindrome(i, i) // 奇数长度字符串，中心点位置
+        checkPalindrome(i, i+1) // 偶数长度字符串，中心点位置
     }
 
-    for(let i =0;i<n;i++){
-        // 假设i为最长回文子串的中心
-        // 如果为奇数
-        h(i-1,i+1) // i=0时，i-1溢出边界；i=n-1时，i+1溢出边界；都需在h中处理
-        // 如果为偶数
-        h(i,i+1)
-    }
-    return s.slice(begin,begin+maxCount)
+    return s.slice(start, start + maxLen)
 };
 ```
-
-
 
 动态规划法：
 
@@ -7196,7 +6628,45 @@ var longestPalindrome = function(s) {
 dp[i][j]= target[i]===target[j]&&(j-i<=1||dp[i+1][j-1]) //j-i<=1  表示i、j之间只有一个数 + i、j指向一个数，直接算为回文
 ```
 
+### [9.回文数](https://leetcode.cn/problems/palindrome-number/)
 
+暴力解法，直接反转对比
+
+```js
+var isPalindrome = function(x) {
+    if (x<0) {
+        return false
+    }
+    return String(x) === String(x).split('').reverse().join('')
+};
+```
+
+也可以使用上面 leetcode5的中心扩散法
+
+```js
+var isPalindrome = function(x) {
+
+    const str = String(x)
+    const check = (left, right) => {
+        while (left >= 0 && right < str.length) {
+            if (str[left] !== str[right]) {
+                return false
+            }
+            left--
+            right++
+        }
+        return true
+    }
+
+    const len = str.length
+    const midIndex = Math.floor((len - 1)/2)
+    if (len%2 === 0) { // 偶数
+        return check(midIndex, midIndex + 1)
+    } else { // 奇数
+        return check(midIndex,midIndex)
+    }
+};
+```
 
 ### [680. 验证回文串 II](https://leetcode.cn/problems/valid-palindrome-ii/)
 
@@ -7811,23 +7281,29 @@ console.log(arr)
 
 ### [1. 两数之和](https://leetcode.cn/problems/two-sum/)
 
-非常绕，需要仔细想想
-
 ```js
 var twoSum = function(nums, target) {
-    let count={} 
-    // key = target-数组元素A，value = 是数组元素A索引
-    // 元素B在count有，就是元素B与某元素之和是target
+    // key = 补值 , value = 索引
+    let hash = {}
     
-    for (let index in nums){
-        let value=nums[index]
+    // 易错点： Array.entries 返回的 index 是数字，不能用 Object.entries() 这个返回的 index 是字符串
+    for (const [index, value] of nums.entries()) {
+        hash[value] = index
+    }
 
-        if (count[value]){
-            return [index,count[value]]
+    // 易错点：target = 8 ， num[0] = 4 ，需要扣掉 [0,0]
+    for (const [index, value] of nums.entries()) {
+        if (hash[target - value] && hash[target - value] !== index){
+            return [index,hash[target - value]]
         }
-        count[target-value]=index
     }
 };
+```
+
+### [2. 两数相加( 补充 )](https://leetcode.cn/problems/add-two-numbers/)
+
+```js
+
 ```
 
 ### [49. 字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
@@ -7860,6 +7336,29 @@ var groupAnagrams = function(strs) {
     return Object.values(record)
 };
 ```
+
+### [7.整数反转](https://leetcode.cn/problems/reverse-integer/)
+
+```js
+var reverse = function(x) {
+    let str = ''
+    if (x<0) {
+        str = `-${String(-x).split('').reverse().join('')}`
+    } else {
+        str = String(x).split('').reverse().join('')
+    }
+
+    const num =  Number(str)
+
+    if (num < -Math.pow(2,31) || num > (Math.pow(2,31) - 1)) {
+        return 0
+    }
+
+    return num
+};
+```
+
+
 
 ### [128. 最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
 
@@ -8384,25 +7883,23 @@ max=Math.max(max,sum)
 
 #### 找子字符串
 
-* 找s的子串，要求子串不重复且最长 （leetcode3） 
+同样找子串，方法不一样。
 
-  滑动窗口：right一直向右扫描，不断将right加入窗口。但是加入窗口前用Set判断是否重复。如果重复就一直收紧left直到与right相同的那个数字被挤出窗口，再把right加入
+ **滑动窗口**
 
-  ```
-  输入：s = "abcabcbb"  
-  输出：3   // 只求长度，最长abc
-  ```
+使用窗口需满足单调性，即一旦某个位置 `l` 因为 `r` 处的字符重复而被移出窗口，那么对于所有更大的 `r' > r`，`l0` 永远不会再被需要
 
-* 找s的子串，要求子串包含t且最短（leetcode76）
+* 找不包含重复字符的最长子串 （leetcode3） 
 
-  滑动窗口：right一直向右扫描，不断将right加入窗口。加入窗口后判断是否完全包含t，如果包含了试图收紧left获取最短子串，否则就继续将right加入
+* 找的包含 t 的最短子串（leetcode76）
 
-  ```
-  输入：s = "ADOBECODEBANC", t = "ABC" 
-  输出："BANC"
-  ```
+**中心扩散法**
+
+* 找是回文的最长子串（leetcode5）**注**：回文子串不满足单调性，即使 `[l, r]` 不是回文，`[l+1, r]` 或 `[l, r-1]` 也可能是回文；反之，即使 `[l, r]` 是回文，`[l, r+1]` 加一个字符后可能变成非回文，但 `[l+1, r+1]` 却可能是更长的回文
 
   
+
+
 
 #### 找子数组
 

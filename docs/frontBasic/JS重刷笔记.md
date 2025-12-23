@@ -2890,15 +2890,13 @@ console.log(res)
 
 ## 字符串
 
-### 属性
+JS 中字符串本质是一个**可迭代对象**（iterable），并且它的**迭代行为是按 Unicode 码点进行的**
 
-属性
+### 长度
 
-| 属性                                                         | 描述                       |
-| :----------------------------------------------------------- | :------------------------- |
-| [constructor](https://www.runoob.com/jsref/jsref-constructor-string.html) | 对创建该对象的函数的引用   |
-| [length](https://www.runoob.com/jsref/jsref-length-string.html) | 字符串的长度               |
-| [prototype](https://www.runoob.com/jsref/jsref-prototype-string.html) | 允许您向对象添加属性和方法 |
+* 每一个字符对应一个 Unicode 码点，JS 使用 utf-16编码存储
+* length 很坑，返回的是并不是字符个数，而是**码元**个数 。有些字符是多个码元构成的，例如：`"😄".length=2`
+* 不过 JS 是个可迭代对象（for 循环），可以用`Array.from("😄").length=1`，把迭代器转化为数组
 
 ### 方法
 
@@ -2939,23 +2937,6 @@ console.log(res)
 | [search()](https://www.runoob.com/jsref/jsref-search.html)   | 查找与正则表达式相匹配的值。                                 |
 
 **正则相关的方法**详见【正则对象】章节
-
-
-
-**长度属性**
-
-JS使用的是UTF-16编码方式
-
-```
-str.length //显示的是码元的个数 ，
-"😊".length //2 ,因为这个表情是一个码点，但是包含两个码元
-```
-
-解决：数组对象的 from 方法，将字符串转化为数组（按照码点）
-
-```javascript
-Array.from("😊").length //1
-```
 
 ### 数组与字符串对比
 
