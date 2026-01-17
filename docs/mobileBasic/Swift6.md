@@ -71,7 +71,7 @@ guard let res = try? handleXX() else {
 ### 异步
 
 * await 异步函数 A ，阻塞线程后，线程让出控制权
-* 当异步函数 A 完成后，会继续执行剩余代码（Swift 是多线程的，唤醒哪个线程继续执行是由**运行时任务调度器 **）
+* 当异步函数 A 完成后，会继续执行剩余代码
 
 ```swift
 // handleXX 是个 async 异步函数
@@ -96,13 +96,17 @@ func listPhotos(inGallery name: String) async throws -> [String] {
 }
 ```
 
-在 JS 中异步任务的最终来源都是语言内置的 API，例如 setTimeout 、fetch。而 Swift 中开发者可以通过创建任务、Actor 来创造异步函数
+异步与并发深入：
+
+* JS中异步函数最终来源于系统提供的 API，例如 fetch、readFile 等（开发者封装这些 API 的函数才是async 的），主线程调用异步函数后继续执行其他代码，异步函数完成后主线程继续执行后续代码
+
+* Swift中异步函数最终来源于 Task、TaskGroup、Actor（称为可挂起点），主线程调用异步函数，这些异步函数都是在后台线程中运行。Swift 可以在其他线程创建复杂任务，在主线程异步调用结果，充分发挥多线程优势，而 JS 无法自定义
+
+  注意：调用外部模块的异步函数 （例如 AlarmKit 的 await AlarmManager.shared.schedule()，其内部仍然来源于Task、TaskGroup、Actor创建的后台线程 。这个例子，异步schedule函数没在 Actor 中，Swift 认为这种异步函数属于 @concurrent ，即通用并发作用域，可以被多线程同时更改，会提示不安全 ）
 
 ### 并发
 
-引入任务/任务组 的概念，Swift 以任务为单位，并发执行任务
-
-将 异步/同步函数加入任务即可实现并发
+引入Task/ TaskGroup 的概念，Task比线程更轻量级，由执行器调度任务在 **全局并发执行器池** 中执行 
 
 #### 创建任务
 
@@ -311,7 +315,9 @@ await logger.update(with: 30)
 
 跨**并发域**的变量，其类型必须实现 Sendable 协议。Sendable 无需实现任何代码，只是标记告诉编译器该类型支持跨并发域，不会发生数据竞争
 
-默认实现了 Sendable 的类型肯定不会发生数据竞争，而像 Class 这种引用类型则需要开发者自己保证
+默认实现了 Sendable 的类型肯定不会发生数据竞争，默认的Sendable 类型都是值类型，跨并发域实际上是拷贝，2 个线程持有各自的数据
+
+而像 Class 这种引用类型如果跨并发域，后台线程删除了数据，主线程操作数据就会报错。所以如果标记了 Class 为 Sendable 则需要开发者自己保证数据安全，比如：后台线程操作结束后，主线程再继续操作
 
 ##### 并发域
 
@@ -342,43 +348,6 @@ await logger.update(with: 30)
   }
   ```
 
-* **脱离 MainActor 的并发执行**
-
-  MainActor是个特殊的 Actor，它绑定到主线程（main thread）
-
-  UI上下文运行在 MainActor 上
-
-  ```swift
-  @Observable
-  class Counter {
-      var value = 0
-  }
-  
-  struct ContentView: View {
-      let counter = Counter()
-  
-      var body: some View {
-          Button("Increment") {
-              Task {
-                  // ❌ 编译错误！不能在 Task 中直接改 MainActor 的变量
-                  counter.value += 1
-              }
-            
-              Task {
-                // ✅ 显式切回 MainActor 更新 UI 状态
-                await MainActor.run {
-                    counter.value += 1
-                }
-  
-                // ✅ 因为 counter 是 @Observable，默认 MainActor，
-                // 也可以直接 await 赋值（编译器会插入隐式切换）
-                counter.value = counter.value + 1
-              }
-          }
-      }
-  }
-  ```
-
 * **@Sendable 闭包**
 
   ```swift
@@ -387,12 +356,57 @@ await logger.update(with: 30)
   }
   ```
 
-* **全局函数与异步上下文之间**
+* **@concurrent 的异步函数**
 
+  表示这个异步函数可以被多个线程并发调用，但是由于不在 Actor 中，多个线程可以并发的修改数据，Swift 默认认为不安全
+  
   ```swift
-  // 如果这个全局变量会被多个 Task/actor 读写
-  var globalCache: [String: MyData] = [:] // ← MyData 必须是 Sendable
+  // @concurrent 修饰的异步函数（脱离 MainActor）
+  @concurrent
+  async func xx() {}
+  
+  // 不在 Actor 中的异步函数默认是 @concurrent 的
+  // 对于很多三方库都是这种形式的，暴露出来一些异步函数供项目调用
   ```
+
+##### MainActor
+
+MainActor是个特殊的 Actor，与主线程绑定
+
+Swift 编译器自动为项目内部模块中的所有代码都加上了 @MainActor 修饰符，这些数据、方法只能被主线程使用，所以不存在并发问题（ isolated MainActor ）
+
+我们的主要代码都是隔离在 MainActor 中的，只有在我们手动引入并发（Task、TaskGroup、Actore、@concurrent）时才会出现跨并发域的情况
+
+```swift
+@Observable
+class Counter {
+    var value = 0
+}
+
+struct ContentView: View {
+    let counter = Counter()
+
+    var body: some View {
+        Button("Increment") {
+            Task {
+                // ❌ 编译错误！不能在 Task 中直接改 MainActor 的变量
+                counter.value += 1
+            }
+          
+            Task {
+              // ✅ 显式切回 MainActor 更新 UI 状态
+              await MainActor.run {
+                  counter.value += 1
+              }
+
+              // ✅ 因为 counter 是 @Observable，默认 MainActor，
+              // 也可以直接 await 赋值（编译器会插入隐式切换）
+              counter.value = counter.value + 1
+            }
+        }
+    }
+}
+```
 
 ##### 自动实现了 Sendable
 
@@ -402,8 +416,11 @@ await logger.update(with: 30)
 | **元组（tuple）**          | ✅ 是              | 所有元素都是 `Sendable`                                      |
 | **基本类型**               | ✅ 是              | `Int`, `String`, `Bool`, `Double` 等                         |
 | **Array, Dictionary, Set** | ✅ 是              | 元素/键值都是 `Sendable`                                     |
+| **Actor**                  | ✅ 是              | 无                                                           |
 | **类（class）**            | ❌ 否              | **除非显式声明为 `final` 且所有属性 `Sendable`，并手动 conform** |
 | **闭包**                   | ❌ 否              | 除非标记为 `@Sendable`                                       |
+
+
 
 ##### 实践遇到的问题
 
@@ -412,19 +429,37 @@ await logger.update(with: 30)
 ```swift
 @observable 
 final class xx {
-  private let alarmManager = AlarmManager.shared
+  typealias AlarmConfiguration = AlarmManager.AlarmConfiguration<ConfigType>
   
-  func requestAuthorization11() async throws -> AlarmManager.AuthorizationState{
-     return try await alarmManager.requestAuthorization()
-     // 报错
-     // Sending main actor-isolated 'self.alarmManager' to @concurrent instance method 'requestAuthorization()' risks causing data races between @concurrent and main actor-isolated uses
-    
-    // self.alarmManager 从  MainActor 到 @concurrent（通用并发执行域）
+  func setAlarmSchedule(id: Alarm.ID, configuration: AlarmConfiguration) async throws  {
+     let alarm = try await AlarmManager.shared.schedule(
+        id: id,
+        configuration: configuration
+    )
+    // 报错： Sending main actor-isolated 'configuration' to @concurrent instance method 'schedule(id:configuration:)' risks causing data races between @concurrent and main actor-isolated uses
+    // 翻译：参数configuration从 MainActor 发送到了 @concurrent （并发执行域）
+    // 在 Swift6 中，没有在 Actor 中的 async 异步方法，例如这里的schedule，都视为 @concurrent 即并发执行域。因为没有在 Actor 中，所以多个线程可以同时读写，数据不安全
   }
 }
 ```
 
-补充下：在 Swift6 中，没有在 Actor 中的 async 异步方法，都视为 @concurrent 即并发执行域
+官方 Demo 的方案：
+
+```swift
+// 套了一个 Task 任务，编译器对捕获值采取宽松检查
+Task {
+    do {
+        let alarm = try await AlarmManager.shared.schedule(
+            id: id,
+            configuration: configuration
+        )
+    } catch {
+
+    }
+}
+```
+
+
 
 ## Swift UI 
 
