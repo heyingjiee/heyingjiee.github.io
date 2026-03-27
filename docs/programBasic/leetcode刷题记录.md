@@ -1275,68 +1275,62 @@ L到R框选了剩余的数字集合
 
 ```js
 var threeSum = function(nums) {
-  let res=[]
-  nums.sort((a,b)=>a-b)
-  for (let i=0;i<nums.length;i++){
-    // 防止重复
-    if(i>0&&nums[i]===nums[i-1]){
-      continue
-    }
-    // i指针数字>0，数组从小到大排序的，所以加上L、R肯定不等于0
-    if (nums[i]>0){
-      return res
-    }
+    // 排序
+    const sortedNums = nums.sort((a, b) => a-b)
+    const result = []
+    const counter = new Set()
+    // 遍历
+    for (let index in sortedNums) {
+        const i = parseInt(index) // 注意 index 是字符串
+        let left = i + 1
+        let right = sortedNums.length -1
+        while (left<right) {
+            const sum = sortedNums[left] + sortedNums[right]
+            if (sum < -sortedNums[i]) {
+                left++
+            } else if (sum > -sortedNums[i]) {
+                right--
+            } else {
+              	// 拼成字符串好比较
+                const str = `${sortedNums[i]}|${sortedNums[left]}|${sortedNums[right]}`
+                // 这里相当于做了一个去重
+                if (!counter.has(str)) {
+                    counter.add(str)
+                    result.push([sortedNums[i], sortedNums[left], sortedNums[right]])
+                }
 
-    let L=i+1,R=nums.length-1
-
-    while (L<R){
-
-      if(nums[i]+nums[L]+nums[R]===0){
-        res.push([nums[i],nums[L],nums[R]])
-
-        // 必须要过滤一下
-        //  例如：[-1,0,0,1,1] ，res=[-1,0,1],这时候就不能让L继续为0，R继续为1
-        let historyValue=nums[R]
-        while (historyValue===nums[R]&&L<R){
-          R--
+                // 不能break终止，可能有多组满足条件的值
+                left++
+                right--
+            }
         }
-
-        historyValue=nums[L]
-        while (historyValue===nums[L]&&L<R){
-          L++
-        }
-      }else if(nums[i]+nums[L]+nums[R]>0){
-        R--
-      }else {
-        L++
-      }
     }
-
-  }
-  return res
+    return result
 };
 ```
 
 ### [11. 盛最多水的容器](https://leetcode.cn/problems/container-with-most-water/)
 
-容量取决于最小高度的边，尝试移动最小边是否会获得更大的容量
+为什么从 2 端往中间缩？ 2 端时宽度已经是最大的，如果中间缩只能希望获取更大的高度达成全局最优
 
 ```js
 var maxArea = function(height) {
-  let left=0,right=height.length-1
-
-  let maxCapcity=0
-  while (left<right){
-    maxCapcity=Math.max((right-left)*Math.min(height[left],height[right]),maxCapcity)
-
-    if (height[left]<height[right]){
-      left++
-    }else {
-      right--
+    let len = height.length
+    let left = 0
+    let right = len - 1
+    let maxCapcity = 0
+    while (left < right) {
+        const capcity = (right - left) * Math.min(height[left], height[right])
+        // 更新下最大值
+        maxCapcity = Math.max(maxCapcity,capcity)
+      	// 规划下一轮循环
+        if (height[left] < height[right]) {
+            left++
+        } else {
+            right--
+        }
     }
-  }
-  return maxCapcity
-
+    return maxCapcity
 };
 ```
 
@@ -6023,7 +6017,7 @@ var twoSum = function(numbers, target) {
  * @return {number[]}
  */
 var twoSum = function(nums, target) {
-    let m={}
+    let m = {}
     for(let index in nums){
         let curItem=nums[index]
         if(m[target-curItem]!==undefined){
@@ -6279,7 +6273,52 @@ RecentCounter.prototype.ping = function(t) {
 
 ### [560. 和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/)(前缀和)
 
-前缀和一般需要补一个0
+第一眼误以为是用双指针，这题数字元素有负数不符合单调性无法使用双指针
+
+错误写法❌：
+
+```js
+var subarraySum = function(nums, k) {
+
+    const computedSum = (arr) => arr.reduce((pre, cur) => pre+cur, 0)
+
+    let res = []
+    let counter = 0
+    let left = 0
+
+    for (let right=0; right<nums.length; right++) {
+        const cur = nums[right]
+        while (computedSum(res) + cur > k) {
+            res.shift()
+            left++
+        }
+
+        if (computedSum(res) + cur === k) {
+            counter++
+        }
+        res.push(cur)
+    }
+    return counter
+};
+
+用例： [-1,-1,1]  0 
+解：1
+// 实际输出 0
+```
+
+
+
+**暴力枚举**
+
+暴力我都没有想到，第一反应是子数组长度不固定，没法暴力枚举
+
+看了下 leetcode 题解发现可以枚举子数组 start、end 位置
+
+```js
+
+```
+
+**前缀和**
 
 ```js
 var subarraySum = function(nums, k) {
@@ -6387,6 +6426,8 @@ var dailyTemperatures = function(temperatures) {
 
 ### [42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
 
+刚做完盛最多水的容器，以为这题也是相似的，其实不然。注意盛最多水的容器选择了 2 个端点，中间的柱子就被忽略了，这里是需要考虑的
+
 栈内元素单调递减，遇到4时开始接雨水
 
 ![image-20240512180908990](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240512180909WxJsgq.png)
@@ -6401,15 +6442,18 @@ var trap = function(height) {
     for (let i=0;i<n;i++){
         const curValue = height[i]
         // 遇到大于栈顶的元素，循环出栈，接雨水
-        while (stack.length&&curValue>=stack[stack.length-1].value){
+        while (stack.length && curValue>=stack[stack.length-1].value){
             const {index,value} = stack.pop()
-            // 需要 前前个元素，所以这里判断了栈中是否还有元素
+            //  这是这种情况，弹出了不能组成坑的 index
+            //					  ||
+            // 	   || 		||
+            //   index curValue
             if (stack.length===0){
                 break
             }
             const {index:preIndex,value:preValue} = stack[stack.length-1]
             
-            // 注意这里的 (i-preIndex-1)， 存在疑问，为啥不是 (i-index)
+            // 注意这里的 -value， 一个大坑通过 while 一点点补全的
             res+= (i-preIndex-1) * (Math.min(preValue,curValue)-value)
         }
         // 入栈
@@ -7364,32 +7408,41 @@ var reverse = function(x) {
 
 我这种用排序做的，不满足题目O(n)的要求。但是写的时候还是遇到很多注意点，所以还是记录下来
 
+因为使用了 sort 排序，所以时间复杂度是 O(nlogn) 
+
 ```js
 var longestConsecutive = function(nums) {
-    const list=Array.from(new Set(nums)).sort((a,b)=>a-b)
-    console.log(list)
-    if (list.length<=1){
-        return list.length
+    const len = nums.length
+    if (len <= 1) {
+        return  len
     }
 
-    let curMaxLen=1
-    let maxLen=1 // 注意这种 [1,4,5,7] 最大连续长度是1
+    let curMaxLen = 1
+    let maxLen = 1
 
-    for(let index=1;index<list.length;index++){
-        if (list[index] - list[index-1] ===1){
+    // 排序去重
+    const sortedNums = Array.from(new Set(nums)).sort((a, b) => a-b)
+    let left = 0
+    let right = 1
+    while(right < len) {
+        if (sortedNums[left] + 1 === sortedNums[right]) {
             curMaxLen++
-            maxLen=Math.max(maxLen,curMaxLen)
-        }else {
-            curMaxLen=1
+            maxLen = Math.max(maxLen, curMaxLen)
+        } else {
+            curMaxLen = 1
         }
+        left++
+        right++
+
     }
 
     return maxLen
-
 };
 ```
 
 标准解法
+
+这个复杂度是O(n)，内层的 while只有在指定的条件下才会循环，所以总操作次数 ≈ N (外层) + N (内层最坏情况) = 2N 。
 
 ```js
 var longestConsecutive = function(nums) {
@@ -7899,7 +7952,11 @@ max=Math.max(max,sum)
 
   
 
+#### 对比2个字符串
 
+这种题要收集下，日常开发经常遇到比较 2 个字符串/数组的情况。每次都是双层 for 循环很low
+
+leetcode 438.找到字符串中所有字母异位词 这个题输了 s 是 p 的子串，本质上还是一个
 
 #### 找子数组
 
@@ -7914,4 +7971,41 @@ max=Math.max(max,sum)
 #### 原地处理数组
 
 leetcode283 移动零 
+
+#### 双指针起始位置
+
+* **快慢指针**：双指针起始在同一侧，向另一侧移动
+
+  快指针每次走两步，或者负责探路/寻找边界。慢指针 ：每次走一步，或者负责记录/构建结果
+
+  场景：leetcode144检测环、寻找倒数第 K 个节点
+
+* **对撞指针**：双指针起始在 2 端，向中间收敛
+
+  场景：向中间移动时，求值有单调性的就可以用，即 leetcode11盛水最多的容器 、leetcode15 三数之和、leetcode125 验证回文子串
+
+* **滑动窗口**：双指针起始都在**左侧**开始，向**右侧**移动
+
+  右指针一直走，直到窗口“超标”或“不满足条件”后，左指针就开始走，直到重新“满足条件”，过程中记录最优解 。 注意滑动窗口也需要单调性， right 移动朝着正向、left 就得是反向
+
+  ```js
+  // right 自增，也可以用 while(right<len)
+  for (right++) {
+  	// 阻塞不满足条件
+  	while(left) {
+  		left++
+  	}
+    // 满足条件的逻辑
+  }
+  ```
+
+  leetcode560 和为 K 的子数组 ，这个数组中数字可以为负数，就明显不能用滑动窗口了。right++不一定是放大，left++也不一定缩小
+
+* **中心扩展法**：从中间向 2 端同时扩散
+
+  leetcode5最长回文子串、leetcode5回文数
+
+
+
+
 
