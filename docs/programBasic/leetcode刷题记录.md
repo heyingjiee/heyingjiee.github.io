@@ -2211,7 +2211,7 @@ var maxSubArray = function(nums) {
         sum+=nums[right]
         max=Math.max(max,sum)
 
-        // 维护窗口   保证sum+=nums[right]其中原sum必须为证书，nums[right]>sum就是这个含义
+        // 维护窗口   保证sum+=nums[right]其中原sum必须为正数，nums[right]>sum就是这个含义
       	// 一开始错误的想法：一直判断left指向的值，小于0就一直收缩窗口。
         // [1,-2]这种情况，left是正数，但是窗口内仍有负数-2
         while (nums[right]>sum){
@@ -5869,10 +5869,6 @@ func main() {
 }
 ```
 
-
-
-
-
 ## 数组
 
 ### 总结
@@ -5899,20 +5895,17 @@ func main() {
 ```js
 var moveZeroes = function(nums) {
     //i能按照顺序一直把非零的数放到最前面，这会导致前面的都是非零值，j记录了[0,j-1]都是非零值
-    let j=0 
-    let len=nums.length
-    for(let i=0;i<len;i++){
-        if(nums[i]!==0){ 
-            nums[j]=nums[i]
+    let len = nums.length
+    let j = 0
+    for (let i=0; i<len; i++) {
+        if (nums[i]!==0) {
+            nums[j] = nums[i]
             j++
         }
-        
     }
-
-    for(;j<=len-1;j++){
-        nums[j]=0
+    for (let i=j; i<len; i++) {
+        nums[i]=0
     }
-
     return nums
 };
 ```
@@ -5923,18 +5916,19 @@ right按数组顺序遍历，找到第一个不为零的（right前都是零）�
 
 ```js
 var moveZeroes = function(nums) {
-  const len=nums.length
-  let left=right=0
-  for (;right<len;right++){
-    if (nums[right]!==0){
-      let temp=nums[right]
-      nums[right]=nums[left]
-      nums[left]=temp
-
-      left++
+    let left = 0
+    let len = nums.length
+    for (let right=0; right<len; right++) {
+        if (nums[right]!==0) {
+        		// 错误点：nums[left] = nums[right];  nums[right]=0
+          	// 用例[1]，如果直接nums[right]=0就会输出[0]，就错了
+            const swap = nums[left]
+            nums[left] = nums[right]
+            nums[right] = swap
+            left++
+        }
     }
-
-  }
+    return nums
 };
 ```
 
@@ -6306,8 +6300,6 @@ var subarraySum = function(nums, k) {
 // 实际输出 0
 ```
 
-
-
 **暴力枚举**
 
 暴力我都没有想到，第一反应是子数组长度不固定，没法暴力枚举
@@ -6315,7 +6307,22 @@ var subarraySum = function(nums, k) {
 看了下 leetcode 题解发现可以枚举子数组 start、end 位置
 
 ```js
-
+var subarraySum = function(nums, k) {
+  	// 我直接定义了一个求和 sun，结果超时了
+    // const sum = (start, end) => nums.slice(start, end+1).reduce((cur, pre) => cur+pre, 0)
+    let counter = 0
+    for(let start=0; start<nums.length; start++) {
+        let sum = 0
+        for(let end=start; end<nums.length; end++) {
+          	// 这里累加才不超时
+            sum += nums[end]
+           if (sum === k) {
+               counter++
+           }
+        }
+    }
+    return counter
+};
 ```
 
 **前缀和**
@@ -7958,6 +7965,8 @@ max=Math.max(max,sum)
 
 leetcode 438.找到字符串中所有字母异位词 这个题输了 s 是 p 的子串，本质上还是一个
 
+
+
 #### 找子数组
 
 * arr中找一个连续的子数组，要求该子数组和最大（leetcode53）
@@ -8000,6 +8009,8 @@ leetcode283 移动零
   ```
 
   leetcode560 和为 K 的子数组 ，这个数组中数字可以为负数，就明显不能用滑动窗口了。right++不一定是放大，left++也不一定缩小
+
+  leetcode53 最大子数组和这题出现负数，用了特殊处理后使其符合单调性
 
 * **中心扩展法**：从中间向 2 端同时扩散
 
