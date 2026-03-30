@@ -1760,14 +1760,11 @@ var minWindow = function(s, t) {
                 res=[left,right]
             }
 
-						
             winHash[s[left]]--
             if(winHash[s[left]]===0){
                 delete winHash[s[left]] // 因为没有用到 Object.keys()。所以这里不清除也行
             }
             left++
-
-
         }
     }
 
@@ -1782,74 +1779,60 @@ var minWindow = function(s, t) {
 };
 ```
 
+一样的思路，2026-3-30实现的版本
+
+```ts
+var minWindow = function(s, t) {
+
+    let tCounter = new Map()
+    for (const letter of t) {
+        const count = (tCounter.get(letter) ?? 0) + 1
+        tCounter.set(letter, count)
+    }
+
+    const isContain = (sCounter, tCounter) => {
+        for (const [letter, count] of tCounter.entries()) {
+            if ((sCounter.get(letter)??0) < count) {
+                return false
+            }
+        }
+        return true
+    }
+
+    let left=0, right=0
+    let res = ''
+    let sCounter = new Map()
+    for (; right < s.length; right++) {
+
+        const cur = s[right]
+        sCounter.set(cur, (sCounter.get(cur)??0)+1)
+
+        while (isContain(sCounter, tCounter)) {
+          	// 要求最短的子串，res===''用来判断首次直接赋值
+            if (res === '') {
+                res=s.slice(left, right+1)
+            } else {
+                if (right-left+1 < res.length){
+                    res= s.slice(left, right+1)
+                }
+            }
+
+            sCounter.set(s[left], (sCounter.get(s[left])-1))
+            left++
+        }
+
+    }
+    return res
+};
+```
+
+
+
 ### [904. 水果成篮](https://leetcode.cn/problems/fruit-into-baskets/)
 
 题目
 
 这个题好像出错了，题目要求返回最大的水果数，实际上应该是：取最大的水果数时，树的个数
-
-```js
-//你正在探访一家农场，农场从左到右种植了一排果树。这些树用一个整数数组 fruits 表示，其中 fruits[i] 是第 i 棵树上的水果 种类 。
-//
-// 你想要尽可能多地收集水果。然而，农场的主人设定了一些严格的规矩，你必须按照要求采摘水果：
-//
-//
-// 你只有 两个 篮子，并且每个篮子只能装 单一类型 的水果。每个篮子能够装的水果总量没有限制。
-// 你可以选择任意一棵树开始采摘，你必须从 每棵 树（包括开始采摘的树）上 恰好摘一个水果 。采摘的水果应当符合篮子中的水果类型。每采摘一次，你将会向右移动到
-//下一棵树，并继续采摘。
-// 一旦你走到某棵树前，但水果不符合篮子的水果类型，那么就必须停止采摘。
-//
-//
-// 给你一个整数数组 fruits ，返回你可以收集的水果的 最大 数目。
-//
-//
-//
-// 示例 1：
-//
-//
-//输入：fruits = [1,2,1]
-//输出：3
-//解释：可以采摘全部 3 棵树。
-//
-//
-// 示例 2：
-//
-//
-//输入：fruits = [0,1,2,2]
-//输出：3
-//解释：可以采摘 [1,2,2] 这三棵树。
-//如果从第一棵树开始采摘，则只能采摘 [0,1] 这两棵树。
-//
-//
-// 示例 3：
-//
-//
-//输入：fruits = [1,2,3,2,2]
-//输出：4
-//解释：可以采摘 [2,3,2,2] 这四棵树。
-//如果从第一棵树开始采摘，则只能采摘 [1,2] 这两棵树。
-//
-//
-// 示例 4：
-//
-//
-//输入：fruits = [3,3,3,1,2,1,1,2,3,3,4]
-//输出：5
-//解释：可以采摘 [1,2,1,1,2] 这五棵树。
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= fruits.length <= 10⁵
-// 0 <= fruits[i] < fruits.length
-//
-//
-// Related Topics 数组 哈希表 滑动窗口 👍 626 👎 0
-
-```
 
 解
 
@@ -1967,7 +1950,7 @@ var maxSlidingWindow = function(nums, k) {
       	// 经过上面两个while的维护，到这里deque内元素个数是k个（即窗口大小）
 
         // 存入答案 注意：索引i，是第i+1个数，必须>=k个了，才开始存答案
-        if (i+1 >= k ) ans.push(nums[deque[0]]);
+        if (i+1 >= k) ans.push(nums[deque[0]]);
     }
 
     return ans
@@ -2196,11 +2179,9 @@ var maxPathSum = function(root) {
 
 #### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
 
-滑动窗口：
+这个题难在如何维护滑动窗口
 
-这个题难在如何维护窗口
-
-先将nums[right]加入窗口，在调整窗口到符合条件
+滑动窗口 1：先将nums[right]加入窗口，在调整窗口到符合条件
 
 ```js
 var maxSubArray = function(nums) {
@@ -2225,35 +2206,7 @@ var maxSubArray = function(nums) {
 };
 ```
 
-先调整到符合条件，再放入right。注意：sum初始值为0（或者移动窗口过程中窗口没有元素了，也会出现sum为0），这时如果max是个负数，那么通过max=Math.max(max,sum) 来确定最大值就是0了，但是实际上应该是那个负数。这种情况需要特别处理
-
-对于上面为什么可以规避这个问题我不太确定，只是查到Kadane算法，貌似：
-
-sum出现负数就重置为0，就能使得max = Math.max(max, sum)永远成立
-
-Kadane算法max初始化为第一个元素，我简单测试了下max初始化为-Infinity应该也是对的
-
-for循环中还会再次取出nums[0]与max作比较，虽然用了nums中的元素但是并不影响for循环的逻辑
-
-````js
-var maxSubArray = function(nums) {
-  let max = nums[0];
-  let sum = 0;
-
-  for (let i = 0; i < nums.length; i++) {
-    if (sum < 0) {
-      sum = 0; // 重置为0，因为负数会降低子数组的和
-    }
-    sum += nums[i];
-    max = Math.max(max, sum);
-  }
-
-  return max;
-};
-
-````
-
-
+滑动窗口 2
 
 ```js
 var maxSubArray = function(nums) {
@@ -2282,6 +2235,25 @@ var maxSubArray = function(nums) {
   return max
 };
 ```
+
+Kadane算法：由于这个题只需要最大和，不需要符合条件的具体子集，使用 Kadane 算法相当于省略了滑动窗口 2 种收缩 left 的部分
+
+````js
+var maxSubArray = function(nums) {
+    // 如果 sum<0 , 移动右指针后 sum+nums[right] 实际上会缩小 nums[right] 的值所以直接将 sum 重置为 0消除影响
+    // 这样 sum 就具有的单调性
+  	let max = nums[0];
+    let sum = 0
+    for (let right = 0; right < nums.length; right++) {
+        if (sum < 0) {
+            sum = 0 // 重置为0，因为负数会降低子数组的和
+        }
+        sum += nums[right]
+        max = Math.max(max, sum)
+    }
+    return  max
+}
+````
 
 动态规划
 
@@ -6327,31 +6299,35 @@ var subarraySum = function(nums, k) {
 
 **前缀和**
 
+这题只需要知道多少个符合条件的，其实我们可以精确知道哪些是符合条件的
+
 ```js
 var subarraySum = function(nums, k) {
-  // 前缀和 [x1,x2,x3,x4,x5] ===> (x1+x2+x3+x4) -  (x1+x2)  如果两个前缀和的差，是k就代表 [x3,x4]一个解
-  // 等价于 前缀和-k=另一个前缀和
-  // 例子 [1,1] k=2; 符合条件，但是 前缀和(1+1)-k(2) = 0,0不是前缀和，所以需要补一个默认的前缀和0（这个边界好难啊！！！）
-  let prefixSum=0
-  let count=0
-  let record={0:1}
-  // 1
-  for(let num of nums){
-    prefixSum+=num
-
-    if (record[prefixSum-k]){
-      count+=record[prefixSum-k]
+    const pre = []
+    let sum = 0
+    for (const num of nums) {
+        pre.push(sum)
+        sum+=num
     }
+    pre.push(sum)
+    // 前缀和数组， pre[j] - pre[i] = [i,j)数字之和 
+    // 注意：j 是nums最后一个元素时，这里起始会丢掉所有所有元素之和，所以 pre.push(sum) 补全
+    //  找到 pre[j] - pre[i] === k ，类似两数之和
 
-    if (!record[prefixSum]){
-      record[prefixSum]=0
+    let counter = 0
+    // 把只有1个元素的情况扣掉
+    if (nums.length === 1) {
+        return nums[0]===k ? 1 : 0
     }
-    record[prefixSum]++
-
-
-  }
-
-  return count
+    for (let i=0; i<pre.length; i++) {
+        // 这里至少2个元素，所以可以 j=i+1
+        for (let j=i+1; j<pre.length; j++) {
+            if (pre[j] - pre[i] === k) {
+                counter++
+            }
+        }
+    }
+    return counter
 };
 ```
 
@@ -7316,12 +7292,6 @@ quickSort(arr,0,arr.length-1)
 console.log(arr)
 ```
 
-
-
-
-
-
-
 ## 位运算
 
 [leetcode总结](https://leetcode.cn/circle/discuss/CaOJ45/)
@@ -7865,9 +7835,6 @@ arr.sort((a,b)=>b-a) // 从大到小
   };
   ```
 
-  
-
-
 
 ### while
 
@@ -7941,9 +7908,149 @@ max=Math.max(max,sum)
 * dfs子集型就是典型的收集所有可能的方式。尝试每层有 选、不选两中情况
 * 如果要求子串/子数组需要连续的。每层有选、不选两中情况，重点是不选是需要重置path，因为不选就是从当前断开了，从下一个开始连续
 
-#### 找子字符串
+#### 对比2个字符串
 
-同样找子串，方法不一样。
+这种题要收集下，日常开发经常遇到比较 2 个字符串/数组的情况。每次都是双层 for 循环很low
+
+* leetcode438找到字符串中所有字母异位词 这个题输了 s 是 p 的子串，本质上还是一个
+
+* leetcode76最小覆盖子串
+
+* leetcode76 中扩展开的，判断 s 中是否包含 t 的所有字母
+
+  ```js
+  const isContain = (s, t) => {
+    			// ❌ 写法错误，这是包含判断，用例 s=a , t=aa
+          // for (const item of t) {
+          //     if (!s.includes(item)) {
+          //         return false
+          //     }
+          // }
+          // return true
+          let counter = new Map()
+  
+          for (const letter of s) {
+              counter.set(letter, (counter.get(letter) ?? 0) + 1)
+          }
+  
+          for (const letter of t) {
+              const count = counter.get(letter) ?? 0
+              if (count === 0) return false
+              counter.set(letter, count - 1)
+          }
+  
+          return true
+  }
+  
+  // leetcode76这题中会超时，这种对比具有破坏性，会一直操作 counter
+  // t 不边，只算一遍tCounter
+  let tCounter = new Map()
+  for (const letter of t) {
+      const count = (tCounter.get(letter) ?? 0) + 1
+      tCounter.set(letter, count)
+  }
+  // sCounter 在滑动窗口中动态维护
+  const isContain = (sCounter, tCounter) => {
+    for (const letter of tCounter.keys()) {
+      if (letter !== (sCounter.get(letter)??0)) {
+        return false
+      }
+  	}
+    return true
+  }
+  
+  ```
+
+  
+
+#### 双指针起始位置
+
+* **快慢指针**：双指针起始在同一侧，向另一侧移动
+
+  快指针每次走两步，或者负责探路/寻找边界。慢指针 ：每次走一步，或者负责记录/构建结果
+
+  场景：
+
+  * leetcode144检测环、寻找倒数第 K 个节点
+  * 原地处理数组：leetcode283 移动零 
+
+* **对撞指针**：双指针起始在 2 端，向中间收敛
+
+  场景：向中间移动时，求值有单调性的就可以用，即 leetcode11盛水最多的容器 、leetcode15 三数之和、leetcode125 验证回文子串
+
+* **滑动窗口**：双指针起始都在**左侧**开始，向**右侧**移动
+
+  右指针一直走，直到窗口“超标”或“不满足条件”后，左指针就开始走，直到重新“满足条件”，过程中记录最优解 
+
+  ```js
+  let left=0, right=0
+  let record = {} // 记录窗口数据
+  for (let right = 0; right < nums.length; right++) {
+    // 注意条件判断时，很多题目直接对整个窗口进行计算会超时（窗口数据太多）。这时候可以考虑在加入创建/移除窗口时做增量计算
+  	// 阻塞
+  	while(条件) {
+      // 情况1:这里加入 record ， while(满足条件)，不符合的外部不处理让 right 一步步跳过。
+      // 常用于用right撑开窗口，while是窗口内部做的逻辑
+  		left++  // left一般有天然的窗口条件，保证其不会超过 right，例如 left==right 窗口就空了，跳出 while，进入下一轮 right++了
+  	}
+    
+    // 情况2:while(不满足条件)阻塞，直到满足条件 nums[right] 加入窗口，做窗口内部逻辑
+  } 
+  
+  
+  
+  
+  // ❌错误模板 
+  // 希望自己控制窗口，根据条件操作 left / right，每轮至少一个指针移动
+  // 这个有个很严重的问题第一个 while rihgt 会越界，滑动窗口的核心是每轮right只走 1 步。
+  // 通过 while(不满足的条件) ，让 right 能一轮轮走到撑开窗口
+  while (left < len && right < len) {
+    // 撑开一个初始窗口大小
+    while() { 
+      right++
+    }
+    
+    // 处理窗口数据
+    
+    while() {
+      left++
+    }
+  }
+  ```
+
+  注意滑动窗口也需要单调性：**当你移动指针时，窗口内的数值变化趋势是“可预测”的变化**。例如：right++ 只会增大，left++ 只会减小
+
+  leetcode560 和为 K 的子数组 ，求和为 K，left、right 移动时由于有负数元素的存在
+
+  leetcode53 最大子数组和这题元素虽然有负数，理论上将负数的存在会破坏单调性，但是他使用特殊的滑动窗口算法（ **Kadane 算法**），通过舍弃负数 sum 使其求和具有单调性 （为什么不舍弃加入窗口的负数？因为会让数组不连续）
+
+* **中心扩展法**：从中间向 2 端同时扩散
+
+  leetcode5最长回文子串、leetcode5回文数
+
+#### 找子集
+
+无论题目要求什么？都需要注意是否能清晰的获取每个组合
+
+以leetcode560 为例子，题目只需求符合条件的子集个数，但是我们的解法是能拿到所有具体的子集的
+
+而有的题目使用技巧，只能完成题目要求，而不能清晰的知道所有子集
+
+##### 暴力枚举
+
+这种找子集的只要是连续的都可以枚举 start、end
+
+```js
+for (let start = 0; start < nums.length; start++) {
+  // 尽量把 num 只有一个元素的情况扣出去单独处理
+  // 因为 end = start 很有可能把 0 作为一个解导致出现问题
+  for (let end = start + 1; end < nums.length; end++) {
+    nums.slice(start,end+1)
+  }
+}
+```
+
+##### 找子字符串
 
  **滑动窗口**
 
@@ -7957,66 +8064,15 @@ max=Math.max(max,sum)
 
 * 找是回文的最长子串（leetcode5）**注**：回文子串不满足单调性，即使 `[l, r]` 不是回文，`[l+1, r]` 或 `[l, r-1]` 也可能是回文；反之，即使 `[l, r]` 是回文，`[l, r+1]` 加一个字符后可能变成非回文，但 `[l+1, r+1]` 却可能是更长的回文
 
-  
+##### 找子数组
 
-#### 对比2个字符串
-
-这种题要收集下，日常开发经常遇到比较 2 个字符串/数组的情况。每次都是双层 for 循环很low
-
-leetcode 438.找到字符串中所有字母异位词 这个题输了 s 是 p 的子串，本质上还是一个
-
-
-
-#### 找子数组
-
-* arr中找一个连续的子数组，要求该子数组和最大（leetcode53）
+* 连续的子数组，求该子数组和最大（leetcode53）
 
   dfs尝试所有连续的答案，滑动窗口也能解决维护窗口和需要大于0，才能添加右元素
 
-* arr中找一个子数组（不需要连续），要求该子数组和为K(leetcode560)
+* 连续的子数组，要求该子数组之和为K 的个数(leetcode560)
 
   与上题一样解法，会出现一种情况无法解决，dfs算出来子数组 [ [-1,0,1],[-1,0,1]]，即
-
-#### 原地处理数组
-
-leetcode283 移动零 
-
-#### 双指针起始位置
-
-* **快慢指针**：双指针起始在同一侧，向另一侧移动
-
-  快指针每次走两步，或者负责探路/寻找边界。慢指针 ：每次走一步，或者负责记录/构建结果
-
-  场景：leetcode144检测环、寻找倒数第 K 个节点
-
-* **对撞指针**：双指针起始在 2 端，向中间收敛
-
-  场景：向中间移动时，求值有单调性的就可以用，即 leetcode11盛水最多的容器 、leetcode15 三数之和、leetcode125 验证回文子串
-
-* **滑动窗口**：双指针起始都在**左侧**开始，向**右侧**移动
-
-  右指针一直走，直到窗口“超标”或“不满足条件”后，左指针就开始走，直到重新“满足条件”，过程中记录最优解 。 注意滑动窗口也需要单调性， right 移动朝着正向、left 就得是反向
-
-  ```js
-  // right 自增，也可以用 while(right<len)
-  for (right++) {
-  	// 阻塞不满足条件
-  	while(left) {
-  		left++
-  	}
-    // 满足条件的逻辑
-  }
-  ```
-
-  leetcode560 和为 K 的子数组 ，这个数组中数字可以为负数，就明显不能用滑动窗口了。right++不一定是放大，left++也不一定缩小
-
-  leetcode53 最大子数组和这题出现负数，用了特殊处理后使其符合单调性
-
-* **中心扩展法**：从中间向 2 端同时扩散
-
-  leetcode5最长回文子串、leetcode5回文数
-
-
 
 
 
