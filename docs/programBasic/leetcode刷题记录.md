@@ -1195,21 +1195,21 @@ var hasCycle = function(head) {
 };
 ```
 
-哈希记录节点
+判断有没有环，我先想到了拓扑排序的Kahn 算法，那个需要构建邻接表计算出度/入度
+
+这个题是链表，不是图所以没这么麻烦，直接哈希记录节点然后对比是否重复了就行
+
 ```js
 var hasCycle = function(head) {
-    let m=new Map()
-    while(head!==null){
-        if(!m.has(head)){
-            m.set(head,1) // 存的是节点的引用
-            head=head.next
-        }else{
+    const hash = new Map()
+    while(head) {
+        if (hash.has(head)) {
             return true
         }
-        
+        hash.set(head, true)
+        head = head.next
     }
     return false
-
 };
 ```
 
@@ -1252,6 +1252,8 @@ var detectCycle = function(head) {
 ```
 
 快慢指针(略)
+
+
 
 ### [15. 三数之和](https://leetcode.cn/problems/3sum/)
 
@@ -1340,8 +1342,8 @@ var maxArea = function(height) {
 
 ```js
 var getIntersectionNode = function(headA, headB) {
-    let m=new Map()
-    while (headA){
+    let m = new Map()
+    while (headA) {
       if (!m.has(headA)){
         m.set(headA,true)
       }
@@ -1407,6 +1409,10 @@ var middleNode = function(head) {
   return left
 };
 ```
+
+### 206.反转链表
+
+见链表部分
 
 ## 滑动窗口
 
@@ -5762,8 +5768,6 @@ root.insert('abcd')
 root.startsWith('ab')
 ```
 
-
-
 Go语言实现版本
 
 ```go
@@ -6365,7 +6369,35 @@ var rotate = function(nums, k) {
 };
 ```
 
+数组反转解法： 这个原理是为啥不清楚，但是确实整体逆序，分别反转[0, k-1] , [k, n-1]就可以了
 
+以 nums = [1,2,3,4,5,6,7], k = 3 为例子：
+
+| 操作                                       | 结构          |
+| ------------------------------------------ | ------------- |
+| 原始数组                                   | 1 2 3 4 5 6 7 |
+| 翻转所有元素                               | 7 6 5 4 3 2 1 |
+| 翻转 [0, 2] 区间的元素， [3, 6] 区间的元素 | 5 6 7 1 2 3 4 |
+
+```js
+var rotate = function(nums, k) {
+  	// 原地反转
+    const reverse = (nums, start, end) => {
+        while (start < end) {
+            let temp = nums[start]
+            nums[start] = nums[end]
+            nums[end] = temp
+            start++
+            end--
+        }
+    }
+
+    const len = nums.length
+    reverse(nums, 0, len - 1)
+    reverse(nums, 0, k%len - 1)
+    reverse(nums, k%len, len-1)
+};
+```
 
 ## 栈
 
@@ -7220,6 +7252,201 @@ var backspaceCompare = function(s, t) {
 
 ### 394
 
+## 链表
+
+### [206. 反转链表](https://leetcode.cn/problems/reverse-linked-list/)
+
+最开始的解法，三指针
+
+```js
+// 【1】->【2】->【3】->【4】
+//  ^1    ^2     ^3
+// 思路:指针1、2负责调换顺序，指针2的 next 断开了，用指针3存下一个位置
+
+var reverseList = function(head) {
+  	// 抠掉 3 指针出现 null 的情况
+    if (head === null) {
+        return head
+    }
+    if (head.next === null) {
+        return head
+    }
+    if (head.next.next === null) {
+        const head1 = head.next
+        head1.next = head
+        head.next = null // 头指针要把 next 置为空
+        return head1
+    }
+
+  
+    let p1 = head, p2 = p1.next, p3 = p2.next
+
+    while (p3) {
+        p2.next = p1
+        if (p1 === head) { // 头指针要把 next 置为空
+            p1.next = null
+        }
+        p1 = p2
+        p2 = p3
+        p3 = p3.next
+    }
+    p2.next = p1
+    return p2
+};
+```
+
+后来发现 2 个指针就行，p3 每次移动前存一下就行 。 这样 head 节点为空就不用特别处理了，代码更简单
+
+```js
+// null 【1】->【2】->【3】->【4】
+//  ^1   ^2                         开始
+//  									^1   ^2       结束
+var reverseList = function(head) {
+    let p1 = null, p2 = head
+    while (p2) {
+        const p3 = p2.next
+        p2.next = p1
+        p1 = p2
+        p2 = p3
+    }
+    return p1
+};
+```
+
+### [234. 回文链表](https://leetcode.cn/problems/palindrome-linked-list/)
+
+直接暴力对比
+
+```js
+var isPalindrome = function(head) {
+    let list = []
+    while(head) {
+        list.push(head.val)
+        head = head.next
+    }
+    return list.join('') === list.reverse().join('')
+};
+```
+
+双链表 
+
+```js
+var isPalindrome = function(head) {
+    // 利用leetcode206反转链表，把链表改成双链表
+    // 然后可以从 2 端对比
+    let p1 = null, p2 = head
+    while (p2) {
+        let p3 = p2.next
+        p2.pre = p1
+        p1 = p2
+        p2 = p3
+    }
+    // p1是头
+
+    while (p1 !== head) {
+        if (p1.val === head.val) {
+            p1 = p1.pre
+            head = head.next
+        } else {
+            return false
+        }
+    }
+    return true
+};
+```
+
+还有一种解法，也是用反转链表的思路，只不过他只反转一半
+
+https://leetcode.cn/problems/palindrome-linked-list/solutions/2952645/o1-kong-jian-zuo-fa-xun-zhao-zhong-jian-rv0f3/
+
+## 图
+
+### 拓扑排序
+
+作用：在有向无环图（DAG）中，根据依赖关系生成节点的线性顺序
+
+最常用的是Kahn 算法实现（**BFS** 的一种）
+
+- 生成 a-> b -> c -> d 或 a-> c -> b -> d ，即把同级依赖编在一起 （即使是非联通图也是可以处理的）
+- 出现环能识别出来
+- 复杂度 O(V+E)  【*V* (Vertices)：节点数，*E* (Edges)：边数】
+- 适用： 依赖解析、任务调度、环分析
+- 思路：
+  - 统计所有节点的入度（有多少条边指向它）
+  - 将所有入度为 0 的节点加入队列
+  - 从队列取出一个节点，加入结果数组，并将其所有邻居节点的入度减 1
+  - 如果邻居节点的入度变为 0，则将其加入队列。
+  - 重复直到队列为空。如果结果数组的长度小于节点总数，说明图中存在环
+
+```js
+/**
+ * 通用拓扑排序 (支持字符串节点)
+ * @param {string[]} nodes - 所有节点的数组，例如 ['a', 'b', 'c']
+ * @param {string[][]} edges - 边数组，例如 [['a', 'b']] 表示 a -> b
+ * @returns {string[] | null} - 返回排序后的节点数组，有环则返回 null
+ */
+
+function topologicalSortStrings(nodes, edges) {
+    // 1. 初始化数据结构
+    const inDegree = new Map();
+    const adjList = new Map();
+
+    // 2. 预处理：将所有节点加入 Map，初始入度为 0，邻接表为空数组
+    // 这一步非常重要，保证了孤立节点（如 'c'）也能被处理
+    for (const node of nodes) {
+        inDegree.set(node, 0);
+        adjList.set(node, []);
+    }
+
+    // 3. 构建图：填充邻接表和入度
+    for (const [u, v] of edges) {
+        // 检查节点是否在列表中（可选的安全检查）
+        if (!inDegree.has(u) || !inDegree.has(v)) {
+            throw new Error(`发现未定义的节点: ${u} 或 ${v}`);
+        }
+
+        adjList.get(u).push(v); // u -> v
+        inDegree.set(v, inDegree.get(v) + 1); // v 的入度 +1
+    }
+
+    // 4. 队列初始化：找出所有入度为 0 的节点
+    const queue = [];
+    for (const node of nodes) {
+        if (inDegree.get(node) === 0) {
+            queue.push(node);
+        }
+    }
+
+    const result = [];
+
+    // 5. Kahn 算法核心循环
+    while (queue.length > 0) {
+        const current = queue.shift(); // 取出队首
+        result.push(current);
+
+        // 遍历当前节点的所有邻居
+        const neighbors = adjList.get(current);
+        for (const neighbor of neighbors) {
+            const newDegree = inDegree.get(neighbor) - 1;
+            inDegree.set(neighbor, newDegree);
+
+            if (newDegree === 0) {
+                queue.push(neighbor);
+            }
+        }
+    }
+
+    // 6. 环检测：如果结果数量不等于节点总数，说明有环
+    if (result.length !== nodes.length) {
+        return null;
+    }
+
+    return result;
+}
+```
+
+
+
 ## 排序算法
 
 ### 冒泡
@@ -7486,31 +7713,54 @@ var merge = function(intervals) {
 
 ```js
 var productExceptSelf = function(nums) {
-    // answer[i]=numsL[i]*numsR[i]
-    // numsL[i]=nums[0]*...nums[i-1]=numsL[i-1]*nums[i-1]
-    // numsR[i]=nums[i+1]*...nums[nums.length]=numsR[i-1]*nums[i+1]
+    // [1,2,3,4]
+    // 1，1，2，6，
+    // 24，12，4，1
+    let len = nums.length
 
-    const len=nums.length
-    const numsL=new Array(len).fill(1)
-    const numsR=new Array(len).fill(1)
-    const answer=new Array(len).fill(1)
-
-    for (let i=1;i<nums.length;i++){
-        numsL[i]=numsL[i-1]*nums[i-1]
+    // 前缀和
+    let prefix = [1]
+    for (let i = 1; i < len; i++) {
+        prefix[i] = prefix[i-1] * nums[i-1]
     }
 
-
-    for (let i=nums.length-2;i>=0;i--){
-        numsR[i]=numsR[i+1]*nums[i+1]
+    // 后缀和
+  	// 末尾补 1，这里为了方便全都补成 1 了
+  	// new Array(len) 创建的数组元素是一种特殊状态（空槽）
+  	// for索引、forin、forof都是正常的读取是 undefined，
+  	// 但是 forEach、map、filter、reduce 会直接跳过空槽无法遍历。所以建议一般直接 new Array(len).fill(undefined) 填充默认值
+    let suffix = new Array(len)
+    suffix[suffix.length-1] = 1
+    for (let i = len-2 ; i >= 0; i--) {
+        suffix[i] = suffix[i+1] * nums[i+1]
     }
-    
 
-    for (let i=0;i<nums.length;i++){
-        answer[i]=numsL[i]*numsR[i]
+    let res = []
+    for (let i = 0; i < nums.length; i++) {
+        res[i] = prefix[i] * suffix[i]
+    }
+    return res
+
+};
+```
+
+### [41. 缺失的第一个正数](https://leetcode.cn/problems/first-missing-positive/)
+
+```js
+var firstMissingPositive = function(nums) {
+    const hash = new Map()
+    for (const value of nums) {
+        hash.set(value, true)
     }
 
-    return answer
-
+    let count = 1
+    while (true) {
+        if (hash.get(count)){
+            count++
+        } else {
+            return count
+        }
+    }
 };
 ```
 
