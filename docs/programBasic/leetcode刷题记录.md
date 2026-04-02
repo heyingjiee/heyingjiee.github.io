@@ -1546,8 +1546,6 @@ var containsNearbyDuplicate = function(nums, k) {
 };
 ```
 
-
-
 ### [438.找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string)
 
 滑动窗口中可能出现重复字符，不能使用Set存储。我们使用Hash计数存储
@@ -7254,6 +7252,24 @@ var backspaceCompare = function(s, t) {
 
 ## 链表
 
+链表题有几点注意
+
+* 因为链表是单向的，很多题都是让你逆向处理逻辑。这种双指针反转就行
+
+* 双指针处理链表
+
+  ```js
+  // ^p1   ^12                         // 初始指针
+  //       【1】->【2】->【3】
+  //  						       ^p1   ^12		 // 结束指针
+  
+  // 一般都是判断指针不为空，继续逻辑
+  // 设计指针位置参考上面，以翻转为例子第1步，非常丝滑的将【1】.next 置为了 null
+  while(right) {
+    
+  }
+  ```
+
 ### [206. 反转链表](https://leetcode.cn/problems/reverse-linked-list/)
 
 最开始的解法，三指针
@@ -7358,6 +7374,44 @@ var isPalindrome = function(head) {
 还有一种解法，也是用反转链表的思路，只不过他只反转一半
 
 https://leetcode.cn/problems/palindrome-linked-list/solutions/2952645/o1-kong-jian-zuo-fa-xun-zhao-zhong-jian-rv0f3/
+
+### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/)
+
+看起来挺简单的，却反复改了好多遍
+
+* carry 记录高 1 位进位是几，这个一定要在 sum 时加上
+* [9] + [9] 进位 1，比链表多一位
+* `while (l1 || l2)` 可能不一样长度，所有里面大量使用了`?.`
+
+```js
+var addTwoNumbers = function(l1, l2) {
+    let carry = 0
+    let head = new ListNode()
+    let cur = head
+    while (l1 || l2) {
+       const sum = (l1?.val ?? 0) + (l2?.val ?? 0) + carry
+       if (sum >= 10) {
+           cur.next = new ListNode(sum - 10)
+           carry = 1
+       } else {
+           cur.next = new ListNode(sum)
+           carry = 0
+       }
+
+       l1 = l1?.next
+       l2 = l2?.next
+       cur = cur.next
+
+    }
+		// 例如：[9] + [9] ，最后进 1 位
+    if (carry === 1) {
+        cur.next = new ListNode(1)
+    }
+    return head.next
+};
+```
+
+
 
 ## 图
 
@@ -7546,12 +7600,6 @@ var twoSum = function(nums, target) {
         }
     }
 };
-```
-
-### [2. 两数相加( 补充 )](https://leetcode.cn/problems/add-two-numbers/)
-
-```js
-
 ```
 
 ### [49. 字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
