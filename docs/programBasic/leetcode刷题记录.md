@@ -1,436 +1,6 @@
 # 算法
 
-## 动态规划
 
-### 介绍
-
-动态规划（Dynamic Programming，简称DP）
-
-**动态规划的特点**：
-
-* 具有重叠子问题
-* 最优子结构
-* 状态转移方程
-
-**动态规划的解题方法**：
-
-- 递归+记忆化(自顶向下)
-- 动态规划（自底向上）
-
-**解动态规划题目的步骤**：
-
-1. 根据重叠子问题定义状态
-2. 寻找最优子结构推导状态转移方程
-3. 确定dp初始状态
-4. 确定输出值
-
-### 斐波那契
-
-[leetcode题号509](https://leetcode.cn/problems/fibonacci-number/)
-
-![image-20220823232736614](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220823232737%20.png)
-
-
-
-自顶向下：
-
-* 递归
-
-  ```js
-  var fib = function(n) {
-      if(n===0){
-          return 0
-      }
-      if(n===1){
-          return 1
-      }
-      return fib(n-2)+fib(n-1)
-  
-  };
-  ```
-
-* 递归+记忆化
-
-  单纯的递归效率较低，例如图中的绿色部分f(3)会多次计算。所以将运算结果存储下来，会进一步提高效率
-
-  使用数据将f(n)的值存在res[n]中
-
-  ```js
-  var fib = function(n) {
-      let res=[0,1]
-      if(n===0){
-          return 0
-      }
-      if(n===1){
-          return 1
-      }
-      if(res[n]!==undefined){
-          return res[n]
-      }
-      res[n]=fib(n-2)+fib(n-1)
-      return res[n]
-  };
-  ```
-
-
-
-自底向上（动态规划）：
-
-* 常规解法
-
-  dp数组保存了从0到n中所有斐波那契数，而实际上我们只需要f(n)。那就可以将o(n)的空间复杂度继续优化
-
-  ```js
-  var fib = function(n) {
-      if(n<=1){
-          return n
-      }
-    	//dp初始状态
-      let dp=[0,1]
-      for(let i=2;i<=n;i++){
-        	//状态转移方程
-          dp[i]=dp[i-2]+dp[i-1]
-      }
-    	//确定输出值为dp[0]
-      return dp[n]
-  };
-  ```
-
-* 动态规划的压缩
-
-  实际上，只需要保存两个变量即可，pre上一个值，cur当前值
-
-  ```js
-  var fib = function(n) {
-      if(n<=1){
-          return n
-      }
-      let pre=0,cur=1
-      for(let i=2;i<=n;i++){
-          [pre,cur]=[cur,pre+cur]
-        	//f(2)=f(0)+f(1) , pre=f(0),cur=f(1)
-        	//f(3)=f(1)+f(2) , cur=pre+cur
-        
-      }
-      return cur
-  };
-  ```
-
-  
-
-### 不同路径
-
-[leetcode题号62](https://leetcode.cn/problems/unique-paths/)
-
-这题很难看出来是动规划
-
-* 根据重叠子问题定义状态
-
-  到达每个单元格只能是从（左侧+上侧）来的，到达该单元格的路径条数也只能是 （到达左侧单元格的路径条数+到达上侧单元格的路径条数）
-
-  ![image-20220823235806496](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220823235806%20.png)
-
-* 寻找最优子结构推导状态转移方程
-
-  r是行索引、c是列索引、`dp[r][c]`是记录到达该单元格的路径条数
-
-  ```
-  dp[r][c]=dp[r-1][c]+dp[r][c-1]
-  ```
-
-* 确定dp初始状态
-
-  第一行的单元格只能=到达左侧单元格的路径条数=1
-
-  第一列的单元格只能=到达上侧单元格的路径条数=1
-
-  ![image-20220823235938030](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220823235938%20.png)
-
-* 确定输出值
-
-  动态规划常规解法： 时间复杂度o(mn) 、 空间复杂度o(mn) 
-
-  ```js
-  var uniquePaths = function(m, n) {
-      let dp=new Array(m).fill(0).map(()=>{ //语法补充Array(m)必须填充数字，map才能将每个元素替换为数组
-          return new Array(n).fill(0)
-      })
-      //初始化第一行，第一列都是1
-      dp[0]=new Array(n).fill(1)
-      for(let i=0;i<m;i++){
-          dp[i][0]=1
-      }
-     
-     	//动态规划，自底向上
-      for(let i=1;i<m;i++){
-          for(let j=1;j<n;j++){
-              dp[i][j]=dp[i][j-1]+dp[i-1][j]
-          }
-      }
-      return dp[m-1][n-1]
-  
-  };
-  ```
-
-  动态规划的压缩
-
-  原本的dp数据是个二维数组，但是这里可以压缩一维数组，每一个dp数组记录的是当前行的单元格的路径数
-
-  ```js
-  dp[w]=dp[w]+dp[w-1] //w是列索引
-  ```
-
-  通过状态转移方程，可以一层一层的向下转移状态。新的绿色的dp[3]=新的绿色的dp[2]+旧的红色的dp[3]
-
-  ![image-20220824005735025](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220824005735%20.png)
-
-  ```js
-  var uniquePaths = function(m, n) {
-      dp=new Array(n).fill(1)
-      
-     
-      for(let i=1;i<m;i++){
-          for(let j=1;j<n;j++){
-              dp[j]=dp[j]+dp[j-1]
-          }
-      }
-      return dp[n-1]
-  
-  };    
-  ```
-
-### 爬楼梯
-
-[leetcode题号70](https://leetcode.cn/problems/climbing-stairs/)
-
-```js
-var climbStairs = function(n) {
-    if(n<=2){
-        return n
-    }
-    let dp=[undefined,1,2] //数组索引就是楼梯阶数，没有0阶楼梯，座所以这里用undefined占位一下
-    for(let i=3;i<=n;i++){
-        dp[i]=dp[i-1]+dp[i-2]
-    }
-    return dp[n]
-};
-```
-
-压缩dp数组
-
-```js
-var climbStairs = function(n) {
-    if(n<=2){
-        return n
-    }
-    let pre=1
-    let cur=2
-
-    for(let i=3;i<=n;i++){
-        [cur,pre]=[cur+pre,cur]
-    }
-    return cur
-};
-```
-
-
-
-###  完全平方数
-
-[leetcode题号279](https://leetcode.cn/problems/perfect-squares/)
-
-相对于前面的题目，从这题开始，后面的题目全部涉及最优子结构，题目中一般表现为 "最少"、"最小"、"最短"等字眼
-
-* 根据重叠子问题定义状态
-
-  
-
-* 寻找最优子结构推导状态转移方程
-
-  n是数，dp[n]存的是**和为 `n` 的完全平方数的最少数量**
-
-  `dp[n]`：初始化为最多的情况，即dp[n]=n（n个1的平方相加）
-
-  `dp[n-j*j]+1 `：`n-j*j`这个数的最少平方数+1个平方数(`j*j`)
-
-  两者取最小的就是当前n这个数的最小平方数
-
-  ```
-  dp[n]=Math.min(dp[n-j*j]+1,dp[n]) 
-  ```
-
-* 确定dp初始状态
-
-  dp[n]=n，
-
-  这里注意n是从1开始的，`j=1`来时循环
-
-  `dp[0]=0`和`i-j*j>=0`这个边界比难理解，假设n=9，其实只需要1个平方数3*3即可，这时候`j=3`，`dp[9-3*3]+1=1`
-
-* 确定输出值
-
-  dp[n]
-
-```js
-var numSquares = function(n){ 
-    let dp=[]//先把所有位置放置0
-    for(let i=1;i<=n;i++){
-        dp[i]=i //初始化为最多的情况，比如：dp[2]=2，就是1^2+1^2,共两个平方数
-        for(let j=1;i-j*j>=0;j++){ 
-             dp[i]=Math.min(dp[i],dp[i-j*j]+1)
-        }
-       
-    }
-    return dp[n]
-};
-```
-
-
-
-### 三角形最小路径和
-
-[leetcode题号120](https://leetcode.cn/problems/triangle/)
-
-这题也涉及最优子结构
-
-![image-20220827155259582](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220827155300%20.png)
-
-```js
-var minimumTotal = function(triangle) {
-    //动态规划 dp[n]=min(dp[n],dp[n+1])
-    let row=triangle.length
- 
-    let dp=new Array(row).fill(0).map(()=>{
-        return new Array(triangle[row-1].length)
-    })
-     
-    //dp[row-1]=triangle[row-1] 一般不要这样初始化倒数第一行 ，实际上只是把triangle最后一行的指针指向了dp
-    //可以写成这样 
-   
-    for(let i=row-1;i>=0;i--){ //倒数第一行应该被初始化，从倒数第二行开始计算
-        for(let j=0;j<triangle[i].length;j++){
-            if(i===row-1){
-                dp[i][j]=triangle[i][j]
-            }else{
-                dp[i][j]=Math.min(dp[i+1][j],dp[i+1][j+1])+triangle[i][j]
-            }        
-        }
-    }
-     
-     return dp[0][0]
-};
-```
-
-
-
-上面dp数组和参数triangle数组大小一样
-
-因为dp每个元素保存的是到该点的最小路径值，我们只需要第一行的值即可，所以，我们可以压缩为一维数组，不必保存所有的值
-
-```js
-var minimumTotal = function(triangle) {
-    //动态规划 dp[n]=min(dp[n],dp[n+1])
-    let row=triangle.length
- 
-    //倒数第一行初始化
-    let dp=new Array(triangle[row-1].length).fill(0).map((_,index)=>{
-        return triangle[row-1][index]
-    })
-    
-
-    for(let i=row-2;i>=0;i--){ //倒数第一行已经被初始化了，这里从倒数第二行开始遍历
-        for(let j=0;j<triangle[i].length;j++){
-            dp[j]=Math.min(dp[j],dp[j+1])+triangle[i][j]     
-        }
-    }
-     
-     return dp[0]
-};
-```
-
-
-
-### 乘积最大子数组（存疑）
-
-[leetcode题号152](https://leetcode.cn/problems/maximum-product-subarray/)
-
-这个的特殊点在于，数组元素可以为负值。两个负值乘积就成了正数，这个题存储最小值就是这个原因
-
-dp[n]的含义：最后一位的索引是n连续子数组的**最大值**、**最小值**、**当前值**
-
-```js
-var maxProduct = function(nums) {
-    let dp=new Array(nums.length).fill(0).map((_,index)=>{
-        return {
-            min:nums[index],
-            max:nums[index],
-            cur:nums[index]
-        }
-    })
-
-
-    for(let i=1;i<nums.length;i++){
-        let curValue=dp[i].cur   //其实也可以不在dp中存当前值,直接 let curValue=nums[i]
-        dp[i].max=Math.max(curValue,curValue*dp[i-1].min,curValue*dp[i-1].max)
-        dp[i].min=Math.min(curValue,curValue*dp[i-1].min,curValue*dp[i-1].max)
-    }
-     
-  	//dp数组中存储了所有最小值、最大值，这里是遍历取最大值
-    return dp.reduce((preItem,curItem)=>{
-        return curItem.max>preItem.max?curItem:preItem
-    }).max
-    
-
-};
-```
-
-压缩dp数组，使用2个变量保存状态
-
-
-
-**有疑问**
-
-leetcode运行显示代码输出的是72，但实际上我本地运行就是正确答案12，暂时不清楚原因，记录下
-
-![image-20220827184219920](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220827184220%20.png)
-
-```js
-var maxProduct = function(nums) {
-    let preMax=nums[0]
-    let preMin=nums[0]
-    let res=nums[0]
-
-    for(let i=1;i<nums.length;i++){
-        let curValue=nums[i] 
-        preMax=Math.max(curValue,curValue*preMax,curValue*preMin)
-        preMin=Math.min(curValue,curValue*preMax,curValue*preMin)
-        res=Math.max(preMax,res)
-    }
-    return res
-};
-```
-
-### 零钱兑换
-
-[leetcode题号322](https://leetcode.cn/problems/coin-change/)
-
-```js
-var coinChange = function(coins, amount) {
-    //dp[0]本身无意义，但是如果amount=10，coins=[10]，coins刚好有一个10，下面的循环中dp[i-coinItem]+1就能保证是1
-    let dp=new Array(amount+1).fill(Infinity)
-    dp[0]=0
-
-    for(let i=1;i<=amount;i++){
-        for(coinItem of coins){
-            if(parseInt(coinItem)<=i){
-                 dp[i]=Math.min(dp[i],dp[i-coinItem]+1)
-            }         
-        }       
-    }
-    return dp[amount]===Infinity?-1:dp[amount]
-
-};
-```
 
 ## 贪心算法
 
@@ -1961,23 +1531,23 @@ var maxSlidingWindow = function(nums, k) {
 };
 ```
 
-## 递归问题
-
-### 递归分析
-
-递归是什么？
-
-递归是一种编程技巧，代码上具体表现为函数自己调用自己。**分治算法**、**回溯算法**都是应用递归技巧的具体案例
 
 
+## 递归与迭代
 
-递归问题的核心？
+递归、迭代是两种代码形式，递归在数理逻辑上总是能转化为迭代的
 
-写一层逻辑，这一层逻辑反复执行（类似for循环），本层将结果向上层return
+后面的很多算法思想都是利用了这 2 种形式
 
+### 递归
 
+1、代码形式：函数调用自身
 
-代码逻辑分析：
+2、结束方式：递归只能到最后一层终止，无法在任意中间节点终止递归
+
+3、效率：大量重复计算，效率低。可以用剪枝、记忆化来提高效率
+
+4、递归代码逻辑分析：
 
 * 最后一层（根据条件判断是否为最后一层，return最后一层结果），也叫递归终止条件
 
@@ -1986,75 +1556,163 @@ var maxSlidingWindow = function(nums, k) {
 * 其余每层公用的逻辑（return是返回上一层的结果）
 
 * 层与层之间的通讯
+
   * **return通讯**： n+1层 ---> n层 发送数据。这个数据会最终返回最顶层，即从下到上（2-1注释）
-  
+
     注意并不是所有题的答案都必须return到顶层。有可能定义个全局变量，然后在每一层中做逻辑，最后答案是这个值。例如，定义全局变量max，每层比较大小存入最大值，最后返回这个最大值
-  
+
   * **递归入参通讯**：n+1层 <--- n层 发送数据。每一层的入参，一般都用来标识本层的一些信息，比如自己是第几层。即从上到下（2-2注释）
 
-很多题是很难看出来每一层是什么，所以将递归问题转换为层次图，会更为直观分析
+很多题是很难看出来每一层是什么
 
+### 迭代
 
-```js
-recursion(params)// 这里是顶层，即0层
+1、代码形式：使用for循环结构反复执行一组指令。for循环外部定义变量，每次迭代将数据存下来，作为下一步的输入，一步步逼近正确答案
 
-function recursion(params){ 
-  
-  // 1、最后一层的处理逻辑 
-	if(最后一层){
-    return xxx
+2、结束方式：任意位置设置终止条件，for循环会直接退出
+
+3、效率：高于一般的递归（未使用优化方法的递归）
+
+### 案例 
+
+#### [509. 斐波那契数](https://leetcode.cn/problems/fibonacci-number/)
+
+![image-20220823232736614](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220823232737%20.png)
+
+* 分治
+
+  ```js
+  function fin(n){
+    // 最后一层 ，fin(n) ->fin(n-1)、fi(n-2)，n会一步一步变成0、1
+    if(n===0||n==1){
+      return n
+    }
+    
+    // 本层。这里直接return就行（写latter是为了更清晰）
+    const latter=fin(n-1)+fi(n-2)
+    return latter
   }
+  ```
+
+* 迭代
+
+  ```js
+  function fin(n){
+      // 前两项分别为0和1
+      if (n == 0) return 0;
+      if (n == 1) return 1;
   
-  // 2、其余任意一层的处理逻辑 （这里能看到两层，既然是任意层，为了方便，假设当前层为0层）
-  // 2-1 这一层的递归函数recursion，就是第1层。latter就是1层返回的值
-  const latter=recursion(params)  // 我们可以对上一层的参数params进行处理，传入下一层
-  // 2-1 这里是当前层的逻辑，即0层
-  return 处理latter后的数据
-}
-```
-
-#### 斐波那契 
-
-F(n)=F(n-1)+F(n-2)
-
-层次图
-
-![image-20240313012348899](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240313012349rFRvQc.png)
-
-```js
-function fin(n){
-  // 最后一层 ，fin(n) ->fin(n-1)、fi(n-2)，n会一步一步变成0、1
-  if(n===0||n==1){
-    return n
+      // 初始的前两项值
+      int fib0 = 0;
+      int fib1 = 1;
+      int fibResult = 0;
+  
+      // 从第三项开始迭代计算
+      for (int i = 2; i <= num; i++)
+      {
+          // 当前项等于前两项之和
+          fibResult = fib0 + fib1;
+  
+          // 更新前两项的值
+          fib0 = fib1;
+          fib1 = fibResult;
+      }
+  
+      return fibResult;
   }
+  ```
+
+* 动态规划 - 递归+记忆化
+
+  单纯的递归效率较低，例如图中的绿色部分f(3)会多次计算。所以将运算结果存储下来，会进一步提高效率
+
+  使用数据将f(n)的值存在res[n]中
+
+  ```js
+  var fib = function(n) {
+      let res=[0,1]
+      if(n===0){
+          return 0
+      }
+      if(n===1){
+          return 1
+      }
+      if(res[n]!==undefined){
+          return res[n]
+      }
+      res[n]=fib(n-2)+fib(n-1)
+      return res[n]
+  };
+  ```
+
+* 动态规划 - 迭代
+
+  dp数组保存了从0到n中所有斐波那契数，而实际上我们只需要f(n)。那就可以将o(n)的空间复杂度继续优化
+
+  ```js
+  var fib = function(n) {
+      if(n<=1){
+          return n
+      }
+    	//dp初始状态
+      let dp=[0,1]
+      for(let i=2;i<=n;i++){
+        	//状态转移方程
+          dp[i]=dp[i-2]+dp[i-1]
+      }
+    	//确定输出值为dp[0]
+      return dp[n]
+  };
+  ```
+
+  动态规划 - 迭代的压缩 DP 数组，只需要保存两个变量即可，pre上一个值，cur当前值
+
+  ```js
+  var fib = function(n) {
+      if(n<=1){
+          return n
+      }
+      let pre=0,cur=1
+      for(let i=2;i<=n;i++){
+          [pre,cur]=[cur,pre+cur]
+        	//f(2)=f(0)+f(1) , pre=f(0),cur=f(1)
+        	//f(3)=f(1)+f(2) , cur=pre+cur
+        
+      }
+      return cur
+  };
+  ```
+
   
-  // 本层。这里直接return就行（写latter是为了更清晰）
-  const latter=fin(n-1)+fi(n-2)
-  return latter
-  
-}
-```
 
-#### 阶乘 
 
-`n!=n*(n-1)*(n-2)...*1`
 
-这题看不出来树状层次，需要我们抽象出来函数。`f(n)=n*f(n-1)=n*(n-1)*f(n-2)z`h
+#### 阶乘
 
 ![image-20240313013124039](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240313013124XZqTPF.png)
 
 ```js
+// 递归
 function factorial(n){
 	if(n===1) return 1
   return n*factorial(n-1)
 }
+
+// 迭代
+function factorial(n){
+  // 初始结果设为1
+  let result = 1;
+
+  // 迭代计算阶乘，从1到num逐步相乘
+  for (int i = 1; i <= n; i++){
+      result *= i;
+  }
+
+  return result;
+}
 ```
 
-#### 树的部分
-
-参加树章节dfs的题
-
-### 分治
+## 分治 - 最纯粹的递归
 
 分治将一个较大的问题分解成多个相对较小的子问题，这些子问题通常与原始问题具有相同的结构。然后，将子问题的解合并起来，形成原始问题的解
 
@@ -2083,9 +1741,7 @@ function divide_conquer(problem, param1, param2, ...){
 }
 ```
 
-
-
-#### [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
+### [50. Pow(x, n)](https://leetcode.cn/problems/powx-n/)
 
 分治
 
@@ -2122,7 +1778,7 @@ var myPow = function(x, n) {
 
 对比看下 递归、分治还是有区别的
 
-#### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
+### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
 
 哈希计数
 
@@ -2146,7 +1802,7 @@ var majorityElement = function(nums) {
 };
 ```
 
-#### [124. 二中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
+### [124. 二中的最大路径和](https://leetcode.cn/problems/binary-tree-maximum-path-sum/)
 
 解
 
@@ -2181,7 +1837,7 @@ var maxPathSum = function(root) {
 //  // res=:2
 ```
 
-#### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+### [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
 
 这个题难在如何维护滑动窗口
 
@@ -2281,7 +1937,7 @@ var maxSubArray = function(nums) {
 };
 ```
 
-#### [938. 二叉搜索树的范围和](https://leetcode.cn/problems/range-sum-of-bst/)
+### [938. 二叉搜索树的范围和](https://leetcode.cn/problems/range-sum-of-bst/)
 
 递归
 
@@ -2307,7 +1963,7 @@ var rangeSumBST = function(root, low, high) {
 };
 ```
 
-### 回溯
+## 回溯 - 递归 + 状态撤销
 
 [b站大佬的讲解视频](https://www.bilibili.com/video/BV1mG4y1A7Gu/?spm_id_from=333.788&vd_source=e46d9099be60057b5a16a45fac0d5248)
 
@@ -2382,7 +2038,7 @@ backtrack(0,[])
 
 回溯问题分为求子集、求组合、求排列回溯
 
-#### 子集型
+### 子集型
 
 两种思路（选取哪种思路还有根据题而确定）
 
@@ -2393,7 +2049,7 @@ backtrack(0,[])
 
 ![image-20240318012854051](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240318012854N4729h.png)
 
-##### [78. 子集](https://leetcode.cn/problems/subsets/)
+#### [78. 子集](https://leetcode.cn/problems/subsets/)
 
 题目
 
@@ -2539,7 +2195,7 @@ var subsets = function(nums) {
 };
 ```
 
-##### [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
+#### [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
 
 层次图：
 
@@ -2599,7 +2255,7 @@ var letterCombinations = function(digits) {
 };
 ```
 
-##### [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
+#### [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
 
 2刷感悟：正常情况下dfs是枚举所有字符的组合，但是这题通过选不选逗号，记录 startIndex、endIndex，可实现筛选连续字符串
 
@@ -2682,13 +2338,11 @@ var partition = function(s) {
 };
 ```
 
-
-
-#### 组合型
+### 组合型
 
 组合型问题本质就是长度固定的子集型问题
 
-##### [77. 组合](https://leetcode.cn/problems/combinations/)
+#### [77. 组合](https://leetcode.cn/problems/combinations/)
 
 题目
 
@@ -2862,7 +2516,7 @@ var combine = function(n, k) {
 };
 ```
 
-##### [216. 组合总和 III](https://leetcode.cn/problems/combination-sum-iii/)
+#### [216. 组合总和 III](https://leetcode.cn/problems/combination-sum-iii/)
 
 题目
 
@@ -2991,7 +2645,7 @@ var combinationSum3 = function(k, n) {
 };
 ```
 
-##### [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
+#### [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
 
 回溯解法：从输入角度，选`( `或者选 `)`
 
@@ -3000,6 +2654,7 @@ var combinationSum3 = function(k, n) {
 所以，递归过程中剪枝
 
 * 放入左括号没有限制
+
 * 放入右括号：**当前子串的右括号数<左括号数，才能加入右括号**  ，这个条件能保证每层的子串都是有效的
 
 * **剪枝左括号、右括号都<n**
@@ -3055,9 +2710,9 @@ var generateParenthesis = function(n) {
 
 [题解地址](https://leetcode.cn/problems/generate-parentheses/solutions/2071015/hui-su-bu-hui-xie-tao-lu-zai-ci-pythonja-wcdw) 枚举左括号的位置，没太看明白，后续研究下
 
-#### 排列型
+### 排列型
 
-##### [46. 全排列](https://leetcode.cn/problems/permutations/)
+#### [46. 全排列](https://leetcode.cn/problems/permutations/)
 
 从输入角度，每个位置只能有nums.length个可能（剪枝掉一些情况，实际会小于这个值）
 
@@ -3164,148 +2819,90 @@ var permute = function(nums) {
 };
 ```
 
-## 迭代法与递归法
+## 动态规划 - 迭代/递归
 
-递归在数理逻辑上总是能转化为迭代的
+### 前置补充
 
-递归：
+#### 什么是动态规划？
 
-* 代码结构：函数调用自身
-* 结束方式：递归只能到最后一层终止，无法在任意中间节点终止递归
-* 效率：大量重复计算，效率低。可以用剪枝、记忆化来提高效率
+动态规划（Dynamic Programming），简称 DP
 
-迭代：
+想象你在做一道数学题，算出 `f(5)` 需要先算 `f(4)` 和 `f(3)`，而算 `f(4)` 又需要算 `f(3)` 和 `f(2)`
 
-* 代码结构：使用for循环结构反复执行一组指令。for循环外部定义变量，每次迭代将数据存下来，作为下一步的输入，一步步逼近正确答案
-* 结束方式：任意位置设置终止条件，for循环会直接退出
-* 效率：高于一般的递归（未使用优化方法的递归）
+- **普通做法**：你会把 `f(3)` 算两遍，`f(2)` 算三遍……越往后重复越多，效率极低。
+- **动态规划做法**：你准备一个小本子（备忘录/DP表）。第一次算出 `f(3)` 后，赶紧记在本子上。下次再需要 `f(3)` 时，直接查本子，不用再算
 
-### 斐波那契
+即将一个复杂问题分解为**重叠的子问题**，通过求解子问题并将结果**存储**起来（避免重复计算），从而构建出原问题的最优解
 
-```js
-// 递归
-function fin(n){
-  // 最后一层 ，fin(n) ->fin(n-1)、fi(n-2)，n会一步一步变成0、1
-  if(n===0||n==1){
-    return n
-  }
-  
-  // 本层。这里直接return就行（写latter是为了更清晰）
-  const latter=fin(n-1)+fi(n-2)
-  return latter
-  
-}
+#### 实现方式
 
-// 迭代
-function fin(n){
-    // 前两项分别为0和1
-    if (n == 0) return 0;
-    if (n == 1) return 1;
+**动态规划**是一种**算法思想**（解决重复计算），它可以通过**递归+记忆化**（自顶向下）实现，也可以通过**迭代+表格**（自底向上）实现
 
-    // 初始的前两项值
-    int fib0 = 0;
-    int fib1 = 1;
-    int fibResult = 0;
+| 维度     | 普通递归 (自顶向下)                   | 动态规划 - 记忆化搜索 (自顶向下) | 动态规划 - 迭代法 (自底向上)             |
+| -------- | ------------------------------------- | -------------------------------- | ---------------------------------------- |
+| 思路     | `fib(n) = fib(n-1) + fib(n-2)` 分治法 | 同上，但加个数组缓存结果         | 先算 `fib(0)`, `fib(1)`... 推到 `fib(n)` |
+| 计算过程 | 像树枝一样发散，大量重复计算          | 遇到算过的直接返回               | 像盖楼一样，一层层往上推                 |
+| 效率     | 极慢，指数级 O(2n^2)                  | 快 ，线性 O(n)                   | 快 ，线性 O(n)                           |
+| 关系     | 递归是基础                            | 递归 + 缓存 = DP                 | DP 的标准形态                            |
 
-    // 从第三项开始迭代计算
-    for (int i = 2; i <= num; i++)
-    {
-        // 当前项等于前两项之和
-        fibResult = fib0 + fib1;
+####  背包、线性、状态机、区间、树形 DP 的区别
 
-        // 更新前两项的值
-        fib0 = fib1;
-        fib1 = fibResult;
+这四种 DP 的主要区别在于**状态的定义方式**和**状态转移的方向/结构**
+
+| DP 类型   | 核心结构      | 状态定义示例                             | 典型转移方向                                                 |
+| --------- | ------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| 背包 DP   | 序列 + 容量   | `dp[i][w]`: 前 i 个物品占重 w 的最大价值 | 决策“选”或“不选”                                             |
+| 线性 DP   | 一维/多维数组 | `dp[i]` / `dp[i][j]`  是最优解           | 从前向后  `i-1` -> `i`   、  `[i][j-1]`与`[i-1][j]` -> `[i][j]` |
+| 状态机 DP | 多维数组      |                                          |                                                              |
+| 区间 DP   | 区间 `[i, j]` | `dp[i][j]`: 区间 i 到 j 的最优解         | 小区间合并 -> 大区间                                         |
+| 树形 DP   | 树/图         | `dp[u]`: 以 u 为根的子树解               | 孩子 -> 父亲 (后序遍历)                                      |
+
+#### 优化方式
+
+* 迭代：推导的中间数据没有用，可以用降维的方式压缩 dp 减少空间占用
+* 递归：剪枝的方式减少分支计算
+
+#### 动态规划模版
+
+* 迭代
+
+  ```js
+  function xxx(){
+  	// 创建dp数组，一维数组or二维数组
+    // dp是递归转化来的，递归函数入参是几个，就是几维数组
+    dp=new Array(x).fill(y)
+    
+    // 可直接确定的dp边界数据，可以直接给值
+    dp[0]=z
+    
+    // 
+    for(){
+      // 定义状态转移方程
+      // 动态规划就是最优决策的过程   本次决策的结果= option(上次决策的结果)
+      dp[i]= option(dp[i-1])
     }
-
-    return fibResult;
-}
-```
-
-### 阶乘
-
-```js
-// 递归
-function factorial(n){
-	if(n===1) return 1
-  return n*factorial(n-1)
-}
-
-// 迭代
-function factorial(n){
-  // 初始结果设为1
-  let result = 1;
-
-  // 迭代计算阶乘，从1到num逐步相乘
-  for (int i = 1; i <= n; i++){
-      result *= i;
   }
+  ```
 
-  return result;
-}
-```
+* 递归
 
-### 树的部分（待补充）
-
-dfs回溯算法，如果使用迭代法，需要用到辅助栈。这块以后再补充
-
-
-
-
-
-## 动态规划（迭代法）
-
-[好文](https://github.com/azl397985856/leetcode/blob/master/thinkings/dynamic-programming.md)介绍记忆化搜索到动态规划的内容
-
-其中很重要的一段内容，区分了贪心和动态规划（递归搜索）的区别
-
->将问题每个阶段抽象为状态（用圆圈来表示），状态之间可能会发生转化（用箭头表示）。可以画出类似如下的图
->![image-20240330191616356](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240330191617foCEML.png)
->
->那我们应该做出如何的**决策序列**才能使得结果最优？换句话说就是每一个状态应该如何选择到下一个具体状态，并最终到达目标状态。这就是动态规划研究的问题。
->
->每次决策实际上**不会考虑之后的决策，而只会考虑之前的状态。** 形象点来说，其实是走一步看一步这种短视思维。为什么这种短视可以来求解最优解呢？那是因为：
->
->1. 我们将**所有可能的转移全部模拟了一遍**，最后挑了一个最优解。
->2. 无后向性（这个我们后面再说，先卖个关子）
->
->而如果你没有模拟所有可能，而直接走了一条最优解，那就是贪心算法了
-
-动态规划模版
-
-```js
-function xxx(){
-	// 创建dp数组，一维数组or二维数组
-  // dp是递归转化来的，递归函数入参是几个，就是几维数组
-  dp=new Array(x).fill(y)
-  
-  // 可直接确定的dp边界数据，可以直接给值
-  dp[0]=z
-  
-  // 
-  for(){
-    // 定义状态转移方程
-    // 动态规划就是最优决策的过程   本次决策的结果= option(上次决策的结果)
-    dp[i]= option(dp[i-1])
+  ```js
+  function recursion(params){ 
+    
+    // 1、最后一层的处理逻辑 
+  	if(最后一层){
+      return xxx
+    }
+    
+    // 2、其余任意一层的处理逻辑 （这里能看到两层，既然是任意层，为了方便，假设当前层为0层）
+    // 2-1 这一层的递归函数recursion，就是第1层。latter就是1层返回的值
+    const latter = recursion(params)  // 我们可以对上一层的参数params进行处理，传入下一层
+    // 2-1 这里是当前层的逻辑，即0层
+    return 处理latter后的数据
   }
-}
-```
-
- 
-
-### 记忆化搜索
-
-记忆化搜索=递归+保存每一层递归结果
-
-以下图斐波那契递归为例子，递归会将所有可能尝试一遍，其中存在大量重复的。我们可以将结果存在下来，来提高性能
-
-![image-20240323010711645](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202403230107150fQ8of.png)
-
-因为要时间记忆化（存储）每层结果，所以必须使用**return通讯**，将每层的结果返回出来并存储
-
-
-
-**动态规划**其实就是记忆化搜索的一种形式
+  
+  recursion(params)// 这里是顶层，即0层
+  ```
 
 ### [198. 打家劫舍](https://leetcode.cn/problems/house-robber/)
 
@@ -3396,7 +2993,65 @@ var rob = function(nums) {
 };
 ```
 
-### 背包问题
+### 乘积最大子数组（存疑）
+
+[leetcode题号152](https://leetcode.cn/problems/maximum-product-subarray/)
+
+这个的特殊点在于，数组元素可以为负值。两个负值乘积就成了正数，这个题存储最小值就是这个原因
+
+dp[n]的含义：最后一位的索引是n连续子数组的**最大值**、**最小值**、**当前值**
+
+```js
+var maxProduct = function(nums) {
+    let dp=new Array(nums.length).fill(0).map((_,index)=>{
+        return {
+            min:nums[index],
+            max:nums[index],
+            cur:nums[index]
+        }
+    })
+
+
+    for(let i=1;i<nums.length;i++){
+        let curValue=dp[i].cur   //其实也可以不在dp中存当前值,直接 let curValue=nums[i]
+        dp[i].max=Math.max(curValue,curValue*dp[i-1].min,curValue*dp[i-1].max)
+        dp[i].min=Math.min(curValue,curValue*dp[i-1].min,curValue*dp[i-1].max)
+    }
+     
+  	//dp数组中存储了所有最小值、最大值，这里是遍历取最大值
+    return dp.reduce((preItem,curItem)=>{
+        return curItem.max>preItem.max?curItem:preItem
+    }).max
+    
+
+};
+```
+
+压缩dp数组，使用2个变量保存状态
+
+**有疑问**
+
+leetcode运行显示代码输出的是72，但实际上我本地运行就是正确答案12，暂时不清楚原因，记录下
+
+![image-20220827184219920](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220827184220%20.png)
+
+```js
+var maxProduct = function(nums) {
+    let preMax=nums[0]
+    let preMin=nums[0]
+    let res=nums[0]
+
+    for(let i=1;i<nums.length;i++){
+        let curValue=nums[i] 
+        preMax=Math.max(curValue,curValue*preMax,curValue*preMin)
+        preMin=Math.min(curValue,curValue*preMax,curValue*preMin)
+        res=Math.max(preMax,res)
+    }
+    return res
+};
+```
+
+### 背包DP
 
 有0-1背包、完全背包两类问题
 
@@ -3912,6 +3567,242 @@ var lengthOfLIS = function(nums) {
 };
 ```
 
+#### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+```js
+var climbStairs = function(n) {
+    if(n<=2){
+        return n
+    }
+    let dp=[undefined,1,2] //数组索引就是楼梯阶数，没有0阶楼梯，座所以这里用undefined占位一下
+    for(let i=3;i<=n;i++){
+        dp[i]=dp[i-1]+dp[i-2]
+    }
+    return dp[n]
+};
+```
+
+压缩dp数组
+
+```js
+var climbStairs = function(n) {
+    if(n<=2){
+        return n
+    }
+    let pre=1
+    let cur=2
+
+    for(let i=3;i<=n;i++){
+        [cur,pre]=[cur+pre,cur]
+    }
+    return cur
+};
+```
+
+#### [62. 不同路径](https://leetcode.cn/problems/unique-paths/)
+
+这题很难看出来是动规划
+
+* 根据重叠子问题定义状态
+
+  到达每个单元格只能是从（左侧+上侧）来的，到达该单元格的路径条数也只能是 （到达左侧单元格的路径条数+到达上侧单元格的路径条数）
+
+  ![image-20220823235806496](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220823235806%20.png)
+
+* 寻找最优子结构推导状态转移方程
+
+  r是行索引、c是列索引、`dp[r][c]`是记录到达该单元格的路径条数
+
+  ```
+  dp[r][c]=dp[r-1][c]+dp[r][c-1]
+  ```
+
+* 确定dp初始状态
+
+  第一行的单元格只能=到达左侧单元格的路径条数=1
+
+  第一列的单元格只能=到达上侧单元格的路径条数=1
+
+  ![image-20220823235938030](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220823235938%20.png)
+
+* 确定输出值
+
+  动态规划常规解法： 时间复杂度o(mn) 、 空间复杂度o(mn) 
+
+  ```js
+  var uniquePaths = function(m, n) {
+      let dp=new Array(m).fill(0).map(()=>{ //语法补充Array(m)必须填充数字，map才能将每个元素替换为数组
+          return new Array(n).fill(0)
+      })
+      //初始化第一行，第一列都是1
+      dp[0]=new Array(n).fill(1)
+      for(let i=0;i<m;i++){
+          dp[i][0]=1
+      }
+     
+     	//动态规划，自底向上
+      for(let i=1;i<m;i++){
+          for(let j=1;j<n;j++){
+              dp[i][j]=dp[i][j-1]+dp[i-1][j]
+          }
+      }
+      return dp[m-1][n-1]
+  
+  };
+  ```
+
+  动态规划的压缩
+
+  原本的dp数据是个二维数组，但是这里可以压缩一维数组，每一个dp数组记录的是当前行的单元格的路径数
+
+  ```js
+  dp[w]=dp[w]+dp[w-1] //w是列索引
+  ```
+
+  通过状态转移方程，可以一层一层的向下转移状态。新的绿色的dp[3]=新的绿色的dp[2]+旧的红色的dp[3]
+
+  ![image-20220824005735025](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Vue/20220824005735%20.png)
+
+  ```js
+  var uniquePaths = function(m, n) {
+      dp=new Array(n).fill(1)
+      
+     
+      for(let i=1;i<m;i++){
+          for(let j=1;j<n;j++){
+              dp[j]=dp[j]+dp[j-1]
+          }
+      }
+      return dp[n-1]
+  
+  };    
+  ```
+
+#### [279. 完全平方数](https://leetcode.cn/problems/perfect-squares/)
+
+相对于前面的题目，从这题开始，后面的题目全部涉及最优子结构，题目中一般表现为 "最少"、"最小"、"最短"等字眼
+
+* 根据重叠子问题定义状态
+
+  
+
+* 寻找最优子结构推导状态转移方程
+
+  n是数，dp[n]存的是**和为 `n` 的完全平方数的最少数量**
+
+  `dp[n]`：初始化为最多的情况，即dp[n]=n（n个1的平方相加）
+
+  `dp[n-j*j]+1 `：`n-j*j`这个数的最少平方数+1个平方数(`j*j`)
+
+  两者取最小的就是当前n这个数的最小平方数
+
+  ```
+  dp[n]=Math.min(dp[n-j*j]+1,dp[n]) 
+  ```
+
+* 确定dp初始状态
+
+  dp[n]=n，
+
+  这里注意n是从1开始的，`j=1`来时循环
+
+  `dp[0]=0`和`i-j*j>=0`这个边界比难理解，假设n=9，其实只需要1个平方数3*3即可，这时候`j=3`，`dp[9-3*3]+1=1`
+
+* 确定输出值
+
+  dp[n]
+
+```js
+var numSquares = function(n){ 
+    let dp=[]//先把所有位置放置0
+    for(let i=1;i<=n;i++){
+        dp[i]=i //初始化为最多的情况，比如：dp[2]=2，就是1^2+1^2,共两个平方数
+        for(let j=1;i-j*j>=0;j++){ 
+             dp[i]=Math.min(dp[i],dp[i-j*j]+1)
+        }
+       
+    }
+    return dp[n]
+};
+```
+
+#### [120. 三角形最小路径和](https://leetcode.cn/problems/triangle/)
+
+这题也涉及最优子结构
+
+![image-20220827155259582](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/LeetCode/20220827155300%20.png)
+
+```js
+var minimumTotal = function(triangle) {
+    //动态规划 dp[n]=min(dp[n],dp[n+1])
+    let row=triangle.length
+ 
+    let dp=new Array(row).fill(0).map(()=>{
+        return new Array(triangle[row-1].length)
+    })
+     
+    //dp[row-1]=triangle[row-1] 一般不要这样初始化倒数第一行 ，实际上只是把triangle最后一行的指针指向了dp
+    //可以写成这样 
+   
+    for(let i=row-1;i>=0;i--){ //倒数第一行应该被初始化，从倒数第二行开始计算
+        for(let j=0;j<triangle[i].length;j++){
+            if(i===row-1){
+                dp[i][j]=triangle[i][j]
+            }else{
+                dp[i][j]=Math.min(dp[i+1][j],dp[i+1][j+1])+triangle[i][j]
+            }        
+        }
+    }
+     
+     return dp[0][0]
+};
+```
+
+上面dp数组和参数triangle数组大小一样
+
+因为dp每个元素保存的是到该点的最小路径值，我们只需要第一行的值即可，所以，我们可以压缩为一维数组，不必保存所有的值
+
+```js
+var minimumTotal = function(triangle) {
+    //动态规划 dp[n]=min(dp[n],dp[n+1])
+    let row=triangle.length
+ 
+    //倒数第一行初始化
+    let dp=new Array(triangle[row-1].length).fill(0).map((_,index)=>{
+        return triangle[row-1][index]
+    })
+    
+
+    for(let i=row-2;i>=0;i--){ //倒数第一行已经被初始化了，这里从倒数第二行开始遍历
+        for(let j=0;j<triangle[i].length;j++){
+            dp[j]=Math.min(dp[j],dp[j+1])+triangle[i][j]     
+        }
+    }
+     
+     return dp[0]
+};
+```
+
+#### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+```js
+var coinChange = function(coins, amount) {
+    //dp[0]本身无意义，但是如果amount=10，coins=[10]，coins刚好有一个10，下面的循环中dp[i-coinItem]+1就能保证是1
+    let dp=new Array(amount+1).fill(Infinity)
+    dp[0]=0
+
+    for(let i=1;i<=amount;i++){
+        for(coinItem of coins){
+            if(parseInt(coinItem)<=i){
+                 dp[i]=Math.min(dp[i],dp[i-coinItem]+1)
+            }         
+        }       
+    }
+    return dp[amount]===Infinity?-1:dp[amount]
+
+};
+```
+
 ### 状态机DP
 
 分成两类：不限交易次数、恰好/至少/至多交易k次
@@ -4200,7 +4091,7 @@ var maxProfit = function(k, prices) {
 
 动态规划降维，暂时跳过
 
-### 区间dp
+### 区间DP
 
 线性dp一般是在 前缀、后缀上转移（dp[i] 与 dp[i-1]、dp[i-2]之间转移），而区间dp是从小区间转化为大区间
 
@@ -4400,7 +4291,7 @@ var longestPalindromeSubseq = function(s) {
 };
 ```
 
-### 树形dp
+### 树形DP
 
 #### 路径
 
@@ -4621,6 +4512,34 @@ var maxDepth = function(root) {// 0 层
 * 参数想下传递最后无法取出，所以我们一般定义个全局的变量去收集每层的数据
 
 ```js
+// 方式一：定义 path，回溯每一种情况
+var maxDepth = function(root) {
+    let maxDepth = 0
+    const dfs = (root, path) => {
+        if (root === null) {
+            return
+        }
+
+        // 其余层
+        path.push(root)
+        maxDepth = Math.max(maxDepth, path.length)
+
+        dfs(root.left, path)
+        dfs(root.right, path)
+        
+      	// 本层结束，回溯
+        path.pop()
+    }
+
+
+    dfs(root, [])
+
+    return maxDepth
+
+};
+
+// 上面的 path 是引用类型，在每一层改变都能在任意层读取，所以必须回溯维持正确的
+// 直接用 count，注意 JS 中值类型是拷贝的，不用回溯。下层修改 count，上一层还是旧的 count
 var maxDepth = function(root) {
     let ans=0
     function recursion(root,count){
@@ -4729,6 +4648,48 @@ var isSymmetric = function(root) {
     return dfs(root.left,root.right)
 };
 ```
+
+bfs 解法 ，我们可以逐层看一下是否是回文/对称的 （ 详情看下层次遍历中总结的 3 种情况 ）
+
+```js
+var isSymmetric = function(root) {
+
+    const bfs = (root) => {
+        const queue = [root]
+        while (queue.length > 0) {
+            const size = queue.length
+            // 收集每层数据，注意看示例 2，每层收集完整的数据包括 null
+            const temp = []
+            for (let i = 0; i < size; i++) {
+                const curNode = queue.shift()
+                if (curNode) {
+                    temp.push(curNode.val)
+                    queue.push(curNode.left)
+                    queue.push(curNode.right)
+                } else {
+                    temp.push(null)
+                }
+            }
+            // 判断是否为回文
+          	// 注意点1:
+            // [1,null,2].join('') 结果是 '12' , null居然被忽略了
+            // [1,null,2].join(',') 结果是 '1,,2'
+          
+          	// 注意点2：
+          	// 这种方案会多一层 null ，详见层次遍历中第3种情况，这里没有影响所以没有处理
+            if (temp.join(',') !== temp.reverse().join(',')) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    return bfs(root)
+};
+```
+
+
 
 #### [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/)
 
@@ -5109,7 +5070,7 @@ var flatten = function(root) {
 
 
 
-### 前、中、后序遍历
+### 前、中、后序遍历（递归）
 
 本质仍然是dfs。下面的都是从上到下通过数组收集结果
 
@@ -5287,18 +5248,25 @@ var inorderTraversal = function(root) {
 
 
 
-### 层次遍历（bfs）
+### 层次遍历（bfs 迭代）
 
 bfs广度优先，在树的范畴内就是层次遍历
 
-推荐记忆102题层次遍历的代码作为模版。while...for的方式
+推荐记忆层次遍历的代码作为模版。while...for的方式
 
-#### [102. 二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
+#### 基础 3 种层次遍历
 
-层次遍历实现
+![image-20240604235737632](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240604235738PedL6K.png)
+
+1、层次遍历实现 
 
 ```js
+// 结果：[3, 9, 20, 15, 7]
 var levelOrder = function(root) {
+  	if (root === null) {
+        return []
+    }
+  
     let queue=[root]
     let ans=[]
     while (queue.length!==0){
@@ -5316,6 +5284,92 @@ var levelOrder = function(root) {
 
 };
 ```
+
+2、区分开每层单独处理。 核心`const levelSize = queue.length;` 是每层的数量
+
+```js
+// 结果：[[3], [9, 20], [15, 7]]
+var levelOrder = function(root) {
+  	if (root === null) {
+        return []
+    }
+    // 1. 初始化队列，先把根节点放进去
+    const queue = [root];
+    let ans=[]
+
+    // 2. 只要队列里还有节点，就说明还有层没遍历完
+    while (queue.length > 0) {
+        // 获取当前层的节点数量
+        // 注意：这个 size 是固定的，不能直接写 queue.length，
+        // 因为后面 queue.push 会改变长度，但这一层我们只处理当前的 size 个
+        const levelSize = queue.length;
+   
+        // 3. 遍历当前层的所有节点
+      	let levelAns = []
+        for (let i = 0; i < levelSize; i++) {
+            const node = queue.shift(); // 取出队头节点
+          	levelAns.push(node.val)
+
+            // 4. 把当前节点的左右孩子（下一层的节点）加入队列
+            if (node.left) {
+                queue.push(node.left);
+            }
+            if (node.right) {
+                queue.push(node.right);
+            }
+        }
+      	ans.push(levelAns)
+    }
+
+    return depth;
+};
+```
+
+3、对应空节点也要收集起来，变成完全二叉树
+
+```js
+// 结果：[[3], [9, 20], [null, null, 15, 7]]
+var levelOrder = function(root) {
+  	if (root === null) {
+        return []
+    }
+    // 1. 初始化队列，先把根节点放进去
+    const queue = [root];
+    let ans=[]
+
+    // 2. 只要队列里还有节点，就说明还有层没遍历完
+    while (queue.length > 0) {
+        // 获取当前层的节点数量
+        // 注意：这个 size 是固定的，不能直接写 queue.length，
+        // 因为后面 queue.push 会改变长度，但这一层我们只处理当前的 size 个
+        const levelSize = queue.length;
+   
+        // 3. 遍历当前层的所有节点
+      	let levelAns = []
+        for (let i = 0; i < levelSize; i++) {
+            const node = queue.shift(); // 取出队头节点
+            if (node) {
+              levelAns.push(node.val)
+              // 即使是 null 也直接推进去
+              queue.push(node.left);
+              queue.push(node.right);
+            } else {
+              // 这里不能再 queue.push 节点了，否则就无法终止了
+              levelAns.push(null)
+            }
+        }
+      	ans.push(levelAns)
+    }
+  
+  	ans.pop() // 注意啊，ans 会多一层，这里要去掉
+
+    return ans;
+};
+```
+
+![image-20260406210711449](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260406210711y3IwG0.png)
+
+#### [102. 二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
 
 本题重点是
 
@@ -5360,8 +5414,6 @@ var levelOrder = function(root) {
 
 };
 ```
-
-
 
 解法2：dfs思路。这个思路遇到过好几次，利用树的深度递归。在递归过程中收集答案
 
@@ -5540,6 +5592,10 @@ var deserialize = function(data) {
 * 根据数组构造平衡树：任意节点的左右子树深度差<=1
 * 根据 （前、中序）或者（中、后序）遍历结果构造树
 
+#### [105. 从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+
+
 #### [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
 
 如果直接将一个普通数据构造为平衡树（平衡树也是二叉树搜索树的一种）十分的复杂，代码量估计超过100行
@@ -5550,7 +5606,6 @@ var deserialize = function(data) {
 
 ```js
 var sortedArrayToBST = function(nums) {
-
 
     function dfs(nums,left,right){
         // 最后一层
@@ -7256,6 +7311,39 @@ var backspaceCompare = function(s, t) {
 
 * 因为链表是单向的，很多题都是让你逆向处理逻辑。这种双指针反转就行
 
+* while
+
+  ```js
+  // 1、如果想要指针出去一个节点
+  // 【1】->【2】->【3】
+  //  						     ^head
+  
+  while(head) {
+    // ... 处理逻辑
+    head = head.next // 这里 head = null 了就是终止条件
+  }
+  
+  // 2、如果想让指针停最后一个节点
+  // 【1】->【2】->【3】
+  //  						^head
+  while(head.next) {
+    // ... 处理逻辑
+    head = head.next // 这里 head = null 了就是终止条件
+  }
+  ```
+
+* 2条链表
+
+  ```js
+  // 全都没走到最后
+  while (list1 && list2) {
+  
+  }
+  
+  // 走到最后把剩下的接到 p 后面
+  p.next = list1 ? list1 : list2;
+  ```
+
 * 双指针处理链表
 
   ```js
@@ -7267,6 +7355,22 @@ var backspaceCompare = function(s, t) {
   // 设计指针位置参考上面，以翻转为例子第1步，非常丝滑的将【1】.next 置为了 null
   while(right) {
     
+  }
+  ```
+
+* 哑节点（dummy node）只做头用不包含数据，他的 next 才是真实携带数据的节点
+
+  移动 n 次
+
+  ```js
+  // 【dummy】->【1】->【2】->【3】->【4】
+  //    ^p1     
+  //                   ^p1                     
+  
+  // 有哑节点调用 n 次，就是第 n 个节点
+  let p = dummy
+  for (let i = 0; i < 2; i++) {
+    p = p.next
   }
   ```
 
@@ -7358,7 +7462,6 @@ var isPalindrome = function(head) {
         p2 = p3
     }
     // p1是头
-
     while (p1 !== head) {
         if (p1.val === head.val) {
             p1 = p1.pre
@@ -7374,6 +7477,28 @@ var isPalindrome = function(head) {
 还有一种解法，也是用反转链表的思路，只不过他只反转一半
 
 https://leetcode.cn/problems/palindrome-linked-list/solutions/2952645/o1-kong-jian-zuo-fa-xun-zhao-zhong-jian-rv0f3/
+
+### [21. 合并两个有序链表](https://leetcode.cn/problems/merge-two-sorted-lists/)
+
+```js
+var mergeTwoLists = function(list1, list2) {
+    let head = new ListNode(null)
+    let p = head
+    while (list1 && list2) {
+        if (list1.val <= list2.val) {
+            p.next = list1
+            list1 = list1.next
+        } else {
+            p.next = list2
+            list2 = list2.next
+        }
+        p = p.next
+    }
+
+    p.next = list1 ? list1 : list2;
+    return head.next
+};
+```
 
 ### [2. 两数相加](https://leetcode.cn/problems/add-two-numbers/)
 
@@ -7411,7 +7536,435 @@ var addTwoNumbers = function(l1, l2) {
 };
 ```
 
+### [148. 排序链表](https://leetcode.cn/problems/sort-list/)
 
+转成数组然后排序，最后重建链表
+
+```js
+var sortList = function(head) {
+    let res = []
+    while (head) {
+        res.push(head.val)
+        head = head.next
+    }
+    const sorted = res.sort((a, b) => a-b)
+    const newHead = new ListNode()
+    let p = newHead
+    for (let i = 0; i < sorted.length; i++) {
+        p.next = new ListNode(sorted[i])
+        p = p.next
+    }
+    return newHead.next
+};
+```
+
+递归
+
+```js
+var sortList = function(head) {
+		// 最后一层
+    if (!head || !head.next) {
+        return head
+    }
+  
+    // 其他层
+    // 快慢指针找中点，左右各自排序，然后 merge
+    let slow = head
+    let fast = head.next
+    while (fast && fast.next) {
+        slow = slow.next
+        fast = fast.next.next
+    }
+
+    let rightHead = slow.next;
+    slow.next = null;  // 必须切断
+
+    const left = sortList(head)
+    const right = sortList(rightHead)
+
+    return merge(left, right)
+}
+
+const merge = (p1, p2) => {
+    let head = new ListNode()
+    let p = head
+    while (p1 && p2) {
+        if (p1.val < p2.val) {
+            p.next = p1
+            p1 = p1.next
+        } else {
+            p.next = p2
+            p2 = p2.next
+        }
+        p = p.next
+    }
+    p.next = p1 ? p1: p2
+    return head.next
+}
+```
+
+### [138. 随机链表的复制](https://leetcode.cn/problems/copy-list-with-random-pointer/)
+
+通过给原节点插一个 index 属性记录是第几个节点，很多语言不支持这样做可以用 map 存下
+
+```js
+var copyRandomList = function(head) {
+    let p = head
+    let i = 0
+    let NodeList = []
+    while (p) {
+        p.index = i
+        NodeList[i] = new _Node(p.val)
+
+        // 下轮
+        p = p.next
+        i++
+    }
+
+
+    let resHead = new _Node()
+    let q = resHead
+    let j = 0
+    while (head) {
+        NodeList[j].next = NodeList[j+1] ?? null
+        NodeList[j].random = head.random ? NodeList[head.random.index] : null
+        q.next = NodeList[j]
+
+        // 下轮
+        head = head.next
+        q = q.next
+        j++
+    }
+
+    return resHead.next
+};
+```
+
+map 的写法是真精简啊
+
+```js
+var copyRandomList = function(head) {
+    let p = head
+    let map = new Map()
+    while (p) {
+        map.set(p, new _Node(p.val))
+        // 下轮
+        p = p.next
+    }
+
+
+    p = head
+    while (p) {
+        const node = map.get(p)
+        node.next = map.get(p.next) ?? null
+        node.random = map.get(p.random) ?? null
+
+        // 下轮
+        p = p.next
+    }
+
+    return map.get(head)
+};
+```
+
+### [19. 删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
+加个了哑节点，这样计数简单点
+
+```js
+var removeNthFromEnd = function(head, n) {
+
+    let dummy = new ListNode(null, head)
+
+    if (!head) {
+        return head
+    }
+
+    // 计算链表长度
+    let q = dummy
+    let len = 0
+    while (q) {
+        q = q.next
+        len++
+    }
+
+    // 倒数第 n 个 = 正数第 len-n+1 个
+    // 我要找第 len-n 个
+    // Node(len-n).next = Node(len-n).next.next
+    let p = dummy
+    for (let i=1; i<len-n; i++) {
+        p = p.next
+    }
+    p.next = p.next.next
+    return dummy.next
+};
+```
+
+可以用双指针，一个指向 dummy，一个指向 n 个。然后同步向后移动
+
+```js
+var removeNthFromEnd = function(head, n) {
+
+    let dummy = new ListNode(null, head)
+
+
+    // 倒数第 n+1 个
+    // Node(倒数n+1).next = Node(倒数n-1).next.next
+
+    // 假设 n=1 , 让 p2卡最后一个节点，p1就是倒数 n+1个
+    // 【dummy】->【1】->【2】->【3】->【4】
+    //    ^p1      ^p2
+    //                          ^p1   ^p2
+
+    let p1 = dummy, p2 = dummy
+    for (let i=0; i<n; i++) {
+        p2 = p2.next
+    }
+
+    while (p2.next) {
+        p1 = p1.next
+        p2 = p2.next
+    }
+    p1.next = p1.next.next
+
+    return dummy.next
+};
+```
+
+### [25. K 个一组翻转链表](https://leetcode.cn/problems/reverse-nodes-in-k-group/)
+
+```js
+var reverseKGroup = function(head, k) {
+
+    const countListNodeLen = (head) => {
+        let len = 0
+        let p = head
+        while (p) {
+            p = p.next
+            len++
+        }
+        return len
+    }
+
+    const dfs = (head) => {
+        // 最后一层
+        // 不够 k 个了
+        if (countListNodeLen(head) < k) {
+            return head
+        }
+
+        // 其他层
+        let p1 = null, p2 = head
+        for (let i = 1; i <= k; i++) {
+            const p3 = p2.next
+            p2.next = p1
+            // 下一轮
+            p1 = p2
+            p2 = p3
+        }
+        // 反转后 p1头结点、head尾节点
+        head.next = dfs(p2)
+
+        return p1 // 返回反转后的头
+
+    }
+
+     return dfs(head)
+
+};
+```
+
+### [24. 两两交换链表中的节点](https://leetcode.cn/problems/swap-nodes-in-pairs/)
+
+就是 25 题，k=2 的情况
+
+```js
+var swapPairs = function(head) {
+    return reverseKGroup(head, 2)  // reverseKGroup 看 25 题源码
+};
+```
+
+自己手写一遍 TODO
+
+```
+```
+
+
+
+### [23. 合并 K 个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
+
+第一个想法，把 lists[0] 放到结果中，for i 从 1 开始，每轮做合并 2 个有序链表（leetcode21）
+
+```js
+var mergeKLists = function(lists) {
+    if (!lists.length) return null
+
+    let res = lists[0]
+
+    for (let i = 1; i < lists.length; i++) {
+        res = merge(res, lists[i])
+    }
+
+    return res
+};
+
+function merge(l1, l2) {
+    const dummy = new ListNode(0)
+    let p = dummy
+
+    while (l1 && l2) {
+        if (l1.val < l2.val) {
+            p.next = l1
+            l1 = l1.next
+        } else {
+            p.next = l2
+            l2 = l2.next
+        }
+        p = p.next
+    }
+
+    p.next = l1 || l2
+
+    return dummy.next
+}
+```
+
+新思路：把 lists 的每个元素找出来，他们都是各自链表的头结点，每次只需要找出最小的连接到结果即可
+
+❌ 代码没问题，但是超时了
+
+```js
+var mergeKLists = function(lists) {
+    // key是节点，value是索引
+    const map = new Map()
+    for (let node of lists) {
+        if (node) { // 看示例 3，还会有不存的情况
+            map.set(node, true)
+        }
+    }
+
+    const dummy = new ListNode(null)
+    let p = dummy
+
+    while (map.size > 0) {
+        // 对比指针哪个小
+        const minNode = Array.from(map.keys()).sort((a, b) => a.val - b.val)[0]
+        p.next = minNode
+        p = p.next
+        // 更新 map
+        map.delete(minNode)
+        if (minNode.next) {
+            map.set(minNode.next, true)
+        }
+    }
+
+    return dummy.next
+
+};
+```
+
+主要是找出 minNode 复杂度太高了
+
+```js
+Array.from(map.keys()) 
+// 等价于
+const result = []
+for (const key of map.keys()) {
+  result.push(key)
+}
+
+// 复杂度分析： （k是数组元素）
+map.keys() //  O(k)
+Array.from //  O(k)
+sort  // O(klogk)  
+// 两个没有嵌套，所以合起来是 O(k * klogk)
+```
+
+但其实我们没必要完整排序，只需找到最小值就行
+
+```js
+var mergeKLists = function(lists) {
+
+    const findMinNode = (nodes) => {
+        let min = nodes[0]
+        for (let i = 1; i < nodes.length; i++) {
+            if (nodes[i].val < min.val) {
+                min = nodes[i]
+            }
+        }
+        return min
+    }
+
+    // key是节点，value是索引
+    const map = new Map()
+    for (let node of lists) {
+        if (node) { // 看示例 3，还会有不存的情况
+            map.set(node, true)
+        }
+    }
+
+    const dummy = new ListNode(null)
+    let p = dummy
+
+    while (map.size > 0) {
+        // 对比指针哪个小
+        const nodeLists = Array.from(map.keys())
+        const minNode = findMinNode(nodeLists)
+        p.next = minNode
+        p = p.next
+        // 更新 map
+        map.delete(minNode)
+        if (minNode.next) {
+            map.set(minNode.next, true)
+        }
+    }
+
+    return dummy.next
+
+};
+```
+
+经过 chatgpt 提醒，其实这题没必要用 map 存，中间还需要转成数组
+
+```js
+var mergeKLists = function(lists) {
+
+    const findMinNodeIndex = (nodes) => {
+        let min = nodes[0]
+        let minIndex = 0
+        for (let i = 1; i < nodes.length; i++) {
+            if (nodes[i].val < min.val) {
+                min = nodes[i]
+                minIndex = i
+            }
+        }
+        return minIndex
+    }
+
+    const dummy = new ListNode(null)
+    let p = dummy
+
+    lists = lists.filter(Boolean)
+    while (lists.length > 0) {
+        // 对比指针哪个小
+        const index = findMinNodeIndex(lists)
+        let minNode = lists[index]
+        p.next = minNode
+        p = p.next
+        if (minNode.next) {
+            lists[index] = minNode.next
+        } else {
+            lists.splice(index, 1)
+        }
+
+    }
+
+    return dummy.next
+
+};
+```
+
+还可以堆进一步优化，但是 JS 没有内置堆，需要开发者自己实现
 
 ## 图
 
@@ -7499,7 +8052,98 @@ function topologicalSortStrings(nodes, edges) {
 }
 ```
 
+## 堆(Heap)
 
+### 前置补充
+
+#### 结构
+
+https://blog.csdn.net/Tnkle_sone/article/details/129580158
+
+堆一定是完全二叉树，所以可以使用数组数据存储
+
+核心实现：
+
+* 插入节点，向上调整节点 
+* 出堆（大顶堆为最大值；小顶堆为最小值）
+
+n个节点构成的堆（完全二叉树）调整时间复杂度为o(nlogn)
+
+```
+     0
+    / \
+   1   2
+  / \
+ 3   4
+
+用数组的索引代表树的节点。实际节点值存储在数组中
+
+
+节点n 
+=>父节点  Math.floor((n - 1) / 2);
+=>左子节点 n * 2 + 1;
+=>右子节点 (n + 1) * 2 = 左节点 + 1;
+```
+
+#### 实现堆
+
+JS 没有内置堆，只能自己实现
+
+```js
+class MinHeap {
+  constructor(compare) {
+    this.heap = []
+    this.compare = compare
+  }
+
+  push(x) {
+    this.heap.push(x)
+    this._up(this.heap.length - 1)
+  }
+
+  pop() {
+    if (this.heap.length === 1) return this.heap.pop()
+
+    const top = this.heap[0]
+    this.heap[0] = this.heap.pop()
+    this._down(0)
+    return top
+  }
+
+  size() {
+    return this.heap.length
+  }
+
+  _up(i) {
+    while (i > 0) {
+      const p = (i - 1) >> 1
+      if (this.compare(this.heap[i], this.heap[p]) >= 0) break
+      [this.heap[i], this.heap[p]] = [this.heap[p], this.heap[i]]
+      i = p
+    }
+  }
+
+  _down(i) {
+    const n = this.heap.length
+    while (true) {
+      let l = i * 2 + 1
+      let r = i * 2 + 2
+      let smallest = i
+
+      if (l < n && this.compare(this.heap[l], this.heap[smallest]) < 0) {
+        smallest = l
+      }
+      if (r < n && this.compare(this.heap[r], this.heap[smallest]) < 0) {
+        smallest = r
+      }
+      if (smallest === i) break
+
+      ;[this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]]
+      i = smallest
+    }
+  }
+}
+```
 
 ## 排序算法
 
@@ -7812,7 +8456,61 @@ var firstMissingPositive = function(nums) {
 };
 ```
 
+### [146. LRU 缓存](https://leetcode.cn/problems/lru-cache/)
 
+注意 
+
+* map 是有顺序的， set(a) set(b) ,顺序就是 a,b。如果 key 已存在需要删除重新 set 才能有序
+* keys 返回迭代器，通过 .next().value 取到第一个值
+
+```js
+/**
+ * @param {number} capacity
+ */
+var LRUCache = function(capacity) {
+    this.capacity = capacity
+    this.cache = new Map()
+};
+
+/**
+ * @param {number} key
+ * @return {number}
+ */
+LRUCache.prototype.get = function(key) {
+    // 没有返回 -1
+    if (!this.cache.has(key)) {
+        return -1
+    }
+    // 有就更新下顺序
+    const value = this.cache.get(key)
+    this.cache.delete(key)
+    this.cache.set(key, value)
+    // 返回 value
+    return value
+};
+
+/**
+ * @param {number} key
+ * @param {number} value
+ * @return {void}
+ */
+LRUCache.prototype.put = function(key, value) {
+
+    if (this.cache.has(key)) {
+        // 存在就更新
+        this.cache.delete(key)
+        this.cache.set(key, value)
+    } else{
+        // 不存在就是新增了，判断容量是否满了
+        if (this.cache.size >= this.capacity) {
+            // 迭代器取数据不能用索引, this.cache.keys()[0] ❌
+            const history = this.cache.keys().next().value
+            this.cache.delete(history)
+        }
+        this.cache.set(key, value)
+    }
+};
+```
 
 ## 补充
 
@@ -7895,119 +8593,6 @@ func KMP(src, pat string) int {
 	}
 	return -1
 }
-```
-
-### 堆(Heap)
-
-https://blog.csdn.net/Tnkle_sone/article/details/129580158
-
-堆一定是完全二叉树，所以可以使用数组数据存储
-
-核心实现：
-
-* 插入节点，向上调整节点 
-* 出堆（大顶堆为最大值；小顶堆为最小值）
-
-n个节点构成的堆（完全二叉树）调整时间复杂度为o(nlogn)
-
-```
-     0
-    / \
-   1   2
-  / \
- 3   4
-
-用数组的索引代表树的节点。实际节点值存储在数组中
-
-
-节点n 
-=>父节点  Math.floor((n - 1) / 2);
-=>左子节点 n * 2 + 1;
-=>右子节点 (n + 1) * 2 = 左节点 + 1;
-```
-
-
-
-```js
-/**
- *  堆排序
- *  @param Array array 用于初始化的数组
- *  @param Function compareFun 自定义比较函数
- *  @returns {Heap}
- *  */ 
-class Heap {
-    constructor(array = [], compareFun = null) {
-      this.queue = [];
-      if (compareFun) {
-        this.compareFun = compareFun;
-      }
-      for (let index = 0; index < array.length; index++) {
-        this.push(array[index]);
-      }
-    }
-  	// 默认的比较函数，小顶堆
-    compareFun(node1, node2) { // node1是父、node2是子节点
-      return node1 < node2;
-    }
-  	// 取堆顶数据
-   	front() {
-      if (this.queue.length == 0) return null;
-      return this.queue[0];
-    }
-  	// 出堆
-    pop() {
-      if (this.queue.length == 0) return null;
-      if (this.queue.length == 1) return this.queue.pop();
-      const top = this.queue[0];
-      this.queue[0] = this.queue.pop();
-      this.sink();
-      return top;
-    }
-  	// 入堆
-    push(node) {
-      this.queue.push(node);
-      this.swim();
-    }
-    //下沉
-    sink() {
-      let curIdx = 0;
-      let minInd = this.getMinInd(curIdx);
-      while (this.compareFun(this.queue[curIdx], this.queue[minInd])) {
-        [this.queue[curIdx], this.queue[minInd]] = [
-          this.queue[minInd],
-          this.queue[curIdx],
-        ];
-        curIdx = minInd;
-        minInd = this.getMinInd(curIdx);
-      }
-    }
-    getMinInd(curIdx) {
-      let leftInd = curIdx * 2 + 1;
-      let rightInd = leftInd + 1;
-      let minInd = leftInd;
-      if (
-        rightInd < this.queue.length &&
-        this.compareFun(this.queue[leftInd], this.queue[rightInd])
-      )
-        minInd = rightInd;
-      return minInd;
-    }
-    //上浮
-    swim() {
-      let curIdx = this.queue.length - 1;
-      let fatherIdx = Math.floor((curIdx - 1) / 2); // 注意：只有一个节点的时候，curIdx、fatherIdx都是0
-      while (this.compareFun(this.queue[fatherIdx], this.queue[curIdx])<0) {
-        [this.queue[curIdx], this.queue[fatherIdx]] = [
-          this.queue[fatherIdx],
-          this.queue[curIdx],
-        ];
-        curIdx = fatherIdx;
-        fatherIdx = Math.floor((curIdx - 1) / 2);
-      }
-    }
-   
-  }
-  
 ```
 
 ### 排序
@@ -8198,6 +8783,30 @@ max=Math.max(max,sum)
 上面的逻辑有一个错误点，例如当数组为[-1]， max错误的计算为0，max应该是-1
 
 如何规避这个问题啊？
+
+### max
+
+* 比较数字，且只要最值不需要知道节点位置： Math.max(...[1, 2, 3])
+
+* 排序 arr.sort , 这种是最消耗性能的，只需要一个最值结果把整个数组排序
+
+* 比较对象、或者需要确定位置 leetcode23 题找到数字中最小的链表节点
+
+  线性扫描
+
+  ```js
+  const findMinNode = (nodes) => {
+      let min = nodes[0]
+      for (let i = 1; i < nodes.length; i++) {
+          if (nodes[i].val < min.val) {
+              min = nodes[i]
+          }
+      }
+      return min
+  }
+  ```
+
+  
 
 ### 从问题分析
 
