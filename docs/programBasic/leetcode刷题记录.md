@@ -1,8 +1,23 @@
 # 算法
 
-
-
 ## 贪心算法
+
+### [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
+第 i 天卖出，计算今天最大利润，遍历之前的每天做差，效率太低会超时。这里直接记录之前出现的最低价不必遍历了
+
+```js
+var maxProfit = function(prices) {
+    let max = 0
+    let min = prices[0]  // 一直记录 i 天之前出现的最低价
+    for (let i=0; i<prices.length; i++) {
+        max = Math.max(max, prices[i]-min)
+        min = Math.min(min, prices[i]) // 和今天相比，计算给下一轮用的 min
+    }
+
+    return max
+};
+```
 
 ### [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
 
@@ -17,8 +32,6 @@ var maxProfit = function(prices){
 ```
 
 有动态规划解法
-
-
 
 ### [455. 分发饼干](https://leetcode.cn/problems/assign-cookies/)
 
@@ -72,7 +85,7 @@ var eraseOverlapIntervals = function(intervals) {
 
 ### [55. 跳跃游戏](https://leetcode.cn/problems/jump-game/)
 
-**动态规划解法**
+**线性dp**
 
 dp[i]表示：索引为i的位置是否可达的
 
@@ -109,6 +122,56 @@ var canJump = function(nums) {
     return right>=nums.length-1 //能覆盖的右侧索引>=数组最大索引，才能跳到最后一位
 };
 ```
+
+### [45. 跳跃游戏 II](https://leetcode.cn/problems/jump-game-ii/)
+
+**线性dp**
+
+```js
+var jump = function(nums) {
+    // dp[i] 表示跳到索引i，最少的步数
+    // dp[i]  dp[j] + j
+
+    let dp = new Array(nums.length).fill(Infinity)
+    dp[0] = 0 // 第一位不用跳，步数 0
+
+    for (let i = 1; i < nums.length; i++) { // i 是 dp 索引
+        // 从左向右遍历，第一个能到达 i 的步数最小
+      	//  你可以想象 j=1 、j=3 都可以跳到i。从更前面到j=3还需要步数
+        for (let j = 0; j < i; j++) { 
+            if (j+nums[j] >= i) {
+                dp[i] = dp[j] + 1
+                break // 找到第一个就不继续找了
+            }
+        }
+    }
+
+    return dp[nums.length-1]
+};
+```
+
+**贪心解法**
+
+```js
+var jump = function(nums) {
+    let position = nums.length-1
+    let count = 0
+    while (position > 0) {
+      	// 从前往后找第一个能到position位置的就结束
+      	// 这样移动的距离最大，步数尽可能小
+        for (let i = 0; i < nums.length; i++) { 
+           if(i+nums[i] >= position) {
+               position = i
+               count++
+               break
+           }
+        }
+    }
+    return count
+};
+```
+
+
 
 ### [881. 救生艇](https://leetcode.cn/problems/boats-to-save-people/)
 
@@ -174,61 +237,143 @@ var findMinArrowShots = function(points) {
 
 ## 二分查找
 
-二分查找要求数据必须有序
+ ❗ ❗ ❗ ❗**二分查找要求数据必须有序**  ❗ ❗ ❗ ❗
 
-模版: 
+用于查找有序数组、部分有序数组，二分查找的核心就是每次搜索丢弃一半
+
+二分的核心就是丢弃一部分数据，查找将复杂度从直接变量的 O(n)降到 O(logn)
+
+**1、while(left <= right) 模版**  
+
+用于查找 target 在数组的位置
+
+* 二分要么找到 target 的位置是 mid
+* 要么最后没有找到，一轮结束后 left 就是 target 如果存在应该放置的位置（35 题）, 如果放置位置是 length 这是一个越界的位置，如果你需要用考虑单独处理（74题）
 
 ```js
+// --- 数组长度无论奇偶，left、right 都会有一个被推动，不会死循环 ---
 function xx(arr,target){
-  // 这里需要包含等于。即 left=right时，需要判断是否就是target
   while(left<=right){
     // 向下取整。 
     // 偶数个元素：[3,4]。(0+1)/2=0 （中间两个元素中的前一个元素）
     // 奇数个元素：[3,4,5]。(0+2)/2=1 （中间元素）
 		const mid=Math.floor((left+right)/2) 
   	if(arr[mid]===target){
-   	 return 结果
+   	  return 结果
   	}else if(arr[mid]<target){
     	left=mid+1
   	}	else{
     	right=mid-1
   	}
-	}
-  
+	} 
   return 没找到，输出
-  // 注意：
-  // 无论元素个数是奇还是偶，都会走到left===right的情况
-  // 情况1：如果arr[mid]===target，最终结果===> mid位置就是所在位置
-  // 情况2：如果不等于，那么mid在 left===right 的位置，right、left有一个位置会变化。注意mid的值可能溢出数组了，例如arr=[1],target=2。最终结果===> 由while外部的return输出
-  //   2-1 arr[mid]<target , left后移一位
-
-  //   2-2 target<arr[mid] , right前移一位
+}
+// --- 数组长度无论奇偶，left、right 都会有一个被推动，不会死循环 ---
   
-  
-  // 最后一轮 left===right ，(target)表示
+// ------------- 逻辑终止时指针位置：right+1 === left ------------- 
+// 1、找到 target 
      mid=l=r
      	 |
-  x    y        z
-  
-  // arr[mid]!==target的情况也很有价值（35、69题），数组中没有target了，下面（target）表示其应该防止的位置
-  // 2-1
+  x    y=(target)     z
+
+// 2、找不到 target （这种情况也很有价值，35、69题）
+//    即left指向位置是把 target 插入有序数组应该在的位置
+//    注意点：可以假设下面数组就是[x, y]，left 对于原数组来说是越界的，需要单独处理 （74）
+
        mid=r          l
      	   |            |
   x      y  (target)  z
   
-  // 2-2
+  
   r           mid=l
   |    	        |
   x (target)    y      z
-  
-  // 总结最后一轮： target左侧是r，右侧是l
-  
-}
+
 ```
 
-### [704. 二分查找](https://leetcode.cn/problems/binary-search)
+**2、while(left < right) 模版**  
 
-二分法：
+查找**左/右边界**、第一个大于/等于 target 的位置
+
+[1,2,2,2,3] 这中不是严格地址的序列，数组 2 出现多次，假设target=2我们可以找到包含 2 的区间
+
+查看 34 题，需要求出来左右边界，两种方式合并处理
+
+```js
+// 找左边界
+function leftBound(nums, target) {
+    let left = 0
+    let right = nums.length-1
+    while (left < right) {
+      	// 向下取整
+      	// 奇数怎么取整都是一样的，这里出现差异是考虑偶数, 从例子思考：
+      	// nums=[6,6] target=6, 向上取整 mid=1
+      	// target <= nums[mid] 满足，right 是 1，mid 还是 1，这时候没人推动指针while就死循环了
+        const mid = Math.floor((right+left)/2)
+				// 收敛区间
+        if (target <= nums[mid]) {
+          	// target 在左侧，这里我们不能 right = mid-1 ,这样会丢弃掉 mid
+            right = mid  
+        } else {
+          	// 右边正常找
+            left = mid + 1
+        }
+    }
+		
+    return left // left=right 返回谁都行
+}
+// 找右边界
+function rightBound(nums, target) {
+    let left = 0
+    let right = nums.length - 1
+
+    while (left < right) {
+      	// 向上取整
+        const mid = Math.ceil((right+left)/2)   
+        if (nums[mid] <= target) {
+          	// target 在右侧，这里我们不能 left = mid+1 ,这样会丢弃掉 mid
+            left = mid
+        } else {
+            right = mid - 1
+        }
+    }
+
+    
+    return left // left=right 返回谁都行
+}
+
+// 收尾逻辑，因为 target 没有，也会返回边界
+if (rightBound < nums.length && nums[rightBound] === target && nums[leftBound] === target) {
+    console.log("找到了，索引是:", index);
+} else {
+    console.log("没找到，但应该插在索引:", index);
+}
+
+
+// ------------- 逻辑终止时指针位置 left===right -------------
+// 1、找到 target 
+//   找左边界   找左边界
+	     r=l       r=l       
+     	  |					|
+  x    target   target   z
+  
+// 2、找不到 target 和之前一样
+//		注意点：假设数组[x, y],这里会出现越界
+//          
+        mid          l=r
+     	   |            |
+  x      y  (target)  z
+  
+ l=r           mid
+  |    	        |
+  x (target)    y      z
+```
+
+### 找值 while(left<=right)
+
+#### [704. 二分查找](https://leetcode.cn/problems/binary-search)
+
+二分法
 
 ```js
 var binarySearch = function(nums, target) {
@@ -247,7 +392,25 @@ var binarySearch = function(nums, target) {
 };
 ```
 
-### [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position)
+#### [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position)
+
+第一反应，直接按照题目要求找，复杂度 O(n) 不符合题目要求，题目要求 O(logn)
+
+```js
+var searchInsert = function(nums, target) {
+    for (let i = 0; i < nums.length; i++) {
+        if (nums[i] === target) {
+            return i
+        } else if (target < nums[i]) {
+            // 这里最开始写的 target > nums[i] , 这是错的，因为找到等于之前一直成立
+            return i
+        }
+    }
+    // 测试用例:[1,3] 5
+    // 结果应该是 2 ，其实就是追加了 1 位
+    return nums.length
+};
+```
 
 二分法
 
@@ -273,7 +436,7 @@ var searchInsert = function(nums, target) {
 };
 ```
 
-### [69. x 的平方根 ](https://leetcode.cn/problems/sqrtx/)
+#### [69. x 的平方根 ](https://leetcode.cn/problems/sqrtx/)
 
 二分法
 
@@ -300,24 +463,61 @@ var mySqrt = function(x) {
 };
 ```
 
-### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence)
+#### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence)
 
-动态规划
+dfs 回溯法 ，很时候这种不连续的子集（选、不选），但是超时
+
+只有 return 那种支持记忆化和迭代转换，哎对正确答案没帮助，就是练练手
 
 ```js
 var lengthOfLIS = function(nums) {
-    // dp[i] : 0-i元素中最长递增子序列值
-    let dp=new Array(nums.length).fill(1)
 
-    for (let i=1;i<nums.length;i++){
-        for (let j = 0; j < i; j++) {
-            // 一直在更新dp[i]
-            if (nums[j]<nums[i]){
-                dp[i]=Math.max(dp[i],dp[j]+1)
-            }
+    let max = 0
+    const dfs = (curIndex, path) => {
+        // 最后一层
+        if (curIndex === nums.length) {
+            max = Math.max(max, path.length)
+            return 
+        }
+
+        // 其余任意层
+        // 不选
+        dfs(curIndex+1, path)
+        // 选 - 严格递增： path 为空的时候直接选，否则比最后一个元素大才选
+        if (path.length === 0 || (nums[curIndex] > path[path.length-1])) {
+            path.push(nums[curIndex])
+            dfs(curIndex+1, path)
+            path.pop()
         }
     }
-    return  Math.max(...dp)
+    dfs(0, [])
+    return max
+};
+```
+
+动态规划：虽然上面 dfs 没法直接转换为迭代，但是选与不选的思路是一致的
+
+```js
+var lengthOfLIS = function(nums) {
+    // dp[i] 表示以 num[i] 结尾的子序列最大长度
+    dp = new Array(nums.length).fill(1)
+
+    // dp[i] 当前， dp[j] 看过去最大长度
+    for (let i = 0; i < nums.length; i++) {
+        for (let j = 0; j < i; j++) {
+            // 大于就能选，选 nums[i] 就是 dp[i] = dp[j]+1
+           if (nums[i] > nums[j]) {
+               dp[i] = Math.max(dp[i], dp[j]+1)
+           }
+        }
+    }
+
+    let max = 0
+    for (const item of dp) {
+        max = Math.max(max, item)
+    }
+    return max
+
 };
 ```
 
@@ -366,7 +566,7 @@ var lengthOfLIS = function(nums) {
 };
 ```
 
-### [4. 寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays)
+#### [4. 寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays)
 
 二分
 
@@ -405,7 +605,7 @@ var findMedianSortedArrays = function(nums1, nums2) {
 
 ```
 
-### [162. 寻找峰值](https://leetcode.cn/problems/find-peak-element/)
+#### [162. 寻找峰值](https://leetcode.cn/problems/find-peak-element/)
 
 暴力模拟
 
@@ -476,130 +676,55 @@ var findPeakElement = function(nums) {
 };
 ```
 
-### [74. 搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/)
+#### [74. 搜索二维矩阵](https://leetcode.cn/problems/search-a-2d-matrix/)
 
-二分法
+行二分查找 + 列二分查找
 
 ```js
 var searchMatrix = function(matrix, target) {
-    function searchIndex(nums,target){
-        let left=0,right=nums.length-1
-        while (left<=right){
-            const mid=Math.floor((left+right)/2)
-            if(nums[mid]===target){
-                return {index:mid,status:true}
-            }else if (nums[mid]<target){
-                left=mid+1
-            }else {
-                right=mid-1
+    // 用第一个用例想下
+    // 取每行第1个组成数组[1, 10, 23]，找不到 mid 最后命中的索引是1，可是 target=3 在索引0的数组里，还需额外操作-1
+    // 取每行最后1个组成数组 [7, 20, 60]，找不到 mid 最后命中索引是 0，刚好就在第0个数组就行
+
+    const binarySearch = (list, target) => {
+        let left = 0, right = list.length
+        let mid
+        while (left <= right) {
+            mid = Math.floor((left+right)/2)
+            if (list[mid] === target) {
+                return { find: true, index: mid}
+            } else if (target > list[mid]) {
+                left = mid+1
+            } else {
+                right = mid-1
             }
         }
-        return  {index:right,status:false}
+        return { find: false, index: left}
     }
 
-    // 先用二分法确定在哪行
-    let firstList=[]
-    for (let row of matrix){
-        firstList.push(row[0])
+    const list = matrix.map(arr => arr[arr.length-1])
+    // 行二分查找
+    const rows = binarySearch(list, target)
+    if (rows.find) {
+       return true
+    }
+    if (rows.index === matrix.length) {
+        return false // 越界了，在最后一行之外
     }
 
-    const {index,status}=searchIndex(firstList,target)
-    if (status){
+    // 列二分查找
+    const cols = binarySearch(matrix[rows.index], target)
+    if (cols.find) {
         return true
-    }else if (index<firstList.length&&index>=0){
-        return searchIndex(matrix[index],target).status
-    }else {
-        return false
     }
+    return false
 };
 ```
 
-### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
+#### [374. 猜数字大小](https://leetcode.cn/problems/guess-number-higher-or-lower/)
 
 二分
 
-```js
-var searchRange = function(nums, target) {
-    function search(nums,target){
-        let left=0,right=nums.length
-        while (left<=right){
-            const mid=Math.floor((left+right)/2)
-            if (target===nums[mid]){
-                return {status:true,index: mid}
-            }else if(target<nums[mid]){
-                right=mid-1
-            }else {
-                left=mid+1
-            }
-        }
-        return  {status:false,index: -1}
-    }
-
-    const {status,index}=search(nums,target)
-    if (status){
-
-        let rightOffset=index
-        while (nums[rightOffset]===nums[rightOffset+1]){
-            rightOffset++
-        }
-
-        let leftOffset=index
-        while (nums[leftOffset]===nums[leftOffset-1]){
-            leftOffset--
-        }
-
-        return [leftOffset,rightOffset]
-
-    }else {
-        return [-1,-1]
-    }
-
-};
-```
-
-### [153. 寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
-
-排序
-
-```js
-var findMin = function(nums) {
-    return nums.sort((a,b)=>a-b)[0]
-};
-```
-
-二分
-
-![image-20240229225705008](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240229225705rnlPrh.png)
-
-旋转后的图
-
-```js
-// [a[n-1], a[0], a[1], a[2], ..., a[n-2]]
-//  最小值a[0]小于左侧、右侧，且只有他一个值符合这种条件
-
-
-var findMin = function(nums) {
-    let left=0,right=nums.length-1
-    // 这里没有使用<=。像这种收缩区间的逻辑，最后必然会有left===right的情况
-  
-    // 二分查找是while (left<=right)，是因为需要再 left===right验证下结果是否是target
-    // 这里left<right时循环，循环结束时left===right，直接输出了 nums[left]或nums[right]
-    while (left<right){ 
-        const mid=Math.floor((left+right)/2)
-        // 题目有元素值互不相同的要求，所以没有等于的情况
-        if(nums[mid]<nums[right]){
-            right=mid
-        }else if (nums[mid]>nums[right]) {
-            left=mid+1
-        }
-    }
-    return nums[left]
-};
-```
-
-### [374. 猜数字大小](https://leetcode.cn/problems/guess-number-higher-or-lower/)
-
-二分
 ```js
 var guessNumber = function(n) {
     let left=1,right=n
@@ -619,15 +744,181 @@ var guessNumber = function(n) {
 };
 ```
 
-### 总结
+#### [33. 搜索旋转排序数组](https://leetcode.cn/problems/search-in-rotated-sorted-array/)
 
+题目时间复杂度为 `O(log n)`
+
+这道题在升序数组k 的位置进行旋转，这人就会形成 [k, n-1]、[0,k-1] 这两部分别是升序
+
+二分的核心就是丢弃一部分查找将复杂度从直接变量的 O(n)降到 O(logn)
+
+我理解这里是一直在尝试找个递增区间然后用二分法，如果递增区间没有 target 就缩掉这个递增区间，继续在非递增里继递增区间
+
+```js
+var search = function(nums, target) {
+    let left = 0, right = nums.length-1
+    while (left <= right) {
+        const mid = Math.floor((left+right)/2)
+        // 刚好找到
+        if (target === nums[mid]) {
+            return mid
+        }
+        // 特性：必有1侧是升序（也有可能2侧都是升序），所以两个 if 肯定命中一个，不会死循环
+        //  原数组 [1,2,3,4,5]
+      	//             |mid
+    		//  旋转1  [5,1,2,3,4] // mid 右侧是移入了3，原本就是升序，所以右侧还是升序
+        //  旋转2  [3,4,5,1,2] // 移入了 1,2，原本就是升序，所以右侧还是升序
+      	//  旋转3  [2,3,4,5,1] // 移入了 5,1，移入的部分不是原本的升序了，所以右侧乱序，但是左侧是原本的升序
+      
+       
+        // 前面判断了 mid 位置不是 target ，所以后面 left=mid-1,right=mid+1，要把mid直接丢弃
+        // 如果是右侧升序
+        if (nums[mid] <= nums[right]) {
+            if (target > nums[mid] && target <= nums[right]) { 
+              	// target > nums[mid] 没等号是因为之前判断过了
+                // target <= nums[right] 判断是否在右区间内
+                left = mid+1
+            } else {
+                right = mid-1 //
+            }
+        } else {
+            // 如果是左侧升序
+            if (target < nums[mid] && target >= nums[left]) {
+                // 在左区间
+                right = mid-1
+            } else {
+                left = mid+1 
+            }
+        }
+    }
+    return -1
+};
 ```
-while(left<right)
-  162、153都是通过二分收缩区间，最后返回left===right的那个值，不必再进行if判断了
 
-while(left<=right)
-	其他题都是，在二分区间找target值，需要left===right时对比下是否是target
+#### [287. 寻找重复数](https://leetcode.cn/problems/find-the-duplicate-number/)
 
+这题不是找中间索引，而是找中间值。好难理解
+
+```js
+var findDuplicate = function(nums) {
+    // 题目说了，数组长度是n+1, 元素值范围是[1,n], 所以 n=nums.length-1
+    let n = nums.length-1
+    let minValue = 1, maxValue = n
+
+    while (minValue <= maxValue) {
+        const midValue =  Math.floor((minValue+maxValue)/2)
+
+        // 这有这里才涉及到实际数组，其他都是基于最值的分析
+        // 遍历数组，看下有多少数字比中值小
+        let count = 0
+        for (const num of nums) {
+            if (num <= midValue) {
+                count++
+            }
+        }
+
+        if (count > midValue) {
+            // 如果不重复[1,2,....,midVlaue] 共midVlaue个数
+            // 现在 count 比 midVlaue 大，证明肯定有重复的数
+            maxValue = midValue-1
+        } else {
+            minValue = midValue+1
+        }
+    }
+
+    // ??? 为啥返回左边界，我完全理解不了。这是因为目前所有二分都是返回左边界
+    return minValue
+};
+```
+
+### 找边界 while(left<right)
+
+#### [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+要求复杂度 `O(log n)`
+
+二分只能在递增数组里找个一个符合 target 的值
+
+```js
+var searchRange = function(nums, target) {
+    
+    // 二分查找边界
+    const binarySearch = (nums, target, boundary) => {
+        let left = 0, right = nums.length
+        while (left < right) {
+
+            if (boundary === 'left') {
+                let mid = Math.floor((left+right)/2)
+                if (target <= nums[mid]) {
+                    right = mid
+                } else {
+                    left = mid+1
+                }
+            }
+            if (boundary === 'right') {
+                let mid = Math.ceil((left+right)/2)
+                if (target >= nums[mid]) {
+                    left = mid
+                } else {
+                    right = mid-1
+                }
+            }
+        }
+        return left
+    }
+
+    if (nums.length === 0) {
+        return [-1, -1]
+    }
+
+    const left = binarySearch(nums, target, 'left')
+    const right = binarySearch(nums, target, 'right')
+   
+    if (right < nums.length && nums[left] === target && nums[right] === target) {
+        return [left, right]
+    }
+    return [-1, -1]
+
+};
+```
+
+#### [153. 寻找旋转排序数组中的最小值](https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/)
+
+要求复杂度 `O(log n)`
+
+旋转后的样子
+
+![image-20260411140545567](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260411140545alGP8T.png)
+
+这题没有 target，这里也是使用了一个特性，nums[right] 满足 （用nums[left]也可以思考下范围 ）：
+
+ nums[mid] < nums[right] 时，mid 就是区间右边界
+
+![image-20260411140651580](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260411140652fPo4mI.png)
+
+ nums[mid] > nums[right] ，mid 就是区间左边界
+
+![image-20260411140758831](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260411140758Whhl36.png)
+
+这题实际上是找边界，边界缩到一个值上，这个值就是最小值（元素不重复最小值是唯一的）
+
+下面例子是找左边界
+
+```js
+var findMin = function(nums) {
+    let left = 0, right =nums.length-1
+    while (left < right) {
+        const mid =  Math.floor((left+right)/2) // 向下取整
+        if (nums[mid] < nums[right]) {
+            // 右边界
+            right = mid
+        } else if (nums[mid] > nums[right]) {
+            // 左边界
+             left = mid+1
+        }
+    }
+    return nums[left] // left\right相等，习惯上返回 left
+};
 ```
 
 ## 双指针
@@ -783,7 +1074,7 @@ var hasCycle = function(head) {
 };
 ```
 
-快慢指针
+快慢指针，相遇点一定是在环内的某个节点，不一定是入口节点
 
 ```js
 var hasCycle = function(head) {
@@ -1124,126 +1415,52 @@ var containsNearbyDuplicate = function(nums, k) {
 
 ```js
 var findAnagrams = function(s, p) {
+    const pHash = new Map()
+    for(const letter of p) {
+        const count = pHash.get(letter) ?? 0
+        pHash.set(letter, count+1)
+    }
 
-    function isSetIncludeStr(winHash,needHash){
-        for(let key of Object.keys(needHash)){
-            if(winHash[key]!==needHash[key]){
+    const isAnagrams = (winHash, pHash) => {
+        for(const [letter, count] of pHash.entries()) { 
+            if (winHash.get(letter) !== count) {
                 return false
             }
         }
         return true
     }
 
-    if (s.length<p.length){
-        return []
-    }
-    // 把p转成哈希（这是因为窗口也是哈希，便于比较两者是否包含相同且数量一致的字符）
-    let needHash={}
-    for (let val of p){
-        if(!needHash[val]){
-            needHash[val]=0
-        }
-        needHash[val]++
-    }
-
-    // 窗口宽度 起始
-    let left=0,right=0
-    // 窗口内容
-    let winHash={}
-    // 结果
-    let res=[]
-    for (;right<s.length;right++){
-        // 记录窗口内部的数据
-        if(!winHash[s[right]]){
-            winHash[s[right]]=0
-        }
-        winHash[s[right]]++
-
-
-        // 维护滑动窗口宽度。这里用if执行一次，就可以维护好窗口
-      	// 904题用while需要循环才能维护好
-        if (right-left+1>p.length){
-            winHash[s[left]]--
-
+    let winHash = new Map()
+    let left = 0
+    let res = []
+    for(let right = 0; right < s.length; right++) {
+				// 先放数据
+        const count = winHash.get(s[right]) ?? 0
+        winHash.set(s[right], count+1)
+				
+      	// 调整窗口
+        while(right-left+1 > p.length) {
+            const count = winHash.get(s[left])
+            if (count === 1) {
+                winHash.delete(s[left])
+            } else {
+                winHash.set(s[left], count-1)
+            }
+            
             left++
         }
-
-        //---- 一般题目都是这里处理逻辑 -----
-        // 这个题窗口宽度是p.length是才可能是异位词。
-        if (right-left+1===p.length){
-          // 判断是否为异位词 
-            if (isSetIncludeStr(winHash,needHash)){
-                res.push(left)
-            }
+        
+      	// 调整完毕判断是否记录
+        if(right-left+1 === p.length && isAnagrams(winHash, pHash)) {
+            res.push(left)
         }
-
+       
     }
     return res
 };
 ```
 
 ### [1456. 定长子串中元音的最大数目](https://leetcode.cn/problems/maximum-number-of-vowels-in-a-substring-of-given-length/)
-
-题目
-
-```js
-//给你字符串 s 和整数 k 。
-//
-// 请返回字符串 s 中长度为 k 的单个子字符串中可能包含的最大元音字母数。
-//
-// 英文中的 元音字母 为（a, e, i, o, u）。
-//
-//
-//
-// 示例 1：
-//
-// 输入：s = "abciiidef", k = 3
-//输出：3
-//解释：子字符串 "iii" 包含 3 个元音字母。
-//
-//
-// 示例 2：
-//
-// 输入：s = "aeiou", k = 2
-//输出：2
-//解释：任意长度为 2 的子字符串都包含 2 个元音字母。
-//
-//
-// 示例 3：
-//
-// 输入：s = "leetcode", k = 3
-//输出：2
-//解释："lee"、"eet" 和 "ode" 都包含 2 个元音字母。
-//
-//
-// 示例 4：
-//
-// 输入：s = "rhythms", k = 4
-//输出：0
-//解释：字符串 s 中不含任何元音字母。
-//
-//
-// 示例 5：
-//
-// 输入：s = "tryhard", k = 4
-//输出：1
-//
-//
-//
-//
-// 提示：
-//
-//
-// 1 <= s.length <= 10^5
-// s 由小写英文字母组成
-// 1 <= k <= s.length
-//
-//
-// Related Topics 字符串 滑动窗口 👍 92 👎 0
-
-```
-
-解
 
 ```js
 var maxVowels = function(s, k) {
@@ -1530,8 +1747,6 @@ var maxSlidingWindow = function(nums, k) {
     return ans
 };
 ```
-
-
 
 ## 递归与迭代
 
@@ -1967,22 +2182,7 @@ var rangeSumBST = function(root, low, high) {
 
 [b站大佬的讲解视频](https://www.bilibili.com/video/BV1mG4y1A7Gu/?spm_id_from=333.788&vd_source=e46d9099be60057b5a16a45fac0d5248)
 
-```js
-// 问题1：从str1、str2各选一个字符，共有多少组合？
-let str1='abc'
-let str2='def'
-
-// 答：常规思路，双层for循环嵌套
-for(let val1 of str1){
-  for(let val2 of str2){
-  
-	}
-}
-
-// 问题2：从str1、str2、....strn中各选一个字符，共有多少组合？
-// n层for循环怎么写？可见单纯的for表达能力有限，递归与for循环相似
-
-```
+### 回溯的理解
 
 下面这种增量构建答案的思路就是回溯
 
@@ -2027,9 +2227,11 @@ function backtrack (level,path) {
 		// 任意层核心是维护path，将符合添加的数据加入path
 		
 		path.push(xxx)
-    backtrack(level+1,path) // 1层的递归
 
+    backtrack(level+1,path) // 1层的递归
 		backtrack(level+1,path) // 1层的递归
+
+		path.pop(xxx)
     
 }
 
@@ -2037,6 +2239,57 @@ backtrack(0,[])
 ```
 
 回溯问题分为求子集、求组合、求排列回溯
+
+### path收集路径的3种思路
+
+ `dfs(node/curIndex, path)`  path 用来收集路径，node/curIndex 记录树的层级、字符串索引位置
+
+我一直以 path 路径都是根节点收集的，其实是可以收集任意起点的
+
+```js
+let res = []
+const dfs = (curIndex, path) => {
+  // 最后一层
+  if (path === 数组/字符串length) {
+    res.push(path.slice())
+  }
+  // 其余层
+  
+  // 情景1： 连续节点/连续子串/连续子集 ，就只有必选、多选的情况。 最经典的模板，与上节的模板是一样的
+  // 例子：17电话号码的组合
+   for (const item of [可选的集合]) {
+      path.push(item)
+      dfs(curIndex+1, path)
+      path.pop()
+   }
+
+  
+  // 情景2： 全排列/不必须连续的子串/不必须连续的子串， 选与不选两种情况，不选就是不连续的情况
+  // 例子：78子集
+  // - 不选
+  dfs(curIndex+1, path)
+  // - 选
+  path.push(数组/字符串[curIndex])
+  dfs(curIndex+1, path)
+  path.pop()
+}
+dfs(root, [])
+```
+
+情景3：前面都是从起点开始，也可以不从起点开始
+
+```js
+// 例子：79单词搜索
+
+const dfs = (curIndex, path) => {}
+
+// 枚举所有点作为起点，分别调用 dfs
+for() {
+	dfs()
+}
+```
+
+
 
 ### 子集型
 
@@ -2215,45 +2468,82 @@ var subsets = function(nums) {
 
 ```js
 var letterCombinations = function(digits) {
-    const record={
-        2:'abc',
-        3:'def',
-        4:'ghi',
-        5:'jkl',
-        6:'mno',
-        7:'pqrs',
-        8:'tuv',
-        9:'wxyz'
+    const data = {
+        '2': 'abc',
+        '3': 'def',
+        '4': 'ghi',
+        '5': 'jkl',
+        '6': 'mno',
+        '7': 'pqrs',
+        '8': 'tuv',
+        '9': 'wxyz',
     }
-
-    let ans=[]
-
-    // 用例"",计算的ans=[[]]，结果返回 [""],正确结果是[]。所以这里过滤掉
-    if(digits===''){
-        return []
-    }
-
-    function dfs(curIndex,path){
+    let res = []
+    const dfs = (curIndex, path) => {
         // 最后一层
-        if(curIndex===digits.length){
-            ans.push(path.slice()) 
+        if (curIndex === digits.length) {
+            res.push(path.join(''))
             return
         }
 
         // 其余层
-        for (let char of record[digits[curIndex]]){
-            path.push(char)
-            dfs(curIndex+1,path)
+        // 每个按钮有多种选择（前面的大多是 2 种，选与不选）
+        for (const item of data[digits[curIndex]]) {
+            path.push(item)
+            dfs(curIndex+1, path)
+            path.pop()
+        }
+
+    }
+
+    dfs(0, [])
+
+    return res
+};
+```
+
+#### [39. 组合总和](https://leetcode.cn/problems/combination-sum/)
+
+leetcode209 长度最小的子数组，表面上和这题差不多。实际上那个题要求子数组是连续的，这里不要求连续就可以在每一次列出所有可能
+
+```js
+var combinationSum = function(candidates, target) {
+
+    // 如果不用 curIndex ， 而是直接 for (const item of candidates)，就会出现下面重复的情况
+    // 测试用例:[2,3,6,7]  7
+    // 期望结果:[[2,2,3],[7]]
+    // 测试结果:[[2,2,3],[2,3,2],[3,2,2],[7]]
+
+    // 用 curIndex 标识上次走到哪里了，这次还可以选，就能出现重复元素了
+
+    let res = []
+    const dfs = (sum, path, curIndex) => {
+        // 最后一层
+        if (sum >= target) {
+            // 如果满足就提取
+            if (sum === target) {
+                res.push(path.slice())
+            }
+
+            return
+        }
+        // 其余层
+        for (let i = curIndex; i < candidates.length; i++) {
+            path.push(candidates[i])
+            dfs(sum+candidates[i], path, i)  // 路径上某条元素可以重复选，所以还是传入 i
             path.pop()
         }
     }
 
-    dfs(0,[])
-   
+    dfs(0, [], 0)
 
-    return ans.map(item=>item.join(''))
+    return res
 };
 ```
+
+
+
+
 
 #### [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
 
@@ -2335,6 +2625,56 @@ var partition = function(s) {
     backtrace(0,[])
 
     return ans
+};
+```
+
+#### [79. 单词搜索](https://leetcode.cn/problems/word-search/)
+
+```js
+var exist = function(board, word) {
+
+    const rowLen = board.length
+    const colLen = board[0].length
+
+    const dfs = (x, y, wordIndex) => {
+        // 最后一层 ， 防止重复访问word里不包括#
+        if (board[row][x] !== word[wordIndex]) {
+            return false
+        }
+        if (wordIndex === word.length-1) {
+            return true
+        }
+
+        // 其余层
+        // 本层
+        // 标记访问过
+        const temp = board[y][x]
+        board[y][x] = '#'
+        // 规划下一层入参
+        for (const direct of [[x-1, y], [x+1, y], [x, y-1], [x, y+1]]) {
+            // 在当前节点，上下左右共 4 个方向，注意判断不一定 4 个方向都能走
+            const [nextX, nextY] = direct
+            if (nextX >= 0 && nextX <= colLen-1 && nextY >=0 && nextY <= rowLen-1) { // 可以走的方向
+                if (dfs(nextX, nextY, wordIndex+1)) {
+                    return true
+                }
+            }
+        }
+        // 回溯，恢复可访问性
+        board[y][x] = temp
+        return false
+    }
+
+    // 枚举所有起点
+    for (let y = 0; y < rowLen; y++) {
+        for (let x = 0; x < colLen; x++) {
+            if (dfs(x, y, 0)) {
+                return true
+            }
+        }
+    }
+
+    return false
 };
 ```
 
@@ -2655,7 +2995,7 @@ var combinationSum3 = function(k, n) {
 
 * 放入左括号没有限制
 
-* 放入右括号：**当前子串的右括号数<左括号数，才能加入右括号**  ，这个条件能保证每层的子串都是有效的
+* 放入右括号：**当前子串的左括号数 > 右括号数，才能加入右括号**  ，这个条件能保证每层的子串都是有效的
 
 * **剪枝左括号、右括号都<n**
 
@@ -2663,47 +3003,34 @@ var combinationSum3 = function(k, n) {
 
 ```js
 var generateParenthesis = function(n) {
-    let ans=[]
-    // curIndex 当其第几个元素
-    // leftBracketCount 左括号的个数。与216输入视角的第二种解法思路一样，通过参数在各层之间统计数据，提前剪枝
-    
-    // path 收集路径上的节点
-    function backtrace(curIndex,leftBracketCount,path){
-     
+    let res = []
+    const dfs = (leftCount, rightCount, path) => {
         // 最后一层
-        if (curIndex===2*n){
-            ans.push(path.join(''))
-          	return
+        if (leftCount+rightCount === 2*n) {
+            res.push(path.join(''))
+            return
         }
 
-        // 其余任意层
-
-        // 选(
-        if (leftBracketCount<n){// 剪枝
+        // 任意层
+        // 选 （、） ，这里不是随意选的，要保证是有效的组合
+        // 左括号可以直接放入，最多n个
+        if (leftCount < n) {
             path.push('(')
-            leftBracketCount++
-            backtrace(curIndex+1,leftBracketCount,path)
+            dfs(leftCount+1, rightCount, path)
             path.pop()
-            leftBracketCount--
         }
 
-
-
-        // 选)
-       const rightBracketCount= path.length-leftBracketCount
-        if (rightBracketCount<n&&rightBracketCount<leftBracketCount) {//剪枝，只有左括号数>右括号数，才仍加入右括号
+        // 右括号，必须保证当前左 > 右 && 最多n个
+        if (rightCount < n && leftCount > rightCount) {
             path.push(')')
-            backtrace(curIndex + 1, leftBracketCount, path)
+            dfs(leftCount, rightCount+1, path)
             path.pop()
         }
-
-
     }
 
-    backtrace(0,0,[])
-
-    return ans
-}
+    dfs(0, 0, [])
+    return res
+};
 ```
 
 从答案视角：
@@ -2904,7 +3231,9 @@ var permute = function(nums) {
   recursion(params)// 这里是顶层，即0层
   ```
 
-### [198. 打家劫舍](https://leetcode.cn/problems/house-robber/)
+### [198. 打家劫舍](https://leetcode.cn/problems/house-robber/) 迭代/递归法
+
+#### 递归
 
 回溯：这题用回溯从输入角度会超时，因为回溯用的是**递归入参数通讯**，所以没法记忆化每层的结果
 
@@ -2912,9 +3241,8 @@ var permute = function(nums) {
 
 ```js
 var rob = function(nums) {
-
     let max=0
-    function backtrace(curIndex,sum){
+    function dfs(curIndex,sum){
         // 最后一层
         if (curIndex>=nums.length){
             max=Math.max(sum,max)
@@ -2929,18 +3257,16 @@ var rob = function(nums) {
             sum-=nums[curIndex]
 
             // 不选
-            backtrace(curIndex+1,sum)
+            dfs(curIndex+1,sum)
         }
-
-
     }
-    backtrace(0,0)
+    dfs(0,0)
 
     return max
 };
 ```
 
-用最经典的递归思路，return之前先存储下结果（这就是记忆化），就不会超时了
+改成返参形式的递归 + 记忆化，去掉重复计算
 
 ```js
 var rob = function(nums) {
@@ -2965,31 +3291,45 @@ var rob = function(nums) {
 };
 ```
 
-其实这等同于**动态规划思路** ，上面是在递归中使用数组存储结果（322 递归函数有两个入参，我们可以使用map存储，将两个拼接上作为key）
+#### 迭代
 
-我们可以转化为动态规划
+返参形式的递归使用数组存储结果（322 递归函数有两个入参，我们可以使用map存储，将两个拼接上作为key）
 
-使用for循环，直接用每层数据存入dp数组索引就是，递归函数也都换成dp
+**注意：所有递归都可以等价转换为迭代的形式**
 
-为什么不判断`Math.max(dp[i-1],dp[i-2]+nums[i])`中的两个dp数据是否存在，就直接赋值给 dp[i]？
+参考课程：https://www.bilibili.com/video/BV1Xj411K7oF/?spm_id_from=333.337.search-card.all.click&vd_source=78cb1ae1cd045dd0ff0d749cd5f181fb
 
-i是从小到大的，dp[i]前面的数据一定是存在的
+![image-20260412221245669](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260412221246BFC9xI.png)
+
+转换：
+
+* 递推公式：`dp[i]= Math.max(dp[i-1],dp[i-2]+nums[i])`
+
+* for 循环，注意 i 从 2 起（递推公式有 dp[i-2] , 为了保证公式有效性）
+* 初始值，这个我建议还是根据递推公式看，i=0, i=2 是缺失的起始值
 
 ```js
 var rob = function(nums) {
-    if (nums.length===1){
+    // dp[i]  到 i 间房屋位置偷的最多的钱
+    // dp[i] = 偷第i家(nums[i] + dp[i-2]) ， 偷第i-1家dp[i-1] ， 比较最大的
+
+    if (nums.length === 1) {
         return nums[0]
     }
-
-    let dp=new Array(nums.length).fill(-1)
-    dp[0]=nums[0]
-    dp[1]=Math.max(nums[0],nums[1])
-    //因为地推中dp[i-2]，i最小就是2，所以从2开始
-    for (let i=2;i<nums.length;i++){
-       dp[i]= Math.max(dp[i-1],dp[i-2]+nums[i])
+    if (nums.length === 2) {
+        return Math.max(nums[0], nums[1])
     }
-    return dp[dp.length-1]
 
+    dp = [nums[0], Math.max(nums[0], nums[1])]
+    for (let i = 2; i < nums.length; i++) {
+        dp[i] = Math.max((nums[i] + dp[i-2]), dp[i-1])
+    }
+
+    let max = 0
+    for (const num of dp) {
+        max = Math.max(max, num)
+    }
+    return max
 };
 ```
 
@@ -2997,32 +3337,43 @@ var rob = function(nums) {
 
 [leetcode题号152](https://leetcode.cn/problems/maximum-product-subarray/)
 
-这个的特殊点在于，数组元素可以为负值。两个负值乘积就成了正数，这个题存储最小值就是这个原因
+第一眼想法是错误的 ❌
 
-dp[n]的含义：最后一位的索引是n连续子数组的**最大值**、**最小值**、**当前值**
+```
+dp[i]: 以 nums[i]结尾的子数组的最大乘积
+dp[i] =  max(dp[i-1]*nums[i] , dp[i-1])
+
+这个思路错的：
+   1、最小的负数 * 负数有可能变成最大乘积,dp[i]一直存最大的积，会丢掉最小的负数
+   2、nums= [0.5, 10] , dp[0]是0.5，但是 dp[0]*num[1] = 5实际上更小的，直接让dp[1]取 10最大
+   即当前位置的最优解未必是由前一个位置的最优解转移得到的
+```
+
+数组元素可以为负值，两个负值乘积就成了正数，这个题存储最小值就是这个原因
+
+dp[n]的含义：nums[0] 到 nums[n] 为止的数组中，连续子数组的**最大值**、**最小值**、**当前值** （这个最值出现的子数组不一定包含 nums[n]）
 
 ```js
 var maxProduct = function(nums) {
-    let dp=new Array(nums.length).fill(0).map((_,index)=>{
+    // dp[i] 以 nums[0-i]数组中的积最大值、最小值
+    let dp = Array.from({length:nums.length}).map((_,index) => {
         return {
-            min:nums[index],
-            max:nums[index],
-            cur:nums[index]
+            min: nums[index],
+            max: nums[index],
         }
     })
 
-
-    for(let i=1;i<nums.length;i++){
-        let curValue=dp[i].cur   //其实也可以不在dp中存当前值,直接 let curValue=nums[i]
-        dp[i].max=Math.max(curValue,curValue*dp[i-1].min,curValue*dp[i-1].max)
-        dp[i].min=Math.min(curValue,curValue*dp[i-1].min,curValue*dp[i-1].max)
+    for (let i = 1; i < nums.length; i++) {
+        dp[i].max = Math.max(nums[i]*dp[i-1].max, nums[i]*dp[i-1].min, nums[i])
+        dp[i].min = Math.min(nums[i]*dp[i-1].max, nums[i]*dp[i-1].min, nums[i])
     }
-     
-  	//dp数组中存储了所有最小值、最大值，这里是遍历取最大值
-    return dp.reduce((preItem,curItem)=>{
-        return curItem.max>preItem.max?curItem:preItem
-    }).max
-    
+
+
+    let maxRes = -Infinity
+    for (const { max } of dp) {
+        maxRes = Math.max(maxRes, max)
+    }
+    return maxRes
 
 };
 ```
@@ -3229,6 +3580,38 @@ var coinChange = function(coins, amount) {
 
 ### 线性DP
 
+#### 总结单层for、双层for
+
+* 单层 for 循环，leetcode70 爬楼梯，i 与前面确定的某项有关系
+
+  ```js
+  for (i) {
+    // i 确定和 i-1, i-2 有关系
+    dp[i]=dp[i-1]+dp[i-2]
+  }
+  ```
+
+* 双层 for 循环，leetcode300 最长递增子序列/322 零钱兑换，i 与某个 j 有关系，遍历所有可能的 j
+
+  ```js
+  for (let i = 0; i < nums.length; i++){
+    		// 300题 j 就是 i 之前的所有元素
+    		// 322题 j 就是 coins 硬币的集合
+        for (let j = 0; j < i; j++){
+          // 最优解
+          dp[i]=Math.max(dp[i],dp[j])
+          //有的有条件才递推。例如递增
+          //if () {
+          //   dp[i]=Math.max(dp[i],dp[j])
+          //}
+      		
+    		}
+  }
+  ```
+
+
+
+
 #### [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)(LCS)
 
 递归
@@ -3322,35 +3705,42 @@ var longestCommonSubsequence = function(text1, text2) {
 
 动态规划
 
+* 当 `text1[i-1] == text2[j-1]` 时，说明两个子字符串的最后一位相等，所以最长公共子序列又增加了 1，所以 `dp[i][j] = dp[i-1][j-1] + 1`
+
+  举个例子，比如对于 ac 和 bc 而言，他们的最长公共子序列的长度等于 a 和 b 的最长公共子序列长度 0 + 1 = 1
+
+* 当 `text1[i-1] != text2[j-1]` 时，说明两个子字符串的最后一位不相等，那么此时的状态 `dp[i][j]` 应该是 `dp[i - 1][j]` 和 `dp[i][j - 1]` 的最大值
+
+  举个例子，比如对于 ace 和 bc 而言，他们的最长公共子序列的长度等于 ① ace 和 b 的最长公共子序列长度0 与 ② ac 和 bc 的最长公共子序列长度1 的最大值，即 1
+
 ```js
 var longestCommonSubsequence = function(text1, text2) {
-    const len1=text1.length
-    const len2=text2.length
-    
-    // 为什么二位数组大小是 （len1+1） *（len2+1）？
-    // dp[0][j] 或 dp[i][0] 表示其中一个字符串为空字符串的情况
-    const dp=new Array(len1+1).fill(0).map(()=>new Array(len2+1).fill(0))
 
-    // t e x t 2
+    // 为了清楚，i、j 都是位置，-1才是索引
+    // dp[i][j]  表示 text1[1-i]、text2[1-j] 的公共子序列
+    // text1[i-1] === text2[j-1] 时，dp[i][j] = dp[i-1][j-1] + 1
+    // text1[i-1] !== text2[j-1] 时，dp[i][j] = max(dp[i-1][j] ,dp[i][j-1])
+
+    //  t e x t 1
     // t
     // e
     // x
     // t
-    // 1
+    // 2
 
-    for (let i=1;i<=len1;i++){
-        for  (let j=1;j<=len2;j++){
-           	// 为什么是text1[i-1]、text2[j-1] ？
-   					// dp[i][j]是 text1从索引0到i-1，text2从索引0到j-1
-            if (text1[i-1]===text2[j-1]){
-                dp[i][j]=dp[i-1][j-1]+1
-            }else{
-                dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1])
+    let dp =Array.from({length: text2.length+1}, () => new Array(text1.length+1).fill(0))
+
+    for (let i = 1; i <= text2.length; i++) {
+        for (let j = 1; j <= text1.length; j++) {
+            if (text2[i-1] === text1[j-1]) {
+                dp[i][j] = dp[i-1][j-1] + 1
+            } else {
+                dp[i][j] = Math.max(dp[i][j-1], dp[i-1][j])
             }
         }
     }
 
-    return dp[len1][len2]
+    return dp[text2.length][text1.length]
 
 };
 ```
@@ -3569,6 +3959,11 @@ var lengthOfLIS = function(nums) {
 
 #### [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
 
+到 n 级楼梯，只有 2 中方式
+
+* 从 n-1 级，爬 1 级上来
+* 从 n-2 级，爬 2 级上来
+
 ```js
 var climbStairs = function(n) {
     if(n<=2){
@@ -3678,6 +4073,40 @@ var climbStairs = function(n) {
   };    
   ```
 
+
+
+#### [64. 最小路径和](https://leetcode.cn/problems/minimum-path-sum/)
+
+```js
+var minPathSum = function(grid) {
+    // 找路径一眼就觉得是 dfs，甚至从固定起点到固定终点，更好做了。但是这题出在动态规划章节，dfs 大概率超时
+    // dp[row][col] = min(从上、左个方向 到 grid[row][col] )
+    //
+    const rows = grid.length
+    const cols = grid[0].length
+    let dp = Array.from({length:rows}, () => new Array(cols).fill(0))
+    // 这中网格的，需要初始化 2 条边
+
+    dp[0][0]=grid[0][0]
+    // 第一行
+    for (let i=1; i<cols; i++) {
+        dp[0][i] = dp[0][i-1]+grid[0][i]
+    }
+    // 第一列
+    for (let i=1; i<rows; i++) {
+        dp[i][0] = dp[i-1][0]+grid[i][0]
+    }
+
+    for (let row=1; row<rows; row++) {
+        for (let col=1; col<cols; col++) {
+            dp[row][col] = Math.min(dp[row-1][col]+grid[row][col], dp[row][col-1]+grid[row][col])
+        }
+    }
+    return dp[rows-1][cols-1]
+
+};
+```
+
 #### [279. 完全平方数](https://leetcode.cn/problems/perfect-squares/)
 
 相对于前面的题目，从这题开始，后面的题目全部涉及最优子结构，题目中一般表现为 "最少"、"最小"、"最短"等字眼
@@ -3713,15 +4142,25 @@ var climbStairs = function(n) {
   dp[n]
 
 ```js
-var numSquares = function(n){ 
-    let dp=[]//先把所有位置放置0
-    for(let i=1;i<=n;i++){
-        dp[i]=i //初始化为最多的情况，比如：dp[2]=2，就是1^2+1^2,共两个平方数
-        for(let j=1;i-j*j>=0;j++){ 
-             dp[i]=Math.min(dp[i],dp[i-j*j]+1)
-        }
-       
+var numSquares = function(n) {
+    // dp[i] 整数 i 的最少个平方数
+    // dp[i] =  dp[i-1]+1  = dp[i-2]+1+1 = dp[i-3]+1+1+1 = dp[i-4]+1（2*2） = dp[i-9]+1（3*3）
+    // 当差出来 1 、4、9 的时候，就是1个平方数 ，其他则都是拆成平方数1
+    // dp[i] = dp[i-j*j]+1 , j 从小到大，dp 就能逐渐地推到0
+
+    let dp = new Array(n+1)
+
+    // 例如数字 3 = 1*1 + 1*1 + 1*1 ，最多的就是都拆成3个平方数1之和
+    for (let i = 0; i < n+1; i++) {
+        dp[i] = i
     }
+
+    for (let i = 1; i < n+1; i++) {
+        for (let j = 1; i-j*j >=0; j++) {
+            dp[i] = Math.min(dp[i], dp[i-j*j]+1)
+        }
+    }
+
     return dp[n]
 };
 ```
@@ -3785,21 +4224,92 @@ var minimumTotal = function(triangle) {
 
 #### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
 
+回溯尝试每种组合，不过结果超时，可以尝试记忆化
+
 ```js
 var coinChange = function(coins, amount) {
-    //dp[0]本身无意义，但是如果amount=10，coins=[10]，coins刚好有一个10，下面的循环中dp[i-coinItem]+1就能保证是1
-    let dp=new Array(amount+1).fill(Infinity)
-    dp[0]=0
 
-    for(let i=1;i<=amount;i++){
-        for(coinItem of coins){
-            if(parseInt(coinItem)<=i){
-                 dp[i]=Math.min(dp[i],dp[i-coinItem]+1)
-            }         
-        }       
+    let minCount = Infinity
+    const dfs = (sum, path) => {
+        // 最后一层
+        if (sum >= amount) {
+            if (sum === amount) {
+                minCount = Math.min(minCount, path.length)
+            }
+            return 
+        }
+
+        // 其余层
+        for (const coin of coins) {
+            path.push(coin)
+            dfs(sum+coin, path)
+            path.pop()
+        }
     }
-    return dp[amount]===Infinity?-1:dp[amount]
 
+    dfs(0, [])
+    return minCount === Infinity ? -1 : minCount
+};
+```
+
+迭代
+
+```js
+var coinChange = function(coins, amount) {
+
+    // dp[i]  总金额i 用的最少硬币
+    // dp[i] = min(dp[i-coin1]+1, dp[i-coin2]+1, ...)
+
+    dp = new Array(amount+1).fill(Infinity)
+    dp[0] = 0
+    
+    for (let i = 0; i <= amount; i++) {
+        for (let coin of coins) {
+            if (i >= coin) {
+                dp[i] = Math.min(dp[i], dp[i-coin]+1)
+            }
+            
+        }
+    }
+
+    return dp[amount] === Infinity ? -1 : dp[amount]
+};
+```
+
+#### [518. 零钱兑换 II](https://leetcode.cn/problems/coin-change-ii/)
+
+```js
+```
+
+
+
+#### [118. 杨辉三角](https://leetcode.cn/problems/pascals-triangle/)
+
+```js
+var generate = function(numRows) {
+    //0  [1],
+    //1  [1,1],
+    //2  [1,2,1]
+    //3  [1,3,3,1]
+    // numRows = 4
+    //  左对齐看更清晰
+
+    if (numRows === 1) {
+        return [[1]]
+    }
+    if (numRows === 2) {
+        return [[1], [1, 1]]
+    }
+
+    let res = [[1], [1, 1]]
+    for (let row = 2; row <= numRows-1; row++) {
+        let layer = new Array(row+1).fill(1)
+        for(let col = 1; col <= row-1; col++) {
+            layer[col] = res[row-1][col-1] + res[row-1][col]
+        }
+        res.push(layer)
+    }
+    return res
 };
 ```
 
@@ -4301,35 +4811,30 @@ var longestPalindromeSubseq = function(s) {
 
 这个题有个特征，二叉树的递归并不是答案，递归仅仅是计算节点深度的
 
-但是，我们在这个递归中不断更新答案ans
+但是，我们在这个递归中不断更新答案 max
+
+![image-20260407150819543](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260407150819Fn5QIw.png)
 
 ```js
 var diameterOfBinaryTree = function(root) {
-    // 一定过拐点
 
-    let max=0
-
-    function dfs(node){
-        // 最后一层
-        if(node===null){
-            return 0
+    let max = 0
+    const dfs = (root) => {
+        // 最后
+        if (root === null) {
+            return -1 // 这里比较特别是-1，代入任意层考虑下就明白了
         }
 
-        // 其余层
-        const leftDepth=dfs(node.left)
-        const rightDepth=dfs(node.right)
-
-
-        // return 的是每层的最大深度 ，深度-1，才是直径（边数）
-        // leftDepth+rightDepth=left直径+right直径+2 这是对的
-        max=Math.max(max,leftDepth+rightDepth)
-
-        return Math.max(leftDepth,rightDepth)+1
-        
+        // 任意层
+        const leftDepth = dfs(root.left)
+        const rightDepth = dfs(root.right)
+        // 记录路径和最大值
+        max = Math.max(max,  leftDepth + rightDepth + 2) // 这里的 2 是图上的 2 条边
+      	// 递归返回的是选择要左、右最长路径的分支
+        return Math.max(leftDepth, rightDepth) + 1 // 本次节点的直径是左右最大值 + 1 条边
     }
 
     dfs(root)
-
     return max
 };
 ```
@@ -4344,32 +4849,24 @@ var diameterOfBinaryTree = function(root) {
 
 ```js
 var maxPathSum = function(root) {
-    let ans=-Infinity
-    function dfs(node){
-        if (node===null){
+    let max = -Infinity
+
+    const dfs = (node) => {
+        // 最后一层
+        if (node === null) {
             return 0
         }
-
-        let left=dfs(node.left)
-        let right=dfs(node.right)
-        
-        // 答案
-        ans=Math.max(ans,left+right+node.val)
-      
-        // 递归 ，这里的关键是0
-      	// 下面二叉树， 最长路径的起始一定得是正数，也就是不能从-2开始，而是4开始
-      	// 
-        //      0
-        //     / \
-        //    -1   2
-        //   / \
-        //  3   4
-        //      /
-        //    -2
-        return Math.max(0,Math.max(left,right)+node.val)
+        // 任意层
+        const left = dfs(node.left)
+        const right = dfs(node.right)
+        max = Math.max(max, left + right + node.val)
+        return Math.max(0, Math.max(left, right) + node.val)
+        // 用例 [2,-1] ，答案 2
+        // 注意这里 return 要和 0 比较下，如果路径和小于 0，要舍弃的
     }
+
     dfs(root)
-    return ans
+    return max
 };
 ```
 
@@ -4481,6 +4978,111 @@ var minCameraCover = function(root) {
 ```
 
 ## 二叉树
+
+### 前置补充dfs、bfs
+
+
+
+![image-20240311235231416](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240311235231eneoRX.png)
+
+**广度优先（BFS）**
+
+![image-20240311235935826](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240311235936isP9Zr.png)
+
+需要辅助队列
+
+思想：从根节点开始寻找子节点，先遍历寻找兄弟节点，依次从上往下，按层级依次搜索
+
+代码实现：根节点入队，之后出队节点x，会将其左右子节点入队，然后继续循环出队，入队子节点的流程，直到队列为空
+
+模拟过程：
+
+* 第一次入队根节点  1   【1】
+* 1 出队，2、3入队  【2、3】
+* 2 出队 ，4、5入队  【3、4、5】
+* 3出队 ， 6、7入队 【4、5、6、7】
+* 4出队，无子节点入队了
+* 5出队
+* 6出队
+* 7出队
+
+模板：
+
+```js
+/**
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.left = null;
+ *		 this.right = null;
+ * }
+ */
+
+function bfs(root){
+  let queue=[root.val]
+  while(queue.length!==0){
+    // temp 不断遍历整个树
+    const temp=queue.shift()
+    if(temp.left){
+      queue.push(temp.left)
+    }
+    if(temp.right){
+      queue.push(temp.right)
+    }  
+  }
+}
+```
+
+
+
+**深度优先（DFS）**
+
+![image-20240312000421191](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240312000421fmWqDF.png)
+
+需要辅助栈（使用递归DFS函数的思路，可以不用辅助栈）
+
+思想：从根开始，遇到一个节点，就先查询的它未被访问过的子节点，如果子节点还有未被访问过的子节点就继续往下寻找直到最后没有为止，再从根子节点的兄弟节点开始依次向下寻找节点
+
+代码实现：根节点入栈，如果有子节点（优先入栈左孩子）就记录下下访问过后，继续入栈。直到没有子节点可以入栈了，就开始出栈每一个出栈的节点检查其是否还有未被访问过的孩子，如果有就录下访问过后，入栈该孩子节点，直到栈空结束
+
+模拟过程：
+
+* 1入栈 【1】
+* 2入栈 【1、2】
+* 4入栈 【1、2、4】
+* 没有可以入栈的子节点了，4出栈 【1、2】
+* 2出栈，2有右子节点，所以5入栈 【1、5】
+* 出栈【1】
+* 3入栈【1、3】
+* 6入栈【1、3、6】
+* 6出栈【1、3】
+* 3出栈，3有右子节点，所以7入栈 【1、7】
+* 7出栈
+* 1出栈
+
+模板：
+
+```js
+/**
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.left = null;
+ *		 this.right = null;
+ * }
+ */
+```
+
+### return 数据总结
+
+1、使用下层数据返回值做运算返回 。最常见了例如 leetcode104
+
+2、下层拿到答案，本层判断如果下层有答案直接向上传递，最后整体 return 答案
+
+* leetcode236 最近公共祖，先找到祖先后每层都返回这个祖先
+* leetcode230 二叉搜索树中第K 小的元素，中序遍历第 k 个就是符合条件的，找到就一直 return 出来
+
+3、下层返回节点，本层把返回的节点接上
+
+* leetcode108 将有序数组转换为二叉搜索树，下层构造一个节点，本层把它接到 left、right 指针下
 
 ### dfs（递归）
 
@@ -4860,6 +5462,53 @@ var pathSum = function(root, targetSum) {
 };
 ```
 
+层次遍历
+
+```js
+var pathSum = function(root, targetSum) {
+    
+    let count = 0
+    const dfs = (node, sum) => {
+        // 最后一层
+        if(node === null) {
+            return
+        }
+
+        // 其余
+        sum += node.val
+        if (sum === targetSum) {
+            count++
+        }
+        // 选左
+        dfs(node.left, sum)
+        // 选右
+        dfs(node.right, sum)
+        sum -= node.val
+    }
+
+    // 层次遍历，尝试每个节点
+    if(root === null) {
+        return 0
+    }
+
+    let queue = [root]
+    while(queue.length > 0) {
+        const node = queue.shift()
+        dfs(node, 0)
+        if(node.left) {
+            queue.push(node.left)
+        }
+        if(node.right) {
+            queue.push(node.right)
+        }
+    }
+
+    return count
+};
+```
+
+
+
 #### [257. 二叉树的所有路径](https://leetcode.cn/problems/binary-tree-paths/)
 
 这个题常规思路，从选当前节点的左、右，分出两种可能
@@ -4935,13 +5584,42 @@ var isBalanced = function(root) {
 
 #### [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
 
-这题还是利用深度递归，只不过我们是从上向下传入深度的
-
-主要是因为这个题的思路：
-
 ![image-20240515233931627](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240515233932ITIwwL.png)
 
-从图可以看到最后的结果不一定都是右子树，我们利用深度递归，优先递归右子树并放入数组（深度是索引），如果深度d存过了，就不再存了。这样就能保证每层都存第一个
+bfs：第一反应是层次遍历，拿到每层信息取最后一个
+
+```js
+var rightSideView = function(root) {
+    if (root === null) {
+        return []
+    }
+    // 第一反应层次遍历，按层收集
+    let res = []
+    const bfs = (root) => {
+        const queue = [root]
+        while (queue.length > 0) {
+            const size = queue.length
+            for (let i = 0; i < size; i++) {
+                const node = queue.shift()
+                if (i === size-1) {
+                    res.push(node.val)
+                }
+                if (node.left) {
+                    queue.push(node.left)
+                }
+                if (node.right) {
+                    queue.push(node.right)
+                }
+            }
+        }
+    }
+    bfs(root)
+
+    return res
+};
+```
+
+dfs ：从图可以看到最后的结果不一定都是右子树，我们利用深度递归，优先递归右子树并放入数组（深度是索引），如果深度d存过了，就不再存了。这样就能保证每层都存第一个
 
 ```js
 var rightSideView = function(root) {
@@ -5003,7 +5681,6 @@ var lowestCommonAncestor = function (root, p, q) {
 				
       	return null
 
-    
     }
 
     return dfs(root)
@@ -5043,36 +5720,76 @@ var lowestCommonAncestor = function(root, p, q) {
 
 `in-place` 的意思可能更多说的是直接在原来的节点上改变指向，空间复杂度并没有要求
 
-注意：如果先序遍历生成数组后，在根据数组创建结果是错的，因为没有在原root上更改。即使下面这样最后赋值给root也是错误的，因为root原指向对象没有变化
+先序遍历生成数组改指针
 
 ```js
-// 【错误解法！！！！】
-var flatten = function(root) {
-    const ansRoot=new TreeNode(null)
-
-    function dfs(node){
-
-        if(node===null){
+const preOrderList = []
+    const preOrder = (node) => {
+        if (node === null) {
             return
         }
 
-        ansRoot.left=null
-        ansRoot.right=new TreeNode(node.val)
-        dfs(node.left)
-        dfs(node.right)
-
+        preOrderList.push(node)
+        preOrder(node.left)
+        preOrder(node.right)
     }
+    preOrder(root)
+
+    if (preOrderList.length === 0) {
+        return null
+    }
+    for (let i = 0; i < preOrderList.length-1; i++) {
+        preOrderList[i].left = null
+        preOrderList[i].right = preOrderList[i+1]
+    }
+```
+
+自底向上，return 调整好的节点，本层拼接上
+
+```js
+var flatten = function(root) {
+
+    const dfs = (node) => {
+        // 最后一层
+        if (node === null) {
+            return null
+        }
+        // 其余层
+        const leftTree = dfs(node.left)
+        const rightTree = dfs(node.right)
+        node.left = null
+        if (leftTree) {
+            node.right = leftTree
+
+            // 这这里的写法错了，一直找到最后一个节点在挂上 rightTree
+            // ❌ leftTree.right = rightTree
+            let tail = leftTree
+            while (tail.right) {
+                tail = tail.right
+            }
+            tail.right = rightTree
+
+        } else {
+            node.right = rightTree
+        }
+
+        return node
+    }
+
     dfs(root)
-    root = ansRoot
-    return root
+
 };
 ```
 
+### 前、中、后序遍历（递归/迭代）
+
+#### 补充迭代解法
+
+前中后序遍历使用递归 dfs 解法是最简洁的，但是递归有个问题是过程中不能随时终止，需要遍历完后在终止条件结束
+
+而迭代可以随时指定条件终止，所以这里补充一个迭代解法
 
 
-### 前、中、后序遍历（递归）
-
-本质仍然是dfs。下面的都是从上到下通过数组收集结果
 
 #### [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)（中序）
 
@@ -5184,6 +5901,7 @@ var isValidBST = function(root) {
 简单思路就是中序遍历，遍历的结果是从小到大的，题目要求取第K小的元素，就是变量结果的K-1号元素
 
 ```js
+// 数组存下完整的中序遍历序列
 var kthSmallest = function(root, k) {
     const inOrderList=[]
     function dfs(node){
@@ -5200,13 +5918,58 @@ var kthSmallest = function(root, k) {
 
     dfs(root)
 
-    
-
     return inOrderList[k-1]
+};
+
+// 不存完整的数组，省点空间。但是实际上仍然后递归整棵树
+var kthSmallest = function(root, k) {
+    let res = 0
+    let count = 0
+    const inOrder = (root) => {
+        if (root === null) {
+            return null
+        }
+
+        inOrder(root.left)
+        count++
+        if (count === k) {
+            res = root.val
+        }
+        inOrder(root.right)
+    }
+    inOrder(root)
+    return res
 };
 ```
 
-与98题类似，我们可以在递归过程中，一直进行比较找打第K小的元素。但是递归是无法终止的，即使找到了也会一直递归整棵树。所以，我们可是使用迭代的形式
+一旦找到第 k 个元素就使用 return 返回，子树包含 k 就继承返回上一级，没有就返回 null
+
+```js
+var kthSmallest = function(root, k) {
+    let count = 0
+    const inOrder = (root) => {
+        if (root === null) {
+            return null
+        }
+
+        const leftK = inOrder(root.left)
+        if (leftK !== null) return leftK
+
+        count++
+        if (count === k) {
+            return root.val
+        }
+
+        const rightK = inOrder(root.right)
+        return rightK  // 找没找到，都返回右边，必须返回一直值啊
+
+    }
+
+    return inOrder(root)
+};
+```
+
+与98题类似，我们可以在递归过程中，一直进行比较找打第K小的元素。但是递归是无法终止的，即使找到了也会一直递归整棵树。所以，我们可使用迭代的形式
 
 #### [144. 二叉树的前序遍历](https://leetcode.cn/problems/binary-tree-preorder-traversal/)
 
@@ -5594,6 +6357,8 @@ var deserialize = function(data) {
 
 #### [105. 从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
 
+![image-20260407184602610](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260407184602tNb0o2.png)
+
 
 
 #### [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
@@ -5607,121 +6372,24 @@ var deserialize = function(data) {
 ```js
 var sortedArrayToBST = function(nums) {
 
-    function dfs(nums,left,right){
+    const dfs = (nums, start, end) => {
         // 最后一层
-        if (left>right){ // left===right
+        if (start > end) {
+            // 终止条件不是 start == end ，这时候区间内还有一个元素，需要处理
             return null
         }
 
-        // 其余层
-        const mid=Math.floor((left+right)/2)
-        const node=new TreeNode(nums[mid])
-        node.left=dfs(nums,left,mid-1)
-        node.right=dfs(nums,mid+1,right)
-
+        // 任意层
+        const mid = Math.floor((start+end)/2)
+        let node = new TreeNode(nums[mid])
+        node.left = dfs(nums, start, mid-1)
+        node.right = dfs(nums, mid+1, end)
         return node
     }
 
-    return dfs(nums,0,nums.length-1)
+    return dfs(nums, 0, nums.length-1)
+
 };
-```
-
-
-
-
-
-### 补充：dfs、bfs
-
-
-
-![image-20240311235231416](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240311235231eneoRX.png)
-
-**广度优先（BFS）**
-
-![image-20240311235935826](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240311235936isP9Zr.png)
-
-需要辅助队列
-
-思想：从根节点开始寻找子节点，先遍历寻找兄弟节点，依次从上往下，按层级依次搜索
-
-代码实现：根节点入队，之后出队节点x，会将其左右子节点入队，然后继续循环出队，入队子节点的流程，直到队列为空
-
-模拟过程：
-
-* 第一次入队根节点  1   【1】
-* 1 出队，2、3入队  【2、3】
-* 2 出队 ，4、5入队  【3、4、5】
-* 3出队 ， 6、7入队 【4、5、6、7】
-* 4出队，无子节点入队了
-* 5出队
-* 6出队
-* 7出队
-
-模板：
-
-```js
-/**
- * function ListNode(val) {
- *     this.val = val;
- *     this.left = null;
- *		 this.right = null;
- * }
- */
-
-function bfs(root){
-  let queue=[root.val]
-  while(queue.length!==0){
-    // temp 不断遍历整个树
-    const temp=queue.shift()
-    if(temp.left){
-      queue.push(temp.left)
-    }
-    if(temp.right){
-      queue.push(temp.right)
-    }  
-  }
-}
-```
-
-
-
-**深度优先（DFS）**
-
-![image-20240312000421191](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240312000421fmWqDF.png)
-
-需要辅助栈（使用递归DFS函数的思路，可以不用辅助栈）
-
-思想：从根开始，遇到一个节点，就先查询的它未被访问过的子节点，如果子节点还有未被访问过的子节点就继续往下寻找直到最后没有为止，再从根子节点的兄弟节点开始依次向下寻找节点
-
-代码实现：根节点入栈，如果有子节点（优先入栈左孩子）就记录下下访问过后，继续入栈。直到没有子节点可以入栈了，就开始出栈每一个出栈的节点检查其是否还有未被访问过的孩子，如果有就录下访问过后，入栈该孩子节点，直到栈空结束
-
-模拟过程：
-
-* 1入栈 【1】
-* 2入栈 【1、2】
-* 4入栈 【1、2、4】
-* 没有可以入栈的子节点了，4出栈 【1、2】
-* 2出栈，2有右子节点，所以5入栈 【1、5】
-* 出栈【1】
-* 3入栈【1、3】
-* 6入栈【1、3、6】
-* 6出栈【1、3】
-* 3出栈，3有右子节点，所以7入栈 【1、7】
-* 7出栈
-* 1出栈
-
-模板：
-
-```js
-/**
- * function ListNode(val) {
- *     this.val = val;
- *     this.left = null;
- *		 this.right = null;
- * }
- */
-
-
 ```
 
 ## 前缀树/字典树
@@ -5941,7 +6609,7 @@ var moveZeroes = function(nums) {
 
 方式二：**双指针法**。时间复杂度o(n)，但是只循环一次
 
-right按数组顺序遍历，找到第一个不为零的（right前都是零）和前面的零交换。交换后，left向后移1位，表示[0,j-1]都是交换过去的非零值
+right按数组顺序遍历，找到第一个不为零的（right前都是零）和前面的零交换。交换后，left向后移1位，表示[0,left-1]都是交换过去的非零值
 
 ```js
 var moveZeroes = function(nums) {
@@ -5967,48 +6635,37 @@ var moveZeroes = function(nums) {
 
 ```js
 var sortColors = function(nums) {
-
-    // 利用快排的思想
-    // [0,left) 都是0
-    // [left,i) 都是1 (i是从0开始++的，s[i]相当于视口，判断其值并放入对应区间)
-    // (right,nums.length] 都是2
-    function swap(nums,left,right){
-        temp=nums[left]
-        nums[left]=nums[right]
-        nums[right]=temp
+  
+    const swap = (left, right) => {
+        const temp = nums[right]
+        nums[right] = nums[left]
+        nums[left] = temp
     }
-
-    let left=0,right=nums.length-1
-    let i=0
-
-
-    while(i<right){
-        if(nums[i]===0){
-            swap(nums,left,i)
-
-            left++
-            // 换到i的值一定是 1，可以放心++
-            i++
-        }
-        if(nums[i]===1){
-            i++
-        }
-        if(nums[i]===2){
-            // 交换
-            swap(nums,i,right)
-
+    
+    // left 左侧全是0，right 右侧全是2
+    let left = 0, right = nums.length-1, cur = 0
+    while (cur <= right) {
+        if (nums[cur] === 0) {
+            // 遇到0，扔左边
+            swap(cur, left)
+            left++  
+            cur++  // 这里换过来一定是1，前面的2早就扔到最后了，所以可以 cur++
+        } else if (nums[cur] === 2) {
+            // 遇到2，扔右边
+            swap(cur, right)
             right--
-            // 注意这里没有i++，换到i的值有可能还是2
+            // 注意这里不写 cur++ , 换回来的可能是0,这个0还需要下一轮往左扔
+            // 用例:[1,2,0], 答案:[0,1,2]
+            // 如果这里写了 cur++ , 错误结果:[1,0,2]
+            //
+
+        } else {
+            // 遇到1，不处理
+            cur++
         }
-
     }
-
 };
 ```
-
-
-
-
 
 ### [167.两数之和 II - 输入有序数组](https://leetcode.cn/problems/two-sum-ii-input-array-is-sorted/)
 
@@ -6052,16 +6709,31 @@ var twoSum = function(nums, target) {
 };
 ```
 
-
-
 ### [209. 长度最小的子数组](https://leetcode.cn/problems/minimum-size-subarray-sum/)
 
-滑动窗口
+暴力枚举 start、end 位置，会超时
+
+这是最典型的滑动窗口，所有子元素都是正数，right 右移会增加，left 右移会减少
 
 ```js
+var minSubArrayLen = function(target, nums) {
+
+    let sum = 0
+    let left = 0
+    let minLen = Infinity
+    for (let right = 0; right < nums.length; right++) {
+        sum+=nums[right]
+        while (sum >= target) {
+            minLen = Math.min(minLen, right-left+1)
+            sum-=nums[left]
+            left++
+        }
+    }
+		
+  	// 防止没有符合条件的导致 minLen 没有更新，这种情况返回 0
+    return minLen ===Infinity ? 0 : minLen
+};
 ```
-
-
 
 ### [350. 两个数组的交集 II](https://leetcode.cn/problems/intersection-of-two-arrays-ii/)
 
@@ -6214,24 +6886,21 @@ var threeSum = function (nums) {
 暴力
 
 ```js
-var topKFrequent = function(nums, k) {
-  // hash计数
-  let hash={}
-
-  for(let value of nums){
-    if(!hash[value]){
-      hash[value]=1
-    }else {
-      hash[value]++
+ar topKFrequent = function(nums, k) {
+    let hash={}
+    for (const num of nums) {
+        if (hash[num]===undefined) {
+            hash[num]=0
+        }
+        hash[num]++
     }
-  }
 
-  //[ [key,value],.... ]
-  let entriesList= Object.entries(hash)
-  entriesList.sort((a,b)=>b[1]-a[1]) // 按次数从大到小排序
+    // [元素，次数]
+    const entriesList=Object.entries(hash)
+    entriesList.sort((a,b)=>b[1]-a[1]) // 从大到小
 
-  return entriesList.slice(0,k).map(item=>item[0]) // 截取前k个，返回值
-
+    // key是字符串类型
+    return entriesList.slice(0,k).map(item=>parseInt(item[0]))
 };
 ```
 
@@ -6290,9 +6959,8 @@ RecentCounter.prototype.ping = function(t) {
 * 满  front=（rear+1）%n，n是长度
 
 ```
+
 ```
-
-
 
 ### [560. 和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/)(前缀和)
 
@@ -6359,6 +7027,13 @@ var subarraySum = function(nums, k) {
 这题只需要知道多少个符合条件的，其实我们可以精确知道哪些是符合条件的
 
 ```js
+// 我这个前缀和与 leetcode 题解计算方式不一样，但是我觉得更好理解
+// 用例    [2,5,7]
+// 前缀和  [0,2,7,14]
+// 我直接认为 index=0 时，前缀和为 0，前缀和数组会多1位，是所有元素的和，因为多一位所以循环后还要单独处理最后一位前缀和
+```
+
+```js
 var subarraySum = function(nums, k) {
     const pre = []
     let sum = 0
@@ -6385,6 +7060,35 @@ var subarraySum = function(nums, k) {
         }
     }
     return counter
+};
+```
+
+前面是前缀和的标准思路，但是最后还是用双层 for 循环，可以用 二数之和那题的思路
+
+或者将前缀和与计算差值合并在一次循环中
+
+```js
+var subarraySum = function(nums, k) {
+    // [-1,-1,1]
+    // [0,-1,-2,-1]
+    let pre = [0]
+    let sum = 0
+    for(const num of nums) {
+        sum+=num
+        pre.push(sum)
+    }
+    // pre[j]-pre[i]=k, j>=i
+    // 两数之和思路 pre[j]-k = pre[i]
+    let map = new Map()
+    let count = 0
+    for(let j = 0; j < pre.length; j++) { // 注意因为 j>i，随意这里遍历的是 j，map 存的是 i
+        if (map.has(pre[j]-k)) { 
+            count++
+        }
+        map.set(pre[j], j)
+    }
+   
+    return count
 };
 ```
 
@@ -6452,6 +7156,34 @@ var rotate = function(nums, k) {
 };
 ```
 
+### [238. 除了自身以外数组的乘积](https://leetcode.cn/problems/product-of-array-except-self/)
+
+注意这个不用多加一位，所有元素的积
+
+```js
+var productExceptSelf = function(nums) {
+    // 前缀乘积
+    let prefixs = [1]
+    for(let i = 0; i < nums.length-1; i++) {
+        prefixs.push(prefixs[i]*nums[i])
+    }
+
+    // 后缀乘积
+    let suffixs = [1]
+    for(let i = nums.length-1; i > 0; i--) {
+        suffixs.unshift(suffixs[0]*nums[i])
+    }
+    
+    let res = []
+    for(let i = 0; i < nums.length; i++) {
+        res.push(prefixs[i]*suffixs[i])
+    }
+    return res
+};
+```
+
+
+
 ## 栈
 
 单调栈的特征：
@@ -6464,28 +7196,47 @@ var rotate = function(nums, k) {
 
 ```js
 var dailyTemperatures = function(temperatures) {
-    
-    let n=temperatures.length
-    let stack=[]
-    let res=[]
 
-    
-    for (let i=0;i<n;i++){
-      	// 第一次，stack没有数据，直接跳过while，将数据push进去
-        while (stack.length&&stack[stack.length-1].value<temperatures[i]){
-            const {index,value}= stack.pop()
-            res[index]=(i-index)
+    let stack = []
+    let res = []
+    for (let i = 0; i < temperatures.length; i++) {
+        const temper = temperatures[i]
+        // 2、栈是不为空，当前温度大于栈顶，一直出栈
+        while (stack.length > 0 && temper > stack[stack.length-1].value ) {
+            const {index, value} = stack.pop()
+            res[index] = i - index
         }
-        stack.push({index:i,value: temperatures[i]})
-
+        stack.push({ index: i, value: temper})
     }
 
     // 最后栈里还可能有剩余
     // 例如输入：3 1 。 stack=[3,1]
-
-    while (stack.length!==0){
-       const {index,value}= stack.pop()
+    while (stack.length > 0){
+        const {index,value}= stack.pop()
         res[index]=0
+    }
+
+    return res
+};
+```
+
+只存索引版本
+
+```js
+var dailyTemperatures = function(temperatures) {
+    let stack = [0]
+    let res = []
+    for(let i = 0; i < temperatures.length; i++) {
+        while (stack.length>0 && temperatures[stack[stack.length-1]] < temperatures[i]) {
+            const popIndex = stack.pop()
+            res[popIndex] = i-popIndex
+        }
+        stack.push(i)
+    }
+
+    while(stack.length>0) {
+        const popIndex = stack.pop()
+        res[popIndex] = 0
     }
 
     return res
@@ -6535,24 +7286,32 @@ var trap = function(height) {
 
 ```js
 var isValid = function(s) {
-  let stack=[]
-  for(let i=0;i<s.length;i++){
-    if(s[i]==='('||s[i]==='{'||s[i]==='['){
-      stack.push(s[i])
+    // 映射
+    const data = {
+        '(': ')',
+        '{': '}',
+        '[': ']'
     }
-    if(s[i]===')'&&stack.pop()!=='('){
-      return false
-    }
-    if(s[i]==='}'&&stack.pop()!=='{'){
-      return false
-    }
-    if(s[i]===']'&&stack.pop()!=='['){
-      return false
-    }
-  }
-  // 最后栈为空，才是有效的串
-  return stack.length===0?true:false
 
+    let stack = []
+    for(const char of s) {
+        if(Object.keys(data).includes(char)) {
+            // 左括号
+            stack.push(char)
+        } else {
+            //右括号
+            if(stack.length === 0) {
+                return false
+            }
+            if(stack.length > 0 && data[stack[stack.length-1]] !== char) {
+               return false
+            }
+            stack.pop()
+        } 
+        
+    }
+
+    return true
 };
 ```
 
@@ -6634,9 +7393,93 @@ MyQueue.prototype.empty = function() {
 };
 ```
 
+### [155. 最小栈](https://leetcode.cn/problems/min-stack/)
 
+```js
+var MinStack = function() {
+    // 栈：    3 2 5 6 5
+    // 最小值： 3 2 2 2 2
+  	//                 |
+  	//								 这个 5 虽然比栈顶数据6小，但是比栈顶最小值2大
+    // 观察发现如果 push 数据<栈顶最小值，最小值才更新
+    // 因为 pop 的存在，必须维护一个最小值的序列
+    this.stack = []
+};
 
+/**
+ * @param {number} val
+ * @return {void}
+ */
+MinStack.prototype.push = function(val) {
+    if (this.stack.length === 0) {
+        this.stack.push([val, val])
+    } else {
+        const [topValue, minValue] = this.stack[this.stack.length-1]
+        if (val < minValue) {
+            this.stack.push([val, val])
+        } else {
+            this.stack.push([val, minValue])
+        }
+    }
 
+};
+
+/**
+ * @return {void}
+ */
+MinStack.prototype.pop = function() {
+    const [topValue] =this.stack.pop()
+    return topValue
+};
+
+/**
+ * @return {number}
+ */
+MinStack.prototype.top = function() {
+    const [topValue] = this.stack[this.stack.length-1]
+    return topValue
+};
+
+/**
+ * @return {number}
+ */
+MinStack.prototype.getMin = function() {
+    const [_, minValue] = this.stack[this.stack.length-1]
+    return minValue
+};
+```
+
+### [32. 最长有效括号](https://leetcode.cn/problems/longest-valid-parentheses/)
+
+```js
+var longestValidParentheses = function(s) {
+    // 栈里只存索引：左括号索引、无人匹配的右括号索引
+    // 这道题核心思路是：
+    //     把 ‘无人匹配的右括号索引x’ 作为有效括号的起点，完成有效括号匹配后用当前索引-x+1，出栈这个起点
+    //     入栈下一个起点
+
+    let max = 0
+    let stack = [-1] // 这个-1，相当于无人匹配的右括号
+    for (let i=0; i<s.length; i++) {
+        if (s[i] === '(') {
+            // 遇到左括号
+            stack.push(i)
+        } else {
+            // 遇到右括号
+            // 这里直接出栈是因为，栈起点是个‘无人匹配的右括号索引’。这里要要么出栈匹配的左括号、要么是起点
+            stack.pop()
+
+            if (stack.length>0) {
+                max=Math.max(max, i-stack[stack.length-1]) // 这个减法需要写个例子想想。用例:"()" 答案 2
+            } else { // 空了，就证明起起点被 pop 了，将当前右括号作为起点
+                stack.push(i)
+            }
+        }
+    }
+    return max
+
+};
+```
 
 ## 字符串
 
@@ -6701,30 +7544,31 @@ var longestPalindrome = function(s) {
 
 ```js
 var longestPalindrome = function(s) {
-    let start = 0, maxLen = 0
-   	
-    const checkPalindrome = (left, right) => {
-        while (left >= 0 && right <= s.length - 1) {
-            if (s[left] !== s[right]) {
+
+    let max = 0
+    let left = 0
+    const checkPalindrome = (i, j) => {
+        while (i>=0&&j<=s.length-1) {
+            if (s[i]!==s[j]) {
                 return
             }
-            const spanLen = right - left + 1
-            if (spanLen > maxLen) {
-                maxLen = spanLen
-                start = left
+            // 这里更新max， 不能写在if中，因为while、if都可能会结束，while 那部分就丢了
+            if (j-i+1>max) {
+                max=j-i+1
+                left=i
             }
 
-            left--
-            right++
+            // 下一轮
+            i--
+            j++
         }
-
     }
+
     for (let i = 0; i < s.length; i++) {
-        checkPalindrome(i, i) // 奇数长度字符串，中心点位置
-        checkPalindrome(i, i+1) // 偶数长度字符串，中心点位置
+        checkPalindrome(i, i)  // 子串奇数
+        checkPalindrome(i, i+1) // 子串偶数
     }
-
-    return s.slice(start, start + maxLen)
+    return s.slice(left, left+max)
 };
 ```
 
@@ -6757,7 +7601,6 @@ var isPalindrome = function(x) {
 
 ```js
 var isPalindrome = function(x) {
-
     const str = String(x)
     const check = (left, right) => {
         while (left >= 0 && right < str.length) {
@@ -6930,8 +7773,6 @@ var firstUniqChar = function(s) {
         }
     }
     return -1
-
-
 };
 ```
 
@@ -6941,33 +7782,24 @@ var firstUniqChar = function(s) {
 
 ```js
 var longestCommonPrefix = function(strs) {
-  	// 为啥排序? 用例： ['abc','ab']，我们应该以最短的作为基准，在最后return sortList[0]是返回的是应该是ab
-    const sortList=strs.sort((a,b)=>a.length-b.length)
-
-    let minLen=200
-    for (let i=0;i<sortList.length;i++){
-        minLen=Math.min(minLen,sortList[i].length)
+    let minLen = Infinity
+    for (const item of strs) {
+        minLen = Math.min(minLen, item.length)
     }
 
-    for(let j=0;j<=minLen;j++){//索引位置
-        let temp=''
-        for(let i=0;i<sortList.length;i++){//遍历所有子元素
-            if(i===0){
-                temp=sortList[0][j]
-                //0或1个元素情况： ['']结果'' 、 ['a']结果'a'的情况
-                if(sortList.length<=1){
-                    return sortList[0]
-                }
-            }else{
-                if(temp!==sortList[i][j]){
-                    return sortList[0].slice(0,j)
-                }
-            }
+    let commonPrefix = ''
+    for (let i = 0; i < minLen; i++) {
+        const prefix = strs[0].slice(0, i+1)
+        // every 很好用，如果都符合可以通过返回值判断。 for 如果都符合只能通过一个 flag标识
+        const ok = strs.every(item => item.startsWith(prefix))
+        if (ok) {
+            commonPrefix = prefix
         }
     }
-    return sortList[0]
 
+    return commonPrefix
 };
+
 ```
 
 
@@ -7510,29 +8342,31 @@ var mergeTwoLists = function(list1, list2) {
 
 ```js
 var addTwoNumbers = function(l1, l2) {
-    let carry = 0
-    let head = new ListNode()
-    let cur = head
-    while (l1 || l2) {
-       const sum = (l1?.val ?? 0) + (l2?.val ?? 0) + carry
-       if (sum >= 10) {
-           cur.next = new ListNode(sum - 10)
-           carry = 1
-       } else {
-           cur.next = new ListNode(sum)
-           carry = 0
-       }
-
-       l1 = l1?.next
-       l2 = l2?.next
-       cur = cur.next
-
+    const dummy = new ListNode()
+    let p = dummy
+    let heighPostion = 0
+    // 这里用的|| , 按最长的相加
+    while(l1 || l2) {
+        const sum = heighPostion + (l1?.val ?? 0) + (l2?.val ?? 0)
+        if(sum <= 9) {
+            p.next = new ListNode(sum)
+            heighPostion = 0
+        } else {
+            p.next = new ListNode(sum-10)
+            heighPostion = 1
+        }
+        // 下一轮
+        p = p.next
+        l1 = l1?.next ?? null
+        l2 = l2?.next ?? null
     }
-		// 例如：[9] + [9] ，最后进 1 位
-    if (carry === 1) {
-        cur.next = new ListNode(1)
+		
+  	// 例如: [9] + [9] = [18] ，要最后看下是否进位
+    if (heighPostion === 1) {
+        p.next = new ListNode(1)
     }
-    return head.next
+    
+    return dummy.next
 };
 ```
 
@@ -7644,25 +8478,21 @@ map 的写法是真精简啊
 
 ```js
 var copyRandomList = function(head) {
-    let p = head
     let map = new Map()
-    while (p) {
-        map.set(p, new _Node(p.val))
-        // 下轮
+    let p = head
+    while(p) {
+        map.set(p, new _Node(p.val, null, null))
         p = p.next
     }
 
-
-    p = head
-    while (p) {
-        const node = map.get(p)
-        node.next = map.get(p.next) ?? null
-        node.random = map.get(p.random) ?? null
-
-        // 下轮
-        p = p.next
+    let q = head
+    while(q) {
+        const node = map.get(q)
+        node.next = map.get(q.next) ?? null
+        node.random = map.get(q.random) ?? null
+        // 下一轮
+        q = q.next
     }
-
     return map.get(head)
 };
 ```
@@ -7704,10 +8534,7 @@ var removeNthFromEnd = function(head, n) {
 
 ```js
 var removeNthFromEnd = function(head, n) {
-
     let dummy = new ListNode(null, head)
-
-
     // 倒数第 n+1 个
     // Node(倒数n+1).next = Node(倒数n-1).next.next
 
@@ -7784,12 +8611,55 @@ var swapPairs = function(head) {
 };
 ```
 
-自己手写一遍 TODO
+自己手写一遍 
 
+```js
+var swapPairs = function(head) {
+    
+    const dfs = (p1) => {
+        // 最后
+        if(p1 === null) {
+            return null
+        }
+
+        // 其余
+        const p2 = p1.next
+        // [1,2,3] 这种 3 个节点的两两交换，剩下的 3 拼接结尾
+        if (p2 === null) {
+            return p1
+        } else {
+            const nextDfs = dfs(p2.next)
+            p2.next = p1
+            p1.next = nextDfs
+            return p2
+        }
+    }
+
+    return dfs(head)
+};
 ```
+
+### [148. 排序链表](https://leetcode.cn/problems/sort-list/)
+
+```js
+var sortList = function(head) {
+    let p = head
+    let list = []
+    while(p) {
+        list.push(p.val)
+        p = p.next
+    }
+    list.sort((a, b) => a-b)
+    
+    const dummy = new ListNode()
+    let q = dummy
+    for(const num of list) {
+        q.next = new ListNode(num)
+        q = q.next
+    }
+    return dummy.next
+};
 ```
-
-
 
 ### [23. 合并 K 个升序链表](https://leetcode.cn/problems/merge-k-sorted-lists/)
 
@@ -8052,6 +8922,49 @@ function topologicalSortStrings(nodes, edges) {
 }
 ```
 
+###  [200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
+
+使用 dfs，这篇 [题解](https://leetcode.cn/problems/number-of-islands/solutions/211211/dao-yu-lei-wen-ti-de-tong-yong-jie-fa-dfs-bian-li-/?envType=study-plan-v2&envId=top-100-liked) 讲了从树 dfs 到图dfs 的不同
+
+有点像搜索单词那道题，dfs 入参指定起点递归，for 循环所有节点作为 dfs 的起点
+
+```js
+var numIslands = function(grid) {
+
+    const dfs = (row, col) => {
+        // 最后一层
+        // 超出边界
+        if (row<0 || row>grid.length-1 || col<0 || col>grid[0].length-1) {
+            return
+        }
+        // 访问到海洋、标记过的陆地
+        if (grid[row][col]==='0' || grid[row][col]==='2') {
+            return;
+        }
+
+        // 其余层
+        // 标记访问过
+        grid[row][col]='2' // 0是海洋，1是陆地，2是被访问过的陆地
+        dfs(row-1, col)
+        dfs(row+1, col)
+        dfs(row, col-1)
+        dfs(row, col+1)
+    }
+
+    let count = 0
+    for (let row=0; row<grid.length; row++) {
+        for (let col=0; col<grid[0].length; col++) {
+            if (grid[row][col] === '1') {
+                dfs(row, col)
+                count++
+            }
+        }
+    }
+
+    return count
+};
+```
+
 ## 堆(Heap)
 
 ### 前置补充
@@ -8223,9 +9136,46 @@ console.log(arr)
 
 ![1686879866-VArRlW-Binar_Fundamentals_00](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20240314093709smkIYq.png)
 
+**异或操作**
+
+```js
+// 规则
+0^0 = 0
+1^1 = 0
+1^0 = 1
+
+// 总结1：相同的数异或结果是0，不同的数异或结果是 1, 任何数与0异或都是其本身
+//    x^x = 0
+//    x^y = 1
+//    0^x = x
+
+// 总结2：支持交换律 x^y^z = z^x^y
+
+// 补充: 其实 js 将十进制8转化为二进制运算 1000^1000
+8^8 = 0
+```
+
+### [136. 只出现一次的数字](https://leetcode.cn/problems/single-number/)
+
+```js
+var singleNumber = function(nums) {
+    let res = 0
+    for(const num of nums) {
+        res = res^num
+    }
+    return res
+};
+```
+
+
+
+
+
 ## 其他类型
 
 ### [1. 两数之和](https://leetcode.cn/problems/two-sum/)
+
+❌ 这个做法虽然可以 AC，但是有漏洞 。 如果出现[3,3] map 存的时候后面的覆盖前面的
 
 ```js
 var twoSum = function(nums, target) {
@@ -8245,6 +9195,26 @@ var twoSum = function(nums, target) {
     }
 };
 ```
+
+✅ 更稳健的做法，先查没查到再存自己
+
+```js
+var twoSum = function(nums, target) {
+    let map = new Map()
+    // 只遍历一次
+    for (let i=0; i<nums.length; i++) {
+        const complement = target - nums[i]
+        // 先看有没有搭档（此时 Map 里只有 i 之前的元素，不可能拿到 i 自己）
+        if (map.has(complement)) {
+            return [map.get(complement), i]
+        }
+        // 查完没找到，再把自己存进去
+        map.set(nums[i], i)
+    }
+};
+```
+
+
 
 ### [49. 字母异位词分组](https://leetcode.cn/problems/group-anagrams/)
 
@@ -8297,8 +9267,6 @@ var reverse = function(x) {
     return num
 };
 ```
-
-
 
 ### [128. 最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
 
@@ -8512,6 +9480,33 @@ LRUCache.prototype.put = function(key, value) {
 };
 ```
 
+### [169. 多数元素](https://leetcode.cn/problems/majority-element/)
+
+一般情况下可以 hash 计数，然后遍历找出来
+
+还有方法：先排序，假设是 x 出现了超过 n/2 次，排序里一定至少有 n/2 个 x 连续，可以看在图里，无论 x 排在什么位置，中间一定都是 x
+
+![image-20260411212600266](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202604112126008GBfy1.png)
+
+```js
+var majorityElement = function(nums) {
+  
+    const sorted = nums.sort((a, b) => a-b)
+
+    return sorted[Math.floor((sorted.length)/2)]
+};
+```
+
+### [31. 下一个排列](https://leetcode.cn/problems/next-permutation/)
+
+可以看下这个[题解](https://leetcode.cn/problems/next-permutation/solutions/80560/xia-yi-ge-pai-lie-suan-fa-xiang-jie-si-lu-tui-dao-/?envType=study-plan-v2&envId=top-100-liked) , 下一个排列不是乱找的，有特点的方法
+
+```
+
+```
+
+
+
 ## 补充
 
 很多东西都是大学是数据结构学的，但是时间太过久远了，很多东西都忘记了，这里整理下遇到的吧
@@ -8717,6 +9712,40 @@ arr.sort((a,b)=>b-a) // 从大到小
       return ans
   };
   ```
+
+### 没有返回值的循环
+
+以 739 每日温度为例子，我发现：
+
+```js
+// 此解法复杂度 O(n^2)，会超时
+var dailyTemperatures = function(temperatures) {
+    const len = temperatures.length
+    let ans = []
+    for (let i = 0; i < len-1; i++) {
+        const curTemper = temperatures[i]
+        for (let j = i+1; j < len; j++) {
+          	// 这里找到第一个大于 temperatures[i] 的温度就行了
+           	let flag = 0 // 找不到的值时的默认值
+            if (temperatures[j] > curTemper) {
+                flag = j - i
+              	break 
+            }
+        }
+      	ans[i] = flag
+        // 如果都找不到 ans[i] = 0
+      
+      	// ⚠️ 满足条件后break可以终止for循环，但是都不满足条件 for循环是无法感知的，也就没有ans[i]=0的时机
+      	// 通常只能在 for 外层，放置flag=false标识，如果有满足的就flag=true。当 for 循环结束根据结果处理是否ans[i]=0
+
+    }
+
+    ans[len-1] = 0
+
+    return ans
+};
+```
+
 
 
 ### while
@@ -8935,7 +9964,7 @@ max=Math.max(max,sum)
 
   leetcode5最长回文子串、leetcode5回文数
 
-#### 找子集
+### 找子字符串/子数组
 
 无论题目要求什么？都需要注意是否能清晰的获取每个组合
 
@@ -8943,7 +9972,7 @@ max=Math.max(max,sum)
 
 而有的题目使用技巧，只能完成题目要求，而不能清晰的知道所有子集
 
-##### 暴力枚举
+#### 暴力枚举
 
 这种找子集的只要是连续的都可以枚举 start、end
 
@@ -8957,29 +9986,89 @@ for (let start = 0; start < nums.length; start++) {
 }
 ```
 
-##### 找子字符串
+#### 连续的
 
- **滑动窗口**
+* 滑动窗口
 
-使用窗口需满足单调性，即一旦某个位置 `l` 因为 `r` 处的字符重复而被移出窗口，那么对于所有更大的 `r' > r`，`l0` 永远不会再被需要
-
-* 找不包含重复字符的最长子串 （leetcode3） 
-
-* 找的包含 t 的最短子串（leetcode76）
-
-**中心扩散法**
-
-* 找是回文的最长子串（leetcode5）**注**：回文子串不满足单调性，即使 `[l, r]` 不是回文，`[l+1, r]` 或 `[l, r-1]` 也可能是回文；反之，即使 `[l, r]` 是回文，`[l, r+1]` 加一个字符后可能变成非回文，但 `[l+1, r+1]` 却可能是更长的回文
-
-##### 找子数组
-
-* 连续的子数组，求该子数组和最大（leetcode53）
-
-  dfs尝试所有连续的答案，滑动窗口也能解决维护窗口和需要大于0，才能添加右元素
-
-* 连续的子数组，要求该子数组之和为K 的个数(leetcode560)
-
-  与上题一样解法，会出现一种情况无法解决，dfs算出来子数组 [ [-1,0,1],[-1,0,1]]，即
+  * [3. 无重复字符的最长子串](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
 
 
+  * 找的包含 t 的最短子串（leetcode76）
+  * [438. 找到字符串中所有字母异位词](https://leetcode.cn/problems/find-all-anagrams-in-a-string/)
 
+
+* 中心扩散法
+* 前缀和 
+  * [560. 和为 K 的子数组](https://leetcode.cn/problems/subarray-sum-equals-k/)
+
+#### 不必连续，保持原相对顺序
+
+* 子数组必须连续
+
+  * [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+    dfs尝试所有连续的答案，滑动窗口也能解决维护窗口和需要大于0，才能添加右元素
+
+  * 连续的子数组，要求该子数组之和为K 的个数(leetcode560)
+
+    与上题一样解法，会出现一种情况无法解决，dfs算出来子数组 [ [-1,0,1],[-1,0,1]]
+
+* 不限制是否连续
+
+  * 数组的所有全排列（leetcode46）使用回溯尝试每种可能
+
+  * 数组的所有子集（leetcode78）使用回溯尝试有/没有 2 种可能
+
+leetcode 15 三数之和
+
+#### 不必连续，不必保持原相对顺序
+
+leetcode128 最长连续序列
+
+## hot100
+
+剩余题：
+
+24 两两交换链表中的节点
+
+105 从前序与中序遍历序列构造二叉树
+
+131 分割回文串
+
+51 N 皇后
+
+4 寻找两个正序数组的中位数
+
+394 字符串解码
+
+84 柱状图中最大的矩形
+
+矩阵（4）
+
+图论（4）
+
+堆（3）
+
+763 划分字母区间
+
+139 单词拆分
+
+分割等和子集
+
+72 编辑距离
+
+31 下一个排列
+
+背诵--------
+
+34 二分法 while(left < right) 找左右边界是固定解法背下来
+
+快排背下来
+
+79 单词搜索 好难，一定再看看
+
+
+
+
+
+用 stack 设计一个队列

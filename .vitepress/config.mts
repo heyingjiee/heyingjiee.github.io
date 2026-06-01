@@ -37,12 +37,21 @@ export default defineConfig({
           { text: "TS笔记(持续更新)", link: "/docs/frontBasic/TS学习笔记.md" },
           { text: "CSS笔记", link: "/docs/frontBasic/CSS技术精炼.md" },
           { text: "Vue2笔记(过时)", link: "/docs/frontBasic/Vue2重刷笔记.md" },
-          { text: "Vue3案例", link: "/docs/frontBasic/Vue3案例.md" },
           { text: "Nest笔记(持续更新)", link: "/docs/frontBasic/Nest.md" },
           { text: "Canvas", link: "/docs/frontBasic/Canvas.md" },
           { text: "Rxjs", link: "/docs/frontBasic/Rxjs.md" },
+          { text: "前端项目配置", link: "/docs/frontEngineering/项目配置.md" },
+          { text: "NPM应知应会", link: "/docs/frontEngineering/NPM应知应会.md" },
+          { text: "Gulp自动化神器", link: "/docs/frontEngineering/Gulp自动化神器.md" },
+          { text: "Vite", link: "/docs/frontEngineering/Vite.md" },
         ],
       },
+     {
+        text: "AI",
+        items: [
+            { text: "AI", link: "/docs/ai/AI.md" }
+        ],
+     },
       {
         text: "移动端",
         items: [
@@ -84,26 +93,6 @@ export default defineConfig({
         ]
       },
       {
-        text: "前端工程化",
-        items: [
-          { text: "前端项目配置", link: "/docs/frontEngineering/项目配置.md" },
-          { text: "NPM应知应会", link: "/docs/frontEngineering/NPM应知应会.md" },
-          { text: "Gulp自动化神器", link: "/docs/frontEngineering/Gulp自动化神器.md" },
-          { text: "Vite", link: "/docs/frontEngineering/Vite.md" },
-        ],
-      },
-      {
-        text: "工具",
-        items: [
-          { text: "WebStorm", link: "/docs/programTool/WebStorm.md" },
-          { text: "Charles", link: "/docs/programTool/Charles的学习笔记.md" },
-          {
-            text: "Mac使用经验",
-            link: "/docs/programTool/Mac使用经验.md",
-          },
-        ],
-      },
-      {
         text: "归档",
         items: [
           {
@@ -113,6 +102,12 @@ export default defineConfig({
           {
             text: "C/C++基础",
             link: "/docs/otherLanguage/c++使用学习笔记.md",
+          },
+          { text: "WebStorm", link: "/docs/programTool/WebStorm.md" },
+          { text: "Charles", link: "/docs/programTool/Charles的学习笔记.md" },
+          {
+            text: "Mac使用经验",
+            link: "/docs/programTool/Mac使用经验.md",
           },
         ],
       },

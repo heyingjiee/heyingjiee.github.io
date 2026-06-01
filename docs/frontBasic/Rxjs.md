@@ -6,7 +6,7 @@
 
 ## 安装
 
-```shel
+```shell
 pnpm i rxjs
 ```
 
