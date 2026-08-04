@@ -183,7 +183,11 @@ pip install -e . # 把项目符号链接到全局Python模块下（site-packages
 python -m evolve   # 任意目录启动
 ```
 
+pycharm调试uv脚本
 
+选script 后面是启动的py文件，我这个项目是个 CLI 工具传入子命令 agent
+
+![image-20260608013739465](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260608013739ecXfOH.png)
 
 ### 模块化
 
@@ -2037,11 +2041,9 @@ plugin = load_module_from_path("my_plugin", "plugin.py")
 
 Rich 丰富的终端样式， Textual好像封装了Rich
 
-
-
 #### pydantic
 
-类型相关工具
+类型相关工具 BaseModel
 
 ```python
 from pydantic import BaseModel, Field, ValidationError
@@ -2065,6 +2067,29 @@ try:
     print(user.model_dump_json())   # 转成 JSON 字符串
 except ValidationError as e:
     print(e.json())
+```
+
+环境变量 BaseSettings，会自动读取环境变量自动赋值给属性
+
+```python
+# 需要单独安装 uv add pydantic-settings
+
+class Settings(BaseSettings):
+  	# 这个 model_config 就是配置BaseSettings能力的
+    model_config = SettingsConfigDict(
+        env_file="../.env", # 环境变量文件路径
+        env_ignore_empty=True, # 是否忽略空
+        extra="ignore", # 
+    )
+    
+    # 优先级： 系统环境变量 > .env > 属性默认值
+    
+    app_name: str = "Default"
+    database_url: str  # 如果没给默认值，启动时必须有这个环境变量，否则报错
+    
+    
+# 自动读取环境变量，自动转换类型，自动校验！
+settings = Settings()  
 ```
 
 
@@ -2473,10 +2498,6 @@ RAG 就是为了解决这大语言模型（如 GPT-4、Claude、Qwen）本身有
 1. **知识滞后**：模型训练完那一刻，知识就“冻结”了。它不知道昨天发生了什么新闻，也不知道你公司内部今天发布的新规定
 2. **一本正经胡说八道（幻觉）**：如果你问它一个它不知道的专业问题，它可能会编造一个看起来很真的答案
 
-流程图：
-
-![image-20260524233907456](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260524233907e3u0oP.png)
-
 总体选型
 
 ![image-20260425123816514](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260425123816j9MYEs.png)
@@ -2485,7 +2506,64 @@ RAG 就是为了解决这大语言模型（如 GPT-4、Claude、Qwen）本身有
 
 ![image-20260425124406307](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260425124406qNvVv4.png)
 
-### 补充基础
+### 整体流程
+
+流程图：
+
+![image-20260524233907456](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260524233907e3u0oP.png)
+
+### 召回/检索
+
+召回环节细化图：
+
+![image-20260604185204475](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260604185204RRf8de.png)
+
+* 双路召回
+
+  用向量检索（语义匹配）+ 关键词检索BM25（精确词匹配），然后把匹配的结果融合去重，取Top-N
+
+  注意：检索需要两种索引
+
+  向量检索使用向量库，例如：Milvus、chroma、LIamaIndex
+
+  关键词检索使用倒排索引，例如：Elasticsearch、OpenSearch
+
+* 两阶段：先用快的方法粗排（例如召回Top-50），再粗排的结果里使用**Cross-Encoder(精排用的深度模型,准但慢)** 最后取 Top3~5
+
+### 文本分割
+
+召回率： 100个查询问题中，有 x 个问题正确召回了对应的chunk，召回率就是 x%
+
+切分：把大文档切分为一个个 chunk
+
+RAG文本分割的问题：
+
+* **解析文档**
+
+  左右对照排版、无边框表格、印章/签名在文字上方遮盖文字、扫描件模糊等等因素导致识别不准，知识库被污染
+
+* **分割**
+
+  * 切分位置不当，导致语义错误
+
+    ```
+    本保险承保意外伤害导致的身故或残疾,但以下情况除外: 【切分点】(1)战争 (2)核辐射
+    
+    查询：核辐射是否在保障范围内？
+    命中：第一段，会让模型误认为所有意外都能承保
+    ```
+
+  * chunk的大小也会有影响
+
+    太大导致每个chunk里包含语义太多出现太多噪音
+
+    太小会导致完整的话被切碎，难以命中适当语义
+
+文本分割方案：
+
+https://www.wsxdmx.com/projects/rag-system/c/03-chunking 的2.2学习下
+
+### Embedding向量化
 
 1、向量化
 
@@ -2504,6 +2582,31 @@ RAG 就是为了解决这大语言模型（如 GPT-4、Claude、Qwen）本身有
 ![image-20260525000739566](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260525000739sfWf3T.png)
 
 A、B两点方向一致，长度不同。从计算结果可以看出来，只要方向一致相似度就是1
+
+### Milvus
+
+文档：https://milvus.io/docs/zh/quickstart.md
+
+Milvus是面向列的向量数据库，执行查询时，只读取查询中涉及的特定字段，而不是特定的行，这大大减少了访问的数据量
+
+支持：
+
+* ANN搜索：查找最接近查询向量的前K个向量
+* 过滤搜索：指定过滤条件的ANN搜索
+* 范围搜索：查找指定向量半径范围内的向量
+* 混合搜索：基于多个向量场进行ANN搜索
+* 全文搜索：基于 BM25 的全文搜索
+* Rerankers：根据附加标准、辅助算法调整搜索结果顺序，完善初始化ANN搜索结果
+* 获取：根据主键检索数据
+* 查询：使用特定表达式检索数据
+
+```
+uv add "pymilvus[milvus-lite]"
+```
+
+
+
+
 
 ## LangChain
 

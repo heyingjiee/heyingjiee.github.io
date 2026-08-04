@@ -471,11 +471,14 @@ events {
 }
 
 
-
-# http模块配置
+# 处理请求的配置（最重要）
 http {
-    include       mime.types; #include是引入关键字，这里引入了mime.types这个配置文件的内容（同在conf目录下，mime.types是用来定义，请求返回的content-type）
-    default_type  application/octet-stream; #mime.types未定义的，使用默认格式application/octet-stream
+		
+		# 引入，这里表示引入mime.types配置文件（同在conf目录下，mime.types是用来定义，请求返回的content-type）
+    include       mime.types; 
+    
+    # mime.types未定义的，使用默认格式application/octet-stream
+    default_type  application/octet-stream; 
     
     # 访问日志格式
     #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
@@ -491,8 +494,8 @@ http {
     
     keepalive_timeout  65; # TCP链接超时时间,单位秒
 	
-		# 压缩相关，详见下文
-		gzip on; # 开启压缩，压缩后发送给客户端
+		# 开启压缩，压缩后发送给客户端
+		gzip on; 
 		
 		# 详见下文 
     server {
@@ -579,76 +582,118 @@ nginx 中的 gzip 压缩分为动态压缩、静态压缩
 
 虚拟主机配置（可以启用多个），多个server字段，会根据请求的域名+端口从前向后匹配
 
-用户访问`pro.hedaodao.ltd`（注意：需要解析到当前Nginx的这台机器），请求会匹配到下面的配置中
+一定记住：需要把域名解析到当前部署Nginx的这台机器，这样请求才会打到机器上，nginx才能转发
 
-（我们本地测试时可以直接修改host，建立域名与Nginx所在机器IP的映射）
+本地模拟：
 
-（server_name设置为localhost，即表示匹配任何打到这台机器的请求）
+* 我们本地测试时可以直接修改host，建立域名与Nginx所在机器IP的映射
+
+* server_name设置为localhost，即表示匹配任何打到这台机器的请求
+
+下面配置：
+
+* 请求进来后，先根据 `server_name:listen` 匹配到进入哪个 server配置
+* 根据 `location` 匹配路径，走具体的转发逻辑
 
 ```shell
  http {
  		#....其他属性
- 		server {# server 规则可以有多个，每个对应 一个域名+端口的组合
- 				
- 		    access_log logs/pro.hedaodao.ltd-access.log # 访问日志字段也可以设置在Server中，命中该Server的请求日志都在这里
+ 		
+		# 支持多个server
+ 		server {
+ 				# 访问日志字段也可以设置在Server中，命中该Server的请求日志都在这里
+ 		    access_log logs/pro.hedaodao.ltd-access.log 
  		    
-        listen       80; # 端口
-        server_name  pro.hedaodao.ltd; # 域名，可以有多个值，用空格分隔。支持通配符，例如：*.example.org 。
-      # server_name  pro.hedaodao.ltd default_server; #default_server表示当Nginx接收的请求没有能匹配上的server，就命中设置了default_server
-
-				# 域名+端口 匹配上了，就会走这里的映射（映射规则可以有多个）
-				
-				# 【类型1】
-				# / 路径的映射配置，这个映射比较特殊，无论用户请求的是什么路径，只要没有被更具体的 location 块匹配到，就都会命中 location /。即 pro.hedaodao.ltd:80 会命中这里
-        location / {  
-        		# root指定当前这个server的根路径为 html/pro（注意root字段如果是相对路径很特殊：是相对于nginx的安装目录，即这里html与conf目录同级）
-            root   html/pro;  
-            # 当命中/路径时的首页，nginx会在root目录下找index.html、index.htm并返回
-            index  index.html index.htm; 
-        }
+ 		    
+ 		    # ---------------------------------- 匹配 server_name + listen
+ 		    # 端口
+        listen 80; 
         
-        # 【类型2】
-        # 一般请求用root
-        # pro.hedaodao.ltd:80/abc、pro.hedaodao.ltd:80/abc/1 都会命中这条规则
-        # 例如： pro.hedaodao.ltd:80/abc/ 会返回首页，即index字段（root目录下查找index指定的文件）
-        # 例如： pro.hedaodao.ltd:80/abc/1/index.html 返回的是机器上的home/abc/1/index.html (实际机器路径为：root+【请求命中路径-全部路径结尾，例如：/abc/1/index.html】)
-        location /abc {  
-            root   /home; 
-            index  index.html index.htm; 
+  
+        # 注意：hedaodao.com 域名需要先解析到机器上，server_name 用来配置不同的子域名转发规则
+        # 1、支持多个域名（空格分隔）
+        # server_name  test1.hedaodao.com test2.hedaodao.com;
+        # 2、支持通配符，例如：*.example.org 。
+        server_name  test.hedaodao.com; 
+        
+ 				# ---------------------------------- 匹配路径
+ 				
+ 				# 规则：
+ 				# 1、按照从上到下的顺序，命中第一个被匹配到的。省略了匹配到路径后内部的配置
+ 				# 2、访问 URI 带尾斜杠被认为是访问目录，例如： test.hedaodao.com:80/a/ 
+ 				# 3、访问 URI 不带尾斜杠，例如： test.hedaodao.com:80/a 会先检查是否存在a文件，没有就认为是目录，301 重定向为test.hedaodao.com:80/a/
+ 				
+ 				# 【类型1】精确匹配
+        #  只有访问 test.hedaodao.com:80/50x.html才能命中这条规则
+        location = /50x.html {
+            root   html;
         }
+				
+				# 【类型2 不推荐】/ 即任何路径都会命中
+        location / {  }
         
         # 【类型3】
-        # 一般静态文件会用alias
-        # /images/ 路径的映射配置，即 pro.hedaodao.ltd:80/images/xx会命中这里，实际请求路径为：/var/www/images/xxx。对比root字段，如果下面的alias替换为root字段，则实际请求路径为/var/www/images/images/xxx，这显然是错误的
-        # 注意尾斜杠，pro.hedaodao.ltd:80/images不能命中
+        # /abc 命中 /abc、/abc/、/abc/ef、`/abc123` （注意，可能命中意外的路径/abcxxxxx，不推荐）
+        location /abc {  } 
+        
+        # /abc/ 命中 /abc/、/abc/ef 
+        location /abc/ {  } 
+        
+        # 【类型4】正则
+        #  '~',例子：location ~ ，表示匹配所有路径
+        #  '~（空格）正则' ，例子：~ \.(png|gif) 匹配png、gif的路径
+        #  '~*（空格）正则'，不区分大小写，例子：~ *\.(png|gif) 匹配png、PNG、gif、GIF等路径
+        #  '^~（空格）字符串' ，表示匹配以字符串开头的请求，例子：^~ /test，即 test.hedaodao.com:80/test/xxx可以命中
+        location ~*\.(png|gif) { }
+        
+       # ---------------------------------- 匹配路径后，里面具体的配置
+       # 【情景1】
+       location / {  
+        		# 根路径，test.hedaodao.com:80/xxx 实际上访问 /var/www/html/xxx 文件
+            root /var/www/html;  
+            
+            # 兜底
+            # 请求 /xxx/ 带尾斜杠是访问目录，直接返回兜底文件 /var/www/html/xxx/index.html、 /var/www/html/xxx/index.htm
+            # 请求 /xxx 是访问文件，有就返回，没有Nginx默认返回301让浏览器重定向/xxx/，访问目录就是上面的逻辑了
+            index  index.html index.htm; 
+            
+    				# 注意 Vue History 模式需要配置这个
+    				# 上一个选项index，提到如果找不到文件就会301重定向，try_files 修改了默认的查找规则
+    				# $uri是文件，找不到文件，就当目录找，然后兜底 /var/www/html/index.html
+    				# $uri是目录，$uri/还是当目录（nginx把两个斜杠为一个），然后兜底
+    				try_files $uri $uri/ /index.html;
+        }
+        
+        # 【情景2】
+        #  一般静态文件会用alias
+        #  test.hedaodao.com:80/images/xx 会命中这里，实际请求路径为：/var/www/images/xxx。
+        #  对比root字段，如果下面的alias替换为root字段，则实际请求路径为/var/www/images/images/xxx，这显然是错误的
         location /images/ {
         	# alias设置请求的别名，用于替换文件系统路径。
         	alias /var/www/images/;
     		}
 
-
-				# 反向代理，proxy_pass将请求代理到指定的后端服务器。
-    		location /api/ {
+ 				# 【情景3】
+				# 反向代理，proxy_pass将请求转发到后端服务器
+				# location是固定路径
+    		location /admin/api/ {
+    			# 不带尾斜杠，保留location
+    			# 请求 test.hedaodao.com/admin/api/users -> http://backend_server/admin/api/users
         	proxy_pass http://backend_server;
+        	
+        	# 带尾斜杠，不保留location
+        	# 请求 test.hedaodao.com/admin/api/users -> http://backend_server/users
+        	proxy_pass http://backend_server/;
+    		}
+    		
+    		# location是正则路径，proxy_pass不能带尾斜杠
+    		location ~ ^/admin/api/ {
+    			proxy_pass http://backend_server;
     		}
 
 				# 服务器错误码为500 502 503 504，转到"域名/50x.html"
-        error_page   500 502 503 504  /50x.html;
+        error_page 500 502 503 504  /50x.html;
         
-        # 【类型4】使用=代表精确匹配
-        #  只有访问 pro.hedaodao.ltd:80/50x.html才能命中这条规则
-        location = /50x.html {
-            root   html;
-        }
-        
-        # 【类型5】使用正则匹配
-        #  '~',例子：location ~ { xxx }，表示匹配所有路径
-        #  '~（空格）正则' ，例子：~ \.(png|gif) 匹配png、gif的路径
-        #  '~*（空格）正则'，不区分大小写，例子：~ *\.(png|gif) 匹配png、PNG、gif、GIF等路径
-        #  '^~（空格）字符串' ，表示匹配以字符串开头的请求，例子：^~ /test，即 pro.hedaodao.ltd:80/test/xxx可以命中
-        location ~*\.(png|gif) { #因为忽略大小写，所以 pro.hedaodao.ltd:80/a.PNG 可以命中规则
-            root   /home;
-        }
 		}
 
  		server {
@@ -1534,7 +1579,7 @@ LVS的设置相对复杂，本章节仅仅是对其原理的了解
 
 [官网](http://www.linuxvirtualserver.org/index.html)
 
-LVS（Linux Virtual Server ），目前已被集成到Linux内核的IPVS模块中，该模块会虚拟出一个VIP（虚拟IP）
+LVS（Linux Virtual Server），目前已被集成到Linux内核的IPVS模块中，该模块会虚拟出一个VIP（虚拟IP）
 
 LVS属于四层负载均衡
 

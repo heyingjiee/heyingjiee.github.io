@@ -46,12 +46,12 @@ export default defineConfig({
           { text: "Vite", link: "/docs/frontEngineering/Vite.md" },
         ],
       },
-     {
-        text: "AI",
-        items: [
-            { text: "AI", link: "/docs/ai/AI.md" }
-        ],
-     },
+     // {
+     //    text: "AI",
+     //    items: [
+     //        { text: "AI", link: "/docs/ai/AI.md" }
+     //    ],
+     // },
       {
         text: "移动端",
         items: [
