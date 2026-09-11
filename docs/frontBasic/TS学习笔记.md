@@ -668,136 +668,702 @@ let b:A={
 
 例子<a href="#接口可以继承其他类">详见</a>
 
-## 类 类型
+## 类
 
-JS中的面向对象机制并不健全，TS也完善了JS中关于面向对象的部分
+TS官方Class文档：https://www.typescriptlang.org/docs/handbook/2/classes.html
 
-从整体分析：
+TS完善了JS中关于面向对象的部分，包括字段、构造函数、访问器、继承、接口实现、泛型、抽象类、静态成员、`this` 类型等内容
 
-* 类的成员分为：静态成员static、普通成员（默认）
+### 初始化
 
-* 访问限定符：public（默认）/ private/ protected/readonly 《注意：无论是哪种成员都可以使用》
-
-### 类的成员
-
-静态方法中的this指向所有静态成员
-
-普通方法中的this指向所有普通成员
+* 属性初始有值
+* 构造函数赋值
 
 ```ts
-class Animal {
-  static animalName:string
-  
-  static setName(animalName:string){
-    // 访问到静态变量
-    this.animalName=animalName
+class Account {
+	// ----- 属性 ----- 
+ 	name: string = "tom"      
+
+  // ----- 构造函数 ----- 
+  constructor(age: number) {
+    this.age = age
+  }
+}
+```
+
+### 修饰符
+
+一个属性/方法可以组合两种修饰符
+
+* 访问修饰符：public(可省略)、private、protected 三选一
+* 成员修饰符：普通成员(不写就是)、readonly、static 三选一
+
+修饰符可以修饰 **属性** + **方法** + **构造函数**
+
+#### 访问修饰符
+
+##### public
+
+访问范围：只能当前类内部、当前类实例、子类、子类实例
+
+```ts
+class User {
+  public name = 'Tom'
+}
+
+const user = new User()
+user.name = 'Jerry'
+```
+
+##### private
+
+访问范围：只能当前类内部访问（当前类实例、子类、子类实例都不行）
+
+```ts
+class BankAccount {
+  private balance = 0
+
+  deposit(amount: number) {
+    this.balance += amount
+  }
+
+  getBalance() {
+    return this.balance
+  }
+}
+```
+
+##### protected 
+
+访问范围：当前类、子类可访问（当前类实例、子类实例都不行）
+
+protected + abstract方法，组合起来常作为子类的扩展点
+
+abstract 方法定义形状，用子类做多种实现达到扩展的目的
+
+```ts
+abstract class Logger {
+  public log(message: string) {
+    const text = this.format(message)
+    console.log(text)
+  }
+
+  protected abstract format(message: string): string
+}
+
+class JsonLogger extends Logger {
+  protected format(message: string): string {
+    return JSON.stringify({
+      time: Date.now(),
+      message
+    })
   }
 }
 
-Animal.setName('1')
-console.log(Animal.animalName) // 1
+const logger = new JsonLogger()
+logger.log('hello')
 ```
 
-### 访问修饰符
+#### 成员修饰符
 
-包括：
+##### Getter/Setter
 
-- public：此类成员在**类、子类、类的实例**中都能被访问
-- private：此类成员仅能在**类的内部**被访问
-- protected：此类成员仅能在**类与子类的内部**被访问，你可以将类和类的实例当成两种概念，即一旦实例化完毕（出厂零件），那就和类（工厂）没关系了，即**不允许再访问受保护的成员**
-- readonly：给**类的实例**设置只读属性
+访问范围与public相同
 
-**public成员**
+适合读取、设置时需要触发特定逻辑（读取时组合多个字段结果，设置时进行数据校验），想隐藏内部存储方式
 
-public为默认值，可省略
+Vue的 ref 就是在在读取时进行依赖收集，设置时进行依赖触发
+
+```ts
+class User {
+  private age = 0
+
+  get age() {
+    return this.age
+  }
+
+  set age(value: number) {
+    if (value < 0) {
+      throw new Error('年龄不能小于 0')
+    }
+
+    this.age = value
+  }
+}
+
+const user = new User()
+
+user.age = 18
+console.log(user.age)
+```
+
+##### 只读成员readonly
+
+只读，即首次赋值后后续不能修改，访问范围与public相同。注意：只限制重新赋值，如果是修改数组、对象属性不行
+
+```ts
+class User {
+  readonly tags: string[] = []
+
+  changeTag(tags: string[]) {
+    this.tags = tags // 不可以
+  }
+  addTag(tag: string) {
+    this.tags.push(tag) // 可以
+  }
+}
+```
+
+##### 静态成员static
+
+注意：访问修饰符和 static 是可以同时存在的，static这是表示这是类自身的方法（不是实例的）
+
+```ts
+class MathUtil {
+  static readonly PI = 3.14159
+  
+  // 构造函数加 private，可以禁止通过 new 创建实例
+  private constructor() {}
+
+  static max(a: number, b: number) {
+    return Math.max(a, b)
+  }
+}
+
+MathUtil.PI
+MathUtil.max(1, 2)
+```
+
+### 继承extends
+
+继承类（普通类、抽象类）
+
+* 通过 `super.xxx` 访问父级的public、protected、readonly、getter/setter
+
+*  `this.xxx ` 的访问范围是 super 的 + 自身成员
 
 ```ts
 class Animal {
-  name: string
-  constructor(name:string){
-    this.name=name
+  protected name: string
+  constructor(name: string) {
+    this.name = name
   }
-  move(distance: number) {
-    console.log(`${this.name} moved ${distance} meters.`);
+}
+
+// 继承了父类的方法
+class Dog extends Animal {
+  // 省略的情况下默认生成，自动生成构造函数，把入参全传入super
+  
+  // 如果不省略，必须调用super
+  constructor(name: string) {
+    super(name) // 父类的构造函数
+  }
+}
+```
+
+overrid重写父级方法
+
+```ts
+class Animal {
+  constructor(name: string) {
+    this.name = name
+  }
+  move() {
+    console.log(`${this.name}移动`)
   }
 }
 
 class Dog extends Animal {
-  constructor(name: string) {
-    super(name)
+  // 默认同名就是重写，建议开启TS的noImplicitOverride，强制子类显式写override
+  override move() {
+    console.log(`${this.name}跑`)
+    // super.move() 可以手动调用父类
+  }
+}
+```
+
+**组合**通常优于继承
+
+```ts
+interface Logger {
+  log(message: string): void
+}
+
+class ConsoleLogger implements Logger {
+  log(message: string) {
+    console.log(message)
+  }
+}
+
+class OrderService {
+  // 组合：把功能类作为构造函数入参传入，方便替换
+  constructor(private logger: Logger) {}
+
+  createOrder() {
+    this.logger.log('创建订单')
+  }
+}
+const service = new OrderService(new ConsoleLogger())
+```
+
+
+
+### 抽象类abstract
+
+可以看下前面提到的 protected + abstract/override方法，组合作为扩展点
+
+* protected是为了暴露给子类处理，同时不会暴露出去数据。参考第一个例子，单独暴露pay给外部使用
+* abstract/override是具体怎么实现
+
+组合优于继承，这种通过继承抽象类的方式，比较适合少量配置的扩展，更复杂的推荐使用**组合**
+
+* 抽象类不能实例化（不能用 new xxx），因为不能实例化，所以常作为模板/扩展点，子类继承实现真正的功能后才能应用
+* 抽象类里有两种方法，具体方法 pay，抽象方法 doPay（注意：抽象方法必须在抽象类里）
+
+**1、protected + abstract**
+
+```ts
+abstract class Payment {
+  pay(amount: number) {
+    if (amount <= 0) {
+      throw new Error('金额必须大于 0')
+    }
+
+    return this.doPay(amount)
+  }
+
+  protected abstract doPay(amount: number): Promise<void>
+}
+
+class Alipay extends Payment {
+  protected async doPay(amount: number) {
+    console.log(`支付宝支付 ${amount} 元`)
+  }
+}
+
+const payment = new Alipay()
+payment.pay(100)
+```
+
+**2、protected + override**
+
+```ts
+abstract class HttpClient {
+  async request(url: string) {
+    const fullUrl = this.buildUrl(url)
+    const response = await fetch(fullUrl)
+    return this.parseResponse(response)
+  }
+
+  protected buildUrl(url: string) {
+    return url
+  }
+
+  protected async parseResponse(response: Response) {
+    return response.json()
+  }
+}
+
+class ApiClient extends HttpClient {
+  protected override buildUrl(url: string) {
+    return `https://api.example.com${url}`
+  }
+}
+```
+
+
+
+### 接口实现implements
+
+接口和抽象类一样都可以定义形状，
+
+```ts
+interface Printable {
+  prefix: string  // 属性
+  print(): void   // 方法
+}
+
+interface Serializable {
+  serialize(): string
+}
+
+// 一个类可以实现多个接口
+class Report implements Printable, Serializable {
+  
+  // 实现接口属性（实际初始赋值，或者构造函数赋值）
+  // prefix: string = "xxx"  
+  prefix: string
+  constructor(prefix: string) {
+     this.prefix = prefix; 
   }
   
-  move(distance: number) {
-    console.log('狗');
-    super.move(distance)
+  // 实现接口方法
+  print() {}
+
+  serialize() {
+    return ''
   }
-
 }
-
-let dog = new Dog("Buddy");
-dog.move(10); // 输出： 狗  "Buddy moved 10 meters."
-
 ```
 
-**private**
+还有一个例子
 
 ```ts
-class Animal {
-  private name: string =''
+interface PaymentGateway {
+  pay(amount: number): Promise<void>
+}
 
-  constructor(name:string) {
-    // 只能在类内部访问
-    this.name=name
+class Order {
+  private status: 'pending' | 'paid' | 'cancelled' = 'pending'
+
+  constructor(
+    private readonly id: string,
+    private readonly amount: number,
+    private readonly paymentGateway: PaymentGateway
+  ) {
+    if (amount <= 0) {
+      throw new Error('订单金额必须大于 0')
+    }
+  }
+
+  async pay() {
+    this.ensureStatus('pending')
+
+    await this.paymentGateway.pay(this.amount)
+    this.status = 'paid'
+  }
+
+  cancel() {
+    this.ensureStatus('pending')
+    this.status = 'cancelled'
+  }
+
+  getStatus() {
+    return this.status
+  }
+
+  private ensureStatus(expected: 'pending' | 'paid' | 'cancelled') {
+    if (this.status !== expected) {
+      throw new Error(`订单状态必须是 ${expected}`)
+    }
+  }
+}
+```
+
+
+
+### 设计类
+
+#### 类适合什么场景
+
+携带自身状态，方法操作状态
+
+但是类没有时序，暴露多个方法 （下单、支付、签收），但是无法表达方法之间的调用顺序。只能在方法逻辑里控制
+
+#### 类、接口、抽象类选择
+
+```
+只是定义能力 or 能力有多种实现？
+  → interface
+
+多个子类共享完整流程？
+  → abstract class
+
+对象有自己的状态和业务规则？
+  → 组合
+
+只是想复用另一个对象的功能？
+  → 组合关系，不要继承
+
+真正的“是一种”关系？
+  → extends
+```
+
+#### 修饰符的选择
+
+```ts
+属性 
+	├─ 默认 private
+  └─ 外部读取 不用public，防止外部任意修改。get value() { return 私有值 } 或者getter让属性只读。修改通过 setXXX 方法内部写方便未来劫持所有修改做扩展
+
+方法
+	├─ 默认 private
+  ├─ 外部调用 public
+  └─  作为模板支持子类扩展 protected
+```
+
+#### 实体关系设计
+
+1、实体之间的关系默认单向关系，关系只放在真正需要它的一侧
+
+```ts
+// 双向，不建议依赖比较重
+class User {
+  orders: Order[] = []
+}
+
+class Order {
+  user: User
+}
+
+// Order依赖User（Order -> User），根据订单查归属用户信息
+class User {}
+class Order {
+  user: User
+}
+// User依赖Order （Order <- User），根据用户查所有订单
+class User {
+  orders: Order[] = []
+}
+class Order {}
+```
+
+一般倾向于合入多的一侧，例如： 一个User对应多个Order，设计为合并到Order中
+
+有两种合并方式：
+
+* Order 包含 User：合入侧可以直接操作对方所有暴露的方法耦合性强，依赖其他类实例化容易出现循环引用 
+* Order 包含 User.id：低耦合，但是需要先通过id查询到对方实例，才能操作 （✅ 推荐）
+
+这样根据订单可以查到用户信息，那如果需要反查根据用户查询订单信息？
+
+答：拆分 **关系拥有者** 和 **查询服务**
+
+```
+1、Order 只保存 userId
+
+2、User 不需要知道 Order
+
+3、查询关系由服务负责
+```
+
+参考下图
+
+```mermaid
+classDiagram
+    class PaymentGateway {
+        <<interface>>
+        +pay(amount: number) Promise~void~
+        +refund(amount: number) Promise~void~
+    }
+
+    class AlipayGateway {
+        +pay(amount: number) Promise~void~
+        +refund(amount: number) Promise~void~
+    }
+
+    class WechatPayGateway {
+        +pay(amount: number) Promise~void~
+        +refund(amount: number) Promise~void~
+    }
+
+    class OrderRepository {
+        <<interface>>
+        +save(order: Order) Promise~void~
+        +findById(id: string) Promise~Order~
+    }
+
+    class MySqlOrderRepository {
+        +save(order: Order) Promise~void~
+        +findById(id: string) Promise~Order~
+    }
+
+    class Order {
+        -id: string
+        -amount: number
+        -status: OrderStatus
+        +pay() void
+        +cancel() void
+        +getStatus() OrderStatus
+    }
+
+    class OrderService {
+        -payment: PaymentGateway
+        -orders: OrderRepository
+        +payOrder(id: string) Promise~void~
+        +cancelOrder(id: string) Promise~void~
+    }
+
+    PaymentGateway <|.. AlipayGateway
+    PaymentGateway <|.. WechatPayGateway
+
+    OrderRepository <|.. MySqlOrderRepository
+
+    OrderService --> PaymentGateway : 依赖 支付能力
+    OrderService --> OrderRepository : 依赖 订单库管理能力
+    OrderService --> Order : 使用
+```
+
+```ts
+const payment = new AlipayGateway()
+const repository = new MySqlOrderRepository()
+
+const orderService = new OrderService(
+  payment,
+  repository
+)
+
+await orderService.payOrder('order-001订单号')
+```
+
+2、实体是包含关系，就用组合
+
+```mermaid
+classDiagram
+    Order "1" *-- "1..*" OrderItem
+```
+
+```ts
+// 订单包含子项，add、remove操作直接传入子项，避免操作细节被暴露
+class Order {
+  private items: OrderItem[] = []
+	
+  addItem(orderItem: OrderItem) {
+    this.items.push(orderItem)
+  }
+
+  removeItem(orderItem: OrderItem) {
+    this.items = this.items.filter(
+      item => item.productId !== orderItem.productId
+    )
   }
 }
 
-class Dog extends Animal {
+class OrderItem {
+  amount: number
+  constructor(amount: number) {}
+}
+```
+
+3、如何实体有多种实现，实体使用接口表示
+
+```ts
+interface PaymentGateway {}
+
+// 具体实现：AlipayGateway / WechatPayGateway
+```
+
+
+
+### 其他汇总
+
+#### 类型
+
+类的双重身份，User作为类型、作为值
+
+```ts
+class User {
+	name: string
   constructor(name: string) {
-    super(name)
+    this.name = name
   }
 }
+
+// User作为类型指的是创建的实例的类型
+let user1: User = new User("tom")
+						^
+    			作为类型，实际是 InstanceType<typeof User> 的语法糖
+
+// typeof User 只的是构造函数类型
+let user2: typeof User = User
+													^
+    										作为值
 ```
 
-**protected**
+#### 异常情况
 
-用它修饰构造函数，可以阻止函数被实例化。例如我们希望用户只能使用类的静态方法
+this指向丢失
 
 ```ts
-class Animal {
-  protected  name
-  protected constructor(name:string) {
-    this.name=name
+class Button {
+  text = '确定'
+
+  handleClick() {
+    console.log(this.text)
   }
 }
 
-// 报错
-new Animal()
+const button = new Button()
+
+// 把方法存下来调用，会导致方法内的this指向丢失
+const callback = button.handleClick
 ```
 
-**readonly**
+监听器问题
 
-只读修饰的属性指的是实例化后的对象无法修改
+```
+```
+
+索引签名，知道这个语法就行，不推荐用，会导致类型约束不住
 
 ```ts
-class Animal {
-  readonly  name
-   constructor(name:string) {
-    this.name=name // 这里是可以修改的
+class Dictionary {
+  [key: string]: string | number
+
+  name = 'Tom'
+  age = 18
+}
+```
+
+#### 工厂方法
+
+私有的构造函数，这样就不能 new 创建对象，通过方法创建对象
+
+```ts
+class Config {
+  readonly apiUrl: string
+  private constructor(apiUrl: string) {
+    this.apiUrl = apiUrl
+  }
+
+  static create(apiUrl: string) {
+    if (!apiUrl.startsWith('http')) {
+      throw new Error('API 地址不合法')
+    }
+
+    return new Config(apiUrl)
   }
 }
 
-let animal=new Animal('1')
-
-// 报错
-animal.name=""
+const config = Config.create('https://example.com')
 ```
 
-### 抽象类
+#### 异步就绪模式
 
-与接口的区别：
+JS不支持异步的构造函数，类似Echart这种初始化需要大量耗时操作的对象创建，可以采用 Promise的方式
 
-* 接口定义了一组方法的签名（即方法的名称和参数列表），但不包含任何实现。抽象类可以定义抽象方法（未实现的方法）和抽象方法（已实现的方法），注意子类可以覆盖已实现的方法
-* 接口可以被实现、被继承，且一个类只能实现多个接口、继承多个接口。抽象类只能被继承，且一个类只能继承一个抽象类
+```ts
+class Chart {
+    private chart: any;
+    private readyPromise: Promise<void>;
+    private isReady = false;
+
+    constructor(container: HTMLElement) {
+        this.chart = echarts.init(container);
+      	// 构造函数只存下Promise
+        this.readyPromise = this.init();
+    }
+		// 耗时同步操作
+    private async init() {
+        const data = await fetch('/api/chart-data').then(r => r.json());
+        this.chart.setOption({ /* ... */ });
+        this.isReady = true;
+    }
+
+  	// 调用 await xx.ready() 时再去执行
+    ready() {
+        return this.readyPromise;
+    }
+
+  	// 调用其他方法前，都加上if (!this.isReady)判断是否就绪
+    update(data: any) {
+        if (!this.isReady) {
+            throw new Error('组件尚未就绪，请先 await ready()');
+        }
+        this.chart.setOption(data);
+    }
+}
+```
 
 
 
