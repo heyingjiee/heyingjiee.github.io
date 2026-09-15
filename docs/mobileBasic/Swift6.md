@@ -1,9 +1,239 @@
 # Swift6
 
-## Swift6语法
+## Swift6语法极速入门
 
 * 中文文档：https://doc.swiftgg.team/documentation/the-swift-programming-language
 * Array、Dictionary 类型的方法：https://developer.apple.com/documentation/swift/array
+
+### 类型
+
+值类型赋值会发生拷贝、引用类型共享引用
+
+值类型 ：
+
+* `struct`（结构体）
+
+* `enum`（枚举）
+
+* `tuple`（元组）
+
+* 基本数据类型 `Int`、 `Float` 、 `Double` 、 `Bool` 、`String` 、 `Character`（单字符），底层都是使用struct实现的
+
+* 集合类型 ，底层使用class实现，在赋值时共享节省性能，如果修改就会**写时复制**
+
+  ```swift
+  var array: [Int] = [1, 2, 3]           // 数组，有序
+  var set: Set<Int> = [1, 2, 3]          // 集合，无序不重复
+  var dict: [String: Int] = ["age": 30]  // 字典，键值对
+  ```
+
+引用类型：
+
+- `class`（类）
+- `actor`（并发安全的引用类型）
+- 闭包（捕获上下文时）
+
+### 函数
+
+签名
+
+```swift
+// _: 、traits: 、body: 分别是3个参数，Swift文档习惯上连在一起写
+init(_:traits:body:)
+```
+
+使用
+
+```swift
+// person是外部标签，name是内部名
+func greet(person name: String) -> String {
+    return "Hello, \(name)"  // 内部用 name
+}
+greet(person: "Tim")  // 调用时用外部标签
+
+// 只写一个就是外部标签/内部名一致
+func add(a: Int, b: Int) -> Int {
+  return a + b
+}
+add(a: 1, b: 2) // 调用时用外部标签
+
+// 省略外部标签
+func add(_ a: Int, _ b: Int) -> Int {
+    return a + b
+}
+add(1, 2) // 调用时用外部标签，没有，就省略
+
+// 默认值参数
+func greet(name: String = "World") -> String {
+    return "\(name)"
+}
+
+// 可变参数
+func sum(_ numbers: Int...) -> Int {
+    return numbers.reduce(0, +)
+}
+
+// 函数参数
+func calculate(_ a: Int, _ b: Int, operation: (Int, Int) -> Int) -> Int {
+    return operation(a, b)
+}
+// 传入方式1：传入时函数体放在花括号中，$0是operation的第一个参数，其他类推
+calculate(3, 4, operation: { a, b in // in是分割 形参、函数体的
+    return a + b
+})  
+calculate(3, 4, operation: { $0+$1 }) 
+// 传入方式2：尾随闭包，当参数在最后可以把函数体拿到括号外面
+calculate(3, 4) { a, b in 
+    return a + b
+}
+// 尾随闭包有很多简写，以filter为例子
+nums.filter(){ (num: Int) -> Bool in
+    return num % 2 == 0
+}
+// 没有其他参数了括号可以省略
+nums.filter { (num: Int) -> Bool in
+    return num % 2 == 0
+}
+// 省略入参, $0表示第1个入参，$1是第2个入参
+nums.filter { 
+    return $0 % 2 == 0
+}
+// 只有一行可省略 return , 现在就是最简形式
+nums.filter { $0 % 2 == 0 }
+```
+
+### 逻辑处理
+
+条件
+
+```swift
+// if else
+let score = 85
+if score >= 90 {
+    print("优秀")
+} else if score >= 60 {
+    print("及格")
+} else {
+    print("不及格")
+}
+
+// switch
+// 1、分支不用加break； 2、支持匹配范围
+let status = 2
+
+switch status {
+case 1:
+    print("待处理")
+case 2..<5:
+    print("进行中")
+case 5:
+    print("已完成")
+default:
+    print("未知状态")
+}
+
+
+// 三元运算符
+let result = age >= 18 ? "成年" : "未成年"
+
+// if let 解包
+let name: String? = "Tom"
+if let name = name {  // 左边是解包后的新变量name，右边是外部的name
+    print("名字是：\(name)")
+} else {
+    print("名字为空")
+}
+
+
+// guard let 提前退出
+func greet(name: String?) {
+    guard let name = name else {
+        print("没有名字")
+        return
+    }
+    print("你好，\(name)")
+}
+```
+
+循环
+
+```swift
+let fruits = ["苹果", "香蕉", "橙子"]
+
+// for in
+for fruit in fruits {
+    print(fruit)
+}
+
+// 带索引
+for (index, fruit) in fruits.enumerated() {
+    print("第 \(index + 1) 个：\(fruit)")
+}
+
+// 循环支持数组外，还支持range、字典、步进循环
+for num in 1...3 {
+    print(num) // 1、2、3
+}
+
+let scores = ["语文": 90, "数学": 95, "英语": 88]
+for (subject, score) in scores { // 字典用for取出来的是元组，这里用的是结构
+    print(subject, score) 
+}
+
+for i in stride(from: 0, to: 10, by: 2) {
+    print(i)     // 输出 0, 2, 4, 6, 8
+}
+```
+
+还支持while、break、continue，这里就不展开了
+
+### 数组方法
+
+```swift
+let nums = [1, 2, 3, 4, 5]
+
+// ----------- 修改原数组
+// 增
+nums.append(6) // 追加元素
+nums.insert(0, at: -1) // 在0的位置插入-1
+nums += [1, 2] // 拼接数组
+
+// 删
+nums.remove(at: 1) // 删除索引为1的元素
+
+// 改
+nums[0] = 99
+
+
+// ----------- 不修改原数组，返回结果
+// 常用操作
+arr.count                  // 5，元素个数
+arr.isEmpty                // false，是否为空
+arr.first                  // Optional(3)，第一个元素
+arr.last                   // Optional(5)，最后一个元素
+arr.min()                  // Optional(1)，最小值
+arr.max()                  // Optional(5)，最大值
+arr.contains(4)            // true，是否包含某元素
+arr.firstIndex(of: 4)      // Optional(2)，第一个匹配的索引
+
+// 过滤
+let evens = nums.filter { $0 % 2 == 0 }
+
+// 映射
+let squared = numbers.map { $0 * $0 }
+
+// 聚合为单值
+let sum = numbers.reduce(0, +)
+
+// 排序
+let sorted = [3, 1, 4, 2].sorted() // 递增
+let descending = [3, 1, 4, 2].sorted(by: >) // 递减
+
+// 切片
+arr[1..<3] // [2, 3]，范围切片
+```
+
+
 
 ### 错误处理
 
@@ -463,7 +693,170 @@ Task {
 
 ## Swift UI 
 
-### 视图数据通讯 - 最佳实践
+### View
+
+视图
+
+```swift
+// 组件需实现 View 协议
+struct ContentView: View {
+   	
+  	// UI 在 body 中写，是计算属性，返回类型View
+  	// Swift语法函数/计算属性只能返回一个值，但是@ViewBuilder修饰的会把结果合成一个
+  	// 下面写法，其实是 @ViewBuilder var body: some View {} 
+    var body: some View {
+      	
+    }
+        
+}
+```
+
+body中描绘UI，下面是条件、循环的写法
+
+```swift
+struct DemoView: View {
+    @State private var isLoggedIn = false
+    @State private var role: Role = .user
+    @State private var fruits = ["🍎 苹果", "🍌 香蕉", "🍊 橙子", "🍇 葡萄"]
+
+    enum Role {
+        case admin, user, guest
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+
+                // ========== 1. 条件判断 if / else ==========
+                if isLoggedIn {
+                    Text("✅ 已登录，欢迎回来！")
+                        .foregroundStyle(.green)
+                } else {
+                    Text("❌ 未登录，请先登录")
+                        .foregroundStyle(.red)
+                }
+
+                Button(isLoggedIn ? "退出登录" : "登录") {
+                    isLoggedIn.toggle()
+                }
+
+                Divider()
+
+                // ========== 2. 多分支 switch ==========
+                switch role {
+                case .admin:
+                    Label("管理员面板", systemImage: "person.badge.key.fill")
+                        .foregroundStyle(.red)
+                case .user:
+                    Label("普通用户面板", systemImage: "person.fill")
+                        .foregroundStyle(.blue)
+                case .guest:
+                    Label("游客模式", systemImage: "person.crop.circle.badge.questionmark")
+                        .foregroundStyle(.gray)
+                }
+
+                Picker("角色", selection: $role) {
+                    Text("管理员").tag(Role.admin)
+                    Text("普通用户").tag(Role.user)
+                    Text("游客").tag(Role.guest)
+                }
+                .pickerStyle(.segmented)
+
+                Divider()
+
+                // ========== 3. 循环 ForEach，不支持for in/while ==========
+                ForEach(fruits, id: \.self) { fruit in
+                    HStack {
+                        Text(fruit)
+                        Spacer()
+                        Image(systemName: "checkmark.circle")
+                            .foregroundStyle(.green)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                Divider()
+
+                // ========== 4. 带索引的循环 ==========
+                ForEach(Array(fruits.enumerated()), id: \.offset) { index, fruit in
+                    Text("第 \(index + 1) 个：\(fruit)")
+                }
+
+                Divider()
+
+                // ========== 5. 条件 + 循环 组合 ==========
+                if fruits.isEmpty {
+                    Text("暂无数据")
+                        .foregroundStyle(.gray)
+                } else {
+                    ForEach(fruits, id: \.self) { fruit in
+                        Text("🏷️ \(fruit)")
+                    }
+                }
+            }
+            .padding()
+        }
+    }
+}
+```
+
+最常见的是前端通过 struct 来声明视图，其实也可以通过函数返回
+
+```swift
+// 如果返回多个View，需要使用@ViewBuilder修饰
+func makeCard(title: String, subtitle: String) -> some View {
+    VStack(alignment: .leading) {
+        Text(title).font(.headline)
+        Text(subtitle).font(.subheadline)
+    }
+    .padding()
+    .background(.gray.opacity(0.2))
+    .cornerRadius(10)
+}
+
+// 使用
+var body: some View {
+    makeCard(title: "标题", subtitle: "副标题")
+}
+```
+
+### 数据通讯
+
+数据处理使用主流的 `@State`、`@Binding`、`@Observable`、`@Bindable` 和`@Environment`
+
+```swift
+// @Observable + Class
+// Class是引用类型任何位置都是修改同一份数据，@Observable让修改对象属性修改出发视图更新
+@Observable
+final class AppState {
+    var name: String
+}
+
+struct MyView: View {
+    // ✅ let 外部传入，内部只读
+    let title: String
+    
+    // var 外部传入，内部可改但改了不会触发刷新
+    var subtitle: String
+    
+    // ✅ 属性包装器参数（外部传入，内部可读写，触发视图刷新）
+  	@State var count: Int = 0  // 虽然语法上可传入数据源，但是不建议。一般用来持有视图自己的数据，比如创建AppState实例，注意：@State是监听变量变化，@Observable是监听对象内部属性的变化
+    
+  	@Binding var isOn: Bool    // 接收外部传入Binding<xxx>，例如父级 @State isOn: Boole，传入$isOn。修改同步影响外部
+    
+    @Bindable var model: Model // 接收外部传入Observable实例。修改同步影响外部
+  
+    @Environment(AppState.self) var appState // 接收全局的环境变量，如果接收Observable实例，直接修改就能更新
+}
+
+
+// 默认变量，除了@State外都是组件的必传属性。如果设置了下面2种情况也可以不传
+// 1、可选属性：通过类型控制，例如 let title: String?
+// 2、默认属性：let title = "xxxx"
+MyView(title: 'xx', subtitle: 'xxx', isOn: true)
+```
+
+#### 最佳实践
 
 业务数据（相当于 Store）
 
@@ -502,7 +895,7 @@ struct ContentView: View {
     
     var body: some View {
       	// 2、注入业务数据，子 View 共享业务数据
-        LandmarkList().environment(LandmarkModel())
+        LandmarkListView().environment(LandmarkModel())
     }
         
 }
@@ -514,7 +907,7 @@ struct ContentView: View {
 // Views/LandmarkListView.swift
 struct LandmarkListView: View {
 
-  	// 3、页面状态使用 @State +  private 私有（值类型需通过$获取引用）
+  	// 3、页面状态使用 @State +  private 私有 (值类型，只读时直接使用showFavoritesOnly，如需双向绑定使用$showFavoritesOnly，本质返回了Binding<Bool>)
     @State private var showFavoritesOnly = false
   
   	// 4、业务数据使用 @Observable + Class （Class 是引用类型，无需$）
@@ -529,7 +922,8 @@ struct LandmarkListView: View {
     var body: some View {
         List {
           	// 组件类型1:
-          	// 需要修改父级状态，则 $XXX 传递引用，内部 @Binding 绑定到子视图变量，修改该变量可影响源数据
+          	// Toggle组件切换开关，会修改父级状态
+          	// 传入 $XXX 传递引用，内部@Binding绑定到子视图变量，修改该变量可影响源数据
             Toggle("Favorites only", isOn: $showFavoritesOnly)
 
             ForEach(filtered) { model in
@@ -589,14 +983,7 @@ struct Draft: View {
 }
 ```
 
-
-
-### 数据层结构 - 最佳实践
-
-```
-```
-
-### @Observable
+#### @Observable
 
 Class 是引用类型，可以直接修改数据，但是如果希望触发视图更新显示新数据，就必须借用 @Observable
 
@@ -682,5 +1069,108 @@ final class ModelData {
     }
 }
 
+```
+
+### 常见组件用法
+
+Navigation
+
+```swift
+private struct NavigationLinkExamples: View {
+    var body: some View {
+      	// NavigationStack 是页面栈，内部的NavigationLink定义下一个入栈页
+      	// navigationDestination 是NavigationStack的方法，接收内部NavigationLink传出的值
+          NavigationStack {
+            VStack(spacing: 16) {
+              	// 方式1: 设置按钮文案，点击进入二级页面
+                NavigationLink("按钮1") { 
+                  Text("二级页面").font(.largeTitle)
+                }
+              	// 方式2:
+                NavigationLink(value: 42) {
+   									// 自定义的按钮，点击后把value传到外层的navigationDestination
+                    Label("值驱动：42", systemImage: "number")
+                }
+          }.navigationDestination(for: Int.self) { 
+              // 方式2的二级页面在这这里
+              Text("数值：\($0)") 
+          }.padding()
+        }.frame(minHeight: 220)
+    }
+}
+```
+
+NavigationSplitView
+
+```swift
+private struct NavigationSplitExamples: View {
+    @State private var selected: String? = "收件箱"
+    var body: some View {
+        NavigationSplitView {
+          	// 侧边栏
+            List(["收件箱", "收藏", "归档"], id: \.self, selection: $selected) { 
+              Label($0, systemImage: "folder") 
+            }
+        } detail: {
+          	// 内容区
+            ContentUnavailableView(selected ?? "选择文件夹", systemImage: "tray.full")
+         }.frame(minHeight: 320).clipShape(.rect(cornerRadius: 14))
+    }
+}
+```
+
+![image-20260915194832936](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260915194834hQBTz2.png)
+
+TabView
+
+```swift
+private struct TabExamples: View {
+    @State private var selection = "home"
+    var body: some View {
+        TabView(selection: $selection) {
+            Tab("首页", systemImage: "house", value: "home") { 
+              ContentUnavailableView("首页", systemImage: "house.fill") 
+            }
+            Tab("收藏", systemImage: "star", value: "favorite") { 
+              ContentUnavailableView("收藏", systemImage: "star.fill") 
+            }
+            Tab("设置", systemImage: "gear", value: "settings") { 
+              ContentUnavailableView("设置", systemImage: "gearshape.fill") 
+            }
+        }.frame(minHeight: 300)
+    }
+}
+```
+
+![image-20260915195251141](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260915195251wgXCSa.png)
+
+toolbar
+
+```swift
+NavigationStack {
+        ContentUnavailableView("工具栏示例", systemImage: "wrench.and.screwdriver")
+            .toolbar {
+                ToolbarItem { 
+                  Button("新增", systemImage: "plus") {} 
+                }
+                ToolbarItemGroup { 
+                  Button("上移", systemImage: "chevron.up") {}; 
+                  Button("下移", systemImage: "chevron.down") {} }
+            }
+            .navigationTitle("标题") // 配置标题
+    }
+    .frame(height: 300)
+```
+
+![image-20260915201534047](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260915201534gADNUQ.png)
+
+
+
+## XCode
+
+```shell
+command + R  # 重新run
+command + Shift + L 打开文档弹窗
+command + Shift + Option + L 独立窗口打开文档
 ```
 
