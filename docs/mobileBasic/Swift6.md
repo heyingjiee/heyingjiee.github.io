@@ -1071,12 +1071,173 @@ final class ModelData {
 
 ```
 
-### 常见组件用法
+### 预设
 
-Navigation
+尺寸预设，设置通过 font 可以设置字体大小
 
 ```swift
-private struct NavigationLinkExamples: View {
+Text("Large Title").font(.largeTitle);
+Text("Title").font(.title);
+Text("Title 2").font(.title2)
+Text("Title 3").font(.title3);
+Text("Headline").font(.headline);
+Text("Subheadline").font(.subheadline)
+Text("Body").font(.body);
+Text("Callout").font(.callout);
+Text("Footnote").font(.footnote)
+Text("Caption").font(.caption);
+Text("Caption 2").font(.caption2)
+
+//
+Text("自定义尺寸").font(.system(size:10))
+```
+
+![image-20260920002402676](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/202609200024037waEoM.png)
+
+颜色预设：primary、secondary、tertiary 从深到浅定义了三级颜色，会根据深浅模式系统自动分配实际颜色
+
+```swift
+Text("主要颜色").foregroundStyle(.primary)
+Text("次要颜色").foregroundStyle(.secondary)
+Text("三级颜色").foregroundStyle(.tertiary)
+
+// 
+Text("自定义颜色").foregroundStyle(.blue)
+```
+
+![image-20260921145101465](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260921145102dGEpjl.png)
+
+### 基础组件
+
+#### 文案
+
+Text 文案
+
+```swift
+// 尺寸为文字宽度，如果操过父容器，文字会换行
+Text("你好")
+	.bold()  //加粗
+	.italic() // 斜体
+	.underline() // 下划线
+	.font(.system(size: 20)) // 字号20
+	.foregroundStyle(.primary) // 字颜色
+	.lintLimit(2) // 设置行数，超出部分显示...
+	.multilineTextAlignment(TextAlignment.center) // 文字不满一行位置，leading靠左、center中间、trailing靠右
+	.textSelection() // 设置文字可选
+
+// 格式化显示
+Text(12345.67, format: .currency(code: "CNY"))
+```
+
+Label 图标+文案
+
+```swift
+Label("收藏", systemImage: "star.fill")
+	.foregroundStyle(.blue)
+	.font(.title)
+```
+
+LabeledContent 标签和值
+
+![image-20260920001236753](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260920001237hjVxg2.png)
+
+```swift
+LabeledContent("版本", value: "1.0.0")
+
+// 自定义value
+LabeledContent("状态") { 
+	Label("已连接", systemImage: "checkmark.circle.fill").foregroundStyle(.green) 
+}
+
+// 自定义label & value
+LabeledContent { ProgressView(value: 0.72) } label: { Text("存储空间") }
+```
+
+#### 图片
+
+Image
+
+```swift
+Image(systemName: "cloud.sun.rain.fill")
+	.font(.system(size: 46))
+	.symbolRenderingMode(.multicolor)
+
+Image(systemName: "wifi", variableValue: 0.1)
+	.font(.system(size: 46))
+	.foregroundStyle(AtlasStyle.accent)
+
+// 图片
+Image(systemName: "photo.artframe")
+	.resizable()  // 默认图片尺寸，resizable可以
+	.scaledToFit()
+	.frame(height: 100)
+	.foregroundStyle(AtlasStyle.accent.gradient)
+```
+
+#### 交互组件
+
+##### Toggle
+
+```swift
+Toggle("通知", isOn: $enabled).onChange(of: enabled) { oldValue, newValue in
+   // 监听enabled变化                                                    
+}
+
+Toggle(isOn: $enabled) { 
+ 	// 自定义
+  Label("同步到云端", systemImage: "icloud") 
+}.toggleStyle(.switch)
+
+// 按钮样式
+Toggle("按钮样式", isOn: $enabled).toggleStyle(.button)
+```
+
+![image-20260920003832775](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260920003833ol2Qio.png)
+
+##### Button
+
+Button、EditButton 
+
+```swift
+Button("文案", systemImage: "sparkles") {  // 图标可省略
+  count += 1  // 触发逻辑
+}
+	.controlSize(.small) // 设置尺寸
+	.buttonStyle(.borderedProminent) // .plain、.bordered、.borderedProminent 样式如下
+```
+
+![image-20260920005433122](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260920005433arhgiP.png)
+
+##### ShareLink
+
+分享按钮
+
+```swift
+ShareLink(
+    item: "分享的文案",  // 分享的内容：文案、链接、图片、文件URL
+  	// item: Image(systemName: "swift")
+    preview: SharePreview("我的分享标题") // 分享菜单标题
+) {
+    Label("分享", systemImage: "square.and.arrow.up")
+}
+```
+
+![image-20261008144032193](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20261008144100Apmd6B.png)
+
+#### 其他
+
+Divider 分割线、Spacer 占据父容器剩余空间
+
+
+
+### 导航 & 工具组件
+
+#### Navigation
+
+NavigationStack
+
+```swift
+struct NavigationLinkExamples: View {
     var body: some View {
       	// NavigationStack 是页面栈，内部的NavigationLink定义下一个入栈页
       	// navigationDestination 是NavigationStack的方法，接收内部NavigationLink传出的值
@@ -1103,28 +1264,80 @@ private struct NavigationLinkExamples: View {
 NavigationSplitView
 
 ```swift
-private struct NavigationSplitExamples: View {
+struct ContentView: View {
+    @State private var list: [String] = ["收件箱", "收藏", "归档"]
     @State private var selected: String? = "收件箱"
+  
+  	@State private var contentList: [(String, String)] = [
+        ("收件箱", "测试数据1"),
+        ("收件箱", "测试数据2"),
+    ]
     var body: some View {
         NavigationSplitView {
-          	// 侧边栏
-            List(["收件箱", "收藏", "归档"], id: \.self, selection: $selected) { 
-              Label($0, systemImage: "folder") 
+            // 侧边栏
+            List(list, id: \.self, selection: $selected) {
+              Label($0, systemImage: "folder")
             }
+          
+        } content: {
+              // 二级栏 (可省略这列)
+          		// 一般都是通过读取第一个选中的，计算content列数据
+          		// var selectedList: [(String, String)] = contentList.filter {$0.0 == selection}
+              ContentUnavailableView("暂无", systemImage: "tray.full")
+          
         } detail: {
-          	// 内容区
-            ContentUnavailableView(selected ?? "选择文件夹", systemImage: "tray.full")
-         }.frame(minHeight: 320).clipShape(.rect(cornerRadius: 14))
+              // 内容区
+              ContentUnavailableView("收件箱", systemImage: "tray.full")
+        }
     }
 }
 ```
 
-![image-20260915194832936](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260915194834hQBTz2.png)
+Macos：
 
-TabView
+![image-20260919232713405](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260919232714M2JNcZ.png)
+
+IOS：类型IOS备忘录，打开APP展示Sider，点击某项导航到Content，再点击某项导航到Detail
+
+#### List
+
+List 入参可迭代对象，id必须是子元素
 
 ```swift
-private struct TabExamples: View {
+@State private var list: [String] = ["收件箱", "收藏", "归档"]
+// id 是路径，表示点击子项后，把哪个值给$selected 
+List(list, id: \.self, selection: $selected) {
+  Label($0, systemImage: "folder")
+}
+```
+
+如果遍历的枚举元素不是简单类型，需要 tag 指定点击后赋值给 $selected 的值
+
+```swift
+@State private var list: [(int,String)] = [
+  	(1, "收件箱"), 
+  	(2, "收藏"), 
+  	(3, "归档")
+]
+
+// List不指定id
+List(list, selection: $selected) {
+  Label($0, systemImage: "folder").tag($0.0)
+}
+
+// ForEach
+List(selection: $selected) {
+    ForEach(list, id: \.0) { 
+        Label($0.1, systemImage: "folder")
+            .tag(item.0) // 设计点击后的id
+    }
+}
+```
+
+#### TabView
+
+```swift
+struct TabExamples: View {
     @State private var selection = "home"
     var body: some View {
         TabView(selection: $selection) {
@@ -1142,9 +1355,15 @@ private struct TabExamples: View {
 }
 ```
 
+Macos：
+
 ![image-20260915195251141](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260915195251wgXCSa.png)
 
-toolbar
+IOS：
+
+![image-20260920000746901](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260920000747fT7ZEJ.png)
+
+#### ToolBar
 
 ```swift
 NavigationStack {
@@ -1163,6 +1382,131 @@ NavigationStack {
 ```
 
 ![image-20260915201534047](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260915201534gADNUQ.png)
+
+#### Search
+
+### 提示组件
+
+#### Menu
+
+```swift
+// 嵌套的菜单
+Menu("排序", systemImage: "arrow.up.arrow.down") { 
+  Button("按名称") {}; 
+  Button("按日期") {}; 
+  Divider();  // 分割线
+
+	Menu("方向") { 
+    Button("升序") {}; 
+    Button("降序") {} 
+	} 
+}
+```
+
+![image-20260920003459487](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260920003459kvYjai.png)
+
+
+
+#### Alert
+
+```swift
+struct AlertExamples: View {
+    @State private var showing = false
+    var body: some View {
+        Button("显示 Alert", systemImage: "exclamationmark.triangle") { 
+          showing = true 
+        }
+      	.buttonStyle(.borderedProminent)
+        .alert("保存更改？", isPresented: $showing) { // 弹窗标题， 控制是否出现
+            Button("保存") {}
+            Button("取消", role: .cancel) {}
+        } message: { 
+          Text("更改会同步到其他设备。")  // 弹窗内容
+        }
+    }
+}
+```
+
+![image-20260920001808592](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Essay/20260920001808LEprLO.png)
+
+
+
+#### Sheet
+
+```swift
+
+```
+
+### 容器组件
+
+HStack（水平）、VStack（竖直）、ZStack （层叠）
+
+LazyHStack、LazyVStack 懒加载
+
+Grid 网格布局、LazyGrid懒加载
+
+```swift
+```
+
+
+
+ScrollView 超出滚动、ScrollViewReader
+
+```
+```
+
+
+
+#### Section
+
+放在 List、Form里，分割开不同的功能区
+
+```swift
+Section { 
+  Text("账户"); 
+  Text("通知") 
+} header: { 
+  Text("设置") 
+} footer: { 
+  Text("Section 为 List 和 Form 提供语义分区。") 
+}
+```
+
+![image-20260928155758269](/Users/heyingjie/Library/Application%20Support/typora-user-images/image-20260928155758269.png)
+
+### 条件编译
+
+平台名
+
+```
+iOS
+macOS
+```
+
+限制平台
+
+```swift
+#if os(iOS)
+  xxxx         
+#else
+	yyyy
+#endif
+```
+
+限制版本
+
+```swift
+// 函数、类、结构体等
+@available(iOS 26, *) // * 表示其他平台不做版本限制
+func useNewFeature() {
+    
+}
+
+// 视图内部
+if #available(iOS 26, *) {
+    
+}
+```
 
 
 
