@@ -795,7 +795,7 @@ Go官方提供的模块文档https://pkg.go.dev/
 
     选择MIT协议，提交即可，后面就是PR的流程
 
-  ![image-20230121200715374](/Users/yc/Library/Application Support/typora-user-images/image-20230121200715374.png)
+  （原图未随仓库提供：`image-20230121200715374.png`）
 
 ### 本地模块
 
@@ -9411,7 +9411,7 @@ func SendGetRequest(path string, m map[string]string) {
 
 http://httpbin.org/，这是一个用于测试HTTP请求的网站，请求的返回值就是请求时的相关信息，方便调试
 
-![image-20230124114101056](/Users/yc/Library/Application Support/typora-user-images/image-20230124114101056.png)
+（原图未随仓库提供：`image-20230124114101056.png`）
 
 ![image-20230123161231383](https://hedaodao-1256075778.cos.ap-beijing.myqcloud.com/Go/20230123161231%20.png)
 
@@ -11377,7 +11377,7 @@ func BenchmarkSplit(b *testing.B) {
 go test -bench=Split 
 ```
 
-![image-20221120232203884](/Users/yc/Library/Application Support/typora-user-images/image-20221120232203884.png)
+（原图未随仓库提供：`image-20221120232203884.png`）
 
 ```shell
  go test  -bench=Split  -benchmem

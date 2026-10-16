@@ -582,7 +582,7 @@ border-image-slice
 
 指定数字（没单位，默认单位为像）
 
-![image-20221208100926238](/Users/yc/Library/Application Support/typora-user-images/image-20221208100926238.png)
+（原图未随仓库提供：`image-20221208100926238.png`）
 
 边框图为下图：
 
@@ -625,7 +625,7 @@ repeat
 
 round
 
-![image-20221208100653489](/Users/yc/Library/Application Support/typora-user-images/image-20221208100653489.png)
+（原图未随仓库提供：`image-20221208100653489.png`）
 
 space
 
@@ -3691,7 +3691,7 @@ animation是多个属性的缩写属性。其他属性值，没有先后顺序�
 
 效果图：
 
-![image-20230827183908188](/Users/yc/Library/Application Support/typora-user-images/image-20230827183908188.png)
+（原图未随仓库提供：`image-20230827183908188.png`）
 
 记录：
 

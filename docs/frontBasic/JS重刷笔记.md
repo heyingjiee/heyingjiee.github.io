@@ -7030,7 +7030,7 @@ async function fetchUser (cb) {
 function getInviteCode(data){};
 ```
 
-![image-20240922234750117](/Users/heyingjie/Library/Application Support/typora-user-images/image-20240922234750117.png)
+（原图未随仓库提供：`image-20240922234750117.png`）
 
 ### @typedef、@property
 

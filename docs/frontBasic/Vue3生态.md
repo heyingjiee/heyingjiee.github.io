@@ -395,7 +395,7 @@ counterStore.hello // 'xxx'
 
 可以看到 hello 属性不是 state
 
-![image-20240930130215436](/Users/heyingjie/Library/Application Support/typora-user-images/image-20240930130215436.png)
+（原图未随仓库提供：`image-20240930130215436.png`）
 
 ### 持久化
 

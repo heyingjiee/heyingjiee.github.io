@@ -1472,7 +1472,7 @@ Section {
 }
 ```
 
-![image-20260928155758269](/Users/heyingjie/Library/Application%20Support/typora-user-images/image-20260928155758269.png)
+（原图未随仓库提供：`image-20260928155758269.png`）
 
 ### 条件编译
 

@@ -22,7 +22,7 @@
 
   这种架构能轻松的应对每天几百万、上千万的访问量
 
-  ![image-20230304170203933](/Users/yc/Library/Application Support/typora-user-images/image-20230304170203933.png)
+  （原图未随仓库提供：`image-20230304170203933.png`）
 
 ### 微服务架构
 
@@ -1009,7 +1009,7 @@ import _ "github.com/mbobakov/grpc-consul-resolver" // 非常重要
 
 图中绿框中获取consul微服务地址的代码可全部省略
 
-![image-20230403005036943](/Users/yc/Library/Application Support/typora-user-images/image-20230403005036943.png)
+（原图未随仓库提供：`image-20230403005036943.png`）
 
 仅需将下一步替换为如下代码
 
@@ -1064,7 +1064,7 @@ go-micro new service Hello
 
 生成项目
 
-![image-20230406235613270](/Users/yc/Library/Application Support/typora-user-images/image-20230406235613270.png)
+（原图未随仓库提供：`image-20230406235613270.png`）
 
 删除`go.mod`、`go.sum`文件，初始化项目并安装依赖
 

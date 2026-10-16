@@ -4697,7 +4697,7 @@ var minScoreTriangulation = function(values) {
 
 而`i<k<j`关系原因见下图：
 
-![image-20240424003422894](/Users/yiche/Library/Application Support/typora-user-images/image-20240424003422894.png)
+（原图未随仓库提供：`image-20240424003422894.png`）
 
 动态规划
 

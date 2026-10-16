@@ -3166,7 +3166,7 @@ docker run -p 9997:9997 --name xinference -d xprobe/xinference:latest xinference
 
 部署完成后，就能看到了。 点击操作里第一个是打开模型对话页面
 
-![image-20260421131520178](/Users/heyingjie/Library/Application%20Support/typora-user-images/image-20260421131520178.png)
+（原图未随仓库提供：`image-20260421131520178.png`）
 
 
 
