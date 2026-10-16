@@ -14,7 +14,11 @@ npx skills add owner/repo --skill code-review -a claude-code
 npx skills add ./my-skills --skill code-review -a claude-code
 ```
 
-## 2. 多个 skill 如何组织
+## 2. Skills CLI 安装的技能如何组织目录
+
+从发布仓库到本地使用，需要一起考虑四件事：来源如何组织、安装如何平铺、同名如何处理，以及多个 agent 和项目是否共享文件。
+
+### 2.1 来源仓库：一个 skill 一个目录
 
 规范要求一个 skill 是包含 `SKILL.md` 的目录，但没有要求整个仓库只能采用一种布局。推荐：
 
@@ -44,7 +48,7 @@ description: 检查代码缺陷，在用户要求代码审查时使用。
 
 按规范，`name` 应与所在目录名一致。附属文件用相对 skill 根目录的路径引用；发布时应把必要脚本和模板放在该 skill 内，避免依赖仓库外层文件。
 
-## 3. 安装后是否保留仓库层级
+### 2.2 本地安装：平铺技能目录，保留内部结构
 
 常规安装按 skill 名称平铺目录，保留单个 skill 的内部结构：
 
@@ -57,7 +61,37 @@ description: 检查代码缺陷，在用户要求代码审查时使用。
 
 手动安装也可以，但应复制完整 skill 目录，而不是只复制 `SKILL.md`。
 
-## 4. Agent 怎么发现技能
+### 2.3 同名冲突：相同安装范围内可能覆盖
+
+同一安装范围内可能覆盖。常规路径使用 skill 名称，没有自动加上仓库命名空间：
+
+```text
+仓库 A/code-review → .agents/skills/code-review/
+仓库 B/code-review → .agents/skills/code-review/
+```
+
+当前交互安装摘要会提示 `overwrites`，确认后替换原目录；`-y` 跳过确认。锁文件同样以 skill 名称为键，不能将其理解为支持任意同名来源并存。
+
+自建管理工具应把“仓库来源 + skill 路径”作为身份，并单独处理安装别名和名称冲突。
+
+### 2.4 文件共享：同一项目可链接，跨项目通常各存一份
+
+常规技能内容保存在本地。Markdown 和脚本通常较轻，图片、模板、数据等附属资源可能成为主要体积来源。
+
+常规 `skills add` 并不提供“所有项目自动链接到一个全局内容仓库”的机制：
+
+```text
+项目 A/.agents/skills/oil-ui/   # A 的实体文件
+项目 A/.claude/skills/oil-ui    # 符号链接到 A 的实体文件
+项目 B/.agents/skills/oil-ui/   # B 的另一份实体文件
+~/.agents/skills/oil-ui/        # -g 安装的用户级实体文件
+```
+
+同一项目内多个 agent 可以共用一份；多个项目分别安装通常各存一份。这里用的是符号链接，不是硬链接。网络缓存是否命中与最终文件是否共享是两回事。
+
+若要设计节省空间的管理工具，可采用“按来源和哈希区分的不可变共享缓存 + 项目锁文件 + agent 目录链接”，并避免直接修改共享内容。硬链接也需要考虑修改会影响同一 inode 下所有使用者的问题。
+
+## 3. Agent 怎么发现技能
 
 Agent 宿主实现目录扫描与加载，CLI 按各工具的规则放置文件。不是把仓库下载到任意目录就能自动发现。
 
@@ -80,20 +114,7 @@ npx skills add owner/repo --skill code-review -a claude-code -g
 
 规范采用渐进加载：先让宿主获取名称和描述，匹配任务后读取完整指令，需要时再加载附属资源。具体触发、刷新和目录优先级取决于宿主实现。
 
-## 5. 两个仓库的同名 skill 会不会覆盖
-
-同一安装范围内可能覆盖。常规路径使用 skill 名称，没有自动加上仓库命名空间：
-
-```text
-仓库 A/code-review → .agents/skills/code-review/
-仓库 B/code-review → .agents/skills/code-review/
-```
-
-当前交互安装摘要会提示 `overwrites`，确认后替换原目录；`-y` 跳过确认。锁文件同样以 skill 名称为键，不能将其理解为支持任意同名来源并存。
-
-自建管理工具应把“仓库来源 + skill 路径”作为身份，并单独处理安装别名和名称冲突。
-
-## 6. 版本与 GitHub 发布流程
+## 4. 版本与 GitHub 发布流程
 
 需要区分：
 
@@ -115,11 +136,11 @@ npx skills add owner/repo --skill code-review
 npx skills add https://github.com/owner/repo/tree/v1.2.0/skills/code-review
 ```
 
-## 7. Skill CLI `update` 如何判断更新技能
+## 5. Skill CLI `update` 如何判断更新技能
 
 `npx skills update xxx` 的核心是：根据锁文件找到原来源，比较对应技能目录的内容指纹，变化了就重新安装，而不是比较 GitHub Release 或 `metadata.version` 的版本号。
 
-### 7.1 锁文件是什么，什么时候生成
+### 5.1 锁文件是什么，什么时候生成
 
 锁文件是 CLI 自动维护的安装记录。项目级安装成功并写入记录时，CLI 会在当前项目根目录创建或更新 `skills-lock.json`；不需要先用 Skills CLI 创建项目。
 
@@ -142,7 +163,7 @@ npx skills add owner/repo --skill code-review
 
 使用 `-g` 安装时，记录写入用户级锁文件，默认是 `~/.agents/.skill-lock.json`；设置 `XDG_STATE_HOME` 时，当前源码使用该目录下的 `skills/.skill-lock.json`。用户级与项目级锁文件结构不同。
 
-### 7.2 项目锁文件记录了什么
+### 5.2 项目锁文件记录了什么
 
 下面仅为结构示意，哈希不是可直接使用的真实值：
 
@@ -172,7 +193,7 @@ npx skills add owner/repo --skill code-review
 
 建议将项目锁文件提交到 Git，共享安装来源记录。它类似 `package-lock.json`，但不能直接等同于 npm 完整的不可变版本恢复机制：哈希可以识别内容变化，却不能仅凭哈希下载回历史文件；跟踪 `main` 也不等于锁定了不可变版本。
 
-### 7.3 更新时逐步比较什么
+### 5.3 更新时逐步比较什么
 
 ```bash
 npx skills update code-review -p  # 更新当前项目的指定技能
@@ -196,7 +217,7 @@ npx skills update -g              # 更新用户级技能
 
 用户级 GitHub 来源通常比较锁文件中的 `skillFolderHash` 与远端对应目录的 Git tree SHA；获取失败等情况下，当前实现还会尝试通过 Git 克隆检查。项目级和用户级都围绕技能目录内容判断变化，但使用的哈希和记录字段不同。
 
-### 7.4 分支、tag 与更新边界
+### 5.4 分支、tag 与更新边界
 
 - 跟踪默认分支：该 skill 内容变化，即使没发布 Release，也可能检测到更新。
 - 固定 `v1.2.0` tag：检查的仍是该 ref，不会自动寻找 `v1.3.0`；需要改用新 tag 安装才能切换版本。tag 本身仍可能被仓库维护者移动。
@@ -205,24 +226,7 @@ npx skills update -g              # 更新用户级技能
 
 具体实现见[项目锁文件](https://github.com/vercel-labs/skills/blob/main/src/local-lock.ts)、[用户级锁文件](https://github.com/vercel-labs/skills/blob/main/src/skill-lock.ts)和[更新逻辑](https://github.com/vercel-labs/skills/blob/main/src/update.ts)。
 
-## 8. 空间、全局副本和链接
-
-常规技能内容保存在本地。Markdown 和脚本通常较轻，图片、模板、数据等附属资源可能成为主要体积来源。
-
-常规 `skills add` 并不提供“所有项目自动链接到一个全局内容仓库”的机制：
-
-```text
-项目 A/.agents/skills/oil-ui/   # A 的实体文件
-项目 A/.claude/skills/oil-ui    # 符号链接到 A 的实体文件
-项目 B/.agents/skills/oil-ui/   # B 的另一份实体文件
-~/.agents/skills/oil-ui/        # -g 安装的用户级实体文件
-```
-
-同一项目内多个 agent 可以共用一份；多个项目分别安装通常各存一份。这里用的是符号链接，不是硬链接。网络缓存是否命中与最终文件是否共享是两回事。
-
-若要设计节省空间的管理工具，可采用“按来源和哈希区分的不可变共享缓存 + 项目锁文件 + agent 目录链接”，并避免直接修改共享内容。硬链接也需要考虑修改会影响同一 inode 下所有使用者的问题。
-
-## 9. Skill CLI 安装skill时，提示的 Security Risk Assessments 是什么？
+## 6. Skill CLI 安装skill时，提示的 Security Risk Assessments 是什么？
 
 CLI 展示多个服务各自的扫描结果，不是统一评分：
 
