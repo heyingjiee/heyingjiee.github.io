@@ -101,7 +101,6 @@ npx skills add owner/repo --skill code-review -a claude-code -g
 | --- | --- |
 | `metadata.version` | 作者自定义元数据，不自动赋予统一的版本解析能力 |
 | Git ref | 分支或 tag 等来源定位方式 |
-| npm 包版本 | 由 npm 包管理器解析版本范围和锁文件 |
 | 内容哈希 | 判断 skill 文件是否发生变化 |
 
 Agent Skills 规范不强制独立版本字段，也没有定义 npm 式的语义化版本范围解析。
@@ -133,23 +132,7 @@ npx skills update code-review    # 指定技能
 - 有哈希记录不等于已经具备 npm 完整的不可变版本恢复能力。
 - 当前源码跳过 `node_modules` 来源的常规更新；应先用包管理器更新，再同步。
 
-## 8. npm 发布与依赖安装
-
-不能把 `npx skills` 从 npm 获取 CLI，与“从 npm 安装 skill 内容”混为一谈。
-
-查阅时上游源码包含实验命令 `experimental_sync`：先让包管理器安装依赖，再发现依赖包内的 `SKILL.md` 或 `skills/`、`dist/skills/` 下的技能，链接或复制到 agent 目录。
-
-```bash
-# 假设该 npm 包已经存在，并包含符合结构的 skills
-npm install -D @your-org/team-skills
-npx skills experimental_sync -a claude-code -y
-```
-
-当前源码也解析 `package.json` 的 `skills` 数组字段，其中 `npm:<package>` 指向已安装的包，版本由依赖声明和包管理器锁文件决定。不要把它当成 `skills add <npm-package>` 已通用支持的证明。
-
-可以在项目安装流程中添加同步脚本，但建议区分两个动作：安装按锁定版本恢复；升级显式修改版本和锁文件。每次安装都跟随最新来源，会降低团队和 CI 的可重复性。
-
-## 9. 空间、全局副本和链接
+## 8. 空间、全局副本和链接
 
 常规技能内容保存在本地。Markdown 和脚本通常较轻，图片、模板、数据等附属资源可能成为主要体积来源。
 
@@ -166,7 +149,7 @@ npx skills experimental_sync -a claude-code -y
 
 若要设计节省空间的管理工具，可采用“按来源和哈希区分的不可变共享缓存 + 项目锁文件 + agent 目录链接”，并避免直接修改共享内容。硬链接也需要考虑修改会影响同一 inode 下所有使用者的问题。
 
-## 10. Security Risk Assessments 如何理解
+## 9. Skill CLI 安装skill时，提示的 Security Risk Assessments 是什么？
 
 CLI 展示多个服务各自的扫描结果，不是统一评分：
 
