@@ -115,22 +115,95 @@ npx skills add owner/repo --skill code-review
 npx skills add https://github.com/owner/repo/tree/v1.2.0/skills/code-review
 ```
 
-## 7. `update` 如何判断更新
+## 7. Skill CLI `update` 如何判断更新技能
 
-对于 GitHub 来源，主要依据锁文件记录的来源、ref、skill 路径与内容哈希，比较远端对应目录是否变化，而不是比较 GitHub Release 版本号。
+`npx skills update xxx` 的核心是：根据锁文件找到原来源，比较对应技能目录的内容指纹，变化了就重新安装，而不是比较 GitHub Release 或 `metadata.version` 的版本号。
+
+### 7.1 锁文件是什么，什么时候生成
+
+锁文件是 CLI 自动维护的安装记录。项目级安装成功并写入记录时，CLI 会在当前项目根目录创建或更新 `skills-lock.json`；不需要先用 Skills CLI 创建项目。
 
 ```bash
-npx skills update -p             # 当前项目
-npx skills update -g             # 用户级
-npx skills update code-review    # 指定技能
+npx skills add owner/repo --skill code-review
 ```
 
-- 默认分支中的 skill 改变，即使未发 Release，也可能检测到更新。
-- 固定 tag 时检查该 ref，不会自动寻找更大的 tag 版本号。
-- 仓库其他目录变化，不一定触发这个 skill 的更新。
-- 项目锁文件为 `skills-lock.json`，记录来源、路径、可选 ref 和哈希等。
-- 有哈希记录不等于已经具备 npm 完整的不可变版本恢复能力。
-- 当前源码跳过 `node_modules` 来源的常规更新；应先用包管理器更新，再同步。
+安装后的典型结构：
+
+```text
+你的项目/
+├── skills-lock.json
+└── .agents/
+    └── skills/
+        └── code-review/
+            └── SKILL.md
+```
+
+后续安装、更新和卸载技能时，CLI 会维护对应记录。`npx skills init` 创建的是编写技能用的 `SKILL.md` 模板，不是项目锁文件。
+
+使用 `-g` 安装时，记录写入用户级锁文件，默认是 `~/.agents/.skill-lock.json`；设置 `XDG_STATE_HOME` 时，当前源码使用该目录下的 `skills/.skill-lock.json`。用户级与项目级锁文件结构不同。
+
+### 7.2 项目锁文件记录了什么
+
+下面仅为结构示意，哈希不是可直接使用的真实值：
+
+```json
+{
+  "version": 1,
+  "skills": {
+    "code-review": {
+      "source": "owner/repo",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "ref": "main",
+      "computedHash": "技能目录内容的哈希"
+    }
+  }
+}
+```
+
+| 字段 | 作用 |
+| --- | --- |
+| `version` | 锁文件格式版本，不是 skill 的版本号 |
+| `source` | 来源仓库或其他来源标识 |
+| `sourceType` | 来源类型，如 GitHub、本地目录或 npm 依赖 |
+| `skillPath` | skill 在来源中的具体路径 |
+| `ref` | 安装时指定的分支或 tag，可选 |
+| `computedHash` | 技能目录内容的指纹，用于判断变化 |
+
+建议将项目锁文件提交到 Git，共享安装来源记录。它类似 `package-lock.json`，但不能直接等同于 npm 完整的不可变版本恢复机制：哈希可以识别内容变化，却不能仅凭哈希下载回历史文件；跟踪 `main` 也不等于锁定了不可变版本。
+
+### 7.3 更新时逐步比较什么
+
+```bash
+npx skills update code-review -p  # 更新当前项目的指定技能
+npx skills update -p              # 更新当前项目技能
+npx skills update -g              # 更新用户级技能
+```
+
+以项目级 GitHub 来源为例：
+
+1. 读取 `skills-lock.json`，找到技能原来的仓库、ref、路径与上次记录的 `computedHash`。
+2. 获取该来源当前的对应技能目录。
+3. 对获取到的目录计算内容哈希，与锁文件中记录的哈希比较。指令、脚本、模板等文件变化都可能改变哈希。
+4. 哈希不同则重新安装，并更新锁文件；相同则无需更新。
+
+```text
+上次安装：owner/repo 的 main 分支，skills/code-review/，哈希 AAA
+现在来源：owner/repo 的 main 分支，skills/code-review/，哈希 BBB
+                                      ↓
+                           AAA ≠ BBB → 重新安装
+```
+
+用户级 GitHub 来源通常比较锁文件中的 `skillFolderHash` 与远端对应目录的 Git tree SHA；获取失败等情况下，当前实现还会尝试通过 Git 克隆检查。项目级和用户级都围绕技能目录内容判断变化，但使用的哈希和记录字段不同。
+
+### 7.4 分支、tag 与更新边界
+
+- 跟踪默认分支：该 skill 内容变化，即使没发布 Release，也可能检测到更新。
+- 固定 `v1.2.0` tag：检查的仍是该 ref，不会自动寻找 `v1.3.0`；需要改用新 tag 安装才能切换版本。tag 本身仍可能被仓库维护者移动。
+- 仓库其他目录变化：不一定导致这个 skill 更新。
+- 当前源码跳过 `node_modules` 来源的常规更新：先用包管理器升级依赖，再同步技能。
+
+具体实现见[项目锁文件](https://github.com/vercel-labs/skills/blob/main/src/local-lock.ts)、[用户级锁文件](https://github.com/vercel-labs/skills/blob/main/src/skill-lock.ts)和[更新逻辑](https://github.com/vercel-labs/skills/blob/main/src/update.ts)。
 
 ## 8. 空间、全局副本和链接
 
