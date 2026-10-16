@@ -46,6 +46,12 @@ export default defineConfig({
           { text: "Vite", link: "/docs/frontEngineering/Vite.md" },
         ],
       },
+      {
+        text: "AI",
+        items: [
+          { text: "Skills CLI 知识点", link: "/docs/ai/Skills-CLI.md" },
+        ],
+      },
      // {
      //    text: "AI",
      //    items: [
